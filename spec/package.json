@@ -1,0 +1,33 @@
+{
+  "name": "@dataflows/spec",
+  "version": "0.1.0",
+  "description": "",
+  "type": "module",
+  "license": "See LICENSE",
+  "engines": {
+    "node": ">= 21.6",
+    "npm": ">= 10.2"
+  },
+  "files": [
+    "dist/index.js",
+    "dist/schemas"
+  ],
+  "scripts": {
+    "prepublishOnly": "npm run lint && npm run test && npm run compile",
+    "lint": "prettier . --write",
+    "test": "node --import tsx --test tests/**/*.test.ts",
+    "compile": "rm -rf dist && tsc && cp -r schemas dist/schemas"
+  },
+  "devDependencies": {
+    "@tsconfig/strictest": "2.x",
+    "@types/js-yaml": "4.x",
+    "@types/node": "20.x",
+    "prettier": "3.x",
+    "tsx": "4.x",
+    "typescript": "5.x"
+  },
+  "dependencies": {
+    "ajv": "8.x",
+    "js-yaml": "4.x"
+  }
+}
