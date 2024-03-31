@@ -1,5 +1,6 @@
 {
   "$id": "https://dataflows.io/system.json",
+  "title": "System",
   "description": "A system",
   "type": "object",
   "required": ["specification", "name"],
@@ -8,29 +9,27 @@
     "specification": {
       "type": "string",
       "enum": ["1.0.0"],
-      "title": "The version of the specification",
-      "description": "In semver format"
+      "description": "The version of the specification, in semver format."
     },
     "name": {
       "type": "string",
       "pattern": "^[a-z0-9_-]+$",
-      "title": "The name of the system"
+      "description": "The name of the system."
     },
     "description": {
       "type": "string",
-      "title": "The description of the system",
-      "description": "In markdown format"
+      "description": "The description of the system, in markdown format."
     },
     "components": {
       "type": "array",
-      "title": "The components of the system",
+      "description": "The components of the system.",
       "items": {
         "$ref": "https://dataflows.io/component.json"
       }
     },
     "links": {
       "type": "array",
-      "title": "The links of the system",
+      "description": "The links of the system.",
       "items": {
         "$ref": "https://dataflows.io/link.json"
       }

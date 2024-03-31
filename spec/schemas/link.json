@@ -1,5 +1,6 @@
 {
   "$id": "https://dataflows.io/link.json",
+  "title": "Link",
   "description": "A link",
   "type": "object",
   "required": ["name", "a", "b"],
@@ -8,26 +9,23 @@
     "name": {
       "type": "string",
       "pattern": "^[a-z0-9_-]+$",
-      "title": "The name of the link",
-      "description": "Must be unique across the system"
+      "description": "The name of the link. Must be unique across the system."
     },
     "displayName": {
       "type": "string",
-      "title": "The display name of the link",
-      "description": "Has precedence over the name of the link"
+      "description": "The display name of the link. Has precedence over the name of the link."
     },
     "description": {
       "type": "string",
-      "title": "The description of the link",
-      "description": "In markdown format"
+      "description": "The description of the link, in markdown format."
     },
     "a": {
       "type": "string",
-      "title": "Side A of the link"
+      "description": "Side A of the link."
     },
     "b": {
       "type": "string",
-      "title": "Side B of the link"
+      "description": "Side B of the link."
     }
   }
 }

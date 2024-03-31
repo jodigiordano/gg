@@ -8,20 +8,31 @@
     "node": ">= 21.6",
     "npm": ">= 10.2"
   },
+  "types": "./dist/index.d.ts",
+  "exports": {
+    "./package.json": "./package.json",
+    ".": {
+      "import": "./dist/index.js"
+    }
+  },
   "files": [
     "dist/index.js",
+    "dist/index.d.ts",
+    "dist/types.d.ts",
     "dist/schemas"
   ],
   "scripts": {
     "prepublishOnly": "npm run lint && npm run test && npm run compile",
     "lint": "prettier . --write",
     "test": "node --import tsx --test tests/**/*.test.ts",
-    "compile": "rm -rf dist && tsc && cp -r schemas dist/schemas"
+    "compile:types": "tsx generateTypes.ts > types.ts",
+    "compile": "rm -rf dist && npm run compile:types && tsc && cp -r schemas dist/schemas"
   },
   "devDependencies": {
     "@tsconfig/strictest": "2.x",
     "@types/js-yaml": "4.x",
     "@types/node": "20.x",
+    "json-schema-to-typescript": "13.x",
     "prettier": "3.x",
     "tsx": "4.x",
     "typescript": "5.x"

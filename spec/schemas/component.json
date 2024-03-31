@@ -1,5 +1,6 @@
 {
   "$id": "https://dataflows.io/component.json",
+  "title": "Component",
   "description": "A component",
   "type": "object",
   "required": ["name"],
@@ -8,22 +9,19 @@
     "name": {
       "type": "string",
       "pattern": "^[a-z0-9_-]+$",
-      "title": "The name of the component",
-      "description": "Must be unique across the system"
+      "description": "The name of the component. Must be unique across the system."
     },
     "displayName": {
       "type": "string",
-      "title": "The display name of the component",
-      "description": "Has precedence over the name of the component"
+      "description": "The display name of the component. Has precedence over the name of the component."
     },
     "description": {
       "type": "string",
-      "title": "The description of the component",
-      "description": "In markdown format"
+      "description": "The description of the component, in markdown format."
     },
     "components": {
       "type": "array",
-      "title": "The sub-components of the component",
+      "description": "The sub-components of the component.",
       "items": {
         "$ref": "https://dataflows.io/component.json"
       }
