@@ -1,0 +1,20 @@
+{
+  "name": "@dataflows",
+  "version": "0.1.0",
+  "description": "",
+  "type": "module",
+  "license": "See LICENSE",
+  "engines": {
+    "node": ">= 21.6",
+    "npm": ">= 10.2"
+  },
+  "scripts": {
+    "postinstall": "(cd spec && npm ci) && (cd simulator && npm ci)",
+    "compile": "(cd spec && npm run compile) && (cd simulator && npm run compile)",
+    "maintenance": "(cd spec && npm update) && (cd simulator && npm update)"
+  },
+  "devDependencies": {
+  },
+  "dependencies": {
+  }
+}

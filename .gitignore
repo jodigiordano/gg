@@ -1,3 +1,8 @@
+# Ignore NPM files
 dist
 tmp
 node_modules
+
+# Ignore VIM files
+*~
+.*.sw?
