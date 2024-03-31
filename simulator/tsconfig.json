@@ -3,7 +3,8 @@
   "compilerOptions": {
     "module": "esnext",
     "moduleResolution": "node",
-    "outDir": "dist"
+    "outDir": "dist",
+    "declaration": true
   },
   "include": ["index.ts", "tests"]
 }
