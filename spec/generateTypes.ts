@@ -28,9 +28,7 @@ async function execute() {
             file: FileInfo,
             _callback?: (error: Error | null, data: string | null) => unknown,
           ): Promise<string> {
-            const filename = file.url
-              .split("https://dataflows.io/")
-              .at(1)
+            const filename = file.url.split("https://dataflows.io/").at(1);
 
             return fs.readFileSync(`${directory}/${filename}`, "utf8");
           },

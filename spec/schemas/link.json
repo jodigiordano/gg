@@ -3,7 +3,7 @@
   "title": "Link",
   "description": "A link",
   "type": "object",
-  "required": ["name", "componentAId", "componentBId"],
+  "required": ["name", "componentAName", "componentBName"],
   "additionalProperties": false,
   "properties": {
     "name": {
@@ -19,13 +19,20 @@
       "type": "string",
       "description": "The description of the link, in markdown format."
     },
-    "componentAId": {
+    "componentAName": {
       "type": "string",
+      "pattern": "^[a-z0-9_-]+$",
       "description": "Side A of the link."
     },
-    "componentBId": {
+    "componentBName": {
       "type": "string",
+      "pattern": "^[a-z0-9_-]+$",
       "description": "Side B of the link."
+    },
+    "subComponentBName": {
+      "type": "string",
+      "pattern": "^[a-z0-9_-]+$",
+      "description": "Sub-component in side B of the link."
     }
   }
 }

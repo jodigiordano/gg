@@ -2,11 +2,6 @@ specificationVersion: 1.0.0
 name: dataflows
 description: Tool to build beautiful software system designs
 components:
-  - name: specification
-    description: The specification of a system
-    position:
-      x: 0
-      y: 0
   - name: frontend
     description: Web-based client
     position:
@@ -31,9 +26,10 @@ components:
             y: 0
       links:
         - name: sd
-          componentAId: server
-          componentBId: database
+          componentAName: server
+          componentBName: database
 links:
   - name: fb
-    componentAId: frontend
-    componentBId: backend
+    componentAName: frontend
+    componentBName: backend
+    subComponentBName: server

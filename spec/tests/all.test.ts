@@ -6,6 +6,9 @@ describe("examples", () => {
   it("valid", () => {
     const example = loadExample("dataflows");
 
-    assert.equal(example.name, "dataflows");
+    console.dir(example, { depth: null });
+
+    assert.equal(example.system.name, "dataflows");
+    assert.deepEqual(example.errors, []);
   });
 });

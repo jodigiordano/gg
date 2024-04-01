@@ -11,6 +11,7 @@
   "scripts": {
     "postinstall": "(cd spec && npm ci) && (cd simulator && npm ci)",
     "compile": "(cd spec && npm run compile) && (cd simulator && npm run compile)",
+    "lint": "(cd spec && npm run lint) && (cd simulator && npm run lint)",
     "maintenance": "(cd spec && npm update) && (cd simulator && npm update)"
   },
   "devDependencies": {

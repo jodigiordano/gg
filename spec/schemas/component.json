@@ -39,26 +39,6 @@
         }
       }
     },
-    "size": {
-      "type": "object",
-      "description": "The size of the component.",
-      "required": ["width", "height"],
-      "additionalProperties": false,
-      "properties": {
-        "width": {
-          "type": "integer",
-          "description": "The width of the component.",
-          "minimum": 0,
-          "maximum": 128
-        },
-        "height": {
-          "type": "integer",
-          "description": "The height of the component.",
-          "minimum": 0,
-          "maximum": 128
-        }
-      }
-    },
     "system": {
       "$ref": "https://dataflows.io/subsystem.json"
     }
