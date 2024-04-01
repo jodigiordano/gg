@@ -1,21 +1,11 @@
 {
-  "$id": "https://dataflows.io/system.json",
-  "title": "System",
-  "description": "A system",
+  "$id": "https://dataflows.io/subsystem.json",
+  "title": "Subsystem",
+  "description": "A sub-system",
   "type": "object",
-  "required": ["specificationVersion", "name", "components", "links"],
+  "required": ["components", "links"],
   "additionalProperties": false,
   "properties": {
-    "specificationVersion": {
-      "type": "string",
-      "description": "The version of the specification, in semver format.",
-      "enum": ["1.0.0"]
-    },
-    "name": {
-      "type": "string",
-      "pattern": "^[a-z0-9_-]+$",
-      "description": "The name of the system."
-    },
     "description": {
       "type": "string",
       "description": "The description of the system, in markdown format."

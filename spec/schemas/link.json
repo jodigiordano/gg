@@ -3,7 +3,7 @@
   "title": "Link",
   "description": "A link",
   "type": "object",
-  "required": ["name", "a", "b"],
+  "required": ["name", "componentAId", "componentBId"],
   "additionalProperties": false,
   "properties": {
     "name": {
@@ -19,11 +19,11 @@
       "type": "string",
       "description": "The description of the link, in markdown format."
     },
-    "a": {
+    "componentAId": {
       "type": "string",
       "description": "Side A of the link."
     },
-    "b": {
+    "componentBId": {
       "type": "string",
       "description": "Side B of the link."
     }

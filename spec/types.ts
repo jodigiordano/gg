@@ -5,7 +5,7 @@ export interface System {
   /**
    * The version of the specification, in semver format.
    */
-  specification: '1.0.0';
+  specificationVersion: '1.0.0';
   /**
    * The name of the system.
    */
@@ -17,11 +17,11 @@ export interface System {
   /**
    * The components of the system.
    */
-  components?: Component[];
+  components: Component[];
   /**
    * The links of the system.
    */
-  links?: Link[];
+  links: Link[];
 }
 /**
  * A component
@@ -40,9 +40,49 @@ export interface Component {
    */
   description?: string;
   /**
-   * The sub-components of the component.
+   * The position of the component.
    */
-  components?: Component[];
+  position: {
+    /**
+     * The X position of the component.
+     */
+    x: number;
+    /**
+     * The Y position of the component.
+     */
+    y: number;
+  };
+  /**
+   * The size of the component.
+   */
+  size?: {
+    /**
+     * The width of the component.
+     */
+    width: number;
+    /**
+     * The height of the component.
+     */
+    height: number;
+  };
+  system?: Subsystem;
+}
+/**
+ * A sub-system
+ */
+export interface Subsystem {
+  /**
+   * The description of the system, in markdown format.
+   */
+  description?: string;
+  /**
+   * The components of the system.
+   */
+  components: Component[];
+  /**
+   * The links of the system.
+   */
+  links: Link[];
 }
 /**
  * A link
@@ -63,10 +103,10 @@ export interface Link {
   /**
    * Side A of the link.
    */
-  a: string;
+  componentAId: string;
   /**
    * Side B of the link.
    */
-  b: string;
+  componentBId: string;
 }
 

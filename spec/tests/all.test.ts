@@ -4,6 +4,8 @@ import { loadExample } from "./helpers";
 
 describe("examples", () => {
   it("valid", () => {
-    assert.doesNotThrow(() => loadExample("dataflows"));
+    const example = loadExample("dataflows");
+
+    assert.equal(example.name, "dataflows");
   });
 });

@@ -3,7 +3,7 @@
   "title": "Component",
   "description": "A component",
   "type": "object",
-  "required": ["name"],
+  "required": ["name", "position"],
   "additionalProperties": false,
   "properties": {
     "name": {
@@ -19,12 +19,48 @@
       "type": "string",
       "description": "The description of the component, in markdown format."
     },
-    "components": {
-      "type": "array",
-      "description": "The sub-components of the component.",
-      "items": {
-        "$ref": "https://dataflows.io/component.json"
+    "position": {
+      "type": "object",
+      "description": "The position of the component.",
+      "required": ["x", "y"],
+      "additionalProperties": false,
+      "properties": {
+        "x": {
+          "type": "integer",
+          "description": "The X position of the component.",
+          "minimum": 0,
+          "maximum": 128
+        },
+        "y": {
+          "type": "integer",
+          "description": "The Y position of the component.",
+          "minimum": 0,
+          "maximum": 128
+        }
       }
+    },
+    "size": {
+      "type": "object",
+      "description": "The size of the component.",
+      "required": ["width", "height"],
+      "additionalProperties": false,
+      "properties": {
+        "width": {
+          "type": "integer",
+          "description": "The width of the component.",
+          "minimum": 0,
+          "maximum": 128
+        },
+        "height": {
+          "type": "integer",
+          "description": "The height of the component.",
+          "minimum": 0,
+          "maximum": 128
+        }
+      }
+    },
+    "system": {
+      "$ref": "https://dataflows.io/subsystem.json"
     }
   }
 }

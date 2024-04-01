@@ -31,10 +31,8 @@ async function execute() {
             const filename = file.url
               .split("https://dataflows.io/")
               .at(1)
-              ?.split(".json")
-              ?.at(0);
 
-            return fs.readFileSync(`${directory}/${filename}.json`, "utf8");
+            return fs.readFileSync(`${directory}/${filename}`, "utf8");
           },
         },
       },

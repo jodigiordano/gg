@@ -1,22 +1,39 @@
-specification: 1.0.0
+specificationVersion: 1.0.0
 name: dataflows
 description: Tool to build beautiful software system designs
 components:
   - name: specification
     description: The specification of a system
+    position:
+      x: 0
+      y: 0
   - name: frontend
     description: Web-based client
+    position:
+      x: 0
+      y: 0
   - name: backend
     description: Backend of the frontend
-    components:
-      - name: server
-        description: RESTful HTTP API of the backend
-      - name: database
-        description: Database of the backend
+    position:
+      x: 0
+      y: 0
+    system:
+      components:
+        - name: server
+          description: RESTful HTTP API of the backend
+          position:
+            x: 0
+            y: 0
+        - name: database
+          description: Database of the backend
+          position:
+            x: 0
+            y: 0
+      links:
+        - name: sd
+          componentAId: server
+          componentBId: database
 links:
   - name: fb
-    a: frontend
-    b: backend
-  - name: sd
-    a: server
-    b: database
+    componentAId: frontend
+    componentBId: backend
