@@ -129,6 +129,6 @@ function getComponentPath(component: RuntimeComponent) {
 
   return breadcrumbs
     .reverse()
-    .map((c) => `/system/components/${c.arrayPosition}/${c.name}`)
+    .map((c) => `/system/components/${c.index}/${c.name}`)
     .join("");
 }

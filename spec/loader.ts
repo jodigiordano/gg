@@ -14,14 +14,14 @@ export interface RuntimeComponentSize {
 }
 
 export interface RuntimeComponent extends Component {
-  arrayPosition: number;
+  index: number;
   size: RuntimeComponentSize;
   parentComponent?: RuntimeComponent;
   parentSystem?: RuntimeSubsystem;
 }
 
 export interface RuntimeLink extends Link {
-  arrayPosition: number;
+  index: number;
   parentLink?: RuntimeLink;
   parentSystem?: RuntimeSubsystem;
 }
@@ -57,7 +57,7 @@ function enhanceComponents(
 ): void {
   system.components.forEach((component, index) => {
     // Set array position in the system.
-    component.arrayPosition = index;
+    component.index = index;
 
     // Set the parent system.
     component.parentSystem = system;

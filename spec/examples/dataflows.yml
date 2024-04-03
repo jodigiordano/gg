@@ -10,7 +10,7 @@ components:
   - name: backend
     description: Backend of the frontend
     position:
-      x: 0
+      x: 10
       y: 0
     system:
       components:
@@ -22,7 +22,7 @@ components:
         - name: database
           description: Database of the backend
           position:
-            x: 0
+            x: 10
             y: 0
       links:
         - name: sd
