@@ -1,0 +1,28 @@
+{
+  "name": "dataflows.io",
+  "version": "0.1.0",
+  "description": "",
+  "main": "index.js",
+  "type": "module",
+  "license": "See LICENSE",
+  "engines": {
+    "node": ">= 21.6",
+    "npm": ">= 10.2"
+  },
+  "scripts": {
+    "dev": "vite",
+    "compile": "tsc && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@dataflows/simulator": "file:../simulator",
+    "@dataflows/spec": "file:../spec",
+    "modern-normalize": "2.x",
+    "pixi-viewport": "5.x",
+    "pixi.js": "7.x"
+  },
+  "devDependencies": {
+    "typescript": "5.x",
+    "vite": "5.x"
+  }
+}
