@@ -5,31 +5,46 @@ components:
   - name: frontend
     description: Web-based client
     position:
-      x: 0
-      y: 0
+      x: 2
+      y: 2
   - name: backend
     description: Backend of the frontend
     position:
-      x: 10
-      y: 0
+      x: 17
+      y: 7
     system:
       components:
         - name: server
           description: RESTful HTTP API of the backend
           position:
-            x: 0
-            y: 0
+            x: 2
+            y: 2
         - name: database
           description: Database of the backend
           position:
             x: 10
-            y: 0
+            y: 2
       links:
-        - name: sd
+        - name: l1
           componentAName: server
           componentBName: database
+  - name: whatever
+    position:
+      x: 9
+      y: 15
+  - name: datadog
+    position:
+      x: 2
+      y: 10
 links:
-  - name: fb
+  - name: l1
     componentAName: frontend
     componentBName: backend
+    subComponentBName: server
+  - name: l2
+    componentAName: frontend
+    componentBName: whatever
+  - name: l3
+    componentAName: backend
+    componentBName: datadog
     subComponentBName: server
