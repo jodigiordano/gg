@@ -28,6 +28,7 @@
   "devDependencies": {
     "@tsconfig/strictest": "2.x",
     "@types/node": "20.x",
+    "@types/pathfinding": "^0.0.9",
     "canvas": "2.x",
     "prettier": "3.x",
     "tsx": "4.x",
@@ -35,6 +36,6 @@
   },
   "dependencies": {
     "@dataflows/spec": "file:../spec",
-    "easystarjs": "0.4.x"
+    "pathfinding": "0.4.x"
   }
 }
