@@ -3,9 +3,8 @@ import {
   RuntimeLimits,
   RuntimeSubsystem,
   RuntimeSystem,
-} from "./loader";
-import spec from "./specification";
-import { System } from "./specificationTypes";
+} from "./index";
+import { System, specification } from "./specification";
 
 export class InvalidSystemError extends Error {
   details: unknown;
@@ -25,7 +24,7 @@ export function validate(
   system: System,
   runtime: RuntimeSystem,
 ): ValidationError[] {
-  const validateAjv = spec.getSchema<System>(
+  const validateAjv = specification.getSchema<System>(
     "https://dataflows.io/system.json",
   )!;
 
@@ -92,6 +91,9 @@ function validateLinks(_system: RuntimeSubsystem): ValidationError[] {
   // Ex: 2 links should not point to the same components
   return [];
 }
+
+// TODO: out of bound should consider ports and routing.
+// TODO: components distance between each other should consider ports and routing.
 
 function validateOutOfBounds(system: RuntimeSubsystem): ValidationError[] {
   const errors: ValidationError[] = [];

@@ -1,5 +1,11 @@
-import { load } from "../loader";
+import { readFileSync } from "node:fs";
+import { loadYaml } from "../index";
 
 export function loadExample(name: string) {
-  return load([import.meta.dirname, `../examples/${name}.yml`].join("/"));
+  return loadYaml(
+    readFileSync(
+      [import.meta.dirname, `../examples/${name}.yml`].join("/"),
+      "utf8",
+    ),
+  );
 }
