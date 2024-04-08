@@ -2,6 +2,9 @@ import { load as parseYaml } from "js-yaml";
 import { Component, Link, System, Subsystem } from "./specification";
 import { validate, ValidationError } from "./validations";
 
+// TODO: some stuff in the spec shoul dnot be required and simply set default
+// TODO: in the runtime objects.
+
 export const RuntimeLimits = {
   MaxSystemWidth: 64,
   MaxSystemHeight: 64,

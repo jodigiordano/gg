@@ -3,7 +3,7 @@
   "title": "System",
   "description": "A system",
   "type": "object",
-  "required": ["specificationVersion", "name", "components", "links"],
+  "required": ["specificationVersion", "name", "components", "links", "flows"],
   "additionalProperties": false,
   "properties": {
     "specificationVersion": {
@@ -32,6 +32,13 @@
       "description": "The links of the system.",
       "items": {
         "$ref": "https://dataflows.io/link.json"
+      }
+    },
+    "flows": {
+      "type": "array",
+      "description": "The flows of the system.",
+      "items": {
+        "$ref": "https://dataflows.io/flow.json"
       }
     }
   }

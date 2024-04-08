@@ -33,7 +33,7 @@ export function validate(
   if (validateAjv.errors) {
     return validateAjv.errors.map((error) => ({
       path: error.instancePath,
-      message: error.message ?? "",
+      message: `${error.message} (${JSON.stringify(error.params)})`,
     }));
   }
 

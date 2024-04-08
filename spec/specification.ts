@@ -22,6 +22,10 @@ export interface System {
    * The links of the system.
    */
   links: Link[];
+  /**
+   * The flows of the system.
+   */
+  flows: Flow[];
 }
 /**
  * A component
@@ -100,6 +104,58 @@ export interface Link {
    */
   subComponentBName?: string;
 }
+/**
+ * A flow
+ */
+export interface Flow {
+  /**
+   * The name of the flow. Must be unique across the system.
+   */
+  name: string;
+  /**
+   * The description of the flow, in markdown format.
+   */
+  description?: string;
+  /**
+   * The data of the flow.
+   */
+  data: {
+    [k: string]: string;
+  };
+  /**
+   * The steps of the flow.
+   */
+  steps: {
+    /**
+     * The operation of the step.
+     */
+    operation: "send";
+    /**
+     * The description of the step, in markdown format.
+     */
+    description?: string;
+    /**
+     * The keyframe of the step.
+     */
+    keyframe: number;
+    /**
+     * The name of the component where the data originates from
+     */
+    fromComponentName: string;
+    /**
+     * The name of the component where the data goes to
+     */
+    toComponentName: string;
+    /**
+     * The key of the data of the step.
+     */
+    dataKey: string;
+    /**
+     * Whether to store the data in 'toComponentName'.
+     */
+    store?: boolean;
+  }[];
+}
 
 const schemas = [
   {
@@ -147,6 +203,83 @@ const schemas = [
       },
       system: {
         $ref: "https://dataflows.io/subsystem.json",
+      },
+    },
+  },
+  {
+    $id: "https://dataflows.io/flow.json",
+    title: "Flow",
+    description: "A flow",
+    type: "object",
+    required: ["name", "data", "steps"],
+    additionalProperties: false,
+    properties: {
+      name: {
+        type: "string",
+        pattern: "^[a-z0-9_-]+$",
+        description: "The name of the flow. Must be unique across the system.",
+      },
+      description: {
+        type: "string",
+        description: "The description of the flow, in markdown format.",
+      },
+      data: {
+        type: "object",
+        description: "The data of the flow.",
+        additionalProperties: { type: "string" },
+      },
+      steps: {
+        type: "array",
+        description: "The steps of the flow.",
+        items: {
+          oneOf: [
+            {
+              type: "object",
+              required: [
+                "operation",
+                "fromComponentName",
+                "toComponentName",
+                "dataKey",
+                "keyframe",
+              ],
+              additionalProperties: false,
+              properties: {
+                operation: {
+                  const: "send",
+                  description: "The operation of the step.",
+                },
+                description: {
+                  type: "string",
+                  description:
+                    "The description of the step, in markdown format.",
+                },
+                keyframe: {
+                  type: "integer",
+                  description: "The keyframe of the step.",
+                },
+                fromComponentName: {
+                  type: "string",
+                  description:
+                    "The name of the component where the data originates from",
+                },
+                toComponentName: {
+                  type: "string",
+                  description:
+                    "The name of the component where the data goes to",
+                },
+                dataKey: {
+                  type: "string",
+                  description: "The key of the data of the step.",
+                },
+                store: {
+                  type: "boolean",
+                  description:
+                    "Whether to store the data in 'toComponentName'.",
+                },
+              },
+            },
+          ],
+        },
       },
     },
   },
@@ -222,7 +355,7 @@ const schemas = [
     title: "System",
     description: "A system",
     type: "object",
-    required: ["specificationVersion", "name", "components", "links"],
+    required: ["specificationVersion", "name", "components", "links", "flows"],
     additionalProperties: false,
     properties: {
       specificationVersion: {
@@ -251,6 +384,13 @@ const schemas = [
         description: "The links of the system.",
         items: {
           $ref: "https://dataflows.io/link.json",
+        },
+      },
+      flows: {
+        type: "array",
+        description: "The flows of the system.",
+        items: {
+          $ref: "https://dataflows.io/flow.json",
         },
       },
     },

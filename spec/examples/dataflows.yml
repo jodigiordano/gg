@@ -48,3 +48,26 @@ links:
     componentAName: backend
     componentBName: datadog
     subComponentBName: server
+flows:
+  - name: f1
+    data:
+      d1: form data
+      d2: log
+      d3: user
+    steps:
+      - operation: send
+        fromComponentName: frontend
+        toComponentName: backend.server
+        dataKey: d1
+        keyframe: 0
+      - operation: send
+        fromComponentName: backend.server
+        toComponentName: datadog
+        dataKey: d2
+        keyframe: 1
+      - operation: send
+        fromComponentName: backend.server
+        toComponentName: backend.database
+        dataKey: d3
+        store: true
+        keyframe: 1
