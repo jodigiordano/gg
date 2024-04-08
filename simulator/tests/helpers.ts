@@ -1,14 +1,17 @@
-import fs from "node:fs";
-import { loadFile, RuntimeLimits } from "@dataflows/spec";
+import { readFileSync, mkdirSync, createWriteStream } from "node:fs";
+import { loadYaml, RuntimeLimits } from "@dataflows/spec";
 import { createCanvas, Canvas } from "canvas";
 import { GridObjectType, Simulator } from "../index";
 
 export function loadExample(name: string) {
-  return loadFile(
-    [
-      import.meta.dirname,
-      `../node_modules/@dataflows/spec/examples/${name}.yml`,
-    ].join("/"),
+  return loadYaml(
+    readFileSync(
+      [
+        import.meta.dirname,
+        `../node_modules/@dataflows/spec/examples/${name}.yml`,
+      ].join("/"),
+      "utf8",
+    ),
   );
 }
 
@@ -77,9 +80,9 @@ export async function render(simulator: Simulator) {
 async function saveRender(canvas: Canvas): Promise<void> {
   return new Promise((resolve) => {
     const folder = [import.meta.dirname, "tmp"].join("/");
-    fs.mkdirSync(folder, { recursive: true });
+    mkdirSync(folder, { recursive: true });
 
-    const out = fs.createWriteStream([folder, "output.png"].join("/"));
+    const out = createWriteStream([folder, "output.png"].join("/"));
     const stream = canvas.createPNGStream();
 
     stream.pipe(out);
