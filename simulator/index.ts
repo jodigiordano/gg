@@ -1,4 +1,4 @@
-import pathfinding from 'pathfinding';
+import pathfinding from "pathfinding";
 import { RuntimeSystem, RuntimeLimits } from "@dataflows/spec";
 
 // TODO: add ComponentTopLeftCorner, ComponentTopRightCorner, ...
@@ -21,10 +21,15 @@ export class Simulator {
 
     // Create grid.
     for (let i = 0; i < RuntimeLimits.MaxSystemWidth; i++) {
-      this.grid[i] = new Array(RuntimeLimits.MaxSystemWidth).fill(GridObjectType.Empty);
+      this.grid[i] = new Array(RuntimeLimits.MaxSystemWidth).fill(
+        GridObjectType.Empty,
+      );
     }
 
-    const finderGrid = new pathfinding.Grid(RuntimeLimits.MaxSystemWidth, RuntimeLimits.MaxSystemHeight);
+    const finderGrid = new pathfinding.Grid(
+      RuntimeLimits.MaxSystemWidth,
+      RuntimeLimits.MaxSystemHeight,
+    );
 
     // Add components & ports.
     for (const component of this.system.components) {
@@ -71,15 +76,29 @@ export class Simulator {
     const finder = new pathfinding.BestFirstFinder();
 
     for (const link of this.system.links) {
-      const componentA = this.system.components.find(component => component.name === link.componentAName);
-      const componentB = this.system.components.find(component => component.name === link.componentBName);
+      const componentA = this.system.components.find(
+        (component) => component.name === link.componentAName,
+      );
+      const componentB = this.system.components.find(
+        (component) => component.name === link.componentBName,
+      );
 
       if (componentA && componentB) {
-        const componentAPort = componentA.ports.find(port => this.grid[port.x]![port.y] === GridObjectType.Port);
-        const componentBPort = componentB.ports.find(port => this.grid[port.x]![port.y] === GridObjectType.Port);
+        const componentAPort = componentA.ports.find(
+          (port) => this.grid[port.x]![port.y] === GridObjectType.Port,
+        );
+        const componentBPort = componentB.ports.find(
+          (port) => this.grid[port.x]![port.y] === GridObjectType.Port,
+        );
 
         if (componentAPort && componentBPort) {
-          const path = finder.findPath(componentAPort.x, componentAPort.y, componentBPort.x, componentBPort.y, finderGrid.clone());
+          const path = finder.findPath(
+            componentAPort.x,
+            componentAPort.y,
+            componentBPort.x,
+            componentBPort.y,
+            finderGrid.clone(),
+          );
 
           for (const [x, y] of path) {
             this.grid[x!]![y!] = GridObjectType.Link;

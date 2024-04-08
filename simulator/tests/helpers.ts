@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import { loadFile, RuntimeLimits } from "@dataflows/spec";
 import { createCanvas, Canvas } from "canvas";
-import { GridObjectType, Simulator } from '../index';
+import { GridObjectType, Simulator } from "../index";
 
 export function loadExample(name: string) {
   return loadFile(
@@ -36,7 +36,12 @@ export async function render(simulator: Simulator) {
     for (let j = 0; j < RuntimeLimits.MaxSystemHeight; j++) {
       const obj = simulator.layout[i]![j];
 
-      if (obj === GridObjectType.Component || obj === GridObjectType.Link || obj === GridObjectType.Port || obj === GridObjectType.PortPadding) {
+      if (
+        obj === GridObjectType.Component ||
+        obj === GridObjectType.Link ||
+        obj === GridObjectType.Port ||
+        obj === GridObjectType.PortPadding
+      ) {
         if (obj === GridObjectType.Component) {
           ctx.fillStyle = "black";
         } else if (obj === GridObjectType.Link) {
@@ -47,12 +52,7 @@ export async function render(simulator: Simulator) {
           ctx.fillStyle = "red";
         }
 
-        ctx.fillRect(
-          i * BlockSize,
-          j * BlockSize,
-          BlockSize,
-          BlockSize,
-        );
+        ctx.fillRect(i * BlockSize, j * BlockSize, BlockSize, BlockSize);
       }
     }
   }
@@ -68,7 +68,7 @@ export async function render(simulator: Simulator) {
     ctx.lineTo(i, canvas.height);
   }
 
-  ctx.strokeStyle = 'gray';
+  ctx.strokeStyle = "gray";
   ctx.stroke();
 
   await saveRender(canvas);
