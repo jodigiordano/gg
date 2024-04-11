@@ -9,13 +9,13 @@
     "npm": ">= 10.2"
   },
   "scripts": {
-    "postinstall": "(cd spec && npm ci) && (cd simulator && npm ci)",
-    "compile": "(cd spec && npm run compile) && (cd simulator && npm run compile)",
-    "lint": "(cd spec && npm run lint) && (cd simulator && npm run lint)",
-    "maintenance": "(cd spec && npm update) && (cd simulator && npm update)"
+    "compile": "npm run compile --workspaces",
+    "lint": "npm run lint --workspaces",
+    "maintenance": "npm update --workspaces",
+    "dev": "concurrently --kill-others --names spec,simulator,frontend \"(cd spec && npm run dev)\" \"(cd simulator && npm run dev)\" \"(cd frontend && npm run dev)\""
   },
   "devDependencies": {
+    "concurrently": "8.x"
   },
-  "dependencies": {
-  }
+  "workspaces": ["spec", "simulator", "frontend"]
 }
