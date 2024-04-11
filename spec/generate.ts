@@ -43,7 +43,7 @@ async function generateTypes() {
 async function generateSchemas() {
   const filenames = fs
     .readdirSync(schemasDirectory)
-    .filter((filename) => filename.endsWith(".json"));
+    .filter(filename => filename.endsWith(".json"));
 
   console.log("const schemas = [");
 

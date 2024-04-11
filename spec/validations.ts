@@ -31,7 +31,7 @@ export function validate(
   validateAjv(system);
 
   if (validateAjv.errors) {
-    return validateAjv.errors.map((error) => ({
+    return validateAjv.errors.map(error => ({
       path: error.instancePath,
       message: `${error.message} (${JSON.stringify(error.params)})`,
     }));
@@ -92,6 +92,8 @@ function validateLinks(_system: RuntimeSubsystem): ValidationError[] {
   return [];
 }
 
+// TODO: flows: validate contigunous keyframes, starting from 0.
+
 // TODO: out of bound should consider ports and routing.
 // TODO: components distance between each other should consider ports and routing.
 
@@ -131,6 +133,6 @@ function getComponentPath(component: RuntimeComponent) {
 
   return breadcrumbs
     .reverse()
-    .map((c) => `/system/components/${c.index}/${c.name}`)
+    .map(c => `/system/components/${c.index}/${c.name}`)
     .join("");
 }

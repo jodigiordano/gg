@@ -25,6 +25,7 @@
     "prepublishOnly": "npm run lint && npm run test && npm run compile",
     "lint": "prettier . --write",
     "test": "node --import tsx --test tests/**/*.test.ts",
+    "dev": "npm run compile && tsc --watch --preserveWatchOutput",
     "compile:types": "tsx generate.ts > specification.ts",
     "compile": "rm -rf dist && npm run compile:types && tsc && cp -r schemas dist/schemas"
   },

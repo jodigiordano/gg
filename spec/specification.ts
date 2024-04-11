@@ -117,12 +117,6 @@ export interface Flow {
    */
   description?: string;
   /**
-   * The data of the flow.
-   */
-  data: {
-    [k: string]: string;
-  };
-  /**
    * The steps of the flow.
    */
   steps: {
@@ -147,13 +141,9 @@ export interface Flow {
      */
     toComponentName: string;
     /**
-     * The key of the data of the step.
+     * The data of the step.
      */
-    dataKey: string;
-    /**
-     * Whether to store the data in 'toComponentName'.
-     */
-    store?: boolean;
+    data: string;
   }[];
 }
 
@@ -211,7 +201,7 @@ const schemas = [
     title: "Flow",
     description: "A flow",
     type: "object",
-    required: ["name", "data", "steps"],
+    required: ["name", "steps"],
     additionalProperties: false,
     properties: {
       name: {
@@ -222,11 +212,6 @@ const schemas = [
       description: {
         type: "string",
         description: "The description of the flow, in markdown format.",
-      },
-      data: {
-        type: "object",
-        description: "The data of the flow.",
-        additionalProperties: { type: "string" },
       },
       steps: {
         type: "array",
@@ -239,7 +224,7 @@ const schemas = [
                 "operation",
                 "fromComponentName",
                 "toComponentName",
-                "dataKey",
+                "data",
                 "keyframe",
               ],
               additionalProperties: false,
@@ -267,14 +252,9 @@ const schemas = [
                   description:
                     "The name of the component where the data goes to",
                 },
-                dataKey: {
+                data: {
                   type: "string",
-                  description: "The key of the data of the step.",
-                },
-                store: {
-                  type: "boolean",
-                  description:
-                    "Whether to store the data in 'toComponentName'.",
+                  description: "The data of the step.",
                 },
               },
             },

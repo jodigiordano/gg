@@ -1,5 +1,5 @@
 import { load as parseYaml } from "js-yaml";
-import { Component, Link, System, Subsystem } from "./specification";
+import { Component, Link, System, Subsystem, Flow } from "./specification";
 import { validate, ValidationError } from "./validations";
 
 // TODO: some stuff in the spec shoul dnot be required and simply set default
@@ -42,7 +42,10 @@ export interface RuntimeSubsystem extends Subsystem {
 export interface RuntimeSystem extends System {
   components: RuntimeComponent[];
   links: RuntimeLink[];
+  flows: RuntimeFlow[];
 }
+
+export interface RuntimeFlow extends Flow {}
 
 export function loadYaml(yaml: string): {
   system: RuntimeSystem;
@@ -113,14 +116,14 @@ function enhanceComponents(
 function computeSizes(system: RuntimeSubsystem): void {
   for (const component of system.components) {
     let linksCount = system.links.filter(
-      (link) =>
+      link =>
         link.componentAName === component.name ||
         link.componentBName === component.name,
     ).length;
 
     if (component.parentSystem) {
       linksCount += component.parentSystem.links.filter(
-        (link) => link.subComponentBName === component.name,
+        link => link.subComponentBName === component.name,
       ).length;
     }
 
