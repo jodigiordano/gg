@@ -6,22 +6,30 @@ import {
   MIPMAP_MODES,
   SCALE_MODES,
   WRAP_MODES,
+  BaseTexture,
 } from "pixi.js";
 // @ts-ignore FIXME
 import { Viewport } from "pixi-viewport";
-import { getObjectsToRender } from "./simulation.js";
+import {
+  getFlowToRender,
+  getObjectsToRender,
+  getSystemBoundaries,
+} from "./simulation.js";
 import { BlockSize } from "./consts.js";
 
 // Setup PixiJS.
-settings.MIPMAP_TEXTURES = MIPMAP_MODES.ON;
+BaseTexture.defaultOptions.mipmap = MIPMAP_MODES.ON;
+BaseTexture.defaultOptions.scaleMode = SCALE_MODES.LINEAR;
+BaseTexture.defaultOptions.wrapMode = WRAP_MODES.REPEAT;
+
 settings.ROUND_PIXELS = true;
-settings.SCALE_MODE = SCALE_MODES.LINEAR;
-settings.WRAP_MODE = WRAP_MODES.REPEAT;
+
+const domContainer = document.getElementById("canvas") as HTMLDivElement;
 
 // Create PixiJS app.
 const app = new Application({
   background: "#1099bb",
-  resizeTo: window,
+  resizeTo: domContainer,
   autoDensity: true,
   resolution: window.devicePixelRatio,
   antialias: false,
@@ -31,8 +39,8 @@ const app = new Application({
 const viewport = new Viewport({
   screenWidth: window.innerWidth,
   screenHeight: window.innerHeight,
-  worldWidth: window.innerWidth,
-  worldHeight: window.innerHeight,
+  worldWidth: domContainer.clientWidth,
+  worldHeight: domContainer.clientHeight,
   events: app.renderer.events,
 });
 
@@ -73,6 +81,17 @@ for (const objectToRender of getObjectsToRender(app, {
   viewport.addChild(objectToRender);
 }
 
+for (const objectToRender of getFlowToRender(
+  app,
+  {
+    x: viewport.top,
+    y: viewport.left,
+  },
+  "f1",
+)) {
+  viewport.addChild(objectToRender);
+}
+
 // Redraw the grid when some event occurs.
 function redrawGrid(): void {
   grid.tilePosition.y = -viewport.top;
@@ -80,8 +99,8 @@ function redrawGrid(): void {
   grid.y = viewport.top;
   grid.x = viewport.left;
 
-  grid.width = window.innerWidth / viewport.scale.x;
-  grid.height = window.innerHeight / viewport.scale.y;
+  grid.width = domContainer.clientWidth / viewport.scale.x;
+  grid.height = domContainer.clientHeight / viewport.scale.y;
 }
 
 // Move the grid when the viewport is moved.
@@ -90,16 +109,48 @@ viewport.on("moved", redrawGrid);
 
 // TODO: debounce
 window.addEventListener("resize", () => {
-  app.renderer.resize(window.innerWidth, window.innerHeight);
+  app.renderer.resize(domContainer.clientWidth, domContainer.clientHeight);
 
-  viewport.resize(window.innerWidth, window.innerHeight);
+  viewport.resize(domContainer.clientWidth, domContainer.clientHeight);
 
   redrawGrid();
 });
 
+document
+  .getElementById("operation-recenter")
+  ?.addEventListener("click", function () {
+    const boundaries = getSystemBoundaries();
+    const width = boundaries.right - boundaries.left;
+    const height = boundaries.bottom - boundaries.top;
+
+    viewport.moveCenter(
+      boundaries.left + width / 2,
+      boundaries.top + height / 2,
+    );
+    viewport.fit(true, width, height);
+
+    redrawGrid();
+  });
+
+document
+  .getElementById("operation-zoom-in")
+  ?.addEventListener("click", function () {
+    viewport.zoomPercent(0.25, true);
+
+    redrawGrid();
+  });
+
+document
+  .getElementById("operation-zoom-out")
+  ?.addEventListener("click", function () {
+    viewport.zoomPercent(-0.25, true);
+
+    redrawGrid();
+  });
+
 // add PixiJS to the DOM.
 // @ts-ignore FIXME
-document.body.appendChild(app.view);
+document.getElementById("canvas")?.replaceChildren(app.view);
 
 // TODO: make sure the app consume the least amount of CPU / memory possible.
 // TODO: the ticker should be controlled manually so when nothing moves on the

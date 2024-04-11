@@ -1,31 +1,33 @@
 {
-  "name": "dataflows.io",
+  "name": "@dataflows/frontend",
   "version": "0.1.0",
   "description": "",
-  "main": "index.js",
   "type": "module",
   "license": "See LICENSE",
   "engines": {
     "node": ">= 21.6",
     "npm": ">= 10.2"
   },
+  "types": "./dist/index.d.ts",
+  "exports": "./dist/index.js",
+  "files": ["dist"],
   "scripts": {
+    "prepublishOnly": "npm run lint && npm run compile",
     "lint": "prettier . --write",
     "dev": "vite",
     "compile": "tsc && vite build",
     "preview": "vite preview"
-  },
-  "dependencies": {
-    "@dataflows/simulator": "file:../simulator",
-    "@dataflows/spec": "file:../spec",
-    "modern-normalize": "2.x",
-    "pixi-viewport": "5.0.1",
-    "pixi.js": "7.x"
   },
   "devDependencies": {
     "prettier": "3.x",
     "typescript": "5.x",
     "vite": "5.x",
     "vite-plugin-checker": "0.6.x"
+  },
+  "dependencies": {
+    "@dataflows/simulator": "0.x",
+    "@dataflows/spec": "0.x",
+    "pixi-viewport": "5.0.1",
+    "pixi.js": "7.x"
   }
 }

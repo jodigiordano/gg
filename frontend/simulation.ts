@@ -1,7 +1,10 @@
 import { Application, Sprite, Graphics } from "pixi.js";
 import { loadYaml, RuntimeLimits } from "@dataflows/spec";
-// @ts-ignore FIXME
-import { SystemSimulator, GridObjectType } from "@dataflows/simulator";
+import {
+  SystemSimulator,
+  FlowSimulator,
+  GridObjectType,
+} from "@dataflows/simulator";
 import { BlockSize } from "./consts.js";
 
 const yaml = `
@@ -52,13 +55,74 @@ links:
     componentAName: frontend
     componentBName: whatever
   - name: l3
-    componentAName: backend
-    componentBName: datadog
+    componentAName: datadog
+    componentBName: backend
     subComponentBName: server
+flows:
+  - name: f1
+    steps:
+      - operation: send
+        fromComponentName: frontend
+        toComponentName: backend
+        data: form data
+        keyframe: 0
+      - operation: send
+        fromComponentName: backend.server
+        toComponentName: datadog
+        data: log
+        keyframe: 1
+      - operation: send
+        fromComponentName: backend.server
+        toComponentName: backend.database
+        data: user
+        keyframe: 1
 `;
 
 const { system } = loadYaml(yaml);
 const simulator = new SystemSimulator(system);
+
+export function getSystemBoundaries(): {
+  left: number;
+  top: number;
+  right: number;
+  bottom: number;
+} {
+  let left = RuntimeLimits.MaxSystemWidth;
+  let right = 0;
+  let top = RuntimeLimits.MaxSystemHeight;
+  let bottom = 0;
+
+  for (let i = 0; i < RuntimeLimits.MaxSystemWidth; i++) {
+    for (let j = 0; j < RuntimeLimits.MaxSystemHeight; j++) {
+      if (simulator.layout[i]![j] === GridObjectType.Empty) {
+        continue;
+      }
+
+      if (i < left) {
+        left = i;
+      }
+
+      if (i > right) {
+        right = i;
+      }
+
+      if (j < top) {
+        top = j;
+      }
+
+      if (j > bottom) {
+        bottom = j;
+      }
+    }
+  }
+
+  return {
+    left: left * BlockSize,
+    right: right * BlockSize,
+    top: top * BlockSize,
+    bottom: bottom * BlockSize,
+  };
+}
 
 export function getObjectsToRender(
   app: Application,
@@ -119,6 +183,40 @@ export function getObjectsToRender(
       //   );
       // }
     }
+  }
+
+  return toDraw;
+}
+
+export function getFlowToRender(
+  app: Application,
+  center: { x: number; y: number },
+  flowName: string,
+): Sprite[] {
+  const toDraw: Sprite[] = [];
+
+  const flowSimulation = new FlowSimulator(
+    simulator,
+    system.flows.find(flow => flow.name === flowName),
+  );
+
+  const data = flowSimulation.tick({ keyframe: 0, keyframeProgress: 0.5 });
+
+  const dataGraphic = new Graphics()
+    .beginFill(0x00ff00)
+    .drawRect(0, 0, BlockSize, BlockSize)
+    .endFill();
+
+  const dataTexture = app.renderer.generateTexture(dataGraphic);
+
+  for (const d of data) {
+    const sprite = new Sprite(dataTexture);
+
+    sprite.x = center.x + d[0] * BlockSize;
+    sprite.y = center.y + d[1] * BlockSize;
+    console.log(d);
+
+    toDraw.push(sprite);
   }
 
   return toDraw;

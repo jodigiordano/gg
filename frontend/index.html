@@ -5,12 +5,44 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link
       rel="stylesheet"
-      href="node_modules/modern-normalize/modern-normalize.css"
+      type="text/css"
+      href="modern-normalize.css"
     />
     <title>dataflows.io</title>
+    <style>
+      body {
+        background: #dfdfdf;
+        overflow: hidden;
+      }
+
+      #header {
+        height: 3em;
+        padding: 1em;
+        background: #eeeeee;
+      }
+
+      #menu {
+        position: fixed;
+        top: 3em;
+        right: 0;
+        height: calc(100vh - 3em);
+        width: 12em;
+      }
+
+      #canvas {
+        height: calc(100vh - 3em);
+        width: calc(100% - 12em);
+      }
+    </style>
   </head>
   <body>
-    <div id="app"></div>
+    <div id="header">dataflows.io | File | Help | About</div>
+    <div id="canvas">Loading...</div>
+    <div id="menu">
+      <div id="operation-recenter">recenter</div>
+      <div id="operation-zoom-in">zoom in</div>
+      <div id="operation-zoom-out">zoom out</div>
+    </div>
     <script type="module" src="/index.ts"></script>
   </body>
 </html>
