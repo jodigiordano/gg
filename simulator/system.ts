@@ -107,6 +107,9 @@ export class SystemSimulator {
           this.routes[componentA.name] ??= {};
           this.routes[componentA.name]![componentB.name] = route;
 
+          this.routes[componentB.name] ??= {};
+          this.routes[componentB.name]![componentA.name] = route;
+
           for (const [x, y] of route) {
             this.grid[x!]![y!] = GridObjectType.Link;
             finderGrid.setWalkableAt(x!, y!, false);

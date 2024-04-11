@@ -6,10 +6,7 @@ import { GridObjectType, SystemSimulator } from "../index";
 export function loadExample(name: string) {
   return loadYaml(
     readFileSync(
-      [
-        import.meta.dirname,
-        `../node_modules/@dataflows/spec/examples/${name}.yml`,
-      ].join("/"),
+      [import.meta.dirname, `examples/${name}.yml`].join("/"),
       "utf8",
     ),
   );

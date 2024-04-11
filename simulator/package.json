@@ -9,22 +9,16 @@
     "npm": ">= 10.2"
   },
   "types": "./dist/index.d.ts",
-  "exports": {
-    "./package.json": "./package.json",
-    ".": {
-      "import": "./dist/index.js"
-    }
-  },
+  "exports": "./dist/index.js",
   "files": [
-    "dist/index.js",
-    "dist/index.d.ts"
+    "dist"
   ],
   "scripts": {
     "prepublishOnly": "npm run lint && npm run test && npm run compile",
     "lint": "prettier . --write",
     "dev": "npm run compile && tsc --watch --preserveWatchOutput",
     "test": "node --import tsx --test tests/**/*.test.ts",
-    "compile": "rm -rf dist && tsc"
+    "compile": "tsc"
   },
   "devDependencies": {
     "@tsconfig/strictest": "2.x",
@@ -36,7 +30,7 @@
     "typescript": "5.x"
   },
   "dependencies": {
-    "@dataflows/spec": "file:../spec",
+    "@dataflows/spec": "0.x",
     "pathfinding": "0.4.x"
   }
 }

@@ -6,6 +6,8 @@ export interface FlowSimulatorTickOptions {
   keyframeProgress: number;
 }
 
+// TODO: doesn't need to be an instanciable class.
+
 export class FlowSimulator {
   private systemSimulator: SystemSimulator;
   private flow: RuntimeFlow;
@@ -34,11 +36,11 @@ export class FlowSimulator {
         return route.at(-1) ?? [];
       }
 
-      const preciseRouteIndex = (route.length - 1) * options.keyframeProgress;
+      const routeIndex = (route.length - 1) * options.keyframeProgress;
 
       // TODO: support a "precise" option to obtain positions between 2 tiles.
 
-      return route[Math.floor(preciseRouteIndex)] ?? [];
+      return route[Math.floor(routeIndex)] ?? [];
     });
   }
 }

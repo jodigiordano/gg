@@ -1,2 +1,2 @@
-export * from "./system";
-export * from "./flow";
+export { SystemSimulator, GridObjectType } from "./system";
+export { FlowSimulator } from "./flow";
