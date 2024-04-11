@@ -1,6 +1,6 @@
 import assert from "node:assert";
 import { describe, it } from "node:test";
-import { Simulator } from "../index";
+import { SystemSimulator } from "../index";
 import { loadExample, render } from "./helpers";
 
 describe("examples", () => {
@@ -9,7 +9,7 @@ describe("examples", () => {
 
     assert.deepEqual(example.errors, []);
 
-    const simulator = new Simulator(example.system);
+    const simulator = new SystemSimulator(example.system);
 
     await render(simulator);
   });

@@ -1,7 +1,7 @@
 import { readFileSync, mkdirSync, createWriteStream } from "node:fs";
 import { loadYaml, RuntimeLimits } from "@dataflows/spec";
 import { createCanvas, Canvas } from "canvas";
-import { GridObjectType, Simulator } from "../index";
+import { GridObjectType, SystemSimulator } from "../index";
 
 export function loadExample(name: string) {
   return loadYaml(
@@ -17,7 +17,7 @@ export function loadExample(name: string) {
 
 const BlockSize = 8; // pixels.
 
-export async function render(simulator: Simulator) {
+export async function render(simulator: SystemSimulator) {
   const canvas = createCanvas(
     RuntimeLimits.MaxSystemWidth * BlockSize,
     RuntimeLimits.MaxSystemHeight * BlockSize,
@@ -78,7 +78,7 @@ export async function render(simulator: Simulator) {
 }
 
 async function saveRender(canvas: Canvas): Promise<void> {
-  return new Promise((resolve) => {
+  return new Promise(resolve => {
     const folder = [import.meta.dirname, "tmp"].join("/");
     mkdirSync(folder, { recursive: true });
 
