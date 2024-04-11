@@ -10,6 +10,7 @@
     "npm": ">= 10.2"
   },
   "scripts": {
+    "lint": "prettier . --write",
     "dev": "vite",
     "compile": "tsc && vite build",
     "preview": "vite preview"
@@ -18,11 +19,13 @@
     "@dataflows/simulator": "file:../simulator",
     "@dataflows/spec": "file:../spec",
     "modern-normalize": "2.x",
-    "pixi-viewport": "5.x",
+    "pixi-viewport": "5.0.1",
     "pixi.js": "7.x"
   },
   "devDependencies": {
+    "prettier": "3.x",
     "typescript": "5.x",
-    "vite": "5.x"
+    "vite": "5.x",
+    "vite-plugin-checker": "0.6.x"
   }
 }

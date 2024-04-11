@@ -1,7 +1,8 @@
-import * as PIXI from 'pixi.js';
+import { Application, Sprite, Graphics } from "pixi.js";
 import { loadYaml, RuntimeLimits } from "@dataflows/spec";
-import { Simulator, GridObjectType } from '@dataflows/simulator';
-import { BlockSize } from './consts.js';
+// @ts-ignore FIXME
+import { SystemSimulator, GridObjectType } from "@dataflows/simulator";
+import { BlockSize } from "./consts.js";
 
 const yaml = `
 specificationVersion: 1.0.0
@@ -57,38 +58,41 @@ links:
 `;
 
 const { system } = loadYaml(yaml);
-const simulator = new Simulator(system);
+const simulator = new SystemSimulator(system);
 
-export function getObjectsToRender(app: PIXI.Application<HTMLCanvasElement>, center: { x: number, y: number }): PIXI.Sprite[] {
-  const componentGraphic = new PIXI.Graphics()
+export function getObjectsToRender(
+  app: Application,
+  center: { x: number; y: number },
+): Sprite[] {
+  const componentGraphic = new Graphics()
     .beginFill(0x000000)
     .drawRect(0, 0, BlockSize, BlockSize)
     .endFill();
 
   const componentTexture = app.renderer.generateTexture(componentGraphic);
 
-  const linkGraphic = new PIXI.Graphics()
-    .beginFill(0xFF0000)
+  const linkGraphic = new Graphics()
+    .beginFill(0xff0000)
     .drawRect(0, 0, BlockSize, BlockSize)
     .endFill();
 
   const linkTexture = app.renderer.generateTexture(linkGraphic);
 
-  const toDraw: PIXI.Sprite[] = [];
+  const toDraw: Sprite[] = [];
 
   for (let i = 0; i < RuntimeLimits.MaxSystemWidth; i++) {
     for (let j = 0; j < RuntimeLimits.MaxSystemHeight; j++) {
       const obj = simulator.layout[i]![j];
 
       if (obj === GridObjectType.Component) {
-        const componentSprite = new PIXI.Sprite(componentTexture);
+        const componentSprite = new Sprite(componentTexture);
 
         componentSprite.x = center.x + i * BlockSize;
         componentSprite.y = center.y + j * BlockSize;
 
         toDraw.push(componentSprite);
       } else if (obj === GridObjectType.Link) {
-        const linkSprite = new PIXI.Sprite(linkTexture);
+        const linkSprite = new Sprite(linkTexture);
 
         linkSprite.x = center.x + i * BlockSize;
         linkSprite.y = center.y + j * BlockSize;
