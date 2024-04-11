@@ -45,7 +45,9 @@ export interface RuntimeSystem extends System {
   flows: RuntimeFlow[];
 }
 
-export interface RuntimeFlow extends Flow {}
+export interface RuntimeFlow extends Flow {
+  name: string; // FIXME: why?
+}
 
 export function loadYaml(yaml: string): {
   system: RuntimeSystem;

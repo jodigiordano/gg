@@ -45,8 +45,8 @@ links:
     componentAName: frontend
     componentBName: whatever
   - name: l3
-    componentAName: backend
-    componentBName: datadog
+    componentAName: datadog
+    componentBName: backend
     subComponentBName: server
 flows:
   - name: f1

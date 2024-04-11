@@ -9,25 +9,17 @@
     "npm": ">= 10.2"
   },
   "types": "./dist/index.d.ts",
-  "exports": {
-    "./package.json": "./package.json",
-    ".": {
-      "import": "./dist/index.js"
-    }
-  },
+  "exports": "./dist/index.js",
   "files": [
-    "dist/index.js",
-    "dist/index.d.ts",
-    "dist/types.d.ts",
-    "dist/schemas"
+    "dist"
   ],
   "scripts": {
     "prepublishOnly": "npm run lint && npm run test && npm run compile",
     "lint": "prettier . --write",
     "test": "node --import tsx --test tests/**/*.test.ts",
     "dev": "npm run compile && tsc --watch --preserveWatchOutput",
-    "compile:types": "tsx generate.ts > specification.ts",
-    "compile": "rm -rf dist && npm run compile:types && tsc && cp -r schemas dist/schemas"
+    "compile:types": "tsx generate.ts > specification.ts && npx prettier specification.ts --write",
+    "compile": "npm run compile:types && tsc && cp -r schemas dist/schemas"
   },
   "devDependencies": {
     "@tsconfig/strictest": "2.x",
