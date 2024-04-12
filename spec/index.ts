@@ -45,9 +45,7 @@ export interface RuntimeSystem extends System {
   flows: RuntimeFlow[];
 }
 
-export interface RuntimeFlow extends Flow {
-  name: string; // FIXME: why?
-}
+export interface RuntimeFlow extends Flow {}
 
 export function loadYaml(yaml: string): {
   system: RuntimeSystem;
@@ -56,12 +54,31 @@ export function loadYaml(yaml: string): {
   const system = parseYaml(yaml) as System;
   const runtime = structuredClone(system) as RuntimeSystem;
 
+  setDefaultValues(runtime, null);
   enhanceComponents(runtime, null);
   computeSizes(runtime);
 
   const errors = validate(system, runtime);
 
   return { system: runtime, errors };
+}
+
+function setDefaultValues(
+  system: RuntimeSystem | RuntimeSubsystem,
+  parentComponent: RuntimeComponent | null,
+): void {
+  system.components ??= [];
+  system.links ??= [];
+
+  if (!parentComponent) {
+    (system as RuntimeSystem).flows ??= [];
+  }
+
+  system.components.forEach(component => {
+    if (component.system) {
+      setDefaultValues(component.system as RuntimeSubsystem, component);
+    }
+  });
 }
 
 function enhanceComponents(

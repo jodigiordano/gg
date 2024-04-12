@@ -17,15 +17,15 @@ export interface System {
   /**
    * The components of the system.
    */
-  components: Component[];
+  components?: Component[];
   /**
    * The links of the system.
    */
-  links: Link[];
+  links?: Link[];
   /**
    * The flows of the system.
    */
-  flows: Flow[];
+  flows?: Flow[];
 }
 /**
  * A component
@@ -69,11 +69,11 @@ export interface Subsystem {
   /**
    * The components of the system.
    */
-  components: Component[];
+  components?: Component[];
   /**
    * The links of the system.
    */
-  links: Link[];
+  links?: Link[];
 }
 /**
  * A link
@@ -121,10 +121,6 @@ export interface Flow {
    */
   steps: {
     /**
-     * The operation of the step.
-     */
-    operation: "send";
-    /**
      * The description of the step, in markdown format.
      */
     description?: string;
@@ -143,7 +139,7 @@ export interface Flow {
     /**
      * The data of the step.
      */
-    data: string;
+    data?: string;
   }[];
 }
 
@@ -217,48 +213,33 @@ const schemas = [
         type: "array",
         description: "The steps of the flow.",
         items: {
-          oneOf: [
-            {
-              type: "object",
-              required: [
-                "operation",
-                "fromComponentName",
-                "toComponentName",
-                "data",
-                "keyframe",
-              ],
-              additionalProperties: false,
-              properties: {
-                operation: {
-                  const: "send",
-                  description: "The operation of the step.",
-                },
-                description: {
-                  type: "string",
-                  description:
-                    "The description of the step, in markdown format.",
-                },
-                keyframe: {
-                  type: "integer",
-                  description: "The keyframe of the step.",
-                },
-                fromComponentName: {
-                  type: "string",
-                  description:
-                    "The name of the component where the data originates from",
-                },
-                toComponentName: {
-                  type: "string",
-                  description:
-                    "The name of the component where the data goes to",
-                },
-                data: {
-                  type: "string",
-                  description: "The data of the step.",
-                },
-              },
+          type: "object",
+          required: ["fromComponentName", "toComponentName", "keyframe"],
+          additionalProperties: false,
+          properties: {
+            description: {
+              type: "string",
+              description: "The description of the step, in markdown format.",
             },
-          ],
+            keyframe: {
+              type: "integer",
+              description: "The keyframe of the step.",
+            },
+            fromComponentName: {
+              type: "string",
+              description:
+                "The name of the component where the data originates from",
+            },
+            toComponentName: {
+              type: "string",
+              description: "The name of the component where the data goes to",
+            },
+            data: {
+              type: "string",
+              description: "The data of the step.",
+              default: "",
+            },
+          },
         },
       },
     },
@@ -307,7 +288,7 @@ const schemas = [
     title: "Subsystem",
     description: "A sub-system",
     type: "object",
-    required: ["components", "links"],
+    required: [],
     additionalProperties: false,
     properties: {
       description: {
@@ -335,7 +316,7 @@ const schemas = [
     title: "System",
     description: "A system",
     type: "object",
-    required: ["specificationVersion", "name", "components", "links", "flows"],
+    required: ["specificationVersion", "name"],
     additionalProperties: false,
     properties: {
       specificationVersion: {

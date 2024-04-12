@@ -3,7 +3,7 @@
   "title": "System",
   "description": "A system",
   "type": "object",
-  "required": ["specificationVersion", "name", "components", "links", "flows"],
+  "required": ["specificationVersion", "name"],
   "additionalProperties": false,
   "properties": {
     "specificationVersion": {
