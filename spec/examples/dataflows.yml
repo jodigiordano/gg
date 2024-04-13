@@ -43,8 +43,7 @@ links:
   - componentAName: datadog
     componentBName: backend.server
 flows:
-  - name: f1
-    steps:
+  - steps:
       - fromComponentName: frontend
         toComponentName: backend.server
         data: form data

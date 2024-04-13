@@ -93,10 +93,6 @@ export interface Link {
  */
 export interface Flow {
   /**
-   * The name of the flow. Must be unique across the system.
-   */
-  name: string;
-  /**
    * The description of the flow, in markdown format.
    */
   description?: string;
@@ -176,14 +172,9 @@ const schemas = [
     title: "Flow",
     description: "A flow",
     type: "object",
-    required: ["name", "steps"],
+    required: ["steps"],
     additionalProperties: false,
     properties: {
-      name: {
-        type: "string",
-        pattern: "^[a-z0-9_-]+$",
-        description: "The name of the flow. Must be unique across the system.",
-      },
       description: {
         type: "string",
         description: "The description of the flow, in markdown format.",
