@@ -80,14 +80,6 @@ export interface Subsystem {
  */
 export interface Link {
   /**
-   * The name of the link. Must be unique across the system.
-   */
-  name: string;
-  /**
-   * The display name of the link. Has precedence over the name of the link.
-   */
-  displayName?: string;
-  /**
    * The description of the link, in markdown format.
    */
   description?: string;
@@ -99,10 +91,6 @@ export interface Link {
    * Side B of the link.
    */
   componentBName: string;
-  /**
-   * Sub-component in side B of the link.
-   */
-  subComponentBName?: string;
 }
 /**
  * A flow
@@ -177,13 +165,13 @@ const schemas = [
             type: "integer",
             description: "The X position of the component.",
             minimum: 0,
-            maximum: 128,
+            maximum: 64,
           },
           y: {
             type: "integer",
             description: "The Y position of the component.",
             minimum: 0,
-            maximum: 128,
+            maximum: 64,
           },
         },
       },
@@ -227,11 +215,13 @@ const schemas = [
             },
             fromComponentName: {
               type: "string",
+              pattern: "^[a-z0-9_-]+(\\.[a-z0-9_-]+)*$",
               description:
                 "The name of the component where the data originates from",
             },
             toComponentName: {
               type: "string",
+              pattern: "^[a-z0-9_-]+(\\.[a-z0-9_-]+)*$",
               description: "The name of the component where the data goes to",
             },
             data: {
@@ -248,37 +238,22 @@ const schemas = [
     title: "Link",
     description: "A link",
     type: "object",
-    required: ["name", "componentAName", "componentBName"],
+    required: ["componentAName", "componentBName"],
     additionalProperties: false,
     properties: {
-      name: {
-        type: "string",
-        pattern: "^[a-z0-9_-]+$",
-        description: "The name of the link. Must be unique across the system.",
-      },
-      displayName: {
-        type: "string",
-        description:
-          "The display name of the link. Has precedence over the name of the link.",
-      },
       description: {
         type: "string",
         description: "The description of the link, in markdown format.",
       },
       componentAName: {
         type: "string",
-        pattern: "^[a-z0-9_-]+$",
+        pattern: "^[a-z0-9_-]+(\\.[a-z0-9_-]+)*$",
         description: "Side A of the link.",
       },
       componentBName: {
         type: "string",
-        pattern: "^[a-z0-9_-]+$",
+        pattern: "^[a-z0-9_-]+(\\.[a-z0-9_-]+)*$",
         description: "Side B of the link.",
-      },
-      subComponentBName: {
-        type: "string",
-        pattern: "^[a-z0-9_-]+$",
-        description: "Sub-component in side B of the link.",
       },
     },
   },

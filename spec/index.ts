@@ -2,6 +2,7 @@ import { load as parseYaml } from "js-yaml";
 import { Component, Link, System, Subsystem, Flow } from "./specification";
 import { validate, ValidationError } from "./validations";
 
+// Must reflect https://dataflows.io/system.json
 export const RuntimeLimits = {
   MaxSystemWidth: 64,
   MaxSystemHeight: 64,
@@ -28,9 +29,10 @@ export interface RuntimeComponent extends Component {
 }
 
 export interface RuntimeLink extends Link {
-  index: number;
-  parentLink?: RuntimeLink;
-  parentSystem?: RuntimeSubsystem;
+  componentAName: string;
+  subComponentAName: string | undefined;
+  componentBName: string;
+  subComponentBName: string | undefined;
 }
 
 export interface RuntimeSubsystem extends Subsystem {
@@ -55,6 +57,7 @@ export function loadYaml(yaml: string): {
 
   setDefaultValues(runtime, null);
   enhanceComponents(runtime, null);
+  enhanceLinks(runtime);
   computePositions(runtime);
   computeSizes(runtime);
 
@@ -100,6 +103,27 @@ function enhanceComponents(
     // Enhance recursively.
     if (component.system) {
       enhanceComponents(component.system, component);
+    }
+  });
+}
+
+function enhanceLinks(system: RuntimeSystem | RuntimeSubsystem): void {
+  system.links.forEach((link) => {
+    const [componentAName, subComponentAName, ..._restA] = link.componentAName.split('.');
+
+    link.componentAName = componentAName!;
+    link.subComponentAName = subComponentAName;
+
+    const [componentBName, subComponentBName, ..._restB] = link.componentBName.split('.');
+
+    link.componentBName = componentBName!;
+    link.subComponentBName = subComponentBName;
+  });
+
+  system.components.forEach((component) => {
+    // Enhance recursively.
+    if (component.system) {
+      enhanceLinks(component.system);
     }
   });
 }
@@ -162,8 +186,9 @@ function computeSizes(system: RuntimeSystem | RuntimeSubsystem): void {
     ).length;
 
     if (component.parentSystem) {
-      linksCount += component.parentSystem.links.filter(
-        link => link.subComponentBName === component.name,
+      linksCount += component.parentSystem.links.filter(link =>
+        link.subComponentAName === component.name ||
+        link.subComponentBName === component.name,
       ).length;
     }
 

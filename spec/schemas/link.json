@@ -12,18 +12,13 @@
     },
     "componentAName": {
       "type": "string",
-      "pattern": "^[a-z0-9_-]+$",
+      "pattern": "^[a-z0-9_-]+(\\.[a-z0-9_-]+)*$",
       "description": "Side A of the link."
     },
     "componentBName": {
       "type": "string",
-      "pattern": "^[a-z0-9_-]+$",
+      "pattern": "^[a-z0-9_-]+(\\.[a-z0-9_-]+)*$",
       "description": "Side B of the link."
-    },
-    "subComponentBName": {
-      "type": "string",
-      "pattern": "^[a-z0-9_-]+$",
-      "description": "Sub-component in side B of the link."
     }
   }
 }

@@ -37,13 +37,11 @@ components:
       y: 10
 links:
   - componentAName: frontend
-    componentBName: backend
-    subComponentBName: server
+    componentBName: backend.server
   - componentAName: frontend
     componentBName: whatever
   - componentAName: datadog
-    componentBName: backend
-    subComponentBName: server
+    componentBName: backend.server
 flows:
   - name: f1
     steps:
