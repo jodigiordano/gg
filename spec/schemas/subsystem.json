@@ -3,7 +3,7 @@
   "title": "Subsystem",
   "description": "A sub-system",
   "type": "object",
-  "required": [],
+  "required": ["id"],
   "additionalProperties": false,
   "properties": {
     "id": {

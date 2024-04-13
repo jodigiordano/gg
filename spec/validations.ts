@@ -117,18 +117,79 @@ function validateLinks(
   const errors: ValidationError[] = [];
 
   system.links.forEach(link => {
-    // Forbidden A.Y <> A.Y
+    // A.Y <> A.Y
     // Done separately from A <> A validation to have a more specific error.
     if (link.a === link.b && (link.subA || link.subB)) {
       errors.push({
         path: getLinkPath(link),
         message: "self-reference sub-systems",
       });
-      // Forbidden A <> A
+      // A <> A
     } else if (link.a === link.b) {
       errors.push({
         path: getLinkPath(link),
         message: "self-reference",
+      });
+    }
+
+    // A <> B && B <> A
+    // A.Y <> B.Y && B.Y <> A.Y
+    if (
+      system.links.some(
+        other =>
+          other.index !== link.index &&
+          [other.a, other.subA, other.b, other.subB]
+            .filter(x => x)
+            .sort()
+            .join("") ===
+            [link.a, link.subA, link.b, link.subB]
+              .filter(x => x)
+              .sort()
+              .join(""),
+      )
+    ) {
+      errors.push({
+        path: getLinkPath(link),
+        message: "duplicate",
+      });
+    }
+
+    const systemA = system.systems.find(subsystem => subsystem.id === link.a);
+    const systemB = system.systems.find(subsystem => subsystem.id === link.b);
+
+    if (!systemA) {
+      errors.push({
+        path: [getLinkPath(link), "a"].join("/"),
+        message: "missing",
+      });
+    }
+
+    if (!systemB) {
+      errors.push({
+        path: [getLinkPath(link), "b"].join("/"),
+        message: "missing",
+      });
+    }
+
+    if (
+      systemA &&
+      link.subA &&
+      !systemA.systems.some(subsystem => subsystem.id === link.subA)
+    ) {
+      errors.push({
+        path: [getLinkPath(link), "a"].join("/"),
+        message: "missing",
+      });
+    }
+
+    if (
+      systemB &&
+      link.subB &&
+      !systemB.systems.some(subsystem => subsystem.id === link.subB)
+    ) {
+      errors.push({
+        path: [getLinkPath(link), "b"].join("/"),
+        message: "missing",
       });
     }
   });

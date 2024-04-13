@@ -34,7 +34,7 @@ export interface Subsystem {
   /**
    * The id of the sub-system. Must be unique across the parent system.
    */
-  id?: string;
+  id: string;
   /**
    * The title of the sub-system.
    */
@@ -213,7 +213,7 @@ const schemas = [
     title: "Subsystem",
     description: "A sub-system",
     type: "object",
-    required: [],
+    required: ["id"],
     additionalProperties: false,
     properties: {
       id: {
