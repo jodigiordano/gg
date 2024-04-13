@@ -108,19 +108,21 @@ function enhanceComponents(
 }
 
 function enhanceLinks(system: RuntimeSystem | RuntimeSubsystem): void {
-  system.links.forEach((link) => {
-    const [componentAName, subComponentAName, ..._restA] = link.componentAName.split('.');
+  system.links.forEach(link => {
+    const [componentAName, subComponentAName, ..._restA] =
+      link.componentAName.split(".");
 
     link.componentAName = componentAName!;
     link.subComponentAName = subComponentAName;
 
-    const [componentBName, subComponentBName, ..._restB] = link.componentBName.split('.');
+    const [componentBName, subComponentBName, ..._restB] =
+      link.componentBName.split(".");
 
     link.componentBName = componentBName!;
     link.subComponentBName = subComponentBName;
   });
 
-  system.components.forEach((component) => {
+  system.components.forEach(component => {
     // Enhance recursively.
     if (component.system) {
       enhanceLinks(component.system);
@@ -147,7 +149,7 @@ function computePositions(system: RuntimeSystem | RuntimeSubsystem): void {
       computePositions(component.system);
     }
   }
-};
+}
 
 //  0 - 4 links
 // +--+--+--+
@@ -186,9 +188,10 @@ function computeSizes(system: RuntimeSystem | RuntimeSubsystem): void {
     ).length;
 
     if (component.parentSystem) {
-      linksCount += component.parentSystem.links.filter(link =>
-        link.subComponentAName === component.name ||
-        link.subComponentBName === component.name,
+      linksCount += component.parentSystem.links.filter(
+        link =>
+          link.subComponentAName === component.name ||
+          link.subComponentBName === component.name,
       ).length;
     }
 

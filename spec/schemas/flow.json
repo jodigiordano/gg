@@ -20,11 +20,7 @@
       "description": "The steps of the flow.",
       "items": {
         "type": "object",
-        "required": [
-          "fromComponentName",
-          "toComponentName",
-          "keyframe"
-        ],
+        "required": ["fromComponentName", "toComponentName", "keyframe"],
         "additionalProperties": false,
         "properties": {
           "description": {
