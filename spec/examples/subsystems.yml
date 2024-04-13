@@ -1,33 +1,31 @@
 specificationVersion: 1.0.0
-name: sub-systems
+title: sub-systems
 description: Example demonstrating sub-systems
-components:
-  - name: frontend
+systems:
+  - id: frontend
     description: Web-based client
-    system:
-      components:
-        - name: react-app
-          description: The React application
-        - name: redux-store
-          description: The Redux store
-        - name: api-service
-          description: Service to speak to the backend API
-      links:
-        - componentAName: react-app
-          componentBName: redux-store
-        - componentAName: react-app
-          componentBName: api-service
-  - name: backend
+    systems:
+      - id: react-app
+        description: The React application
+      - id: redux-store
+        description: The Redux store
+      - id: api-service
+        description: Service to speak to the backend API
+    links:
+      - a: react-app
+        b: redux-store
+      - a: react-app
+        b: api-service
+  - id: backend
     description: Backend of the frontend
-    system:
-      components:
-        - name: server
-          description: RESTful HTTP API of the backend
-        - name: database
-          description: Database of the backend
-      links:
-        - componentAName: server
-          componentBName: database
+    systems:
+      - id: server
+        description: RESTful HTTP API of the backend
+      - id: database
+        description: Database of the backend
+    links:
+      - a: server
+        b: database
 links:
-  - componentAName: frontend.api-service
-    componentBName: backend.server
+  - a: frontend.api-service
+    b: backend.server

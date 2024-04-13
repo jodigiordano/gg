@@ -1,6 +1,6 @@
 import {
-  RuntimeComponent,
   RuntimeLimits,
+  RuntimeLink,
   RuntimeSubsystem,
   RuntimeSystem,
 } from "./index";
@@ -37,131 +37,158 @@ export function validate(
     }));
   }
 
-  const componentOverlapErrors = validateComponentOverlaps(runtime);
-  const componentErrors = validateComponents(runtime);
+  const systemOverlapErrors = validateSystemOverlaps(runtime);
+  const systemErrors = validateSystems(runtime);
   const linkErrors = validateLinks(runtime);
-  const componentBoundaryErrors = validateComponentBoundaries(runtime);
+  const systemBoundaryErrors = validateSystemBoundaries(runtime);
 
-  return componentOverlapErrors
-    .concat(componentErrors)
+  return systemOverlapErrors
+    .concat(systemErrors)
     .concat(linkErrors)
-    .concat(componentBoundaryErrors);
+    .concat(systemBoundaryErrors);
 }
 
-function validateComponentOverlaps(
-  system: RuntimeSubsystem,
+function validateSystemOverlaps(
+  system: RuntimeSystem | RuntimeSubsystem,
 ): ValidationError[] {
   const errors: ValidationError[] = [];
 
-  for (const componentA of system.components) {
-    for (const componentB of system.components) {
-      if (componentA.name === componentB.name) {
+  for (const subsystemA of system.systems) {
+    for (const subsystemB of system.systems) {
+      if (subsystemA.id === subsystemB.id) {
         continue;
       }
 
-      const componentATopRight = componentA.position.x + componentA.size.width;
-
-      const componentABottomLeft =
-        componentA.position.y + componentA.size.height;
-
-      const componentBTopRight = componentB.position.x + componentB.size.width;
-
-      const componentBBottomLeft =
-        componentB.position.y + componentB.size.height;
+      const aTopRight = subsystemA.position.x + subsystemA.size.width;
+      const aBottomLeft = subsystemA.position.y + subsystemA.size.height;
+      const bTopRight = subsystemB.position.x + subsystemB.size.width;
+      const bBottomLeft = subsystemB.position.y + subsystemB.size.height;
 
       if (
-        componentA.position.x <= componentBTopRight &&
-        componentATopRight >= componentB.position.x &&
-        componentA.position.y <= componentBBottomLeft &&
-        componentABottomLeft >= componentB.position.y
+        subsystemA.position.x <= bTopRight &&
+        aTopRight >= subsystemB.position.x &&
+        subsystemA.position.y <= bBottomLeft &&
+        aBottomLeft >= subsystemB.position.y
       ) {
         errors.push({
-          path: getComponentPath(componentA),
-          message: `overlaps with component ${getComponentPath(componentB)}`,
+          path: getSubsystemPath(subsystemA),
+          message: `overlaps with ${getSubsystemPath(subsystemB)}`,
         });
       }
     }
+  }
 
-    if (componentA.system) {
-      errors.push(
-        ...validateComponentOverlaps(componentA.system as RuntimeSubsystem),
-      );
-    }
+  // Validate recursively.
+  for (const subsystem of system.systems) {
+    errors.push(...validateSystemOverlaps(subsystem));
   }
 
   return errors;
 }
 
-function validateComponents(system: RuntimeSubsystem): ValidationError[] {
+function validateSystems(
+  system: RuntimeSystem | RuntimeSubsystem,
+): ValidationError[] {
   const errors: ValidationError[] = [];
-  system.components.forEach(component => {
-    // Duplicate name.
+
+  system.systems.forEach(subsystem => {
+    // Duplicate id.
     if (
-      system.components.some(
-        other =>
-          other.name === component.name && other.index !== component.index,
+      system.systems.some(
+        other => other.id === subsystem.id && other.index !== subsystem.index,
       )
     ) {
       errors.push({
-        path: getComponentPath(component),
-        message: "duplicate name",
+        path: getSubsystemPath(subsystem),
+        message: "duplicate id",
       });
     }
 
     // Validate recursively.
-    if (component.system) {
-      errors.push(...validateComponents(component.system));
-    }
+    errors.push(...validateSystems(subsystem));
   });
 
   return errors;
 }
 
-function validateLinks(_system: RuntimeSubsystem): ValidationError[] {
-  // TODO
-  return [];
-}
-
-function validateComponentBoundaries(
-  system: RuntimeSubsystem,
+function validateLinks(
+  system: RuntimeSystem | RuntimeSubsystem,
 ): ValidationError[] {
   const errors: ValidationError[] = [];
 
-  for (const component of system.components) {
+  system.links.forEach(link => {
+    // Forbidden A(.Y) <> A(.Y)
+    if (link.a === link.b) {
+      errors.push({
+        path: getLinkPath(link),
+        message: "self-reference",
+      });
+    }
+  });
+
+  // Validate recursively.
+  system.systems.forEach(subsystem => {
+    errors.push(...validateLinks(subsystem));
+  });
+
+  return errors;
+}
+
+function validateSystemBoundaries(
+  system: RuntimeSystem | RuntimeSubsystem,
+): ValidationError[] {
+  const errors: ValidationError[] = [];
+
+  for (const subsystem of system.systems) {
     if (
-      component.position.x + component.size.width >
+      subsystem.position.x + subsystem.size.width >
         RuntimeLimits.MaxSystemWidth ||
-      component.position.y + component.size.height >
+      subsystem.position.y + subsystem.size.height >
         RuntimeLimits.MaxSystemHeight
     ) {
       errors.push({
-        path: getComponentPath(component),
+        path: getSubsystemPath(subsystem),
         message: "out of bounds",
       });
     }
 
-    if (component.system) {
-      errors.push(
-        ...validateComponentBoundaries(component.system as RuntimeSubsystem),
-      );
-    }
+    // Validate recursively.
+    errors.push(...validateSystemBoundaries(subsystem));
   }
 
   return errors;
 }
 
-function getComponentPath(component: RuntimeComponent) {
-  const breadcrumbs: RuntimeComponent[] = [];
+function getSubsystemPath(subsystem: RuntimeSubsystem) {
+  const breadcrumbs: (RuntimeSystem | RuntimeSubsystem)[] = [];
 
-  let current: RuntimeComponent | undefined = component;
+  let current: RuntimeSystem | RuntimeSubsystem | undefined = subsystem;
 
   while (current) {
     breadcrumbs.push(current);
-    current = current.parentComponent;
+    current = current.parent;
   }
 
   return breadcrumbs
     .reverse()
-    .map(c => `/system/components/${c.index}`)
+    .map(system => ("index" in system ? `/systems/${system.index}` : ""))
+    .join("");
+}
+
+function getLinkPath(link: RuntimeLink) {
+  const breadcrumbs: (RuntimeSystem | RuntimeSubsystem)[] = [];
+
+  let current: RuntimeSystem | RuntimeSubsystem | undefined = link.system;
+
+  while (current) {
+    breadcrumbs.push(current);
+    current = current.parent;
+  }
+
+  return breadcrumbs
+    .reverse()
+    .map(system =>
+      "index" in system ? `/systems/${system.index}` : `/links/${link.index}`,
+    )
     .join("");
 }

@@ -6,15 +6,45 @@
   "required": [],
   "additionalProperties": false,
   "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9_-]+$",
+      "maxLength": 32,
+      "description": "The id of the sub-system. Must be unique across the parent system."
+    },
+    "title": {
+      "type": "string",
+      "description": "The title of the sub-system."
+    },
     "description": {
       "type": "string",
-      "description": "The description of the system, in markdown format."
+      "description": "The description of the sub-system, in markdown format."
     },
-    "components": {
+    "position": {
+      "type": "object",
+      "description": "The position of the sub-system in the parent system.",
+      "required": ["x", "y"],
+      "additionalProperties": false,
+      "properties": {
+        "x": {
+          "type": "integer",
+          "description": "The X position of the sub-system in the parent system.",
+          "minimum": 0,
+          "maximum": 64
+        },
+        "y": {
+          "type": "integer",
+          "description": "The Y position of the sub-system in the parent system.",
+          "minimum": 0,
+          "maximum": 64
+        }
+      }
+    },
+    "systems": {
       "type": "array",
-      "description": "The components of the system.",
+      "description": "The sub-systems of the system.",
       "items": {
-        "$ref": "https://dataflows.io/component.json"
+        "$ref": "https://dataflows.io/subsystem.json"
       }
     },
     "links": {

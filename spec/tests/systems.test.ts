@@ -3,35 +3,35 @@ import { describe, it } from "node:test";
 import { System } from "../specification";
 import { load } from "../index";
 
-describe("components", () => {
-  describe("name", () => {
-    it("invalid", () => {
+describe("systems", () => {
+  describe("id", () => {
+    it("forbidden characters", () => {
       const system: System = {
         specificationVersion: "1.0.0",
-        name: "test",
-        components: [
+        title: "test",
+        systems: [
           {
-            name: "!",
+            id: "!",
           },
         ],
       };
 
       const { errors } = load(system);
 
-      assert.equal(errors.at(0)?.path, "/components/0/name");
+      assert.equal(errors.at(0)?.path, "/systems/0/id");
       assert(errors.at(0)?.message.startsWith("must match pattern"));
     });
 
     it("duplicate", () => {
       const system: System = {
         specificationVersion: "1.0.0",
-        name: "test",
-        components: [
+        title: "test",
+        systems: [
           {
-            name: "foo",
+            id: "foo",
           },
           {
-            name: "foo",
+            id: "foo",
           },
         ],
       };
@@ -40,12 +40,12 @@ describe("components", () => {
 
       assert.deepEqual(errors, [
         {
-          message: "duplicate name",
-          path: "/system/components/0",
+          message: "duplicate id",
+          path: "/systems/0",
         },
         {
-          message: "duplicate name",
-          path: "/system/components/1",
+          message: "duplicate id",
+          path: "/systems/1",
         },
       ]);
     });
@@ -53,20 +53,18 @@ describe("components", () => {
     it("duplicate - subsystem", () => {
       const system: System = {
         specificationVersion: "1.0.0",
-        name: "test",
-        components: [
+        title: "test",
+        systems: [
           {
-            name: "foo",
-            system: {
-              components: [
-                {
-                  name: "bar",
-                },
-                {
-                  name: "bar",
-                },
-              ],
-            },
+            id: "foo",
+            systems: [
+              {
+                id: "bar",
+              },
+              {
+                id: "bar",
+              },
+            ],
           },
         ],
       };
@@ -75,12 +73,12 @@ describe("components", () => {
 
       assert.deepEqual(errors, [
         {
-          message: "duplicate name",
-          path: "/system/components/0/system/components/0",
+          message: "duplicate id",
+          path: "/systems/0/systems/0",
         },
         {
-          message: "duplicate name",
-          path: "/system/components/0/system/components/1",
+          message: "duplicate id",
+          path: "/systems/0/systems/1",
         },
       ]);
     });
@@ -90,10 +88,10 @@ describe("components", () => {
     it("out of bounds", () => {
       const system: System = {
         specificationVersion: "1.0.0",
-        name: "test",
-        components: [
+        title: "test",
+        systems: [
           {
-            name: "foo",
+            id: "foo",
             position: {
               x: 64,
               y: 0,
@@ -107,7 +105,7 @@ describe("components", () => {
       assert.deepEqual(errors, [
         {
           message: "out of bounds",
-          path: "/system/components/0",
+          path: "/systems/0",
         },
       ]);
     });
@@ -115,21 +113,19 @@ describe("components", () => {
     it("out of bounds - subsystem", () => {
       const system: System = {
         specificationVersion: "1.0.0",
-        name: "test",
-        components: [
+        title: "test",
+        systems: [
           {
-            name: "foo",
-            system: {
-              components: [
-                {
-                  name: "bar",
-                  position: {
-                    x: 64,
-                    y: 0,
-                  },
+            id: "foo",
+            systems: [
+              {
+                id: "bar",
+                position: {
+                  x: 64,
+                  y: 0,
                 },
-              ],
-            },
+              },
+            ],
           },
         ],
       };
@@ -139,7 +135,7 @@ describe("components", () => {
       assert.deepEqual(errors, [
         {
           message: "out of bounds",
-          path: "/system/components/0/system/components/0",
+          path: "/systems/0/systems/0",
         },
       ]);
     });
@@ -147,17 +143,17 @@ describe("components", () => {
     it("overlaps", () => {
       const system: System = {
         specificationVersion: "1.0.0",
-        name: "test",
-        components: [
+        title: "test",
+        systems: [
           {
-            name: "foo",
+            id: "foo",
             position: {
               x: 10,
               y: 0,
             },
           },
           {
-            name: "bar",
+            id: "bar",
             position: {
               x: 12,
               y: 0,
@@ -170,12 +166,12 @@ describe("components", () => {
 
       assert.deepEqual(errors, [
         {
-          message: "overlaps with component /system/components/1",
-          path: "/system/components/0",
+          message: "overlaps with /systems/1",
+          path: "/systems/0",
         },
         {
-          message: "overlaps with component /system/components/0",
-          path: "/system/components/1",
+          message: "overlaps with /systems/0",
+          path: "/systems/1",
         },
       ]);
     });
@@ -183,28 +179,26 @@ describe("components", () => {
     it("out of bounds - subsystem", () => {
       const system: System = {
         specificationVersion: "1.0.0",
-        name: "test",
-        components: [
+        title: "test",
+        systems: [
           {
-            name: "foo",
-            system: {
-              components: [
-                {
-                  name: "bar",
-                  position: {
-                    x: 10,
-                    y: 0,
-                  },
+            id: "foo",
+            systems: [
+              {
+                id: "bar",
+                position: {
+                  x: 10,
+                  y: 0,
                 },
-                {
-                  name: "spam",
-                  position: {
-                    x: 12,
-                    y: 0,
-                  },
+              },
+              {
+                id: "spam",
+                position: {
+                  x: 12,
+                  y: 0,
                 },
-              ],
-            },
+              },
+            ],
           },
         ],
       };
@@ -213,14 +207,12 @@ describe("components", () => {
 
       assert.deepEqual(errors, [
         {
-          message:
-            "overlaps with component /system/components/0/system/components/1",
-          path: "/system/components/0/system/components/0",
+          message: "overlaps with /systems/0/systems/1",
+          path: "/systems/0/systems/0",
         },
         {
-          message:
-            "overlaps with component /system/components/0/system/components/0",
-          path: "/system/components/0/system/components/1",
+          message: "overlaps with /systems/0/systems/0",
+          path: "/systems/0/systems/1",
         },
       ]);
     });

@@ -3,7 +3,7 @@
   "title": "System",
   "description": "A system",
   "type": "object",
-  "required": ["specificationVersion", "name"],
+  "required": ["specificationVersion", "title"],
   "additionalProperties": false,
   "properties": {
     "specificationVersion": {
@@ -11,20 +11,19 @@
       "description": "The version of the specification, in semver format.",
       "enum": ["1.0.0"]
     },
-    "name": {
+    "title": {
       "type": "string",
-      "pattern": "^[a-z0-9_-]+$",
-      "description": "The name of the system."
+      "description": "The title of the system."
     },
     "description": {
       "type": "string",
       "description": "The description of the system, in markdown format."
     },
-    "components": {
+    "systems": {
       "type": "array",
-      "description": "The components of the system.",
+      "description": "The sub-systems of the system.",
       "items": {
-        "$ref": "https://dataflows.io/component.json"
+        "$ref": "https://dataflows.io/subsystem.json"
       }
     },
     "links": {

@@ -1,15 +1,14 @@
 specificationVersion: 1.0.0
-name: simple
-description: Simple example
-components:
-  - name: frontend
+title: Simple example
+systems:
+  - id: frontend
     description: Web-based client
-  - name: backend
+  - id: backend
     description: Backend of the frontend
-  - name: database
+  - id: database
     description: Database of the backend
 links:
-  - componentAName: frontend
-    componentBName: backend
-  - componentAName: backend
-    componentBName: database
+  - a: frontend
+    b: backend
+  - a: backend
+    b: database

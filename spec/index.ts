@@ -1,5 +1,5 @@
 import { load as parseYaml } from "js-yaml";
-import { Component, Link, System, Subsystem, Flow } from "./specification";
+import { Link, System, Subsystem, Flow } from "./specification";
 import { validate, ValidationError } from "./validations";
 
 // Must reflect https://dataflows.io/system.json
@@ -8,7 +8,7 @@ export const RuntimeLimits = {
   MaxSystemHeight: 64,
 };
 
-export interface RuntimeComponentSize {
+export interface RuntimeSystemSize {
   width: number;
   height: number;
 }
@@ -18,30 +18,28 @@ export interface RuntimePort {
   y: number;
 }
 
-export interface RuntimeComponent extends Component {
-  index: number;
-  size: RuntimeComponentSize;
-  position: { x: number; y: number };
-  parentComponent?: RuntimeComponent;
-  parentSystem?: RuntimeSubsystem;
-  ports: RuntimePort[];
-  system?: RuntimeSubsystem;
-}
-
 export interface RuntimeLink extends Link {
-  componentAName: string;
-  subComponentAName: string | undefined;
-  componentBName: string;
-  subComponentBName: string | undefined;
+  index: number;
+  system?: RuntimeSystem | RuntimeSubsystem;
+  a: string;
+  subA: string | undefined;
+  b: string;
+  subB: string | undefined;
 }
 
 export interface RuntimeSubsystem extends Subsystem {
-  components: RuntimeComponent[];
+  index: number;
+  size: RuntimeSystemSize;
+  position: { x: number; y: number };
+  ports: RuntimePort[];
+  parent?: RuntimeSystem | RuntimeSubsystem;
+  systems: RuntimeSubsystem[];
   links: RuntimeLink[];
 }
 
 export interface RuntimeSystem extends System {
-  components: RuntimeComponent[];
+  parent?: undefined;
+  systems: RuntimeSubsystem[];
   links: RuntimeLink[];
   flows: RuntimeFlow[];
 }
@@ -54,8 +52,7 @@ export function load(system: System): {
 } {
   const runtime = structuredClone(system) as RuntimeSystem;
 
-  setDefaultValues(runtime, null);
-  enhanceComponents(runtime, null);
+  enhanceSystems(runtime);
   enhanceLinks(runtime);
   computePositions(runtime);
   computeSizes(runtime);
@@ -72,88 +69,69 @@ export function loadYaml(yaml: string): {
   return load(parseYaml(yaml) as System);
 }
 
-function setDefaultValues(
-  system: RuntimeSystem | RuntimeSubsystem,
-  parentComponent: RuntimeComponent | null,
-): void {
-  system.components ??= [];
+function enhanceSystems(system: RuntimeSystem | RuntimeSubsystem): void {
+  system.systems ??= [];
   system.links ??= [];
 
-  if (!parentComponent) {
+  // Root system.
+  if (!system.parent) {
     (system as RuntimeSystem).flows ??= [];
   }
 
-  system.components.forEach(component => {
-    if (component.system) {
-      setDefaultValues(component.system, component);
-    }
-  });
-}
-
-function enhanceComponents(
-  system: RuntimeSystem | RuntimeSubsystem,
-  parentComponent: RuntimeComponent | null,
-): void {
-  system.components.forEach((component, index) => {
+  system.systems.forEach((subsystem, index) => {
     // Set array position in the system.
-    component.index = index;
+    subsystem.index = index;
 
     // Set the parent system.
-    component.parentSystem = system;
-
-    // Set the parent component.
-    if (parentComponent) {
-      component.parentComponent = parentComponent;
-    }
+    subsystem.parent = system;
 
     // Enhance recursively.
-    if (component.system) {
-      enhanceComponents(component.system, component);
-    }
+    enhanceSystems(subsystem);
   });
 }
 
 function enhanceLinks(system: RuntimeSystem | RuntimeSubsystem): void {
-  system.links.forEach(link => {
-    const [componentAName, subComponentAName, ..._restA] =
-      link.componentAName.split(".");
+  system.links.forEach((link, index) => {
+    // Set array position in the system.
+    link.index = index;
 
-    link.componentAName = componentAName!;
-    link.subComponentAName = subComponentAName;
+    // Set the system.
+    link.system = system;
 
-    const [componentBName, subComponentBName, ..._restB] =
-      link.componentBName.split(".");
+    // Split the references in system / sub-system.
+    const [a, subA, ..._restA] = link.a.split(".");
 
-    link.componentBName = componentBName!;
-    link.subComponentBName = subComponentBName;
+    link.a = a!;
+    link.subA = subA;
+
+    const [b, subB, ..._restB] = link.b.split(".");
+
+    link.b = b!;
+    link.subB = subB;
   });
 
-  system.components.forEach(component => {
-    // Enhance recursively.
-    if (component.system) {
-      enhanceLinks(component.system);
-    }
+  // Enhance recursively.
+  system.systems.forEach(subsystem => {
+    enhanceLinks(subsystem);
   });
 }
 
 function computePositions(system: RuntimeSystem | RuntimeSubsystem): void {
   let farRight = 0;
 
-  for (const component of system.components) {
-    if (component.position) {
-      farRight = Math.max(farRight, component.position.x);
+  for (const subsystem of system.systems) {
+    if (subsystem.position) {
+      farRight = Math.max(farRight, subsystem.position.x);
     } else {
-      component.position = {
+      subsystem.position = {
         x: farRight + 10,
         y: 0,
       };
 
-      farRight = component.position.x;
+      farRight = subsystem.position.x;
     }
 
-    if (component.system) {
-      computePositions(component.system);
-    }
+    computePositions(subsystem);
   }
 }
 
@@ -186,68 +164,62 @@ function computePositions(system: RuntimeSystem | RuntimeSubsystem): void {
 // +--+--+--+--+--+-- etc.
 //
 function computeSizes(system: RuntimeSystem | RuntimeSubsystem): void {
-  for (const component of system.components) {
+  for (const subsystem of system.systems) {
     let linksCount = system.links.filter(
-      link =>
-        link.componentAName === component.name ||
-        link.componentBName === component.name,
+      link => link.a === subsystem.id || link.b === subsystem.id,
     ).length;
 
-    if (component.parentSystem) {
-      linksCount += component.parentSystem.links.filter(
-        link =>
-          link.subComponentAName === component.name ||
-          link.subComponentBName === component.name,
+    if (subsystem.parent) {
+      linksCount += subsystem.parent.links.filter(
+        link => link.subA === subsystem.id || link.subB === subsystem.id,
       ).length;
     }
 
     if (linksCount <= 4) {
-      component.size = {
+      subsystem.size = {
         width: 3,
         height: 3,
       };
 
-      component.ports = [
-        { x: component.position.x + 1, y: component.position.y - 1 },
+      subsystem.ports = [
+        { x: subsystem.position.x + 1, y: subsystem.position.y - 1 },
         {
-          x: component.position.x + component.size.width,
-          y: component.position.y + 1,
+          x: subsystem.position.x + subsystem.size.width,
+          y: subsystem.position.y + 1,
         },
         {
-          x: component.position.x + 1,
-          y: component.position.y + component.size.height,
+          x: subsystem.position.x + 1,
+          y: subsystem.position.y + subsystem.size.height,
         },
-        { x: component.position.x - 1, y: component.position.y + 1 },
+        { x: subsystem.position.x - 1, y: subsystem.position.y + 1 },
       ];
     } else {
-      component.size = {
+      subsystem.size = {
         width: 3 + ((linksCount - 4) % 2),
         height: 3,
       };
 
-      component.ports = [
-        { x: component.position.x - 1, y: component.position.y + 1 },
+      subsystem.ports = [
+        { x: subsystem.position.x - 1, y: subsystem.position.y + 1 },
         {
-          x: component.position.x + component.size.width,
-          y: component.position.y + 1,
+          x: subsystem.position.x + subsystem.size.width,
+          y: subsystem.position.y + 1,
         },
       ];
 
       for (
-        let x = component.position.x + 1;
-        x < component.position.x + component.size.width;
+        let x = subsystem.position.x + 1;
+        x < subsystem.position.x + subsystem.size.width;
         x += 2
       ) {
-        component.ports.push({ x, y: component.position.y - 1 });
-        component.ports.push({
+        subsystem.ports.push({ x, y: subsystem.position.y - 1 });
+        subsystem.ports.push({
           x,
-          y: component.position.y + component.size.height,
+          y: subsystem.position.y + subsystem.size.height,
         });
       }
     }
 
-    if (component.system) {
-      computeSizes(component.system);
-    }
+    computeSizes(subsystem);
   }
 }

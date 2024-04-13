@@ -7,17 +7,17 @@ export interface System {
    */
   specificationVersion: "1.0.0";
   /**
-   * The name of the system.
+   * The title of the system.
    */
-  name: string;
+  title: string;
   /**
    * The description of the system, in markdown format.
    */
   description?: string;
   /**
-   * The components of the system.
+   * The sub-systems of the system.
    */
-  components?: Component[];
+  systems?: Subsystem[];
   /**
    * The links of the system.
    */
@@ -28,44 +28,38 @@ export interface System {
   flows?: Flow[];
 }
 /**
- * A component
- */
-export interface Component {
-  /**
-   * The name of the component. Must be unique across the system.
-   */
-  name: string;
-  /**
-   * The description of the component, in markdown format.
-   */
-  description?: string;
-  /**
-   * The position of the component.
-   */
-  position?: {
-    /**
-     * The X position of the component.
-     */
-    x: number;
-    /**
-     * The Y position of the component.
-     */
-    y: number;
-  };
-  system?: Subsystem;
-}
-/**
  * A sub-system
  */
 export interface Subsystem {
   /**
-   * The description of the system, in markdown format.
+   * The id of the sub-system. Must be unique across the parent system.
+   */
+  id?: string;
+  /**
+   * The title of the sub-system.
+   */
+  title?: string;
+  /**
+   * The description of the sub-system, in markdown format.
    */
   description?: string;
   /**
-   * The components of the system.
+   * The position of the sub-system in the parent system.
    */
-  components?: Component[];
+  position?: {
+    /**
+     * The X position of the sub-system in the parent system.
+     */
+    x: number;
+    /**
+     * The Y position of the sub-system in the parent system.
+     */
+    y: number;
+  };
+  /**
+   * The sub-systems of the system.
+   */
+  systems?: Subsystem[];
   /**
    * The links of the system.
    */
@@ -76,22 +70,30 @@ export interface Subsystem {
  */
 export interface Link {
   /**
+   * The title of the link.
+   */
+  title?: string;
+  /**
    * The description of the link, in markdown format.
    */
   description?: string;
   /**
-   * Side A of the link.
+   * Side A of the link. Format: subsystemId[.subsystemId]
    */
-  componentAName: string;
+  a: string;
   /**
-   * Side B of the link.
+   * Side B of the link. Format: subsystemId[.subsystemId]
    */
-  componentBName: string;
+  b: string;
 }
 /**
  * A flow
  */
 export interface Flow {
+  /**
+   * The title of the flow.
+   */
+  title?: string;
   /**
    * The description of the flow, in markdown format.
    */
@@ -109,13 +111,13 @@ export interface Flow {
      */
     keyframe: number;
     /**
-     * The name of the component where the data originates from
+     * Side where the data originates from. Format: subsystemId[.subsystemId]*
      */
-    fromComponentName: string;
+    from: string;
     /**
-     * The name of the component where the data goes to
+     * Side where the data goes to. Format: subsystemId[.subsystemId]*
      */
-    toComponentName: string;
+    to: string;
     /**
      * The data of the step.
      */
@@ -125,50 +127,6 @@ export interface Flow {
 
 const schemas = [
   {
-    $id: "https://dataflows.io/component.json",
-    title: "Component",
-    description: "A component",
-    type: "object",
-    required: ["name"],
-    additionalProperties: false,
-    properties: {
-      name: {
-        type: "string",
-        pattern: "^[a-z0-9_-]+$",
-        maxLength: 32,
-        description:
-          "The name of the component. Must be unique across the system.",
-      },
-      description: {
-        type: "string",
-        description: "The description of the component, in markdown format.",
-      },
-      position: {
-        type: "object",
-        description: "The position of the component.",
-        required: ["x", "y"],
-        additionalProperties: false,
-        properties: {
-          x: {
-            type: "integer",
-            description: "The X position of the component.",
-            minimum: 0,
-            maximum: 64,
-          },
-          y: {
-            type: "integer",
-            description: "The Y position of the component.",
-            minimum: 0,
-            maximum: 64,
-          },
-        },
-      },
-      system: {
-        $ref: "https://dataflows.io/subsystem.json",
-      },
-    },
-  },
-  {
     $id: "https://dataflows.io/flow.json",
     title: "Flow",
     description: "A flow",
@@ -176,6 +134,10 @@ const schemas = [
     required: ["steps"],
     additionalProperties: false,
     properties: {
+      title: {
+        type: "string",
+        description: "The title of the flow.",
+      },
       description: {
         type: "string",
         description: "The description of the flow, in markdown format.",
@@ -185,7 +147,7 @@ const schemas = [
         description: "The steps of the flow.",
         items: {
           type: "object",
-          required: ["fromComponentName", "toComponentName", "keyframe"],
+          required: ["from", "to", "keyframe"],
           additionalProperties: false,
           properties: {
             description: {
@@ -197,16 +159,17 @@ const schemas = [
               minimum: 0,
               description: "The keyframe of the step.",
             },
-            fromComponentName: {
+            from: {
               type: "string",
               pattern: "^[a-z0-9_-]+(\\.[a-z0-9_-]+)*$",
               description:
-                "The name of the component where the data originates from",
+                "Side where the data originates from. Format: subsystemId[.subsystemId]*",
             },
-            toComponentName: {
+            to: {
               type: "string",
               pattern: "^[a-z0-9_-]+(\\.[a-z0-9_-]+)*$",
-              description: "The name of the component where the data goes to",
+              description:
+                "Side where the data goes to. Format: subsystemId[.subsystemId]*",
             },
             data: {
               type: "string",
@@ -222,22 +185,26 @@ const schemas = [
     title: "Link",
     description: "A link",
     type: "object",
-    required: ["componentAName", "componentBName"],
+    required: ["a", "b"],
     additionalProperties: false,
     properties: {
+      title: {
+        type: "string",
+        description: "The title of the link.",
+      },
       description: {
         type: "string",
         description: "The description of the link, in markdown format.",
       },
-      componentAName: {
+      a: {
         type: "string",
-        pattern: "^[a-z0-9_-]+(\\.[a-z0-9_-]+)*$",
-        description: "Side A of the link.",
+        pattern: "^[a-z0-9_-]+(\\.[a-z0-9_-]+){0,1}$",
+        description: "Side A of the link. Format: subsystemId[.subsystemId]",
       },
-      componentBName: {
+      b: {
         type: "string",
-        pattern: "^[a-z0-9_-]+(\\.[a-z0-9_-]+)*$",
-        description: "Side B of the link.",
+        pattern: "^[a-z0-9_-]+(\\.[a-z0-9_-]+){0,1}$",
+        description: "Side B of the link. Format: subsystemId[.subsystemId]",
       },
     },
   },
@@ -249,15 +216,48 @@ const schemas = [
     required: [],
     additionalProperties: false,
     properties: {
+      id: {
+        type: "string",
+        pattern: "^[a-z0-9_-]+$",
+        maxLength: 32,
+        description:
+          "The id of the sub-system. Must be unique across the parent system.",
+      },
+      title: {
+        type: "string",
+        description: "The title of the sub-system.",
+      },
       description: {
         type: "string",
-        description: "The description of the system, in markdown format.",
+        description: "The description of the sub-system, in markdown format.",
       },
-      components: {
+      position: {
+        type: "object",
+        description: "The position of the sub-system in the parent system.",
+        required: ["x", "y"],
+        additionalProperties: false,
+        properties: {
+          x: {
+            type: "integer",
+            description:
+              "The X position of the sub-system in the parent system.",
+            minimum: 0,
+            maximum: 64,
+          },
+          y: {
+            type: "integer",
+            description:
+              "The Y position of the sub-system in the parent system.",
+            minimum: 0,
+            maximum: 64,
+          },
+        },
+      },
+      systems: {
         type: "array",
-        description: "The components of the system.",
+        description: "The sub-systems of the system.",
         items: {
-          $ref: "https://dataflows.io/component.json",
+          $ref: "https://dataflows.io/subsystem.json",
         },
       },
       links: {
@@ -274,7 +274,7 @@ const schemas = [
     title: "System",
     description: "A system",
     type: "object",
-    required: ["specificationVersion", "name"],
+    required: ["specificationVersion", "title"],
     additionalProperties: false,
     properties: {
       specificationVersion: {
@@ -282,21 +282,19 @@ const schemas = [
         description: "The version of the specification, in semver format.",
         enum: ["1.0.0"],
       },
-      name: {
+      title: {
         type: "string",
-        pattern: "^[a-z0-9_-]+$",
-        maxLength: 32,
-        description: "The name of the system.",
+        description: "The title of the system.",
       },
       description: {
         type: "string",
         description: "The description of the system, in markdown format.",
       },
-      components: {
+      systems: {
         type: "array",
-        description: "The components of the system.",
+        description: "The sub-systems of the system.",
         items: {
-          $ref: "https://dataflows.io/component.json",
+          $ref: "https://dataflows.io/subsystem.json",
         },
       },
       links: {

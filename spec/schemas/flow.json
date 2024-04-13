@@ -6,6 +6,10 @@
   "required": ["steps"],
   "additionalProperties": false,
   "properties": {
+    "title": {
+      "type": "string",
+      "description": "The title of the flow."
+    },
     "description": {
       "type": "string",
       "description": "The description of the flow, in markdown format."
@@ -15,7 +19,7 @@
       "description": "The steps of the flow.",
       "items": {
         "type": "object",
-        "required": ["fromComponentName", "toComponentName", "keyframe"],
+        "required": ["from", "to", "keyframe"],
         "additionalProperties": false,
         "properties": {
           "description": {
@@ -27,15 +31,15 @@
             "minimum": 0,
             "description": "The keyframe of the step."
           },
-          "fromComponentName": {
+          "from": {
             "type": "string",
             "pattern": "^[a-z0-9_-]+(\\.[a-z0-9_-]+)*$",
-            "description": "The name of the component where the data originates from"
+            "description": "Side where the data originates from. Format: subsystemId[.subsystemId]*"
           },
-          "toComponentName": {
+          "to": {
             "type": "string",
             "pattern": "^[a-z0-9_-]+(\\.[a-z0-9_-]+)*$",
-            "description": "The name of the component where the data goes to"
+            "description": "Side where the data goes to. Format: subsystemId[.subsystemId]*"
           },
           "data": {
             "type": "string",
