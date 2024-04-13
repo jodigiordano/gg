@@ -54,6 +54,7 @@ export function load(system: System): {
 
   enhanceSystems(runtime);
   enhanceLinks(runtime);
+  enhanceFlows(runtime);
   computePositions(runtime);
   computeSizes(runtime);
 
@@ -72,11 +73,6 @@ export function loadYaml(yaml: string): {
 function enhanceSystems(system: RuntimeSystem | RuntimeSubsystem): void {
   system.systems ??= [];
   system.links ??= [];
-
-  // Root system.
-  if (!system.parent) {
-    (system as RuntimeSystem).flows ??= [];
-  }
 
   system.systems.forEach((subsystem, index) => {
     // Set array position in the system.
@@ -113,6 +109,24 @@ function enhanceLinks(system: RuntimeSystem | RuntimeSubsystem): void {
   // Enhance recursively.
   system.systems.forEach(subsystem => {
     enhanceLinks(subsystem);
+  });
+}
+
+function enhanceFlows(system: RuntimeSystem): void {
+  system.flows ??= [];
+
+  system.flows.forEach(flow => {
+    const uniqueKeyframes = new Set<number>();
+
+    flow.steps.forEach(step => {
+      uniqueKeyframes.add(step.keyframe);
+    });
+
+    const keyframes = Array.from(uniqueKeyframes).sort();
+
+    flow.steps.forEach(step => {
+      step.keyframe = keyframes.indexOf(step.keyframe);
+    });
   });
 }
 
