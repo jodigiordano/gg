@@ -48,11 +48,10 @@ export interface RuntimeSystem extends System {
 
 export interface RuntimeFlow extends Flow {}
 
-export function loadYaml(yaml: string): {
+export function load(system: System): {
   system: RuntimeSystem;
   errors: ValidationError[];
 } {
-  const system = parseYaml(yaml) as System;
   const runtime = structuredClone(system) as RuntimeSystem;
 
   setDefaultValues(runtime, null);
@@ -64,6 +63,13 @@ export function loadYaml(yaml: string): {
   const errors = validate(system, runtime);
 
   return { system: runtime, errors };
+}
+
+export function loadYaml(yaml: string): {
+  system: RuntimeSystem;
+  errors: ValidationError[];
+} {
+  return load(parseYaml(yaml) as System);
 }
 
 function setDefaultValues(
