@@ -41,11 +41,105 @@ describe("components", () => {
       assert.deepEqual(errors, [
         {
           message: "duplicate name",
-          path: "/system/components/0/foo",
+          path: "/system/components/0",
         },
         {
           message: "duplicate name",
-          path: "/system/components/1/foo",
+          path: "/system/components/1",
+        },
+      ]);
+    });
+
+    it("duplicate - subsystem", () => {
+      const system: System = {
+        specificationVersion: "1.0.0",
+        name: "test",
+        components: [
+          {
+            name: "foo",
+            system: {
+              components: [
+                {
+                  name: "bar",
+                },
+                {
+                  name: "bar",
+                },
+              ],
+            },
+          },
+        ],
+      };
+
+      const { errors } = load(system);
+
+      assert.deepEqual(errors, [
+        {
+          message: "duplicate name",
+          path: "/system/components/0/system/components/0",
+        },
+        {
+          message: "duplicate name",
+          path: "/system/components/0/system/components/1",
+        },
+      ]);
+    });
+  });
+
+  describe("position", () => {
+    it("out of bounds", () => {
+      const system: System = {
+        specificationVersion: "1.0.0",
+        name: "test",
+        components: [
+          {
+            name: "foo",
+            position: {
+              x: 64,
+              y: 0,
+            },
+          },
+        ],
+      };
+
+      const { errors } = load(system);
+
+      assert.deepEqual(errors, [
+        {
+          message: "out of bounds",
+          path: "/system/components/0",
+        },
+      ]);
+    });
+
+    it("out of bounds - subsystem", () => {
+      const system: System = {
+        specificationVersion: "1.0.0",
+        name: "test",
+        components: [
+          {
+            name: "foo",
+            system: {
+              components: [
+                {
+                  name: "bar",
+                  position: {
+                    x: 64,
+                    y: 0,
+                  },
+                },
+              ],
+            },
+          },
+        ],
+      };
+
+      const { errors } = load(system);
+
+      assert.deepEqual(errors, [
+        {
+          message: "out of bounds",
+          path: "/system/components/0/system/components/0",
         },
       ]);
     });

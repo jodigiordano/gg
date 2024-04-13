@@ -16,7 +16,7 @@
   "scripts": {
     "prepublishOnly": "npm run lint && npm run test && npm run compile",
     "lint": "prettier . --write",
-    "test": "node --import tsx --test tests/**/*.test.ts",
+    "test": "node --import tsx --test --test-name-pattern=${ONLY:-.*} $(find tests -type f -name '*.test.ts')",
     "dev": "npm run compile && tsc --watch --preserveWatchOutput",
     "compile:types": "tsx generate.ts > specification.ts && npx prettier specification.ts --write",
     "compile": "npm run compile:types && tsc && cp -r schemas dist/schemas"

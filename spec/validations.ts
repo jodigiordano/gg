@@ -37,18 +37,20 @@ export function validate(
     }));
   }
 
-  const overlapErrors = validateOverlaps(runtime);
+  const componentOverlapErrors = validateComponentOverlaps(runtime);
   const componentErrors = validateComponents(runtime);
   const linkErrors = validateLinks(runtime);
-  const outOfBoundsErrors = validateOutOfBounds(runtime);
+  const componentBoundaryErrors = validateComponentBoundaries(runtime);
 
-  return overlapErrors
+  return componentOverlapErrors
     .concat(componentErrors)
     .concat(linkErrors)
-    .concat(outOfBoundsErrors);
+    .concat(componentBoundaryErrors);
 }
 
-function validateOverlaps(system: RuntimeSubsystem): ValidationError[] {
+function validateComponentOverlaps(
+  system: RuntimeSubsystem,
+): ValidationError[] {
   const errors: ValidationError[] = [];
 
   for (const componentA of system.components) {
@@ -81,7 +83,9 @@ function validateOverlaps(system: RuntimeSubsystem): ValidationError[] {
     }
 
     if (componentA.system) {
-      errors.push(...validateOverlaps(componentA.system as RuntimeSubsystem));
+      errors.push(
+        ...validateComponentOverlaps(componentA.system as RuntimeSubsystem),
+      );
     }
   }
 
@@ -121,12 +125,9 @@ function validateLinks(_system: RuntimeSubsystem): ValidationError[] {
   return [];
 }
 
-// TODO: flows: validate contigunous keyframes, starting from 0.
-
-// TODO: out of bound should consider ports and routing.
-// TODO: components distance between each other should consider ports and routing.
-
-function validateOutOfBounds(system: RuntimeSubsystem): ValidationError[] {
+function validateComponentBoundaries(
+  system: RuntimeSubsystem,
+): ValidationError[] {
   const errors: ValidationError[] = [];
 
   for (const component of system.components) {
@@ -143,7 +144,9 @@ function validateOutOfBounds(system: RuntimeSubsystem): ValidationError[] {
     }
 
     if (component.system) {
-      errors.push(...validateOverlaps(component.system as RuntimeSubsystem));
+      errors.push(
+        ...validateComponentBoundaries(component.system as RuntimeSubsystem),
+      );
     }
   }
 
@@ -162,6 +165,6 @@ function getComponentPath(component: RuntimeComponent) {
 
   return breadcrumbs
     .reverse()
-    .map(c => `/system/components/${c.index}/${c.name}`)
+    .map(c => `/system/components/${c.index}`)
     .join("");
 }
