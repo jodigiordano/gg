@@ -9,6 +9,7 @@
     "name": {
       "type": "string",
       "pattern": "^[a-z0-9_-]+$",
+      "maxLength": 32,
       "description": "The name of the component. Must be unique across the system."
     },
     "description": {

@@ -24,6 +24,7 @@
           },
           "keyframe": {
             "type": "integer",
+            "minimum": 0,
             "description": "The keyframe of the step."
           },
           "fromComponentName": {
