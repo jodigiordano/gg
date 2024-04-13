@@ -1,0 +1,15 @@
+specificationVersion: 1.0.0
+name: simple
+description: Simple example
+components:
+  - name: frontend
+    description: Web-based client
+  - name: backend
+    description: Backend of the frontend
+  - name: database
+    description: Database of the backend
+links:
+  - componentAName: frontend
+    componentBName: backend
+  - componentAName: backend
+    componentBName: database
