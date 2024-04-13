@@ -25,8 +25,7 @@ components:
             x: 10
             y: 2
       links:
-        - name: l1
-          componentAName: server
+        - componentAName: server
           componentBName: database
   - name: whatever
     position:
@@ -37,15 +36,12 @@ components:
       x: 2
       y: 10
 links:
-  - name: l1
-    componentAName: frontend
+  - componentAName: frontend
     componentBName: backend
     subComponentBName: server
-  - name: l2
-    componentAName: frontend
+  - componentAName: frontend
     componentBName: whatever
-  - name: l3
-    componentAName: datadog
+  - componentAName: datadog
     componentBName: backend
     subComponentBName: server
 flows:

@@ -3,18 +3,9 @@
   "title": "Link",
   "description": "A link",
   "type": "object",
-  "required": ["name", "componentAName", "componentBName"],
+  "required": ["componentAName", "componentBName"],
   "additionalProperties": false,
   "properties": {
-    "name": {
-      "type": "string",
-      "pattern": "^[a-z0-9_-]+$",
-      "description": "The name of the link. Must be unique across the system."
-    },
-    "displayName": {
-      "type": "string",
-      "description": "The display name of the link. Has precedence over the name of the link."
-    },
     "description": {
       "type": "string",
       "description": "The description of the link, in markdown format."
