@@ -135,6 +135,7 @@ const schemas = [
       name: {
         type: "string",
         pattern: "^[a-z0-9_-]+$",
+        maxLength: 32,
         description:
           "The name of the component. Must be unique across the system.",
       },
@@ -193,6 +194,7 @@ const schemas = [
             },
             keyframe: {
               type: "integer",
+              minimum: 0,
               description: "The keyframe of the step.",
             },
             fromComponentName: {
@@ -283,6 +285,7 @@ const schemas = [
       name: {
         type: "string",
         pattern: "^[a-z0-9_-]+$",
+        maxLength: 32,
         description: "The name of the system.",
       },
       description: {
