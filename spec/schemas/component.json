@@ -29,13 +29,13 @@
           "type": "integer",
           "description": "The X position of the component.",
           "minimum": 0,
-          "maximum": 128
+          "maximum": 64
         },
         "y": {
           "type": "integer",
           "description": "The Y position of the component.",
           "minimum": 0,
-          "maximum": 128
+          "maximum": 64
         }
       }
     },
