@@ -38,10 +38,14 @@ export function validate(
   }
 
   const overlapErrors = validateOverlaps(runtime);
+  const componentErrors = validateComponents(runtime);
   const linkErrors = validateLinks(runtime);
   const outOfBoundsErrors = validateOutOfBounds(runtime);
 
-  return overlapErrors.concat(linkErrors).concat(outOfBoundsErrors);
+  return overlapErrors
+    .concat(componentErrors)
+    .concat(linkErrors)
+    .concat(outOfBoundsErrors);
 }
 
 function validateOverlaps(system: RuntimeSubsystem): ValidationError[] {
@@ -80,6 +84,31 @@ function validateOverlaps(system: RuntimeSubsystem): ValidationError[] {
       errors.push(...validateOverlaps(componentA.system as RuntimeSubsystem));
     }
   }
+
+  return errors;
+}
+
+function validateComponents(system: RuntimeSubsystem): ValidationError[] {
+  const errors: ValidationError[] = [];
+  system.components.forEach(component => {
+    // Duplicate name.
+    if (
+      system.components.some(
+        other =>
+          other.name === component.name && other.index !== component.index,
+      )
+    ) {
+      errors.push({
+        path: getComponentPath(component),
+        message: "duplicate name",
+      });
+    }
+
+    // Validate recursively.
+    if (component.system) {
+      errors.push(...validateComponents(component.system));
+    }
+  });
 
   return errors;
 }
