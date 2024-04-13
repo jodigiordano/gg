@@ -119,9 +119,6 @@ function validateComponents(system: RuntimeSubsystem): ValidationError[] {
 
 function validateLinks(_system: RuntimeSubsystem): ValidationError[] {
   // TODO
-  // Ex: a link should point to existing components
-  // Ex: a link should not point to circular components (a === b)
-  // Ex: 2 links should not point to the same components
   return [];
 }
 
