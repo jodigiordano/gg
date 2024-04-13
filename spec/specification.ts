@@ -36,10 +36,6 @@ export interface Component {
    */
   name: string;
   /**
-   * The display name of the component. Has precedence over the name of the component.
-   */
-  displayName?: string;
-  /**
    * The description of the component, in markdown format.
    */
   description?: string;
@@ -145,11 +141,6 @@ const schemas = [
         pattern: "^[a-z0-9_-]+$",
         description:
           "The name of the component. Must be unique across the system.",
-      },
-      displayName: {
-        type: "string",
-        description:
-          "The display name of the component. Has precedence over the name of the component.",
       },
       description: {
         type: "string",
