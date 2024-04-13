@@ -2,9 +2,6 @@ import { load as parseYaml } from "js-yaml";
 import { Component, Link, System, Subsystem, Flow } from "./specification";
 import { validate, ValidationError } from "./validations";
 
-// TODO: some stuff in the spec shoul dnot be required and simply set default
-// TODO: in the runtime objects.
-
 export const RuntimeLimits = {
   MaxSystemWidth: 64,
   MaxSystemHeight: 64,
@@ -23,9 +20,11 @@ export interface RuntimePort {
 export interface RuntimeComponent extends Component {
   index: number;
   size: RuntimeComponentSize;
+  position: { x: number; y: number };
   parentComponent?: RuntimeComponent;
   parentSystem?: RuntimeSubsystem;
   ports: RuntimePort[];
+  system?: RuntimeSubsystem;
 }
 
 export interface RuntimeLink extends Link {
@@ -56,6 +55,7 @@ export function loadYaml(yaml: string): {
 
   setDefaultValues(runtime, null);
   enhanceComponents(runtime, null);
+  computePositions(runtime);
   computeSizes(runtime);
 
   const errors = validate(system, runtime);
@@ -76,7 +76,7 @@ function setDefaultValues(
 
   system.components.forEach(component => {
     if (component.system) {
-      setDefaultValues(component.system as RuntimeSubsystem, component);
+      setDefaultValues(component.system, component);
     }
   });
 }
@@ -99,10 +99,31 @@ function enhanceComponents(
 
     // Enhance recursively.
     if (component.system) {
-      enhanceComponents(component.system as RuntimeSubsystem, component);
+      enhanceComponents(component.system, component);
     }
   });
 }
+
+function computePositions(system: RuntimeSystem | RuntimeSubsystem): void {
+  let farRight = 0;
+
+  for (const component of system.components) {
+    if (component.position) {
+      farRight = Math.max(farRight, component.position.x);
+    } else {
+      component.position = {
+        x: farRight + 10,
+        y: 0,
+      };
+
+      farRight = component.position.x;
+    }
+
+    if (component.system) {
+      computePositions(component.system);
+    }
+  }
+};
 
 //  0 - 4 links
 // +--+--+--+
@@ -132,7 +153,7 @@ function enhanceComponents(
 // |  |  |  |  |  |
 // +--+--+--+--+--+-- etc.
 //
-function computeSizes(system: RuntimeSubsystem): void {
+function computeSizes(system: RuntimeSystem | RuntimeSubsystem): void {
   for (const component of system.components) {
     let linksCount = system.links.filter(
       link =>
@@ -192,7 +213,7 @@ function computeSizes(system: RuntimeSubsystem): void {
     }
 
     if (component.system) {
-      computeSizes(component.system as RuntimeSubsystem);
+      computeSizes(component.system);
     }
   }
 }

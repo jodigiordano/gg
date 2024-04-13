@@ -46,7 +46,7 @@ export interface Component {
   /**
    * The position of the component.
    */
-  position: {
+  position?: {
     /**
      * The X position of the component.
      */
@@ -149,7 +149,7 @@ const schemas = [
     title: "Component",
     description: "A component",
     type: "object",
-    required: ["name", "position"],
+    required: ["name"],
     additionalProperties: false,
     properties: {
       name: {
@@ -237,7 +237,6 @@ const schemas = [
             data: {
               type: "string",
               description: "The data of the step.",
-              default: "",
             },
           },
         },
