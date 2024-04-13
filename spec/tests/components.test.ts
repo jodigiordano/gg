@@ -143,5 +143,86 @@ describe("components", () => {
         },
       ]);
     });
+
+    it("overlaps", () => {
+      const system: System = {
+        specificationVersion: "1.0.0",
+        name: "test",
+        components: [
+          {
+            name: "foo",
+            position: {
+              x: 10,
+              y: 0,
+            },
+          },
+          {
+            name: "bar",
+            position: {
+              x: 12,
+              y: 0,
+            },
+          },
+        ],
+      };
+
+      const { errors } = load(system);
+
+      assert.deepEqual(errors, [
+        {
+          message: "overlaps with component /system/components/1",
+          path: "/system/components/0",
+        },
+        {
+          message: "overlaps with component /system/components/0",
+          path: "/system/components/1",
+        },
+      ]);
+    });
+
+    it("out of bounds - subsystem", () => {
+      const system: System = {
+        specificationVersion: "1.0.0",
+        name: "test",
+        components: [
+          {
+            name: "foo",
+            system: {
+              components: [
+                {
+                  name: "bar",
+                  position: {
+                    x: 10,
+                    y: 0,
+                  },
+                },
+                {
+                  name: "spam",
+                  position: {
+                    x: 12,
+                    y: 0,
+                  },
+                },
+              ],
+            },
+          },
+        ],
+      };
+
+      const { errors } = load(system);
+
+      assert.deepEqual(errors, [
+        {
+          message:
+            "overlaps with component /system/components/0/system/components/1",
+          path: "/system/components/0/system/components/0",
+        },
+        {
+          message:
+            "overlaps with component /system/components/0/system/components/0",
+          path: "/system/components/0/system/components/1",
+        },
+      ]);
+    });
   });
 });
