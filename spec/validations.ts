@@ -117,8 +117,15 @@ function validateLinks(
   const errors: ValidationError[] = [];
 
   system.links.forEach(link => {
-    // Forbidden A(.Y) <> A(.Y)
-    if (link.a === link.b) {
+    // Forbidden A.Y <> A.Y
+    // Done separately from A <> A validation to have a more specific error.
+    if (link.a === link.b && (link.subA || link.subB)) {
+      errors.push({
+        path: getLinkPath(link),
+        message: "self-reference sub-systems",
+      });
+      // Forbidden A <> A
+    } else if (link.a === link.b) {
       errors.push({
         path: getLinkPath(link),
         message: "self-reference",
@@ -187,8 +194,7 @@ function getLinkPath(link: RuntimeLink) {
 
   return breadcrumbs
     .reverse()
-    .map(system =>
-      "index" in system ? `/systems/${system.index}` : `/links/${link.index}`,
-    )
-    .join("");
+    .map(system => ("index" in system ? `/systems/${system.index}` : ""))
+    .join("")
+    .concat(`/links/${link.index}`);
 }
