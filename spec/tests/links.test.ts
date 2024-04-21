@@ -1,29 +1,9 @@
 import assert from "node:assert";
-import { describe, it } from "node:test";
 import { System } from "../specification";
 import { load } from "../index";
 
 describe("links", () => {
   describe("a && b", () => {
-    it("invalid format", () => {
-      const system: System = {
-        specificationVersion: "1.0.0",
-        title: "test",
-        systems: [{ id: "foo" }, { id: "bar" }],
-        links: [
-          {
-            a: "foo.bar.spam",
-            b: "bar",
-          },
-        ],
-      };
-
-      const { errors } = load(system);
-
-      assert.equal(errors.at(0)?.path, "/links/0/a");
-      assert(errors.at(0)?.message.startsWith("must match pattern"));
-    });
-
     it("A <> B && B <> A", () => {
       const system: System = {
         specificationVersion: "1.0.0",
@@ -62,17 +42,17 @@ describe("links", () => {
         systems: [
           {
             id: "foo",
-            systems: [{ id: "foo" }, { id: "bar" }],
-            links: [
-              {
-                a: "foo",
-                b: "bar",
-              },
-              {
-                a: "bar",
-                b: "foo",
-              },
-            ],
+            systems: [{ id: "bar" }, { id: "spam" }],
+          },
+        ],
+        links: [
+          {
+            a: "foo.bar",
+            b: "foo.spam",
+          },
+          {
+            a: "foo.spam",
+            b: "foo.bar",
           },
         ],
       };
@@ -82,11 +62,11 @@ describe("links", () => {
       assert.deepEqual(errors, [
         {
           message: "duplicate",
-          path: "/systems/0/links/0",
+          path: "/links/0",
         },
         {
           message: "duplicate",
-          path: "/systems/0/links/1",
+          path: "/links/1",
         },
       ]);
     });
@@ -262,6 +242,52 @@ describe("links", () => {
       ]);
     });
 
+    it("inaccurate A", () => {
+      const system: System = {
+        specificationVersion: "1.0.0",
+        title: "test",
+        systems: [{ id: "foo", systems: [{ id: "bar" }] }, { id: "bar" }],
+        links: [
+          {
+            a: "foo",
+            b: "bar",
+          },
+        ],
+      };
+
+      const { errors } = load(system);
+
+      assert.deepEqual(errors, [
+        {
+          message: "inaccurate",
+          path: "/links/0/a",
+        },
+      ]);
+    });
+
+    it("inaccurate B", () => {
+      const system: System = {
+        specificationVersion: "1.0.0",
+        title: "test",
+        systems: [{ id: "foo" }, { id: "bar", systems: [{ id: "spam" }] }],
+        links: [
+          {
+            a: "foo",
+            b: "bar",
+          },
+        ],
+      };
+
+      const { errors } = load(system);
+
+      assert.deepEqual(errors, [
+        {
+          message: "inaccurate",
+          path: "/links/0/b",
+        },
+      ]);
+    });
+
     it("A <> A", () => {
       const system: System = {
         specificationVersion: "1.0.0",
@@ -297,12 +323,12 @@ describe("links", () => {
                 id: "bar",
               },
             ],
-            links: [
-              {
-                a: "bar",
-                b: "bar",
-              },
-            ],
+          },
+        ],
+        links: [
+          {
+            a: "foo.bar",
+            b: "foo",
           },
         ],
       };
@@ -312,7 +338,11 @@ describe("links", () => {
       assert.deepEqual(errors, [
         {
           message: "self-reference",
-          path: "/systems/0/links/0",
+          path: "/links/0",
+        },
+        {
+          message: "inaccurate",
+          path: "/links/0/b",
         },
       ]);
     });
@@ -337,12 +367,7 @@ describe("links", () => {
 
       const { errors } = load(system);
 
-      assert.deepEqual(errors, [
-        {
-          message: "self-reference sub-systems",
-          path: "/links/0",
-        },
-      ]);
+      assert.deepEqual(errors, []);
     });
 
     it("A.X <> A.Y - subsystem", () => {
@@ -358,24 +383,19 @@ describe("links", () => {
                 systems: [{ id: "spam" }, { id: "baz" }],
               },
             ],
-            links: [
-              {
-                a: "bar.spam",
-                b: "bar.baz",
-              },
-            ],
+          },
+        ],
+        links: [
+          {
+            a: "foo.bar.spam",
+            b: "foo.bar.baz",
           },
         ],
       };
 
       const { errors } = load(system);
 
-      assert.deepEqual(errors, [
-        {
-          message: "self-reference sub-systems",
-          path: "/systems/0/links/0",
-        },
-      ]);
+      assert.deepEqual(errors, []);
     });
   });
 });

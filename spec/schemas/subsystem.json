@@ -46,13 +46,6 @@
       "items": {
         "$ref": "https://dataflows.io/subsystem.json"
       }
-    },
-    "links": {
-      "type": "array",
-      "description": "The links of the system.",
-      "items": {
-        "$ref": "https://dataflows.io/link.json"
-      }
     }
   }
 }

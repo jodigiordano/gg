@@ -19,7 +19,7 @@ export interface System {
    */
   systems?: Subsystem[];
   /**
-   * The links of the system.
+   * The links of the system and sub-systems.
    */
   links?: Link[];
   /**
@@ -60,10 +60,6 @@ export interface Subsystem {
    * The sub-systems of the system.
    */
   systems?: Subsystem[];
-  /**
-   * The links of the system.
-   */
-  links?: Link[];
 }
 /**
  * A link
@@ -78,11 +74,11 @@ export interface Link {
    */
   description?: string;
   /**
-   * Side A of the link. Format: subsystemId[.subsystemId]
+   * Side A of the link. Format: subsystemId[.subsystemId]*
    */
   a: string;
   /**
-   * Side B of the link. Format: subsystemId[.subsystemId]
+   * Side B of the link. Format: subsystemId[.subsystemId]*
    */
   b: string;
 }
@@ -101,28 +97,29 @@ export interface Flow {
   /**
    * The steps of the flow.
    */
-  steps: {
-    /**
-     * The description of the step, in markdown format.
-     */
-    description?: string;
-    /**
-     * The keyframe of the step.
-     */
-    keyframe: number;
-    /**
-     * Side where the data originates from. Format: subsystemId[.subsystemId]*
-     */
-    from: string;
-    /**
-     * Side where the data goes to. Format: subsystemId[.subsystemId]*
-     */
-    to: string;
-    /**
-     * The data of the step.
-     */
-    data?: string;
-  }[];
+  steps: FlowStep[];
+}
+export interface FlowStep {
+  /**
+   * The description of the step, in markdown format.
+   */
+  description?: string;
+  /**
+   * The keyframe of the step.
+   */
+  keyframe: number;
+  /**
+   * Side where the data originates from. Format: subsystemId[.subsystemId]*
+   */
+  from: string;
+  /**
+   * Side where the data goes to. Format: subsystemId[.subsystemId]*
+   */
+  to: string;
+  /**
+   * The data of the step.
+   */
+  data?: string;
 }
 
 const schemas = [
@@ -146,6 +143,7 @@ const schemas = [
         type: "array",
         description: "The steps of the flow.",
         items: {
+          title: "FlowStep",
           type: "object",
           required: ["from", "to", "keyframe"],
           additionalProperties: false,
@@ -198,13 +196,13 @@ const schemas = [
       },
       a: {
         type: "string",
-        pattern: "^[a-z0-9_-]+(\\.[a-z0-9_-]+){0,1}$",
-        description: "Side A of the link. Format: subsystemId[.subsystemId]",
+        pattern: "^[a-z0-9_-]+(\\.[a-z0-9_-]+)*$",
+        description: "Side A of the link. Format: subsystemId[.subsystemId]*",
       },
       b: {
         type: "string",
-        pattern: "^[a-z0-9_-]+(\\.[a-z0-9_-]+){0,1}$",
-        description: "Side B of the link. Format: subsystemId[.subsystemId]",
+        pattern: "^[a-z0-9_-]+(\\.[a-z0-9_-]+)*$",
+        description: "Side B of the link. Format: subsystemId[.subsystemId]*",
       },
     },
   },
@@ -260,13 +258,6 @@ const schemas = [
           $ref: "https://dataflows.io/subsystem.json",
         },
       },
-      links: {
-        type: "array",
-        description: "The links of the system.",
-        items: {
-          $ref: "https://dataflows.io/link.json",
-        },
-      },
     },
   },
   {
@@ -299,7 +290,7 @@ const schemas = [
       },
       links: {
         type: "array",
-        description: "The links of the system.",
+        description: "The links of the system and sub-systems.",
         items: {
           $ref: "https://dataflows.io/link.json",
         },

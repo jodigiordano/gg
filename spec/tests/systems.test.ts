@@ -1,5 +1,4 @@
 import assert from "node:assert";
-import { describe, it } from "node:test";
 import { System } from "../specification";
 import { load } from "../index";
 

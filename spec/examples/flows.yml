@@ -16,14 +16,35 @@ systems:
     systems:
       - id: server
         description: RESTful HTTP API of the backend
+        systems:
+          - id: expressjs
+            description: ExpressJS http server
+          - id: handler
+            description: Controller handling the HTTP request
       - id: database
         description: Database of the backend
 links:
   - a: frontend.api-service
-    b: backend.server
+    b: backend.server.expressjs
   - a: frontend.react-app
     b: frontend.redux-store
   - a: frontend.react-app
     b: frontend.api-service
-  - a: backend.server
+  - a: backend.server.expressjs
+    b: backend.server.handler
+  - a: backend.server.handler
     b: backend.database
+flows:
+  - steps:
+      - from: frontend.react-app
+        to: backend.server.handler
+        data: send request
+        keyframe: 0
+      - from: backend.server.handler
+        to: backend.database
+        data: store request
+        keyframe: 1
+      - from: backend.server.handler
+        to: frontend.react-app
+        data: send response
+        keyframe: 1

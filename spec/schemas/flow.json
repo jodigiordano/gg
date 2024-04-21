@@ -18,6 +18,7 @@
       "type": "array",
       "description": "The steps of the flow.",
       "items": {
+        "title": "FlowStep",
         "type": "object",
         "required": ["from", "to", "keyframe"],
         "additionalProperties": false,

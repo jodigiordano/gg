@@ -1,5 +1,5 @@
 import { load as parseYaml } from "js-yaml";
-import { Link, System, Subsystem, Flow } from "./specification";
+import { Link, System, Subsystem, Flow, FlowStep } from "./specification";
 import { validate, ValidationError } from "./validations";
 
 // Must reflect https://dataflows.io/system.json
@@ -20,14 +20,12 @@ export interface RuntimePort {
 
 export interface RuntimeLink extends Link {
   index: number;
-  system?: RuntimeSystem | RuntimeSubsystem;
-  a: string;
-  subA: string | undefined;
-  b: string;
-  subB: string | undefined;
+  systemA: RuntimeSubsystem;
+  systemB: RuntimeSubsystem;
 }
 
 export interface RuntimeSubsystem extends Subsystem {
+  canonicalId: string;
   index: number;
   size: RuntimeSystemSize;
   position: { x: number; y: number };
@@ -38,13 +36,22 @@ export interface RuntimeSubsystem extends Subsystem {
 }
 
 export interface RuntimeSystem extends System {
+  canonicalId: undefined;
   parent?: undefined;
   systems: RuntimeSubsystem[];
   links: RuntimeLink[];
   flows: RuntimeFlow[];
 }
 
-export interface RuntimeFlow extends Flow {}
+export interface RuntimeFlowStep extends FlowStep {
+  systemFrom: RuntimeSubsystem;
+  systemTo: RuntimeSubsystem;
+  links: RuntimeLink[];
+}
+
+export interface RuntimeFlow extends Flow {
+  steps: RuntimeFlowStep[];
+}
 
 export function load(system: System): {
   system: RuntimeSystem;
@@ -52,11 +59,17 @@ export function load(system: System): {
 } {
   const runtime = structuredClone(system) as RuntimeSystem;
 
-  enhanceSystems(runtime);
+  runtime.links ??= [];
+
+  // TODO: we are enhancing a system that wasn't validated with AJV yet,
+  // TODO: so it's the far west in the JSON file.
+  // TODO: validate with AJV first, then enhance if possible.
+
+  enhanceSubsystems(runtime);
   enhanceLinks(runtime);
   enhanceFlows(runtime);
   computePositions(runtime);
-  computeSizes(runtime);
+  computeSizes(runtime, runtime.links);
 
   const errors = validate(system, runtime);
 
@@ -70,9 +83,8 @@ export function loadYaml(yaml: string): {
   return load(parseYaml(yaml) as System);
 }
 
-function enhanceSystems(system: RuntimeSystem | RuntimeSubsystem): void {
+function enhanceSubsystems(system: RuntimeSystem | RuntimeSubsystem): void {
   system.systems ??= [];
-  system.links ??= [];
 
   system.systems.forEach((subsystem, index) => {
     // Set array position in the system.
@@ -81,8 +93,13 @@ function enhanceSystems(system: RuntimeSystem | RuntimeSubsystem): void {
     // Set the parent system.
     subsystem.parent = system;
 
+    // Build its canonical id.
+    subsystem.canonicalId = [system.canonicalId, subsystem.id]
+      .filter(x => x)
+      .join(".");
+
     // Enhance recursively.
-    enhanceSystems(subsystem);
+    enhanceSubsystems(subsystem);
   });
 }
 
@@ -91,24 +108,27 @@ function enhanceLinks(system: RuntimeSystem | RuntimeSubsystem): void {
     // Set array position in the system.
     link.index = index;
 
-    // Set the system.
-    link.system = system;
+    // Set system A.
+    let systemA: RuntimeSubsystem | RuntimeSystem | undefined = system;
 
-    // Split the references in system / sub-system.
-    const [a, subA, ..._restA] = link.a.split(".");
+    link.a.split(".").forEach(subsystemId => {
+      if (systemA) {
+        systemA = systemA.systems.find(ss => ss.id === subsystemId);
+      }
+    });
 
-    link.a = a!;
-    link.subA = subA;
+    link.systemA = systemA as RuntimeSubsystem;
 
-    const [b, subB, ..._restB] = link.b.split(".");
+    // Set system B.
+    let systemB: RuntimeSubsystem | RuntimeSystem | undefined = system;
 
-    link.b = b!;
-    link.subB = subB;
-  });
+    link.b.split(".").forEach(subsystemId => {
+      if (systemB) {
+        systemB = systemB.systems.find(ss => ss.id === subsystemId);
+      }
+    });
 
-  // Enhance recursively.
-  system.systems.forEach(subsystem => {
-    enhanceLinks(subsystem);
+    link.systemB = systemB as RuntimeSubsystem;
   });
 }
 
@@ -116,6 +136,8 @@ function enhanceFlows(system: RuntimeSystem): void {
   system.flows ??= [];
 
   system.flows.forEach(flow => {
+    // Normalize keyframes.
+    // TODO: put in "normalizedKeyframe" so errors are reported on "keyframe".
     const uniqueKeyframes = new Set<number>();
 
     flow.steps.forEach(step => {
@@ -125,9 +147,144 @@ function enhanceFlows(system: RuntimeSystem): void {
     const keyframes = Array.from(uniqueKeyframes).sort();
 
     flow.steps.forEach(step => {
+      // Set normalized keyframe.
       step.keyframe = keyframes.indexOf(step.keyframe);
+
+      // Set systemFrom.
+      let systemFrom: RuntimeSystem | RuntimeSubsystem | undefined = system;
+
+      for (const subsystemId of step.from.split(".")) {
+        systemFrom = systemFrom.systems.find(ss => ss.id === subsystemId);
+
+        if (!systemFrom) {
+          break;
+        }
+      }
+
+      step.systemFrom = systemFrom as RuntimeSubsystem;
+
+      // Set systemTo.
+      let systemTo: RuntimeSystem | RuntimeSubsystem | undefined = system;
+
+      for (const subsystemId of step.to.split(".")) {
+        systemTo = systemTo.systems.find(ss => ss.id === subsystemId);
+
+        if (!systemTo) {
+          break;
+        }
+      }
+
+      step.systemTo = systemTo as RuntimeSubsystem;
+
+      // Set links.
+      step.links ??= [];
+
+      if (step.systemFrom && step.systemTo) {
+        step.links = findLinks(system.links, step.from, step.to);
+      }
     });
   });
+}
+
+function findLinks(
+  links: RuntimeLink[],
+  from: string,
+  to: string,
+): RuntimeLink[] {
+  const systemNameToNumber = new Map<string, number>();
+
+  let nextNumber = 0;
+
+  for (const link of links) {
+    if (!systemNameToNumber.has(link.a)) {
+      systemNameToNumber.set(link.a, nextNumber);
+      nextNumber += 1;
+    }
+
+    if (!systemNameToNumber.has(link.b)) {
+      systemNameToNumber.set(link.b, nextNumber);
+      nextNumber += 1;
+    }
+  }
+
+  if (
+    systemNameToNumber.get(from) === undefined ||
+    systemNameToNumber.get(to) === undefined
+  ) {
+    return [];
+  }
+
+  const numberToSystemName = new Array(systemNameToNumber.size);
+
+  systemNameToNumber.forEach((index, subsystemName) => {
+    numberToSystemName[index] = subsystemName;
+  });
+
+  const graph = new Array<number[]>(systemNameToNumber.size);
+
+  for (let i = 0; i < systemNameToNumber.size; i++) {
+    graph[i] = [];
+  }
+
+  for (const link of links) {
+    graph[systemNameToNumber.get(link.a)!]!.push(
+      systemNameToNumber.get(link.b)!,
+    );
+    graph[systemNameToNumber.get(link.b)!]!.push(
+      systemNameToNumber.get(link.a)!,
+    );
+  }
+
+  const breadcrumbs = Array<number>(systemNameToNumber.size).fill(-1);
+  const distances = Array<number>(systemNameToNumber.size).fill(Infinity);
+  const queue = [systemNameToNumber.get(from)!];
+
+  distances[systemNameToNumber.get(from)!] = 0;
+
+  while (queue.length) {
+    const node = queue.shift()!;
+
+    for (const neighbor of graph[node]!) {
+      if (distances[neighbor] === Infinity) {
+        breadcrumbs[neighbor] = node;
+        distances[neighbor] = distances[node]! + 1;
+
+        queue.push(neighbor);
+      }
+    }
+  }
+
+  if (distances[systemNameToNumber.get(to)!] === Infinity) {
+    return [];
+  }
+
+  const pathIndexes = [systemNameToNumber.get(to)!];
+
+  let currentNode = systemNameToNumber.get(to)!;
+
+  while (breadcrumbs[currentNode] !== -1) {
+    pathIndexes.push(breadcrumbs[currentNode]!);
+
+    currentNode = breadcrumbs[currentNode]!;
+  }
+
+  const pathSystems = pathIndexes
+    .reverse()
+    .map(index => numberToSystemName[index]);
+
+  const pathLinks: RuntimeLink[] = [];
+
+  for (let i = 0; i < pathSystems.length - 1; i++) {
+    const link = links.find(
+      l =>
+        (l.a === pathSystems[i] && l.b === pathSystems[i + 1]) ||
+        (l.b === pathSystems[i] && l.a === pathSystems[i + 1]),
+    )!;
+
+    pathLinks.push(link);
+  }
+
+  return pathLinks;
 }
 
 function computePositions(system: RuntimeSystem | RuntimeSubsystem): void {
@@ -177,17 +334,16 @@ function computePositions(system: RuntimeSystem | RuntimeSubsystem): void {
 // |  |  |  |  |  |
 // +--+--+--+--+--+-- etc.
 //
-function computeSizes(system: RuntimeSystem | RuntimeSubsystem): void {
+function computeSizes(
+  system: RuntimeSystem | RuntimeSubsystem,
+  links: RuntimeLink[],
+): void {
   for (const subsystem of system.systems) {
-    let linksCount = system.links.filter(
-      link => link.a === subsystem.id || link.b === subsystem.id,
+    const linksCount = links.filter(
+      link =>
+        link.a.startsWith(subsystem.canonicalId) ||
+        link.b.startsWith(subsystem.canonicalId),
     ).length;
-
-    if (subsystem.parent) {
-      linksCount += subsystem.parent.links.filter(
-        link => link.subA === subsystem.id || link.subB === subsystem.id,
-      ).length;
-    }
 
     if (linksCount <= 4) {
       subsystem.size = {
@@ -234,6 +390,6 @@ function computeSizes(system: RuntimeSystem | RuntimeSubsystem): void {
       }
     }
 
-    computeSizes(subsystem);
+    computeSizes(subsystem, links);
   }
 }

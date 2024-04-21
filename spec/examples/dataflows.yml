@@ -23,9 +23,6 @@ systems:
         position:
           x: 10
           y: 2
-    links:
-      - a: server
-        b: database
   - id: whatever
     position:
       x: 9
@@ -41,6 +38,8 @@ links:
     b: whatever
   - a: datadog
     b: backend.server
+  - a: backend.server
+    b: backend.database
 flows:
   - steps:
       - from: frontend

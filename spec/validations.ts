@@ -40,11 +40,13 @@ export function validate(
   const systemOverlapErrors = validateSystemOverlaps(runtime);
   const systemErrors = validateSystems(runtime);
   const linkErrors = validateLinks(runtime);
+  const flowErrors = validateFlows(runtime);
   const systemBoundaryErrors = validateSystemBoundaries(runtime);
 
   return systemOverlapErrors
     .concat(systemErrors)
     .concat(linkErrors)
+    .concat(flowErrors)
     .concat(systemBoundaryErrors);
 }
 
@@ -117,15 +119,12 @@ function validateLinks(
   const errors: ValidationError[] = [];
 
   system.links.forEach(link => {
-    // A.Y <> A.Y
-    // Done separately from A <> A validation to have a more specific error.
-    if (link.a === link.b && (link.subA || link.subB)) {
-      errors.push({
-        path: getLinkPath(link),
-        message: "self-reference sub-systems",
-      });
-      // A <> A
-    } else if (link.a === link.b) {
+    // A <> A
+    if (
+      link.a === link.b ||
+      link.a.startsWith(link.b) ||
+      link.b.startsWith(link.a)
+    ) {
       errors.push({
         path: getLinkPath(link),
         message: "self-reference",
@@ -138,14 +137,8 @@ function validateLinks(
       system.links.some(
         other =>
           other.index !== link.index &&
-          [other.a, other.subA, other.b, other.subB]
-            .filter(x => x)
-            .sort()
-            .join("") ===
-            [link.a, link.subA, link.b, link.subB]
-              .filter(x => x)
-              .sort()
-              .join(""),
+          [other.a, other.b].sort().join("") ===
+            [link.a, link.b].sort().join(""),
       )
     ) {
       errors.push({
@@ -154,49 +147,76 @@ function validateLinks(
       });
     }
 
-    const systemA = system.systems.find(subsystem => subsystem.id === link.a);
-    const systemB = system.systems.find(subsystem => subsystem.id === link.b);
-
-    if (!systemA) {
+    if (!link.systemA) {
       errors.push({
         path: [getLinkPath(link), "a"].join("/"),
         message: "missing",
       });
     }
 
-    if (!systemB) {
+    if (!link.systemB) {
       errors.push({
         path: [getLinkPath(link), "b"].join("/"),
         message: "missing",
       });
     }
 
-    if (
-      systemA &&
-      link.subA &&
-      !systemA.systems.some(subsystem => subsystem.id === link.subA)
-    ) {
+    if (link.systemA && link.systemA.systems.length) {
       errors.push({
         path: [getLinkPath(link), "a"].join("/"),
-        message: "missing",
+        message: "inaccurate",
       });
     }
 
-    if (
-      systemB &&
-      link.subB &&
-      !systemB.systems.some(subsystem => subsystem.id === link.subB)
-    ) {
+    if (link.systemB && link.systemB.systems.length) {
       errors.push({
         path: [getLinkPath(link), "b"].join("/"),
-        message: "missing",
+        message: "inaccurate",
       });
     }
   });
 
-  // Validate recursively.
-  system.systems.forEach(subsystem => {
-    errors.push(...validateLinks(subsystem));
+  return errors;
+}
+
+function validateFlows(system: RuntimeSystem): ValidationError[] {
+  const errors: ValidationError[] = [];
+
+  system.flows.forEach((flow, flowIndex) => {
+    flow.steps.forEach((step, stepIndex) => {
+      if (!step.systemFrom) {
+        errors.push({
+          path: `/flows/${flowIndex}/steps/${stepIndex}/from`,
+          message: "missing",
+        });
+      }
+
+      if (!step.systemTo) {
+        errors.push({
+          path: `/flows/${flowIndex}/steps/${stepIndex}/to`,
+          message: "missing",
+        });
+      }
+
+      if (step.systemFrom && step.systemTo) {
+        if (step.systemFrom.systems.length) {
+          errors.push({
+            path: `/flows/${flowIndex}/steps/${stepIndex}/from`,
+            message: "inaccurate",
+          });
+        } else if (step.systemTo.systems.length) {
+          errors.push({
+            path: `/flows/${flowIndex}/steps/${stepIndex}/to`,
+            message: "inaccurate",
+          });
+        } else if (!step.links.length) {
+          errors.push({
+            path: `/flows/${flowIndex}/steps/${stepIndex}`,
+            message: "no path",
+          });
+        }
+      }
+    });
   });
 
   return errors;
@@ -244,18 +264,5 @@ function getSubsystemPath(subsystem: RuntimeSubsystem) {
 }
 
 function getLinkPath(link: RuntimeLink) {
-  const breadcrumbs: (RuntimeSystem | RuntimeSubsystem)[] = [];
-
-  let current: RuntimeSystem | RuntimeSubsystem | undefined = link.system;
-
-  while (current) {
-    breadcrumbs.push(current);
-    current = current.parent;
-  }
-
-  return breadcrumbs
-    .reverse()
-    .map(system => ("index" in system ? `/systems/${system.index}` : ""))
-    .join("")
-    .concat(`/links/${link.index}`);
+  return `/links/${link.index}`;
 }

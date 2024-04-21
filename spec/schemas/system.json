@@ -28,7 +28,7 @@
     },
     "links": {
       "type": "array",
-      "description": "The links of the system.",
+      "description": "The links of the system and sub-systems.",
       "items": {
         "$ref": "https://dataflows.io/link.json"
       }
