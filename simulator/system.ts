@@ -33,17 +33,17 @@ export class SystemSimulator {
       RuntimeLimits.MaxSystemHeight,
     );
 
-    // Add components & ports.
-    for (const component of this.system.components) {
+    // Add sub-systems & ports.
+    for (const subsystem of this.system.systems) {
       // Ports padding.
       for (
-        let i = component.position.x - 1;
-        i < component.position.x + component.size.width + 1;
+        let i = subsystem.position.x - 1;
+        i < subsystem.position.x + subsystem.size.width + 1;
         i++
       ) {
         for (
-          let j = component.position.y - 1;
-          j < component.position.y + component.size.height + 1;
+          let j = subsystem.position.y - 1;
+          j < subsystem.position.y + subsystem.size.height + 1;
           j++
         ) {
           this.grid[i]![j] = GridObjectType.PortPadding;
@@ -53,13 +53,13 @@ export class SystemSimulator {
 
       // Component.
       for (
-        let i = component.position.x;
-        i < component.position.x + component.size.width;
+        let i = subsystem.position.x;
+        i < subsystem.position.x + subsystem.size.width;
         i++
       ) {
         for (
-          let j = component.position.y;
-          j < component.position.y + component.size.height;
+          let j = subsystem.position.y;
+          j < subsystem.position.y + subsystem.size.height;
           j++
         ) {
           this.grid[i]![j] = GridObjectType.Component;
@@ -68,7 +68,7 @@ export class SystemSimulator {
       }
 
       // Ports.
-      for (const port of component.ports) {
+      for (const port of subsystem.ports) {
         this.grid[port.x]![port.y] = GridObjectType.Port;
         finderGrid.setWalkableAt(port.x, port.y, true);
       }
@@ -78,37 +78,37 @@ export class SystemSimulator {
     const finder = new pathfinding.BestFirstFinder();
 
     for (const link of this.system.links) {
-      const componentA = this.system.components.find(
-        component => component.name === link.componentAName,
+      const subsystemA = this.system.systems.find(
+        subsystem => subsystem.id === link.a,
       );
 
-      const componentB = this.system.components.find(
-        component => component.name === link.componentBName,
+      const subsystemB = this.system.systems.find(
+        subsystem => subsystem.id === link.b,
       );
 
-      if (componentA && componentB) {
-        const componentAPort = componentA.ports.find(
+      if (subsystemA && subsystemB) {
+        const subsystemAPort = subsystemA.ports.find(
           port => this.grid[port.x]![port.y] === GridObjectType.Port,
         );
 
-        const componentBPort = componentB.ports.find(
+        const subsystemBPort = subsystemB.ports.find(
           port => this.grid[port.x]![port.y] === GridObjectType.Port,
         );
 
-        if (componentAPort && componentBPort) {
+        if (subsystemAPort && subsystemBPort) {
           const route = finder.findPath(
-            componentAPort.x,
-            componentAPort.y,
-            componentBPort.x,
-            componentBPort.y,
+            subsystemAPort.x,
+            subsystemAPort.y,
+            subsystemBPort.x,
+            subsystemBPort.y,
             finderGrid.clone(),
           );
 
-          this.routes[componentA.name] ??= {};
-          this.routes[componentA.name]![componentB.name] = route;
+          this.routes[subsystemA.id] ??= {};
+          this.routes[subsystemA.id]![subsystemB.id] = route;
 
-          this.routes[componentB.name] ??= {};
-          this.routes[componentB.name]![componentA.name] = route;
+          this.routes[subsystemB.id] ??= {};
+          this.routes[subsystemB.id]![subsystemA.id] = route.slice().reverse();
 
           for (const [x, y] of route) {
             this.grid[x!]![y!] = GridObjectType.Link;
@@ -123,10 +123,7 @@ export class SystemSimulator {
     return this.grid;
   }
 
-  getRoute(
-    fromComponentName: string,
-    toComponentName: string,
-  ): number[][] | undefined {
-    return this.routes[fromComponentName]?.[toComponentName];
+  getRoute(fromSystemId: string, toSystemId: string): number[][] | undefined {
+    return this.routes[fromSystemId]?.[toSystemId];
   }
 }

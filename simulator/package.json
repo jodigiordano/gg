@@ -17,14 +17,17 @@
     "prepublishOnly": "npm run lint && npm run test && npm run compile",
     "lint": "prettier . --write",
     "dev": "npm run compile && tsc --watch --preserveWatchOutput",
-    "test": "node --import tsx --test tests/**/*.test.ts",
+    "test": "NODE_OPTIONS='--import tsx' mocha tests/**/*.ts",
+    "test:debug": "NODE_OPTIONS='--import tsx' mocha --inspect-brk tests/**/*.ts",
     "compile": "tsc"
   },
   "devDependencies": {
     "@tsconfig/strictest": "2.x",
+    "@types/mocha": "10.x",
     "@types/node": "20.x",
     "@types/pathfinding": "^0.0.9",
     "canvas": "2.x",
+    "mocha": "10.x",
     "prettier": "3.x",
     "tsx": "4.x",
     "typescript": "5.x"

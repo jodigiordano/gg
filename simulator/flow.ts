@@ -23,10 +23,7 @@ export class FlowSimulator {
         return [];
       }
 
-      const route = this.systemSimulator.getRoute(
-        step.fromComponentName,
-        step.toComponentName,
-      );
+      const route = this.systemSimulator.getRoute(step.from, step.to);
 
       if (!route) {
         return [];
