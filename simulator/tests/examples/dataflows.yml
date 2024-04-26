@@ -16,8 +16,8 @@ systems:
       - id: server
         description: RESTful HTTP API of the backend
         position:
-          x: 2
-          y: 2
+          x: 0
+          y: 0
       - id: database
         description: Database of the backend
         position:

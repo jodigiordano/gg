@@ -23,7 +23,7 @@ export async function render(simulator: SystemSimulator) {
   const ctx = canvas.getContext("2d");
 
   // Clear to white.
-  ctx.fillStyle = "white";
+  ctx.fillStyle = "#d9d9d9";
   ctx.fillRect(
     0,
     0,
@@ -37,19 +37,22 @@ export async function render(simulator: SystemSimulator) {
       const obj = simulator.layout[i]![j];
 
       if (
-        obj === GridObjectType.Component ||
+        obj === GridObjectType.BlackBox ||
+        obj === GridObjectType.WhiteBox ||
         obj === GridObjectType.Link ||
         obj === GridObjectType.Port ||
         obj === GridObjectType.PortPadding
       ) {
-        if (obj === GridObjectType.Component) {
-          ctx.fillStyle = "black";
+        if (obj === GridObjectType.BlackBox) {
+          ctx.fillStyle = "#e9d8a6";
+        } else if (obj === GridObjectType.WhiteBox) {
+          ctx.fillStyle = "#d9d9d9";
         } else if (obj === GridObjectType.Link) {
-          ctx.fillStyle = "green";
+          ctx.fillStyle = "#005f73";
         } else if (obj === GridObjectType.Port) {
-          ctx.fillStyle = "gray";
+          ctx.fillStyle = "#0066ff";
         } else if (obj === GridObjectType.PortPadding) {
-          ctx.fillStyle = "red";
+          ctx.fillStyle = "#ee9b00";
         }
 
         ctx.fillRect(i * BlockSize, j * BlockSize, BlockSize, BlockSize);
