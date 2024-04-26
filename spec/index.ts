@@ -352,16 +352,10 @@ function computeSizes(
       };
 
       subsystem.ports = [
-        { x: subsystem.position.x + 1, y: subsystem.position.y - 1 },
-        {
-          x: subsystem.position.x + subsystem.size.width,
-          y: subsystem.position.y + 1,
-        },
-        {
-          x: subsystem.position.x + 1,
-          y: subsystem.position.y + subsystem.size.height,
-        },
-        { x: subsystem.position.x - 1, y: subsystem.position.y + 1 },
+        { x: 1, y: -1 }, // middle top
+        { x: subsystem.size.width, y: 1 }, // middle right
+        { x: 1, y: subsystem.size.height }, // middle bottom
+        { x: -1, y: 1 }, // middle left
       ];
     } else {
       subsystem.size = {
@@ -370,23 +364,13 @@ function computeSizes(
       };
 
       subsystem.ports = [
-        { x: subsystem.position.x - 1, y: subsystem.position.y + 1 },
-        {
-          x: subsystem.position.x + subsystem.size.width,
-          y: subsystem.position.y + 1,
-        },
+        { x: -1, y: 1 }, // middle left
+        { x: subsystem.size.width, y: 1 }, // middle right
       ];
 
-      for (
-        let x = subsystem.position.x + 1;
-        x < subsystem.position.x + subsystem.size.width;
-        x += 2
-      ) {
-        subsystem.ports.push({ x, y: subsystem.position.y - 1 });
-        subsystem.ports.push({
-          x,
-          y: subsystem.position.y + subsystem.size.height,
-        });
+      for (let x = 1; x < subsystem.size.width; x += 2) {
+        subsystem.ports.push({ x, y: -1 });
+        subsystem.ports.push({ x, y: subsystem.size.height });
       }
     }
 
