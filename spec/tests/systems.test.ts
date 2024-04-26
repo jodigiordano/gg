@@ -83,6 +83,30 @@ describe("systems", () => {
     });
   });
 
+  describe("titleSize", () => {
+    it("calculated", () => {
+      const system: System = {
+        specificationVersion: "1.0.0",
+        title: "test",
+        systems: [
+          {
+            id: "foo",
+            title: "bar spam",
+          },
+        ],
+      };
+
+      const { system: runtime } = load(system);
+
+      assert.deepEqual(runtime.systems.at(0)?.titleSize, {
+        width: 3,
+        height: 1,
+      });
+
+      assert.deepEqual(runtime.systems.at(0)?.size, { width: 5, height: 3 });
+    });
+  });
+
   describe("position", () => {
     it("out of bounds", () => {
       const system: System = {
@@ -144,17 +168,19 @@ describe("systems", () => {
         specificationVersion: "1.0.0",
         title: "test",
         systems: [
-          { // has size of 3x3
+          {
+            // has size of 3x3
             id: "foo",
             position: {
-              x: 10,
+              x: 0,
               y: 0,
             },
           },
-          { // has size of 3x3
+          {
+            // has size of 3x3
             id: "bar",
             position: {
-              x: 12,
+              x: 2,
               y: 0,
             },
           },
@@ -180,17 +206,58 @@ describe("systems", () => {
         specificationVersion: "1.0.0",
         title: "test",
         systems: [
-          { // has size of 3x3
+          {
+            // has size of 3x3
             id: "foo",
             position: {
-              x: 10,
+              x: 0,
               y: 0,
             },
           },
-          { // has size of 3x3
+          {
+            // has size of 3x3
             id: "bar",
             position: {
-              x: 14,
+              x: 4,
+              y: 0,
+            },
+          },
+        ],
+      };
+
+      const { errors } = load(system);
+
+      assert.deepEqual(errors, [
+        {
+          message: "overlaps with /systems/1",
+          path: "/systems/0",
+        },
+        {
+          message: "overlaps with /systems/0",
+          path: "/systems/1",
+        },
+      ]);
+    });
+
+    it("overlaps - title", () => {
+      const system: System = {
+        specificationVersion: "1.0.0",
+        title: "test",
+        systems: [
+          {
+            // has size of ~20x3
+            id: "foo",
+            title: "has a very long title, which makes it size X grow",
+            position: {
+              x: 0,
+              y: 0,
+            },
+          },
+          {
+            // has size of 3x3
+            id: "bar",
+            position: {
+              x: 10,
               y: 0,
             },
           },

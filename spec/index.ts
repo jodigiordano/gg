@@ -26,8 +26,10 @@ export interface RuntimeLink extends Link {
 
 export interface RuntimeSubsystem extends Subsystem {
   canonicalId: string;
+  title: string;
   index: number;
   size: RuntimeSystemSize;
+  titleSize: RuntimeSystemSize;
   position: { x: number; y: number };
   ports: RuntimePort[];
   parent?: RuntimeSystem | RuntimeSubsystem;
@@ -92,6 +94,12 @@ function enhanceSubsystems(system: RuntimeSystem | RuntimeSubsystem): void {
 
     // Set the parent system.
     subsystem.parent = system;
+
+    // Set the title, if necessary.
+    subsystem.title ??= subsystem.id;
+
+    // Initialize ports.
+    subsystem.ports = [];
 
     // Build its canonical id.
     subsystem.canonicalId = [system.canonicalId, subsystem.id]
@@ -345,33 +353,36 @@ function computeSizes(
         link.b.startsWith(subsystem.canonicalId),
     ).length;
 
-    if (linksCount <= 4) {
-      subsystem.size = {
-        width: 3,
-        height: 3,
-      };
+    // TODO: Support titles with newlines.
+    subsystem.titleSize = {
+      width: Math.ceil(subsystem.title.length / 3) | 0,
+      height: 1,
+    };
 
-      subsystem.ports = [
-        { x: 1, y: -1 }, // middle top
-        { x: subsystem.size.width, y: 1 }, // middle right
-        { x: 1, y: subsystem.size.height }, // middle bottom
-        { x: -1, y: 1 }, // middle left
-      ];
-    } else {
-      subsystem.size = {
-        width: 3 + ((linksCount - 4) % 2),
-        height: 3,
-      };
+    const sizeToSupportLinks: RuntimeSystemSize = {
+      width: 3 + ((linksCount - 4) % 2),
+      height: 3,
+    };
 
-      subsystem.ports = [
-        { x: -1, y: 1 }, // middle left
-        { x: subsystem.size.width, y: 1 }, // middle right
-      ];
+    subsystem.size = {
+      width: Math.max(
+        sizeToSupportLinks.width,
+        subsystem.titleSize.width + 2 /* padding */,
+      ),
+      height: Math.max(
+        sizeToSupportLinks.height,
+        subsystem.titleSize.height + 2 /* padding */,
+      ),
+    };
 
-      for (let x = 1; x < subsystem.size.width; x += 2) {
-        subsystem.ports.push({ x, y: -1 });
-        subsystem.ports.push({ x, y: subsystem.size.height });
-      }
+    for (let x = 1; x < subsystem.size.width; x += 2) {
+      subsystem.ports.push({ x, y: -1 });
+      subsystem.ports.push({ x, y: subsystem.size.height });
+    }
+
+    for (let y = 1; y < subsystem.size.height; y += 2) {
+      subsystem.ports.push({ x: -1, y });
+      subsystem.ports.push({ x: subsystem.size.width, y });
     }
 
     computeSizes(subsystem, links);
