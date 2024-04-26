@@ -37,20 +37,20 @@ export function validate(
     }));
   }
 
-  const systemOverlapErrors = validateSystemOverlaps(runtime);
+  const systemDistanceErrors = validateSystemDistances(runtime);
   const systemErrors = validateSystems(runtime);
   const linkErrors = validateLinks(runtime);
   const flowErrors = validateFlows(runtime);
   const systemBoundaryErrors = validateSystemBoundaries(runtime);
 
-  return systemOverlapErrors
+  return systemDistanceErrors
     .concat(systemErrors)
     .concat(linkErrors)
     .concat(flowErrors)
     .concat(systemBoundaryErrors);
 }
 
-function validateSystemOverlaps(
+function validateSystemDistances(
   system: RuntimeSystem | RuntimeSubsystem,
 ): ValidationError[] {
   const errors: ValidationError[] = [];
@@ -61,16 +61,24 @@ function validateSystemOverlaps(
         continue;
       }
 
-      const aTopRight = subsystemA.position.x + subsystemA.size.width;
-      const aBottomLeft = subsystemA.position.y + subsystemA.size.height;
-      const bTopRight = subsystemB.position.x + subsystemB.size.width;
-      const bBottomLeft = subsystemB.position.y + subsystemB.size.height;
+      // Each sub-system has a margin to make room for ports & routing.
+      const margin = 1;
+
+      const aLeft = subsystemA.position.x - margin;
+      const aRight = subsystemA.position.x + subsystemA.size.width + margin;
+      const aTop = subsystemA.position.y - margin;
+      const aBottom = subsystemA.position.y + subsystemA.size.height + margin;
+
+      const bLeft = subsystemB.position.x - margin;
+      const bRight = subsystemB.position.x + subsystemB.size.width + margin;
+      const bTop = subsystemB.position.y - margin;
+      const bBottom = subsystemB.position.y + subsystemB.size.height + margin;
 
       if (
-        subsystemA.position.x <= bTopRight &&
-        aTopRight >= subsystemB.position.x &&
-        subsystemA.position.y <= bBottomLeft &&
-        aBottomLeft >= subsystemB.position.y
+        aLeft <= bRight &&
+        aRight >= bLeft &&
+        aTop <= bBottom &&
+        aBottom >= bTop
       ) {
         errors.push({
           path: getSubsystemPath(subsystemA),
@@ -82,7 +90,7 @@ function validateSystemOverlaps(
 
   // Validate recursively.
   for (const subsystem of system.systems) {
-    errors.push(...validateSystemOverlaps(subsystem));
+    errors.push(...validateSystemDistances(subsystem));
   }
 
   return errors;

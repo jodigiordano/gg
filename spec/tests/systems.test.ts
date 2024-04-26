@@ -144,17 +144,53 @@ describe("systems", () => {
         specificationVersion: "1.0.0",
         title: "test",
         systems: [
-          {
+          { // has size of 3x3
             id: "foo",
             position: {
               x: 10,
               y: 0,
             },
           },
-          {
+          { // has size of 3x3
             id: "bar",
             position: {
               x: 12,
+              y: 0,
+            },
+          },
+        ],
+      };
+
+      const { errors } = load(system);
+
+      assert.deepEqual(errors, [
+        {
+          message: "overlaps with /systems/1",
+          path: "/systems/0",
+        },
+        {
+          message: "overlaps with /systems/0",
+          path: "/systems/1",
+        },
+      ]);
+    });
+
+    it("overlaps - margins", () => {
+      const system: System = {
+        specificationVersion: "1.0.0",
+        title: "test",
+        systems: [
+          { // has size of 3x3
+            id: "foo",
+            position: {
+              x: 10,
+              y: 0,
+            },
+          },
+          { // has size of 3x3
+            id: "bar",
+            position: {
+              x: 14,
               y: 0,
             },
           },
