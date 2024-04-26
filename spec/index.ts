@@ -2,21 +2,25 @@ import { load as parseYaml } from "js-yaml";
 import { Link, System, Subsystem, Flow, FlowStep } from "./specification";
 import { validate, ValidationError } from "./validations";
 
+const TitlePadding = 1;
+
 // Must reflect https://dataflows.io/system.json
 export const RuntimeLimits = {
   MaxSystemWidth: 64,
   MaxSystemHeight: 64,
 };
 
-export interface RuntimeSystemSize {
+export interface RuntimeSize {
   width: number;
   height: number;
 }
 
-export interface RuntimePort {
+export interface RuntimePosition {
   x: number;
   y: number;
 }
+
+export interface RuntimePort extends RuntimePosition {}
 
 export interface RuntimeLink extends Link {
   index: number;
@@ -27,10 +31,11 @@ export interface RuntimeLink extends Link {
 export interface RuntimeSubsystem extends Subsystem {
   canonicalId: string;
   title: string;
+  titlePosition: RuntimePosition;
+  titleSize: RuntimeSize;
   index: number;
-  size: RuntimeSystemSize;
-  titleSize: RuntimeSystemSize;
-  position: { x: number; y: number };
+  size: RuntimeSize;
+  position: RuntimePosition;
   ports: RuntimePort[];
   parent?: RuntimeSystem | RuntimeSubsystem;
   systems: RuntimeSubsystem[];
@@ -97,6 +102,17 @@ function enhanceSubsystems(system: RuntimeSystem | RuntimeSubsystem): void {
 
     // Set the title, if necessary.
     subsystem.title ??= subsystem.id;
+
+    // TODO: Support titles with newlines.
+    subsystem.titleSize = {
+      width: Math.ceil(subsystem.title.length / 3) | 0,
+      height: 1,
+    };
+
+    subsystem.titlePosition = {
+      x: TitlePadding,
+      y: TitlePadding,
+    };
 
     // Initialize ports.
     subsystem.ports = [];
@@ -314,34 +330,6 @@ function computePositions(system: RuntimeSystem | RuntimeSubsystem): void {
   }
 }
 
-//  0 - 4 links
-// +--+--+--+
-// |  |  |  |
-// +--+--+--+
-// |  |  |  |
-// +--+--+--+
-// |  |  |  |
-// +--+--+--+
-//
-//
-//  5 - 6 links
-// +--+--+--+--+--+
-// |  |  |  |  |  |
-// +--+--+--+--+--+
-// |  |  |  |  |  |
-// +--+--+--+--+--+
-// |  |  |  |  |  |
-// +--+--+--+--+--+
-//
-//  7 - 8 links
-// +--+--+--+--+--+-- etc.
-// |  |  |  |  |  |
-// +--+--+--+--+--+-- etc.
-// |  |  |  |  |  |
-// +--+--+--+--+--+-- etc.
-// |  |  |  |  |  |
-// +--+--+--+--+--+-- etc.
-//
 function computeSizes(
   system: RuntimeSystem | RuntimeSubsystem,
   links: RuntimeLink[],
@@ -353,13 +341,7 @@ function computeSizes(
         link.b.startsWith(subsystem.canonicalId),
     ).length;
 
-    // TODO: Support titles with newlines.
-    subsystem.titleSize = {
-      width: Math.ceil(subsystem.title.length / 3) | 0,
-      height: 1,
-    };
-
-    const sizeToSupportLinks: RuntimeSystemSize = {
+    const sizeToSupportLinks: RuntimeSize = {
       width: 3 + ((linksCount - 4) % 2),
       height: 3,
     };
@@ -367,11 +349,11 @@ function computeSizes(
     subsystem.size = {
       width: Math.max(
         sizeToSupportLinks.width,
-        subsystem.titleSize.width + 2 /* padding */,
+        subsystem.titleSize.width + 2 * TitlePadding,
       ),
       height: Math.max(
         sizeToSupportLinks.height,
-        subsystem.titleSize.height + 2 /* padding */,
+        subsystem.titleSize.height + 2 * TitlePadding,
       ),
     };
 

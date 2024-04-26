@@ -107,6 +107,24 @@ describe("systems", () => {
     });
   });
 
+  describe("titlePosition", () => {
+    it("calculated", () => {
+      const system: System = {
+        specificationVersion: "1.0.0",
+        title: "test",
+        systems: [
+          {
+            id: "foo",
+          },
+        ],
+      };
+
+      const { system: runtime } = load(system);
+
+      assert.deepEqual(runtime.systems.at(0)?.titlePosition, { x: 1, y: 1 });
+    });
+  });
+
   describe("position", () => {
     it("out of bounds", () => {
       const system: System = {
