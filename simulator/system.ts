@@ -14,6 +14,8 @@ export enum GridObjectType {
   Link = 3,
   Port = 4,
   PortPadding = 5,
+  SystemTitle = 6,
+  SystemTitlePadding = 7,
 }
 
 export interface SystemSimulatorOptions {
@@ -36,6 +38,12 @@ interface GridSystem {
     x: number;
     y: number;
   }[];
+  title: {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+  };
 }
 
 export class SystemSimulator {
@@ -72,6 +80,7 @@ export class SystemSimulator {
     this.computeGridObjectSizes(system, false);
     this.computeGridObjectPositions(system);
     this.computeGridObjectPorts(system, false);
+    this.computeGridObjectTitles(system, false);
 
     // Add sub-systems & ports.
     const toDraw: RuntimeSubsystem[] = [...this.system.systems];
@@ -94,6 +103,7 @@ export class SystemSimulator {
       for (let x = gridSS.x - 1; x < gridSS.x + gridSS.width + 1; x++) {
         for (let y = gridSS.y - 1; y < gridSS.y + gridSS.height + 1; y++) {
           this.grid[x]![y] = GridObjectType.PortPadding;
+
           finderGrid.setWalkableAt(x, y, false);
         }
       }
@@ -104,6 +114,7 @@ export class SystemSimulator {
           this.grid[x]![y] = blackbox
             ? GridObjectType.BlackBox
             : GridObjectType.WhiteBox;
+
           finderGrid.setWalkableAt(x, y, !blackbox);
         }
       }
@@ -112,6 +123,39 @@ export class SystemSimulator {
       for (const port of gridSS.ports) {
         this.grid[port.x]![port.y] = GridObjectType.Port;
         finderGrid.setWalkableAt(port.x, port.y, true);
+      }
+
+      // Title.
+      for (
+        let x = gridSS.title.x - 1;
+        x < gridSS.title.x + gridSS.title.width + 1;
+        x++
+      ) {
+        for (
+          let y = gridSS.title.y - 1;
+          y < gridSS.title.y + gridSS.title.height + 1;
+          y++
+        ) {
+          this.grid[x]![y] = GridObjectType.SystemTitlePadding;
+
+          finderGrid.setWalkableAt(x, y, false);
+        }
+      }
+
+      for (
+        let x = gridSS.title.x;
+        x < gridSS.title.x + gridSS.title.width;
+        x++
+      ) {
+        for (
+          let y = gridSS.title.y;
+          y < gridSS.title.y + gridSS.title.height;
+          y++
+        ) {
+          this.grid[x]![y] = GridObjectType.SystemTitle;
+
+          finderGrid.setWalkableAt(x, y, false);
+        }
       }
     }
 
@@ -181,6 +225,12 @@ export class SystemSimulator {
       width: -1,
       height: -1,
       ports: [],
+      title: {
+        x: -1,
+        y: -1,
+        width: -1,
+        height: -1,
+      },
     };
 
     this.gridSystems[system.canonicalId] = gridObject;
@@ -226,8 +276,20 @@ export class SystemSimulator {
         }
       }
 
+      // +----------------------+
+      // | Title                |
+      // | +-----+    +-----+   |
+      // | | Foo |====| Bar |   |
+      // | +-----+    +-----+   |
+      // +----------------------+
+
+      if (system.titleSize.width > maxWidth) {
+        maxWidth = system.titleSize.width;
+      }
+
       gridObject.width = maxWidth + 2 * PaddingWhiteBox;
-      gridObject.height = maxHeight + 2 * PaddingWhiteBox;
+      gridObject.height =
+        maxHeight + 2 * PaddingWhiteBox + 2 * system.titleSize.height;
     } else {
       gridObject.width = system.size.width;
       gridObject.height = system.size.height;
@@ -281,6 +343,7 @@ export class SystemSimulator {
       }
 
       gridObject.y += PaddingWhiteBox;
+      gridObject.y += system.titlePosition.y + system.titleSize.height;
 
       bottomY = gridObject.y + gridObject.height;
     }
@@ -342,5 +405,38 @@ export class SystemSimulator {
         y: gridObject.y + port.y,
       }));
     }
+  }
+
+  private computeGridObjectTitles(
+    system: RuntimeSystem | RuntimeSubsystem,
+    hidden: boolean,
+  ): void {
+    // Depth-first traversal.
+    for (const ss of system.systems) {
+      this.computeGridObjectTitles(
+        ss,
+        hidden || this.options.blackBoxes.includes(ss.canonicalId),
+      );
+    }
+
+    // Root system.
+    if (!system.canonicalId) {
+      return;
+    }
+
+    const blackbox = this.options.blackBoxes.includes(system.canonicalId);
+
+    if (!blackbox && hidden) {
+      return;
+    }
+
+    const gridObject = this.gridSystems[system.canonicalId]!;
+
+    gridObject.title = {
+      x: gridObject.x + system.titlePosition.x,
+      y: gridObject.y + system.titlePosition.y,
+      width: system.titleSize.width,
+      height: system.titleSize.height,
+    };
   }
 }

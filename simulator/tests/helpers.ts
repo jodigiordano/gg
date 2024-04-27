@@ -41,7 +41,9 @@ export async function render(simulator: SystemSimulator) {
         obj === GridObjectType.WhiteBox ||
         obj === GridObjectType.Link ||
         obj === GridObjectType.Port ||
-        obj === GridObjectType.PortPadding
+        obj === GridObjectType.PortPadding ||
+        obj === GridObjectType.SystemTitle ||
+        obj === GridObjectType.SystemTitlePadding
       ) {
         if (obj === GridObjectType.BlackBox) {
           ctx.fillStyle = "#e9d8a6";
@@ -53,6 +55,10 @@ export async function render(simulator: SystemSimulator) {
           ctx.fillStyle = "#0066ff";
         } else if (obj === GridObjectType.PortPadding) {
           ctx.fillStyle = "#ee9b00";
+        } else if (obj === GridObjectType.SystemTitle) {
+          ctx.fillStyle = "red";
+        } else if (obj === GridObjectType.SystemTitlePadding) {
+          ctx.fillStyle = "#e9d8a6";
         }
 
         ctx.fillRect(i * BlockSize, j * BlockSize, BlockSize, BlockSize);

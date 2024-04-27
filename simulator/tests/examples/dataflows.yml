@@ -26,11 +26,11 @@ systems:
   - id: whatever
     position:
       x: 9
-      y: 15
+      y: 9
   - id: datadog
     position:
-      x: 2
-      y: 10
+      x: 15
+      y: 30
 links:
   - a: frontend
     b: backend.server
