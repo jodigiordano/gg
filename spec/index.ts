@@ -44,6 +44,8 @@ export interface RuntimeSubsystem extends Subsystem {
 
 export interface RuntimeSystem extends System {
   canonicalId: undefined;
+  titlePosition: RuntimePosition;
+  titleSize: RuntimeSize;
   parent?: undefined;
   systems: RuntimeSubsystem[];
   links: RuntimeLink[];
@@ -67,6 +69,8 @@ export function load(system: System): {
   const runtime = structuredClone(system) as RuntimeSystem;
 
   runtime.links ??= [];
+  runtime.titlePosition = { x: 0, y: 0 };
+  runtime.titleSize = { width: 0, height: 0 };
 
   // TODO: we are enhancing a system that wasn't validated with AJV yet,
   // TODO: so it's the far west in the JSON file.
