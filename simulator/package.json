@@ -34,6 +34,6 @@
   },
   "dependencies": {
     "@dataflows/spec": "0.x",
-    "pathfinding": "0.4.x"
+    "pathfinding": "git@github.com:ivanmayes/PathFinding.js.git"
   }
 }

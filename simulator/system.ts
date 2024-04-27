@@ -160,7 +160,11 @@ export class SystemSimulator {
     }
 
     // Add links (pathfinding).
-    const finder = new pathfinding.AStarFinder();
+    const finder = new pathfinding.AStarFinder({
+      // @ts-ignore
+      avoidStaircase: true,
+      turnPenalty: 1,
+    });
 
     for (const link of this.system.links) {
       const subsystemA = this.gridSystems[link.a]!;
