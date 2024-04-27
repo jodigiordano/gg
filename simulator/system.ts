@@ -160,38 +160,54 @@ export class SystemSimulator {
     }
 
     // Add links (pathfinding).
-    const finder = new pathfinding.BestFirstFinder();
+    const finder = new pathfinding.AStarFinder();
 
     for (const link of this.system.links) {
       const subsystemA = this.gridSystems[link.a]!;
       const subsystemB = this.gridSystems[link.b]!;
 
-      const subsystemAPort = subsystemA.ports.find(
+      const subsystemAPorts = subsystemA.ports.filter(
         port => this.grid[port.x]![port.y] === GridObjectType.Port,
       );
 
-      const subsystemBPort = subsystemB.ports.find(
+      const subsystemBPorts = subsystemB.ports.filter(
         port => this.grid[port.x]![port.y] === GridObjectType.Port,
       );
 
-      if (subsystemAPort && subsystemBPort) {
+      const candidates = subsystemAPorts
+        .flatMap(portA =>
+          subsystemBPorts.map(portB => ({
+            portA,
+            portB,
+            distance: Math.sqrt(
+              Math.pow(portB.x - portA.x, 2) + Math.pow(portB.y - portA.y, 2),
+            ),
+          })),
+        )
+        .sort((a, b) => a.distance - b.distance);
+
+      for (const { portA, portB } of candidates) {
         const route = finder.findPath(
-          subsystemAPort.x,
-          subsystemAPort.y,
-          subsystemBPort.x,
-          subsystemBPort.y,
+          portA.x,
+          portA.y,
+          portB.x,
+          portB.y,
           finderGrid.clone(),
         );
 
-        this.routes[link.a] ??= {};
-        this.routes[link.a]![link.b] = route;
+        if (route.length) {
+          this.routes[link.a] ??= {};
+          this.routes[link.a]![link.b] = route;
 
-        this.routes[link.b] ??= {};
-        this.routes[link.b]![link.a] = route.slice().reverse();
+          this.routes[link.b] ??= {};
+          this.routes[link.b]![link.a] = route.slice().reverse();
 
-        for (const [x, y] of route) {
-          this.grid[x!]![y!] = GridObjectType.Link;
-          finderGrid.setWalkableAt(x!, y!, false);
+          for (const [x, y] of route) {
+            this.grid[x!]![y!] = GridObjectType.Link;
+            finderGrid.setWalkableAt(x!, y!, false);
+          }
+
+          break;
         }
       }
     }
