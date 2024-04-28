@@ -1,4 +1,6 @@
-import pathfinding from "pathfinding";
+import Grid from "./pathfinding/grid";
+import { PathFinder } from "./pathfinding/finder";
+
 import {
   RuntimeSystem,
   RuntimeLimits,
@@ -70,10 +72,8 @@ export class SystemSimulator {
       );
     }
 
-    const finderGrid = new pathfinding.Grid(
-      RuntimeLimits.MaxSystemWidth,
-      RuntimeLimits.MaxSystemHeight,
-    );
+    // TODO: faster way to initialize?
+    const finderGrid = new Grid(this.grid.map(row => row.map(() => 0)));
 
     // Compute grid objects.
     this.initializeGridObjects(system);
@@ -160,8 +160,7 @@ export class SystemSimulator {
     }
 
     // Add links (pathfinding).
-    const finder = new pathfinding.AStarFinder({
-      // @ts-ignore
+    const finder = new PathFinder({
       avoidStaircase: true,
       turnPenalty: 1,
     });
@@ -191,12 +190,14 @@ export class SystemSimulator {
         .sort((a, b) => a.distance - b.distance);
 
       for (const { portA, portB } of candidates) {
+        finderGrid.reset();
+
         const route = finder.findPath(
           portA.x,
           portA.y,
           portB.x,
           portB.y,
-          finderGrid.clone(),
+          finderGrid,
         );
 
         if (route.length) {
@@ -208,6 +209,7 @@ export class SystemSimulator {
 
           for (const [x, y] of route) {
             this.grid[x!]![y!] = GridObjectType.Link;
+
             finderGrid.setWalkableAt(x!, y!, false);
           }
 

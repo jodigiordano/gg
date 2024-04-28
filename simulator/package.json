@@ -23,6 +23,7 @@
   },
   "devDependencies": {
     "@tsconfig/strictest": "2.x",
+    "@types/heap": "^0.2.34",
     "@types/mocha": "10.x",
     "@types/node": "20.x",
     "@types/pathfinding": "^0.0.9",
@@ -34,6 +35,6 @@
   },
   "dependencies": {
     "@dataflows/spec": "0.x",
-    "pathfinding": "git@github.com:ivanmayes/PathFinding.js.git"
+    "heap": "0.2.x"
   }
 }

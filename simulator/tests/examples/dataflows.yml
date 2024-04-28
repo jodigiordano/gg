@@ -40,6 +40,8 @@ links:
     b: backend.server
   - a: backend.server
     b: backend.database
+  - a: whatever
+    b: backend.database
 flows:
   - steps:
       - from: frontend
