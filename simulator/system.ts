@@ -397,7 +397,7 @@ export class SystemSimulator {
       // save some CPU cycles but beware!
       if (!blackbox && hidden) {
         gridObject.ports = this.gridSystems[system.canonicalId!]!.ports;
-      // Whitebox.
+        // Whitebox.
       } else if (!blackbox && ss.systems.length) {
         gridObject.ports = [];
 
@@ -418,7 +418,7 @@ export class SystemSimulator {
             y: gridObject.y + y,
           });
         }
-      // Blackbox.
+        // Blackbox.
       } else {
         gridObject.ports = ss.ports.map(port => ({
           x: gridObject.x + port.x,
