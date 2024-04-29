@@ -388,52 +388,51 @@ export class SystemSimulator {
     system: RuntimeSystem | RuntimeSubsystem,
     hidden: boolean,
   ): void {
-    // Depth-first traversal.
+    for (const ss of system.systems) {
+      const gridObject = this.gridSystems[ss.canonicalId]!;
+      const blackbox = this.options.blackBoxes.includes(ss.canonicalId);
+
+      // When the sub-system is hidden, it has the same ports as its parent.
+      // I am not making a deep copy here because it is not necessary and
+      // save some CPU cycles but beware!
+      if (!blackbox && hidden) {
+        gridObject.ports = this.gridSystems[system.canonicalId!]!.ports;
+      // Whitebox.
+      } else if (!blackbox && ss.systems.length) {
+        gridObject.ports = [];
+
+        for (let x = 1; x < gridObject.width; x += 2) {
+          gridObject.ports.push({ x: gridObject.x + x, y: gridObject.y - 1 });
+
+          gridObject.ports.push({
+            x: gridObject.x + x,
+            y: gridObject.y + gridObject.height,
+          });
+        }
+
+        for (let y = 1; y < gridObject.height; y += 2) {
+          gridObject.ports.push({ x: gridObject.x - 1, y: gridObject.y + y });
+
+          gridObject.ports.push({
+            x: gridObject.x + gridObject.width,
+            y: gridObject.y + y,
+          });
+        }
+      // Blackbox.
+      } else {
+        gridObject.ports = ss.ports.map(port => ({
+          x: gridObject.x + port.x,
+          y: gridObject.y + port.y,
+        }));
+      }
+    }
+
+    // Breadth-first traversal.
     for (const ss of system.systems) {
       this.computeGridObjectPorts(
         ss,
         hidden || this.options.blackBoxes.includes(ss.canonicalId),
       );
-    }
-
-    // Root system.
-    if (!system.canonicalId) {
-      return;
-    }
-
-    const blackbox = this.options.blackBoxes.includes(system.canonicalId);
-
-    if (!blackbox && hidden) {
-      return;
-    }
-
-    const gridObject = this.gridSystems[system.canonicalId]!;
-
-    if (!blackbox && system.systems.length) {
-      gridObject.ports = [];
-
-      for (let x = 1; x < gridObject.width; x += 2) {
-        gridObject.ports.push({ x: gridObject.x + x, y: gridObject.y - 1 });
-
-        gridObject.ports.push({
-          x: gridObject.x + x,
-          y: gridObject.y + gridObject.height,
-        });
-      }
-
-      for (let y = 1; y < gridObject.height; y += 2) {
-        gridObject.ports.push({ x: gridObject.x - 1, y: gridObject.y + y });
-
-        gridObject.ports.push({
-          x: gridObject.x + gridObject.width,
-          y: gridObject.y + y,
-        });
-      }
-    } else {
-      gridObject.ports = system.ports.map(port => ({
-        x: gridObject.x + port.x,
-        y: gridObject.y + port.y,
-      }));
     }
   }
 
