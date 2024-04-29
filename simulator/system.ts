@@ -47,6 +47,7 @@ interface GridSystem {
     width: number;
     height: number;
   };
+  hidden: boolean;
 }
 
 export class SystemSimulator {
@@ -78,10 +79,11 @@ export class SystemSimulator {
 
     // Compute grid objects.
     this.initializeGridObjects(system);
-    this.computeGridObjectSizes(system, false);
+    this.computeGridVisibility(system, false);
+    this.computeGridObjectSizes(system);
     this.computeGridObjectPositions(system);
-    this.computeGridObjectPorts(system, false);
-    this.computeGridObjectTitles(system, false);
+    this.computeGridObjectPorts(system);
+    this.computeGridObjectTitles(system);
 
     // Add sub-systems & ports.
     const toDraw: RuntimeSubsystem[] = [...this.system.systems];
@@ -170,6 +172,11 @@ export class SystemSimulator {
     for (const link of this.system.links) {
       const subsystemA = this.gridSystems[link.a]!;
       const subsystemB = this.gridSystems[link.b]!;
+
+      // The link references two sub-systems that are hidden inside a blackbox.
+      if (subsystemA.hidden && subsystemB.hidden) {
+        continue;
+      }
 
       const subsystemAPorts = subsystemA.ports.filter(
         port => this.grid[port.x]![port.y] === GridObjectType.Port,
@@ -261,18 +268,19 @@ export class SystemSimulator {
         width: -1,
         height: -1,
       },
+      hidden: false,
     };
 
     this.gridSystems[system.canonicalId] = gridObject;
   }
 
-  private computeGridObjectSizes(
+  private computeGridVisibility(
     system: RuntimeSystem | RuntimeSubsystem,
     hidden: boolean,
   ): void {
     // Depth-first traversal.
     for (const ss of system.systems) {
-      this.computeGridObjectSizes(
+      this.computeGridVisibility(
         ss,
         hidden || this.options.blackBoxes.includes(ss.canonicalId),
       );
@@ -286,7 +294,26 @@ export class SystemSimulator {
     const gridObject = this.gridSystems[system.canonicalId]!;
     const blackbox = this.options.blackBoxes.includes(system.canonicalId);
 
-    if (!blackbox && hidden) {
+    gridObject.hidden = !blackbox && hidden;
+  }
+
+  private computeGridObjectSizes(
+    system: RuntimeSystem | RuntimeSubsystem,
+  ): void {
+    // Depth-first traversal.
+    for (const ss of system.systems) {
+      this.computeGridObjectSizes(ss);
+    }
+
+    // Root system.
+    if (!system.canonicalId) {
+      return;
+    }
+
+    const gridObject = this.gridSystems[system.canonicalId]!;
+    const blackbox = this.options.blackBoxes.includes(system.canonicalId);
+
+    if (gridObject.hidden) {
       gridObject.width = 0;
       gridObject.height = 0;
     } else if (!blackbox && system.systems.length) {
@@ -386,7 +413,6 @@ export class SystemSimulator {
 
   private computeGridObjectPorts(
     system: RuntimeSystem | RuntimeSubsystem,
-    hidden: boolean,
   ): void {
     for (const ss of system.systems) {
       const gridObject = this.gridSystems[ss.canonicalId]!;
@@ -395,7 +421,7 @@ export class SystemSimulator {
       // When the sub-system is hidden, it has the same ports as its parent.
       // I am not making a deep copy here because it is not necessary and
       // save some CPU cycles but beware!
-      if (!blackbox && hidden) {
+      if (gridObject.hidden) {
         gridObject.ports = this.gridSystems[system.canonicalId!]!.ports;
         // Whitebox.
       } else if (!blackbox && ss.systems.length) {
@@ -429,23 +455,16 @@ export class SystemSimulator {
 
     // Breadth-first traversal.
     for (const ss of system.systems) {
-      this.computeGridObjectPorts(
-        ss,
-        hidden || this.options.blackBoxes.includes(ss.canonicalId),
-      );
+      this.computeGridObjectPorts(ss);
     }
   }
 
   private computeGridObjectTitles(
     system: RuntimeSystem | RuntimeSubsystem,
-    hidden: boolean,
   ): void {
     // Depth-first traversal.
     for (const ss of system.systems) {
-      this.computeGridObjectTitles(
-        ss,
-        hidden || this.options.blackBoxes.includes(ss.canonicalId),
-      );
+      this.computeGridObjectTitles(ss);
     }
 
     // Root system.
@@ -453,13 +472,11 @@ export class SystemSimulator {
       return;
     }
 
-    const blackbox = this.options.blackBoxes.includes(system.canonicalId);
+    const gridObject = this.gridSystems[system.canonicalId]!;
 
-    if (!blackbox && hidden) {
+    if (gridObject.hidden) {
       return;
     }
-
-    const gridObject = this.gridSystems[system.canonicalId]!;
 
     gridObject.title = {
       x: gridObject.x + system.titlePosition.x,
