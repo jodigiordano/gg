@@ -18,6 +18,7 @@ export enum GridObjectType {
   PortPadding = 5,
   SystemTitle = 6,
   SystemTitlePadding = 7,
+  LinkAndTunnel = 8,
 }
 
 export interface SystemSimulatorOptions {
@@ -73,7 +74,7 @@ export class SystemSimulator {
     }
 
     // TODO: faster way to initialize?
-    const finderGrid = new Grid(this.grid.map(row => row.map(() => 0)));
+    const finderGrid = new Grid(this.grid.map(row => row.map(() => 1)));
 
     // Compute grid objects.
     this.initializeGridObjects(system);
@@ -104,7 +105,7 @@ export class SystemSimulator {
         for (let y = gridSS.y - 1; y < gridSS.y + gridSS.height + 1; y++) {
           this.grid[x]![y] = GridObjectType.PortPadding;
 
-          finderGrid.setWalkableAt(x, y, false);
+          finderGrid.setWeightAt(x, y, Infinity);
         }
       }
 
@@ -115,17 +116,17 @@ export class SystemSimulator {
             ? GridObjectType.BlackBox
             : GridObjectType.WhiteBox;
 
-          finderGrid.setWalkableAt(x, y, !blackbox);
+          finderGrid.setWeightAt(x, y, blackbox ? Infinity : 1);
         }
       }
 
       // Ports.
       for (const port of gridSS.ports) {
         this.grid[port.x]![port.y] = GridObjectType.Port;
-        finderGrid.setWalkableAt(port.x, port.y, true);
+        finderGrid.setWeightAt(port.x, port.y, 1);
       }
 
-      // Title.
+      // Title padding.
       for (
         let x = gridSS.title.x - 1;
         x < gridSS.title.x + gridSS.title.width + 1;
@@ -138,10 +139,11 @@ export class SystemSimulator {
         ) {
           this.grid[x]![y] = GridObjectType.SystemTitlePadding;
 
-          finderGrid.setWalkableAt(x, y, false);
+          finderGrid.setWeightAt(x, y, Infinity);
         }
       }
 
+      // Title.
       for (
         let x = gridSS.title.x;
         x < gridSS.title.x + gridSS.title.width;
@@ -154,7 +156,7 @@ export class SystemSimulator {
         ) {
           this.grid[x]![y] = GridObjectType.SystemTitle;
 
-          finderGrid.setWalkableAt(x, y, false);
+          finderGrid.setWeightAt(x, y, Infinity);
         }
       }
     }
@@ -208,9 +210,15 @@ export class SystemSimulator {
           this.routes[link.b]![link.a] = route.slice().reverse();
 
           for (const [x, y] of route) {
-            this.grid[x!]![y!] = GridObjectType.Link;
+            if (this.grid[x!]![y!] === GridObjectType.Link) {
+              this.grid[x!]![y!] = GridObjectType.LinkAndTunnel;
+            } else {
+              this.grid[x!]![y!] = GridObjectType.Link;
+            }
 
-            finderGrid.setWalkableAt(x!, y!, false);
+            // A path is still considered walkable but it has a higher cost
+            // than an Empty tile. It enables tunnels.
+            finderGrid.setWeightAt(x!, y!, 2);
           }
 
           break;

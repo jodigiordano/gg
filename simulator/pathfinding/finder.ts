@@ -103,6 +103,8 @@ export class PathFinder {
         let nextG =
           node.g + (x - node.x === 0 || y - node.y === 0 ? 1 : Math.SQRT2);
 
+        nextG *= neighbor.weight;
+
         // If we're avoiding staircasing,
         // add penalties if the direction will change.
         if (this.avoidStaircase) {

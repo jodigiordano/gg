@@ -16,9 +16,9 @@ export default class Grid {
       this.nodes[i] = new Array(this.width);
 
       for (let j = 0; j < this.width; j++) {
-        const node = matrix[i]![j];
+        const weight = matrix[i]![j]!;
 
-        this.nodes[i]![j] = new Node(j, i, node === 0);
+        this.nodes[i]![j] = new Node(j, i, weight);
       }
     }
   }
@@ -28,15 +28,19 @@ export default class Grid {
   }
 
   isWalkableAt(x: number, y: number): boolean {
-    return this.isInside(x, y) && this.nodes[y]![x]!.walkable;
-  }
-
-  setWalkableAt(x: number, y: number, walkable: boolean): void {
-    this.nodes[y]![x]!.walkable = walkable;
+    return this.isInside(x, y) && this.nodes[y]![x]!.weight !== Infinity;
   }
 
   isInside(x: number, y: number): boolean {
     return x >= 0 && x < this.width && y >= 0 && y < this.height;
+  }
+
+  getWeightAt(x: number, y: number): number {
+    return this.nodes[y]![x]!.weight;
+  }
+
+  setWeightAt(x: number, y: number, weight: number): void {
+    this.nodes[y]![x]!.weight = weight;
   }
 
   // Get the neighbors of the given node.

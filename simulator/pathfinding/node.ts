@@ -1,9 +1,9 @@
 export default class Node {
   public x: number;
   public y: number;
-  public walkable: boolean;
+  public weight: number;
 
-  // TODO: explain their usage.
+  // Properties set when finding a path between two nodes.
   public parent: Node | undefined;
   public f: number = 0;
   public g: number = 0;
@@ -11,10 +11,10 @@ export default class Node {
   public opened: boolean = false;
   public closed: boolean = false;
 
-  constructor(x: number, y: number, walkable: boolean) {
+  constructor(x: number, y: number, weight: number) {
     this.x = x;
     this.y = y;
-    this.walkable = walkable;
+    this.weight = weight;
 
     this.reset();
   }
