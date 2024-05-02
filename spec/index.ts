@@ -346,7 +346,7 @@ function computeSizes(
     ).length;
 
     const sizeToSupportLinks: RuntimeSize = {
-      width: 3 + ((linksCount - 4) % 2),
+      width: 3 + (Math.ceil((linksCount - 2) / 2) | 0),
       height: 3,
     };
 
@@ -360,6 +360,16 @@ function computeSizes(
         subsystem.titleSize.height + 2 * TitlePadding,
       ),
     };
+
+    // Allowed size: 3, 5, 7, ...
+    if ((subsystem.size.width - 3) % 2 !== 0) {
+      subsystem.size.width += 1;
+    }
+
+    // Allowed size: 3, 5, 7, ...
+    if ((subsystem.size.height - 3) % 2 !== 0) {
+      subsystem.size.height += 1;
+    }
 
     for (let x = 1; x < subsystem.size.width; x += 2) {
       subsystem.ports.push({ x, y: -1 });
