@@ -59,6 +59,7 @@ export interface RuntimeFlowStep extends FlowStep {
 }
 
 export interface RuntimeFlow extends Flow {
+  index: number;
   steps: RuntimeFlowStep[];
 }
 
@@ -163,7 +164,10 @@ function enhanceLinks(system: RuntimeSystem | RuntimeSubsystem): void {
 function enhanceFlows(system: RuntimeSystem): void {
   system.flows ??= [];
 
-  system.flows.forEach(flow => {
+  system.flows.forEach((flow, index) => {
+    // Set array position.
+    flow.index = index;
+
     // Normalize keyframes.
     // TODO: put in "normalizedKeyframe" so errors are reported on "keyframe".
     const uniqueKeyframes = new Set<number>();
