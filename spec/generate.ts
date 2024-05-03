@@ -1,5 +1,5 @@
 import { compileFromFile } from "json-schema-to-typescript";
-import { FileInfo } from "@bcherny/json-schema-ref-parser";
+import { FileInfo } from "@apidevtools/json-schema-ref-parser";
 import fs from "fs";
 
 const schemasDirectory = [import.meta.dirname, "schemas"].join("/");
