@@ -1,16 +1,16 @@
-import Grid from "./pathfinding/grid";
+import PathFinderGrid from "./pathfinding/grid";
 import { PathFinder } from "./pathfinding/finder";
 
 import {
   RuntimeSystem,
   RuntimeLimits,
   RuntimeSubsystem,
+  RuntimeLink,
 } from "@dataflows/spec";
 
-// TODO: add ComponentTopLeftCorner, ComponentTopRightCorner, ...
+// TODO: add SystemTopLeftCorner, SystemTopRightCorner, ...
 // TODO: add LinkRightTurn, LinkDownTurn, ...
-export enum GridObjectType {
-  Empty = 0,
+export enum SimulatorObjectType {
   BlackBox = 1,
   WhiteBox = 2,
   Link = 3,
@@ -18,7 +18,46 @@ export enum GridObjectType {
   PortPadding = 5,
   SystemTitle = 6,
   SystemTitlePadding = 7,
-  LinkAndTunnel = 8,
+}
+
+export interface SimulatorObject {
+  type: SimulatorObjectType;
+}
+
+export interface SimulatorBlackBox extends SimulatorObject {
+  type: SimulatorObjectType.BlackBox;
+  system: RuntimeSubsystem;
+}
+
+export interface SimulatorWhiteBox extends SimulatorObject {
+  type: SimulatorObjectType.WhiteBox;
+  system: RuntimeSubsystem;
+}
+
+export interface SimulatorLink extends SimulatorObject {
+  type: SimulatorObjectType.Link;
+  link: RuntimeLink;
+}
+
+export interface SimulatorPort extends SimulatorObject {
+  type: SimulatorObjectType.Port;
+  system: RuntimeSubsystem;
+}
+
+export interface SimulatorPortPadding extends SimulatorObject {
+  type: SimulatorObjectType.PortPadding;
+  system: RuntimeSubsystem;
+}
+
+export interface SimulatorSystemTitle extends SimulatorObject {
+  type: SimulatorObjectType.SystemTitle;
+  system: RuntimeSubsystem;
+  chars: string;
+}
+
+export interface SimulatorSystemTitlePadding extends SimulatorObject {
+  type: SimulatorObjectType.SystemTitlePadding;
+  system: RuntimeSubsystem;
 }
 
 export interface SystemSimulatorOptions {
@@ -54,7 +93,7 @@ export class SystemSimulator {
   private system: RuntimeSystem;
   private routes: Record<string, Record<string, number[][]>>;
   private gridSystems: Record<string, GridSystem>;
-  private grid: GridObjectType[][];
+  private grid: SimulatorObject[][][];
   private options: SystemSimulatorOptions;
 
   constructor(
@@ -69,13 +108,16 @@ export class SystemSimulator {
 
     // Create grid.
     for (let i = 0; i < RuntimeLimits.MaxSystemWidth; i++) {
-      this.grid[i] = new Array(RuntimeLimits.MaxSystemWidth).fill(
-        GridObjectType.Empty,
+      this.grid[i] = Array.from(
+        { length: RuntimeLimits.MaxSystemWidth },
+        () => [],
       );
     }
 
     // TODO: faster way to initialize?
-    const finderGrid = new Grid(this.grid.map(row => row.map(() => 1)));
+    const finderGrid = new PathFinderGrid(
+      this.grid.map(row => row.map(() => 1)),
+    );
 
     // Compute grid objects.
     this.initializeGridObjects(system);
@@ -103,32 +145,61 @@ export class SystemSimulator {
       const gridSS = this.gridSystems[ss.canonicalId]!;
 
       // Ports padding.
-      for (let x = gridSS.x - 1; x < gridSS.x + gridSS.width + 1; x++) {
-        for (let y = gridSS.y - 1; y < gridSS.y + gridSS.height + 1; y++) {
-          this.grid[x]![y] = GridObjectType.PortPadding;
+      const simulatorPortPadding: SimulatorPortPadding = Object.freeze({
+        type: SimulatorObjectType.PortPadding,
+        system: ss,
+      });
 
-          finderGrid.setWeightAt(x, y, Infinity);
-        }
+      for (let x = gridSS.x - 1; x < gridSS.x + gridSS.width + 1; x++) {
+        this.grid[x]![gridSS.y - 1]!.push(simulatorPortPadding);
+        finderGrid.setWeightAt(x, gridSS.y - 1, Infinity);
+
+        this.grid[x]![gridSS.y + gridSS.height]!.push(simulatorPortPadding);
+        finderGrid.setWeightAt(x, gridSS.y + gridSS.height, Infinity);
+      }
+
+      for (let y = gridSS.y - 1; y < gridSS.y + gridSS.height + 1; y++) {
+        this.grid[gridSS.x - 1]![y]!.push(simulatorPortPadding);
+        finderGrid.setWeightAt(gridSS.x - 1, y, Infinity);
+
+        this.grid[gridSS.x + gridSS.width]![y]!.push(simulatorPortPadding);
+        finderGrid.setWeightAt(gridSS.x + gridSS.width, y, Infinity);
       }
 
       // Sub-systems.
+      const simulatorSystem: SimulatorBlackBox | SimulatorWhiteBox =
+        Object.freeze({
+          type: blackbox
+            ? SimulatorObjectType.BlackBox
+            : SimulatorObjectType.WhiteBox,
+          system: ss,
+        });
+
       for (let x = gridSS.x; x < gridSS.x + gridSS.width; x++) {
         for (let y = gridSS.y; y < gridSS.y + gridSS.height; y++) {
-          this.grid[x]![y] = blackbox
-            ? GridObjectType.BlackBox
-            : GridObjectType.WhiteBox;
-
+          this.grid[x]![y]!.push(simulatorSystem);
           finderGrid.setWeightAt(x, y, blackbox ? Infinity : 1);
         }
       }
 
       // Ports.
+      const simulatorPort: SimulatorPort = Object.freeze({
+        type: SimulatorObjectType.Port,
+        system: ss,
+      });
+
       for (const port of gridSS.ports) {
-        this.grid[port.x]![port.y] = GridObjectType.Port;
+        this.grid[port.x]![port.y]!.push(simulatorPort);
         finderGrid.setWeightAt(port.x, port.y, 1);
       }
 
       // Title padding.
+      const simulatorSystemTitlePadding: SimulatorSystemTitlePadding =
+        Object.freeze({
+          type: SimulatorObjectType.SystemTitlePadding,
+          system: ss,
+        });
+
       for (
         let x = gridSS.title.x - 1;
         x < gridSS.title.x + gridSS.title.width + 1;
@@ -139,8 +210,7 @@ export class SystemSimulator {
           y < gridSS.title.y + gridSS.title.height + 1;
           y++
         ) {
-          this.grid[x]![y] = GridObjectType.SystemTitlePadding;
-
+          this.grid[x]![y]!.push(simulatorSystemTitlePadding);
           finderGrid.setWeightAt(x, y, Infinity);
         }
       }
@@ -156,8 +226,13 @@ export class SystemSimulator {
           y < gridSS.title.y + gridSS.title.height;
           y++
         ) {
-          this.grid[x]![y] = GridObjectType.SystemTitle;
+          const simulatorSystemTitle: SimulatorSystemTitle = {
+            type: SimulatorObjectType.SystemTitle,
+            system: ss,
+            chars: "", // TODO
+          };
 
+          this.grid[x]![y]!.push(simulatorSystemTitle);
           finderGrid.setWeightAt(x, y, Infinity);
         }
       }
@@ -179,11 +254,13 @@ export class SystemSimulator {
       }
 
       const subsystemAPorts = subsystemA.ports.filter(
-        port => this.grid[port.x]![port.y] === GridObjectType.Port,
+        port =>
+          this.grid[port.x]![port.y]!.at(-1)?.type === SimulatorObjectType.Port,
       );
 
       const subsystemBPorts = subsystemB.ports.filter(
-        port => this.grid[port.x]![port.y] === GridObjectType.Port,
+        port =>
+          this.grid[port.x]![port.y]!.at(-1)?.type === SimulatorObjectType.Port,
       );
 
       const candidates = subsystemAPorts
@@ -216,12 +293,13 @@ export class SystemSimulator {
           this.routes[link.b] ??= {};
           this.routes[link.b]![link.a] = route.slice().reverse();
 
+          const simulatorLink: SimulatorLink = Object.freeze({
+            type: SimulatorObjectType.Link,
+            link,
+          });
+
           for (const [x, y] of route) {
-            if (this.grid[x!]![y!] === GridObjectType.Link) {
-              this.grid[x!]![y!] = GridObjectType.LinkAndTunnel;
-            } else {
-              this.grid[x!]![y!] = GridObjectType.Link;
-            }
+            this.grid[x!]![y!]!.push(simulatorLink);
 
             // A path is still considered walkable but it has a higher cost
             // than an Empty tile. It enables tunnels.
