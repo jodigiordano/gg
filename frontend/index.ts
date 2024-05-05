@@ -125,8 +125,8 @@ document
   .getElementById("operation-camera-fit")
   ?.addEventListener("click", function () {
     const boundaries = getSystemBoundaries();
-    const width = (boundaries.right - boundaries.left) + BlockSize /* padding */;
-    const height = (boundaries.bottom - boundaries.top) + BlockSize /* padding */;
+    const width = boundaries.right - boundaries.left + BlockSize; /* padding */
+    const height = boundaries.bottom - boundaries.top + BlockSize; /* padding */
 
     viewport.moveCenter(
       boundaries.left + width / 2,
@@ -162,12 +162,12 @@ document
       return;
     }
 
-    if (editor.classList.contains('opened')) {
-      editor.classList.remove('opened');
-      editor.classList.add('closed');
+    if (editor.classList.contains("opened")) {
+      editor.classList.remove("opened");
+      editor.classList.add("closed");
     } else {
-      editor.classList.add('opened');
-      editor.classList.remove('closed');
+      editor.classList.add("opened");
+      editor.classList.remove("closed");
     }
 
     resizeContainer();
