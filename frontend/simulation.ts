@@ -1,81 +1,81 @@
-import { Application, Sprite, Graphics } from "pixi.js";
-import { loadYaml, RuntimeLimits } from "@dataflows/spec";
+import { Application, Sprite, Graphics, RenderTexture } from "pixi.js";
+import { loadYaml, RuntimeFlow, RuntimeLimits } from "@dataflows/spec";
 import {
   SystemSimulator,
   FlowSimulator,
-  GridObjectType,
+  SimulatorObjectType,
 } from "@dataflows/simulator";
 import { BlockSize } from "./consts.js";
 
 const yaml = `
 specificationVersion: 1.0.0
-name: dataflows
+title: dataflows
 description: Tool to build beautiful software system designs
-components:
-  - name: frontend
+systems:
+  - id: frontend
     description: Web-based client
     position:
       x: 2
       y: 2
-  - name: backend
+  - id: backend
     description: Backend of the frontend
     position:
       x: 17
       y: 7
-    system:
-      components:
-        - name: server
-          description: RESTful HTTP API of the backend
-          position:
-            x: 2
-            y: 2
-        - name: database
-          description: Database of the backend
-          position:
-            x: 10
-            y: 2
-      links:
-        - name: l1
-          componentAName: server
-          componentBName: database
-  - name: whatever
+    systems:
+      - id: server
+        description: RESTful HTTP API of the backend
+        position:
+          x: 0
+          y: 0
+      - id: database
+        description: Database of the backend
+        position:
+          x: 10
+          y: 2
+  - id: whatever
     position:
-      x: 9
-      y: 15
-  - name: datadog
+      x: 0
+      y: 14
+  - id: datadog
     position:
-      x: 2
-      y: 10
+      x: 15
+      y: 30
+  - id: whatever2
+    position:
+      x: 50
+      y: 20
 links:
-  - name: l1
-    componentAName: frontend
-    componentBName: backend
-    subComponentBName: server
-  - name: l2
-    componentAName: frontend
-    componentBName: whatever
-  - name: l3
-    componentAName: datadog
-    componentBName: backend
-    subComponentBName: server
+  - a: frontend
+    b: backend.server
+  - a: frontend
+    b: whatever
+  - a: datadog
+    b: backend.server
+  - a: backend.server
+    b: backend.database
+  - a: whatever
+    b: backend.database
+  - a: frontend
+    b: backend.database
+  - a: whatever
+    b: backend.server
+  - a: whatever2
+    b: backend.server
 flows:
-  - name: f1
-    steps:
-      - operation: send
-        fromComponentName: frontend
-        toComponentName: backend
-        data: form data
-        keyframe: 0
-      - operation: send
-        fromComponentName: backend.server
-        toComponentName: datadog
-        data: log
-        keyframe: 1
-      - operation: send
-        fromComponentName: backend.server
-        toComponentName: backend.database
-        data: user
-        keyframe: 1
+  - steps:
+    - from: frontend
+      to: backend.server
+      data: form data
+      keyframe: 0
+    - from: backend.server
+      to: datadog
+      data: log
+      keyframe: 1
+    - from: backend.server
+      to: backend.database
+      data: user
+      keyframe: 1
 `;
 
 const { system } = loadYaml(yaml);
@@ -94,7 +94,7 @@ export function getSystemBoundaries(): {
 
   for (let i = 0; i < RuntimeLimits.MaxSystemWidth; i++) {
     for (let j = 0; j < RuntimeLimits.MaxSystemHeight; j++) {
-      if (simulator.layout[i]![j] === GridObjectType.Empty) {
+      if (!simulator.layout[i]![j]!.length) {
         continue;
       }
 
@@ -128,12 +128,21 @@ export function getObjectsToRender(
   app: Application,
   center: { x: number; y: number },
 ): Sprite[] {
-  const componentGraphic = new Graphics()
+  // Whitebox
+  const whiteboxGraphic = new Graphics()
+    .beginFill(0xffffff)
+    .drawRect(0, 0, BlockSize, BlockSize)
+    .endFill();
+
+  const whiteboxTexture = app.renderer.generateTexture(whiteboxGraphic);
+
+  // Blackbox
+  const blackboxGraphic = new Graphics()
     .beginFill(0x000000)
     .drawRect(0, 0, BlockSize, BlockSize)
     .endFill();
 
-  const componentTexture = app.renderer.generateTexture(componentGraphic);
+  const blackboxTexture = app.renderer.generateTexture(blackboxGraphic);
 
   const linkGraphic = new Graphics()
     .beginFill(0xff0000)
@@ -146,62 +155,86 @@ export function getObjectsToRender(
 
   for (let i = 0; i < RuntimeLimits.MaxSystemWidth; i++) {
     for (let j = 0; j < RuntimeLimits.MaxSystemHeight; j++) {
-      const obj = simulator.layout[i]![j];
+      for (const obj of simulator.layout[i]![j]!) {
+        if (obj.type === SimulatorObjectType.WhiteBox) {
+          const sprite = new Sprite(whiteboxTexture);
 
-      if (obj === GridObjectType.Component) {
-        const componentSprite = new Sprite(componentTexture);
+          sprite.x = center.x + i * BlockSize;
+          sprite.y = center.y + j * BlockSize;
 
-        componentSprite.x = center.x + i * BlockSize;
-        componentSprite.y = center.y + j * BlockSize;
+          toDraw.push(sprite);
+        } else if (obj.type === SimulatorObjectType.BlackBox) {
+          const sprite = new Sprite(blackboxTexture);
 
-        toDraw.push(componentSprite);
-      } else if (obj === GridObjectType.Link) {
-        const linkSprite = new Sprite(linkTexture);
+          sprite.x = center.x + i * BlockSize;
+          sprite.y = center.y + j * BlockSize;
 
-        linkSprite.x = center.x + i * BlockSize;
-        linkSprite.y = center.y + j * BlockSize;
+          toDraw.push(sprite);
+        } else if (obj.type === SimulatorObjectType.Link) {
+          const sprite = new Sprite(linkTexture);
 
-        toDraw.push(linkSprite);
+          sprite.x = center.x + i * BlockSize;
+          sprite.y = center.y + j * BlockSize;
+
+          toDraw.push(sprite);
+        }
       }
-
-      // if (obj === GridObjectType.Component || obj === GridObjectType.Link || obj === GridObjectType.Port || obj === GridObjectType.PortPadding) {
-      //   if (obj === GridObjectType.Component) {
-      //     ctx.fillStyle = "black";
-      //   } else if (obj === GridObjectType.Link) {
-      //     ctx.fillStyle = "green";
-      //   } else if (obj === GridObjectType.Port) {
-      //     ctx.fillStyle = "gray";
-      //   } else if (obj === GridObjectType.PortPadding) {
-      //     ctx.fillStyle = "red";
-      //   }
-
-      //   ctx.fillRect(
-      //     i * BlockSize,
-      //     j * BlockSize,
-      //     BlockSize,
-      //     BlockSize,
-      //   );
-      // }
     }
   }
 
   return toDraw;
 }
 
-export function getFlowToRender(
+class FlowPlayer {
+  private flowSimulator: FlowSimulator;
+  private maxKeyframes: number;
+  private currentKeyframe: number;
+  private currentKeyframeProgress: number;
+  private sprites: Sprite[];
+
+  constructor(flow: RuntimeFlow, dataTexture: RenderTexture) {
+    this.flowSimulator = new FlowSimulator(simulator, flow);
+
+    this.currentKeyframe = 0;
+    this.currentKeyframeProgress = 0;
+
+    // @ts-ignore FIXME
+    this.maxKeyframes = Math.max(...flow.steps.map(step => step.keyframe)) + 1;
+
+    // @ts-ignore FIXME
+    this.sprites = flow.steps.map(() => new Sprite(dataTexture));
+  }
+
+  getObjectsToRender(): Sprite[] {
+    return this.sprites;
+  }
+
+  update(deltaTime: number): void {
+    this.currentKeyframeProgress += 0.01 * deltaTime;
+
+    if (this.currentKeyframeProgress > 1) {
+      this.currentKeyframeProgress %= 1;
+      this.currentKeyframe += 1;
+    }
+
+    this.currentKeyframe %= this.maxKeyframes;
+
+    const data = this.flowSimulator.tick({
+      keyframe: this.currentKeyframe,
+      keyframeProgress: this.currentKeyframeProgress,
+    });
+
+    for (let i = 0; i < data.length; i++) {
+      this.sprites[i].x = data[i][0] * BlockSize;
+      this.sprites[i].y = data[i][1] * BlockSize;
+    }
+  }
+}
+
+export function createFlowPlayer(
   app: Application,
-  center: { x: number; y: number },
-  flowName: string,
-): Sprite[] {
-  const toDraw: Sprite[] = [];
-
-  const flowSimulation = new FlowSimulator(
-    simulator,
-    system.flows.find(flow => flow.name === flowName),
-  );
-
-  const data = flowSimulation.tick({ keyframe: 0, keyframeProgress: 0.5 });
-
+  flowIndex: number,
+): FlowPlayer {
   const dataGraphic = new Graphics()
     .beginFill(0x00ff00)
     .drawRect(0, 0, BlockSize, BlockSize)
@@ -209,15 +242,8 @@ export function getFlowToRender(
 
   const dataTexture = app.renderer.generateTexture(dataGraphic);
 
-  for (const d of data) {
-    const sprite = new Sprite(dataTexture);
-
-    sprite.x = center.x + d[0] * BlockSize;
-    sprite.y = center.y + d[1] * BlockSize;
-    console.log(d);
-
-    toDraw.push(sprite);
-  }
-
-  return toDraw;
+  return new FlowPlayer(
+    system.flows.find(flow => flow.index === flowIndex)!,
+    dataTexture,
+  );
 }

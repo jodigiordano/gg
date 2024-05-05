@@ -11,7 +11,7 @@ import {
 // @ts-ignore FIXME
 import { Viewport } from "pixi-viewport";
 import {
-  getFlowToRender,
+  createFlowPlayer,
   getObjectsToRender,
   getSystemBoundaries,
 } from "./simulation.js";
@@ -81,16 +81,15 @@ for (const objectToRender of getObjectsToRender(app, {
   viewport.addChild(objectToRender);
 }
 
-for (const objectToRender of getFlowToRender(
-  app,
-  {
-    x: viewport.top,
-    y: viewport.left,
-  },
-  "f1",
-)) {
+const flowPlayer = createFlowPlayer(app, 0);
+
+for (const objectToRender of flowPlayer.getObjectsToRender()) {
   viewport.addChild(objectToRender);
 }
+
+app.ticker.add(deltaTime => {
+  flowPlayer.update(deltaTime);
+});
 
 // Redraw the grid when some event occurs.
 function redrawGrid(): void {
