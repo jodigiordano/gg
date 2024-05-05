@@ -6,38 +6,75 @@
     <link rel="stylesheet" type="text/css" href="modern-normalize.css" />
     <title>dataflows.io</title>
     <style>
+      :root {
+        --header-height: 3em;
+        --menu-width: 12em;
+      }
+
       body {
         background: #dfdfdf;
         overflow: hidden;
       }
 
       #header {
-        height: 3em;
+        height: var(--header-height);
         padding: 1em;
         background: #eeeeee;
       }
 
-      #menu {
+      #content {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: nowrap;
+
         position: fixed;
-        top: 3em;
-        right: 0;
-        height: calc(100vh - 3em);
-        width: 12em;
+        top: var(--header-height);
+        left: 0;
+        width: 100%;
+        height: calc(100vh - var(--header-height));
+      }
+
+      #menu {
+        flex-shrink: 0;
+        flex-grow: 0;
+        flex-basis: var(--menu-width);
       }
 
       #canvas {
-        height: calc(100vh - 3em);
-        width: calc(100% - 12em);
+        flex-shrink: 1;
+        flex-grow: 1;
+        overflow: auto;
+      }
+
+      #yaml-editor {
+        flex-shrink: 0;
+        flex-grow: 0;
+        flex-basis: 30%;
+
+        &.closed {
+          display: none;
+        }
       }
     </style>
   </head>
   <body>
     <div id="header">dataflows.io | File | Help | About</div>
-    <div id="canvas">Loading...</div>
-    <div id="menu">
-      <div id="operation-recenter">recenter</div>
-      <div id="operation-zoom-in">zoom in</div>
-      <div id="operation-zoom-out">zoom out</div>
+    <div id="content">
+      <div id="menu">
+        <div>global operations</div>
+        <ul>
+          <li id="operation-camera-fit">fit</li>
+          <li id="operation-camera-zoom-in">zoom in</li>
+          <li id="operation-camera-zoom-out">zoom out</li>
+          <li id="operation-yaml-editor-toggle">toggle yaml editor</li>
+        </ul>
+        <div>hovered</div>
+        <ul id="hovered-list">
+          <li>none</li>
+        </ul>
+      </div>
+      <div id="yaml-editor" class="closed">Loading...</div>
+      <div id="canvas">Loading...</div>
     </div>
     <script type="module" src="/index.ts"></script>
   </body>

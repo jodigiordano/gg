@@ -102,25 +102,31 @@ function redrawGrid(): void {
   grid.height = domContainer.clientHeight / viewport.scale.y;
 }
 
-// Move the grid when the viewport is moved.
-// TODO: debounce ?
-viewport.on("moved", redrawGrid);
-
-// TODO: debounce
-window.addEventListener("resize", () => {
+function resizeContainer(): void {
   app.renderer.resize(domContainer.clientWidth, domContainer.clientHeight);
 
   viewport.resize(domContainer.clientWidth, domContainer.clientHeight);
 
   redrawGrid();
-});
+}
+
+// Move the grid when the viewport is moved.
+// TODO: debounce ?
+viewport.on("moved", redrawGrid);
+
+// TODO: debounce
+window.addEventListener("resize", resizeContainer);
+
+//
+// Operations
+//
 
 document
-  .getElementById("operation-recenter")
+  .getElementById("operation-camera-fit")
   ?.addEventListener("click", function () {
     const boundaries = getSystemBoundaries();
-    const width = boundaries.right - boundaries.left;
-    const height = boundaries.bottom - boundaries.top;
+    const width = (boundaries.right - boundaries.left) + BlockSize /* padding */;
+    const height = (boundaries.bottom - boundaries.top) + BlockSize /* padding */;
 
     viewport.moveCenter(
       boundaries.left + width / 2,
@@ -132,7 +138,7 @@ document
   });
 
 document
-  .getElementById("operation-zoom-in")
+  .getElementById("operation-camera-zoom-in")
   ?.addEventListener("click", function () {
     viewport.zoomPercent(0.25, true);
 
@@ -140,14 +146,34 @@ document
   });
 
 document
-  .getElementById("operation-zoom-out")
+  .getElementById("operation-camera-zoom-out")
   ?.addEventListener("click", function () {
     viewport.zoomPercent(-0.25, true);
 
     redrawGrid();
   });
 
-// add PixiJS to the DOM.
+document
+  .getElementById("operation-yaml-editor-toggle")
+  ?.addEventListener("click", function () {
+    const editor = document.getElementById("yaml-editor");
+
+    if (!editor) {
+      return;
+    }
+
+    if (editor.classList.contains('opened')) {
+      editor.classList.remove('opened');
+      editor.classList.add('closed');
+    } else {
+      editor.classList.add('opened');
+      editor.classList.remove('closed');
+    }
+
+    resizeContainer();
+  });
+
+// Add PixiJS to the DOM.
 // @ts-ignore FIXME
 document.getElementById("canvas")?.replaceChildren(app.view);
 
