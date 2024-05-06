@@ -316,6 +316,51 @@ export class SystemSimulator {
     return this.grid;
   }
 
+  // Get the boundaries of the system, i.e. a rectangle that encompass all
+  // sub-systems, links, etc.
+  getBoundaries(): {
+    left: number;
+    top: number;
+    right: number;
+    bottom: number;
+  } {
+    let left = RuntimeLimits.MaxSystemWidth;
+    let right = 0;
+    let top = RuntimeLimits.MaxSystemHeight;
+    let bottom = 0;
+
+    for (let i = 0; i < RuntimeLimits.MaxSystemWidth; i++) {
+      for (let j = 0; j < RuntimeLimits.MaxSystemHeight; j++) {
+        if (!this.grid[i]![j]!.length) {
+          continue;
+        }
+
+        if (i < left) {
+          left = i;
+        }
+
+        if (i > right) {
+          right = i;
+        }
+
+        if (j < top) {
+          top = j;
+        }
+
+        if (j > bottom) {
+          bottom = j;
+        }
+      }
+    }
+
+    return {
+      left,
+      right,
+      top,
+      bottom,
+    };
+  }
+
   getRoute(fromSystemId: string, toSystemId: string): number[][] | undefined {
     return this.routes[fromSystemId]?.[toSystemId];
   }
