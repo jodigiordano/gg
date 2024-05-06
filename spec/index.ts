@@ -1,6 +1,8 @@
 import { load as parseYaml } from "js-yaml";
 import { Link, System, Subsystem, Flow, FlowStep } from "./specification";
-import { validate, ValidationError } from "./validations";
+import { validate, ValidationError as VError } from "./validations";
+
+export type ValidationError = VError;
 
 const TitlePadding = 1;
 
