@@ -32,9 +32,11 @@ export async function render(simulator: SystemSimulator) {
   );
 
   // Draw objects.
+  const layout = simulator.getLayout();
+
   for (let i = 0; i < RuntimeLimits.MaxSystemWidth; i++) {
     for (let j = 0; j < RuntimeLimits.MaxSystemHeight; j++) {
-      const objects = simulator.layout[i]![j]!;
+      const objects = layout[i]![j]!;
 
       if (objects.at(-1)?.type === SimulatorObjectType.BlackBox) {
         ctx.fillStyle = "#e9d8a6";

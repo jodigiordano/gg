@@ -312,7 +312,7 @@ export class SystemSimulator {
     }
   }
 
-  get layout() {
+  getLayout(): SimulatorObject[][][] {
     return this.grid;
   }
 
