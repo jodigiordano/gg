@@ -1,0 +1,68 @@
+specificationVersion: 1.0.0
+title: dataflows
+description: Tool to build beautiful software system designs
+systems:
+  - id: frontend
+    description: Web-based client
+    position:
+      x: 2
+      y: 2
+  - id: backend
+    description: Backend of the frontend
+    position:
+      x: 17
+      y: 7
+    systems:
+      - id: server
+        description: RESTful HTTP API of the backend
+        position:
+          x: 0
+          y: 0
+      - id: database
+        description: Database of the backend
+        position:
+          x: 10
+          y: 2
+  - id: whatever
+    position:
+      x: 0
+      y: 14
+  - id: datadog
+    position:
+      x: 15
+      y: 30
+  - id: whatever2
+    position:
+      x: 50
+      y: 20
+links:
+  - a: frontend
+    b: backend.server
+  - a: frontend
+    b: whatever
+  - a: datadog
+    b: backend.server
+  - a: backend.server
+    b: backend.database
+  - a: whatever
+    b: backend.database
+  - a: frontend
+    b: backend.database
+  - a: whatever
+    b: backend.server
+  - a: whatever2
+    b: backend.server
+flows:
+  - steps:
+      - from: frontend
+        to: backend.server
+        data: form data
+        keyframe: 0
+      - from: backend.server
+        to: datadog
+        data: log
+        keyframe: 1
+      - from: backend.server
+        to: backend.database
+        data: user
+        keyframe: 1
