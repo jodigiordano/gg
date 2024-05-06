@@ -16,10 +16,29 @@
         overflow: hidden;
       }
 
+      button {
+        cursor: pointer;
+      }
+
       #header {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        flex-wrap: nowrap;
+
         height: var(--header-height);
-        padding: 1em;
         background: #eeeeee;
+
+        button {
+          margin-left: 0.25em;
+          margin-right: 0.25em;
+        }
+
+        #header-title {
+          margin-left: 1em;
+          margin-right: 1em;
+          font-weight: bold;
+        }
       }
 
       #content {
@@ -34,10 +53,28 @@
         height: calc(100vh - var(--header-height));
       }
 
-      #menu {
+      #debug-menu {
         flex-shrink: 0;
         flex-grow: 0;
         flex-basis: var(--menu-width);
+
+        &.closed {
+          display: none;
+        }
+
+        ul {
+          list-style-type: none;
+        }
+      }
+
+      #examples-menu {
+        flex-shrink: 0;
+        flex-grow: 0;
+        flex-basis: var(--menu-width);
+
+        &.closed {
+          display: none;
+        }
       }
 
       #canvas {
@@ -47,9 +84,30 @@
       }
 
       #yaml-editor {
+        /* as a child of a flexbox */
         flex-shrink: 0;
         flex-grow: 0;
         flex-basis: 30%;
+
+        /* as a container */
+        display: flex;
+        flex-direction: column;
+        flex-wrap: nowrap;
+
+        textarea {
+          resize: none;
+        }
+
+        #yaml-editor-definition {
+          flex-shrink: 0;
+          flex-grow: 0;
+          flex-basis: 90%;
+        }
+
+        #yaml-editor-messages {
+          flex-shrink: 0;
+          flex-grow: 1;
+        }
 
         &.closed {
           display: none;
@@ -58,22 +116,35 @@
     </style>
   </head>
   <body>
-    <div id="header">dataflows.io | File | Help | About</div>
+    <div id="header">
+      <div id="header-title">░▒▓ dataflows.io</div>
+      <button>File</button>
+      <button id="operation-examples-menu-toggle">Examples</button>
+      <button>Help</button>
+      <button>About</button>
+      <button id="operation-debug-menu-toggle">Debug</button>
+    </div>
     <div id="content">
-      <div id="menu">
-        <div>global operations</div>
-        <ul>
-          <li id="operation-camera-fit">fit</li>
-          <li id="operation-camera-zoom-in">zoom in</li>
-          <li id="operation-camera-zoom-out">zoom out</li>
-          <li id="operation-yaml-editor-toggle">toggle yaml editor</li>
-        </ul>
-        <div>hovered</div>
-        <ul id="hovered-list">
-          <li>none</li>
-        </ul>
+      <div id="examples-menu" class="closed">
+        <div>examples</div>
+        <button id="operation-examples-load-1">basic</button>
+        <button id="operation-examples-load-2">dataflows</button>
       </div>
-      <div id="yaml-editor" class="closed">Loading...</div>
+      <div id="debug-menu">
+        <ul>
+          <li><button id="operation-camera-fit">fit</button></li>
+          <li><button id="operation-camera-zoom-in">zoom in</button></li>
+          <li><button id="operation-camera-zoom-out">zoom out</button></li>
+          <li><button id="operation-yaml-editor-toggle">yaml editor</button></li>
+          <li><button id="operation-yaml-editor-apply-changes">apply changes</button></li>
+          <li><button id="operation-file-new">new file</button></li>
+          <li><button id="operation-file-save">save file</button></li>
+          <li><button id="operation-file-load">load file</button></li>
+      </div>
+      <div id="yaml-editor" class="closed">
+        <textarea id="yaml-editor-definition" autocomplete="off" class="closed"></textarea>
+        <textarea id="yaml-editor-messages" autocomplete="off" class="closed"></textarea>
+      </div>
       <div id="canvas">Loading...</div>
     </div>
     <script type="module" src="/index.ts"></script>
