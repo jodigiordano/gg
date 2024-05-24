@@ -4,6 +4,8 @@ import { validate, ValidationError as VError } from "./validations";
 
 export type ValidationError = VError;
 
+export const TitleCharsPerSquare = 2;
+
 const TitlePadding = 1;
 
 // Must reflect https://dataflows.io/system.json
@@ -112,7 +114,7 @@ function enhanceSubsystems(system: RuntimeSystem | RuntimeSubsystem): void {
 
     // TODO: Support titles with newlines.
     subsystem.titleSize = {
-      width: Math.ceil(subsystem.title.length / 3) | 0,
+      width: Math.ceil(subsystem.title.length / TitleCharsPerSquare) | 0,
       height: 1,
     };
 
