@@ -1,4 +1,4 @@
-import { Application, Sprite, Graphics, RenderTexture } from "pixi.js";
+import { Application, Sprite, Graphics, RenderTexture, Text } from "pixi.js";
 import {
   loadYaml,
   RuntimeFlow,
@@ -10,6 +10,7 @@ import {
   SystemSimulator,
   FlowSimulator,
   SimulatorObjectType,
+  SimulatorSystemTitle,
 } from "@dataflows/simulator";
 import { BlockSize } from "./consts.js";
 
@@ -37,10 +38,10 @@ export class CanvasSimulator {
     };
   }
 
-  getObjectsToRender(app: Application): Sprite[] {
+  getObjectsToRender(app: Application): (Sprite | Text)[] {
     // Whitebox
     const whiteboxGraphic = new Graphics()
-      .beginFill(0xffffff)
+      .beginFill(0xc0c0c0)
       .drawRect(0, 0, BlockSize, BlockSize)
       .endFill();
 
@@ -61,7 +62,7 @@ export class CanvasSimulator {
 
     const linkTexture = app.renderer.generateTexture(linkGraphic);
 
-    const toDraw: Sprite[] = [];
+    const toDraw: (Sprite | Text)[] = [];
     const layout = this.systemSimulator.getLayout();
 
     for (let i = 0; i < RuntimeLimits.MaxSystemWidth; i++) {
@@ -88,6 +89,20 @@ export class CanvasSimulator {
             sprite.y = j * BlockSize;
 
             toDraw.push(sprite);
+          } else if (obj.type === SimulatorObjectType.SystemTitle) {
+            const title = new Text((obj as SimulatorSystemTitle).chars,
+              {
+                fontFamily: 'Ibm',
+                fontSize: BlockSize,
+              }
+            );
+
+            title.x = i * BlockSize;
+            title.y = j * BlockSize;
+            title.style.fill = '0xffffff';
+            title.resolution = 2;
+
+            toDraw.push(title);
           }
         }
       }
