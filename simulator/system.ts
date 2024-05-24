@@ -6,6 +6,7 @@ import {
   RuntimeLimits,
   RuntimeSubsystem,
   RuntimeLink,
+  TitleCharsPerSquare,
 } from "@dataflows/spec";
 
 // TODO: add SystemTopLeftCorner, SystemTopRightCorner, ...
@@ -216,20 +217,25 @@ export class SystemSimulator {
       }
 
       // Title.
+      const titleLines = ss.title.split("\n");
+
       for (
-        let x = gridSS.title.x;
+        let x = gridSS.title.x, i = 0;
         x < gridSS.title.x + gridSS.title.width;
-        x++
+        x++, i++
       ) {
         for (
-          let y = gridSS.title.y;
+          let y = gridSS.title.y, j = 0;
           y < gridSS.title.y + gridSS.title.height;
-          y++
+          y++, j++
         ) {
           const simulatorSystemTitle: SimulatorSystemTitle = {
             type: SimulatorObjectType.SystemTitle,
             system: ss,
-            chars: "", // TODO
+            chars: titleLines[j]!.slice(
+              i * TitleCharsPerSquare,
+              i * TitleCharsPerSquare + TitleCharsPerSquare
+            ),
           };
 
           this.grid[x]![y]!.push(simulatorSystemTitle);
