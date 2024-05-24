@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="stylesheet" type="text/css" href="modern-normalize.css" />
+    <link rel="stylesheet" type="text/css" href="assets/normalize.css" />
     <title>dataflows.io</title>
     <style>
       :root {
@@ -11,9 +11,18 @@
         --menu-width: 12em;
       }
 
+      @font-face {
+        font-family: JetBrains Mono;
+        font-style: normal;
+        font-weight: 400;
+        src: url('assets/jetbrains.woff2') format('woff2');
+      }
+
       body {
         background: #dfdfdf;
         overflow: hidden;
+
+        font-family: JetBrains Mono;
       }
 
       button {

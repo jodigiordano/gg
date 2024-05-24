@@ -8,6 +8,7 @@ import {
   WRAP_MODES,
   BaseTexture,
   Container,
+  Assets,
 } from "pixi.js";
 // @ts-ignore FIXME
 import { Viewport } from "pixi-viewport";
@@ -295,6 +296,9 @@ document
     loadSimulation(example2);
     fitSimulation();
   });
+
+// Load assets.
+await Assets.load('assets/ibm.woff');
 
 // Add PixiJS to the DOM.
 // @ts-ignore FIXME
