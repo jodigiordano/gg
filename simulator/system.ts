@@ -234,7 +234,7 @@ export class SystemSimulator {
             system: ss,
             chars: titleLines[j]!.slice(
               i * TitleCharsPerSquare,
-              i * TitleCharsPerSquare + TitleCharsPerSquare
+              i * TitleCharsPerSquare + TitleCharsPerSquare,
             ),
           };
 
@@ -494,44 +494,21 @@ export class SystemSimulator {
       ? this.gridSystems[system.canonicalId]!
       : { x: 0, y: 0, width: 0, height: 0 };
 
-    let bottomX = parentGridObject.x;
-    let bottomY = parentGridObject.y;
-
-    const sortedLeftRight = system.systems.sort(
-      (a, b) => a.position.x - b.position.x,
-    );
-
-    for (const ss of sortedLeftRight) {
+    for (const ss of system.systems) {
       const gridObject = this.gridSystems[ss.canonicalId]!;
 
       gridObject.x = parentGridObject.x + ss.position.x;
 
-      if (gridObject.x < bottomX) {
-        gridObject.x = bottomX + 1;
+      if (system.canonicalId) {
+        gridObject.x += PaddingWhiteBox;
       }
-
-      gridObject.x += PaddingWhiteBox;
-
-      bottomX = gridObject.x + gridObject.width;
-    }
-
-    const sortedTopBottom = system.systems.sort(
-      (a, b) => a.position.y - b.position.y,
-    );
-
-    for (const ss of sortedTopBottom) {
-      const gridObject = this.gridSystems[ss.canonicalId]!;
 
       gridObject.y = parentGridObject.y + ss.position.y;
 
-      if (gridObject.x < bottomY) {
-        gridObject.y = bottomY + 1;
+      if (system.canonicalId) {
+        gridObject.y += PaddingWhiteBox;
+        gridObject.y += system.titlePosition.y + system.titleSize.height;
       }
-
-      gridObject.y += PaddingWhiteBox;
-      gridObject.y += system.titlePosition.y + system.titleSize.height;
-
-      bottomY = gridObject.y + gridObject.height;
     }
 
     for (const ss of system.systems) {
