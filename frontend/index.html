@@ -15,7 +15,7 @@
         font-family: JetBrains Mono;
         font-style: normal;
         font-weight: 400;
-        src: url('assets/jetbrains.woff2') format('woff2');
+        src: url("assets/jetbrains.woff2") format("woff2");
       }
 
       body {
@@ -144,15 +144,31 @@
           <li><button id="operation-camera-fit">fit</button></li>
           <li><button id="operation-camera-zoom-in">zoom in</button></li>
           <li><button id="operation-camera-zoom-out">zoom out</button></li>
-          <li><button id="operation-yaml-editor-toggle">yaml editor</button></li>
-          <li><button id="operation-yaml-editor-apply-changes">apply changes</button></li>
+          <li>
+            <button id="operation-yaml-editor-toggle">yaml editor</button>
+          </li>
+          <li>
+            <button id="operation-yaml-editor-apply-changes">
+              apply changes
+            </button>
+          </li>
           <li><button id="operation-file-new">new file</button></li>
           <li><button id="operation-file-save">save file</button></li>
           <li><button id="operation-file-load">load file</button></li>
+          <li>position: <span id="information-position" /></li>
+        </ul>
       </div>
       <div id="yaml-editor" class="closed">
-        <textarea id="yaml-editor-definition" autocomplete="off" class="closed"></textarea>
-        <textarea id="yaml-editor-messages" autocomplete="off" class="closed"></textarea>
+        <textarea
+          id="yaml-editor-definition"
+          autocomplete="off"
+          class="closed"
+        ></textarea>
+        <textarea
+          id="yaml-editor-messages"
+          autocomplete="off"
+          class="closed"
+        ></textarea>
       </div>
       <div id="canvas">Loading...</div>
     </div>

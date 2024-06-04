@@ -1,29 +1,26 @@
 import { Application, Sprite, Graphics, RenderTexture, Text } from "pixi.js";
 import {
-  loadYaml,
   RuntimeFlow,
   RuntimeLimits,
+  RuntimeLink,
+  RuntimeSubsystem,
   RuntimeSystem,
-  ValidationError,
 } from "@dataflows/spec";
 import {
   SystemSimulator,
   FlowSimulator,
   SimulatorObjectType,
   SimulatorSystemTitle,
+  SimulatorObject,
 } from "@dataflows/simulator";
 import { BlockSize } from "./consts.js";
 
 export class CanvasSimulator {
   public system: RuntimeSystem;
-  public errors: ValidationError[];
   private systemSimulator: SystemSimulator;
 
-  constructor(yaml: string) {
-    const { system, errors } = loadYaml(yaml);
-
+  constructor(system: RuntimeSystem) {
     this.system = system;
-    this.errors = errors;
     this.systemSimulator = new SystemSimulator(system);
   }
 
@@ -36,6 +33,39 @@ export class CanvasSimulator {
       top: systemBoundaries.top * BlockSize,
       bottom: systemBoundaries.bottom * BlockSize,
     };
+  }
+
+  getObjectsAt(x: number, y: number): SimulatorObject[] {
+    const layout = this.systemSimulator.getLayout();
+
+    return layout[x]![y] ?? [];
+  }
+
+  getSubsystemAt(x: number, y: number): RuntimeSubsystem | null {
+    const objects = this.getObjectsAt(x, y);
+    const object = objects
+      .reverse()
+      .find(
+        obj =>
+          obj.type === SimulatorObjectType.BlackBox ||
+          obj.type === SimulatorObjectType.WhiteBox,
+      );
+
+    if (object && "system" in object) {
+      return object.system as RuntimeSubsystem;
+    }
+
+    return null;
+  }
+
+  getLinkAt(x: number, y: number): RuntimeLink | null {
+    const object = this.getObjectsAt(x, y).at(0);
+
+    if (object && "link" in object) {
+      return object.link as RuntimeLink;
+    }
+
+    return null;
   }
 
   getObjectsToRender(app: Application): (Sprite | Text)[] {
@@ -90,16 +120,14 @@ export class CanvasSimulator {
 
             toDraw.push(sprite);
           } else if (obj.type === SimulatorObjectType.SystemTitle) {
-            const title = new Text((obj as SimulatorSystemTitle).chars,
-              {
-                fontFamily: 'Ibm',
-                fontSize: BlockSize,
-              }
-            );
+            const title = new Text((obj as SimulatorSystemTitle).chars, {
+              fontFamily: "Ibm",
+              fontSize: BlockSize,
+            });
 
             title.x = i * BlockSize;
             title.y = j * BlockSize;
-            title.style.fill = '0xffffff';
+            title.style.fill = "0xffffff";
             title.resolution = 2;
 
             toDraw.push(title);

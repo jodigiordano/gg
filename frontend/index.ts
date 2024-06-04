@@ -1,3 +1,12 @@
+// Current layout:
+//
+// app stage (receives events)
+//   viewport (receives viewport events)
+//     grid (no events)
+//     out of bounds (no events)
+//     simulator container (no events)
+//       simulator objects (no events)
+
 import {
   Application,
   Graphics,
@@ -9,13 +18,37 @@ import {
   BaseTexture,
   Container,
   Assets,
+  Sprite,
 } from "pixi.js";
+import { dump as saveYaml } from "js-yaml";
 // @ts-ignore FIXME
 import { Viewport } from "pixi-viewport";
+import { loadYaml, RuntimeLimits, RuntimeSubsystem } from "@dataflows/spec";
 import { CanvasSimulator, CanvasFlowPlayer } from "./simulation.js";
 import { BlockSize } from "./consts.js";
 import example1 from "./examples/basic.yml?raw";
 import example2 from "./examples/dataflows.yml?raw";
+
+interface State {
+  operation: IdleOperation | MoveSystemOperation;
+}
+
+interface IdleOperation {
+  type: "idle";
+}
+
+interface MoveSystemOperation {
+  type: "move";
+  subsystem: RuntimeSubsystem;
+  pickedUpAt: {
+    x: number;
+    y: number;
+  };
+}
+
+const state: State = {
+  operation: { type: "idle" },
+};
 
 // Setup PixiJS.
 BaseTexture.defaultOptions.mipmap = MIPMAP_MODES.ON;
@@ -37,6 +70,9 @@ const yamlEditorMessages = document.getElementById(
 const debugMenu = document.getElementById("debug-menu") as HTMLDivElement;
 const examplesMenu = document.getElementById("examples-menu") as HTMLDivElement;
 const domContainer = document.getElementById("canvas") as HTMLDivElement;
+const positionInfo = document.getElementById(
+  "information-position",
+) as HTMLSpanElement;
 
 // Create PixiJS app.
 const app = new Application({
@@ -45,26 +81,51 @@ const app = new Application({
   autoDensity: true,
   resolution: window.devicePixelRatio,
   antialias: false,
+  eventMode: "static",
+  eventFeatures: {
+    move: true,
+    globalMove: false,
+    click: true,
+    wheel: true,
+  },
 });
 
 // Create PixiJS viewport.
+const outOfBoundsMargin = 10 * BlockSize;
+
 const viewport = new Viewport({
   screenWidth: window.innerWidth,
   screenHeight: window.innerHeight,
-  worldWidth: domContainer.clientWidth,
-  worldHeight: domContainer.clientHeight,
+  worldWidth: RuntimeLimits.MaxSystemWidth * BlockSize,
+  worldHeight: RuntimeLimits.MaxSystemHeight * BlockSize,
   events: app.renderer.events,
+  eventMode: "static",
+  interactiveChildren: false,
+  disableOnContextMenu: true,
 });
 
-viewport.drag().pinch().wheel({ smooth: 5 }).clampZoom({
-  minScale: 0.2,
-  maxScale: 2.0,
-});
+viewport
+  .drag({ mouseButtons: "right" })
+  .pinch()
+  .wheel({ smooth: 5 })
+  .clampZoom({
+    minScale: 0.2,
+    maxScale: 2.0,
+  })
+  .clamp({
+    left: -outOfBoundsMargin,
+    right: RuntimeLimits.MaxSystemWidth * BlockSize + outOfBoundsMargin,
+    top: -outOfBoundsMargin,
+    bottom: RuntimeLimits.MaxSystemHeight * BlockSize + outOfBoundsMargin,
+    underflow: "center",
+  });
+
+viewport.sortableChildren = true;
 
 app.stage.addChild(viewport);
 
 // Canvas layer: grid background.
-const backgroundGraphic = new Graphics()
+const gridGraphic = new Graphics()
   .beginFill(0xcccccc)
   .drawRect(0, 0, BlockSize, BlockSize)
   .endFill()
@@ -72,26 +133,194 @@ const backgroundGraphic = new Graphics()
   .drawRect(1, 1, BlockSize - 1, BlockSize - 1)
   .endFill();
 
-const backgroundTexture = app.renderer.generateTexture(backgroundGraphic);
+const gridTexture = app.renderer.generateTexture(gridGraphic);
 
 const grid = new TilingSprite(
-  backgroundTexture,
+  gridTexture,
   viewport.worldWidth,
   viewport.worldHeight,
 );
 
-grid.y = viewport.top;
-grid.x = viewport.left;
-
-grid.eventMode = "static";
+grid.eventMode = "none";
 grid.interactiveChildren = false;
 
+grid.x = viewport.left;
+grid.y = viewport.top;
+
 viewport.addChild(grid);
+
+// Canvas layer: boundaries
+const outOfBoundGraphic = new Graphics()
+  .beginFill(0xff0000)
+  .drawRect(0, 0, BlockSize, BlockSize)
+  .endFill();
+
+const outOfBoundTexture = app.renderer.generateTexture(outOfBoundGraphic);
+
+const outOfBoundsTop = new TilingSprite(
+  outOfBoundTexture,
+  RuntimeLimits.MaxSystemWidth * BlockSize,
+  outOfBoundsMargin,
+);
+
+outOfBoundsTop.eventMode = "none";
+outOfBoundsTop.interactiveChildren = false;
+outOfBoundsTop.x = 0;
+outOfBoundsTop.y = -outOfBoundsMargin;
+
+viewport.addChild(outOfBoundsTop);
+
+const outOfBoundsBottom = new TilingSprite(
+  outOfBoundTexture,
+  RuntimeLimits.MaxSystemWidth * BlockSize,
+  outOfBoundsMargin,
+);
+
+outOfBoundsBottom.eventMode = "none";
+outOfBoundsBottom.interactiveChildren = false;
+outOfBoundsBottom.x = 0;
+outOfBoundsBottom.y = RuntimeLimits.MaxSystemHeight * BlockSize;
+
+viewport.addChild(outOfBoundsBottom);
+
+const outOfBoundsLeft = new TilingSprite(
+  outOfBoundTexture,
+  outOfBoundsMargin,
+  RuntimeLimits.MaxSystemHeight * BlockSize + 2 * outOfBoundsMargin,
+);
+
+outOfBoundsLeft.eventMode = "none";
+outOfBoundsLeft.interactiveChildren = false;
+outOfBoundsLeft.x = -outOfBoundsMargin;
+outOfBoundsLeft.y = -outOfBoundsMargin;
+
+viewport.addChild(outOfBoundsLeft);
+
+const outOfBoundsRight = new TilingSprite(
+  outOfBoundTexture,
+  outOfBoundsMargin,
+  RuntimeLimits.MaxSystemHeight * BlockSize + 2 * outOfBoundsMargin,
+);
+
+outOfBoundsRight.eventMode = "none";
+outOfBoundsRight.interactiveChildren = false;
+outOfBoundsRight.x = RuntimeLimits.MaxSystemWidth * BlockSize;
+outOfBoundsRight.y = -outOfBoundsMargin;
+
+viewport.addChild(outOfBoundsRight);
 
 // Canvas layer: simulation
 let canvasSimulator: CanvasSimulator | null = null;
 let canvasFlowPlayer: CanvasFlowPlayer | null = null;
+
 const canvasSimulatorContainer = new Container();
+
+canvasSimulatorContainer.eventMode = "none";
+canvasSimulatorContainer.interactiveChildren = false;
+
+// Drag & drop
+const dragAndDropGraphic = new Graphics()
+  .beginFill(0x00ff00)
+  .drawRect(0, 0, BlockSize, BlockSize)
+  .endFill();
+
+const dragAndDropTexture = app.renderer.generateTexture(dragAndDropGraphic);
+
+const dragAndDrop = new Sprite(dragAndDropTexture);
+
+dragAndDrop.eventMode = "none";
+dragAndDrop.interactiveChildren = false;
+dragAndDrop.zIndex = 100;
+dragAndDrop.visible = false;
+
+viewport.addChild(dragAndDrop);
+
+viewport.on("pointermove", (event: any) => {
+  const coordinates = viewport.toWorld(event.data.global);
+
+  const x = Math.floor(coordinates.x / BlockSize) | 0;
+  const y = Math.floor(coordinates.y / BlockSize) | 0;
+
+  positionInfo.textContent = `[${x}, ${y}]`;
+
+  if (state.operation.type === "move") {
+    const deltaX =
+      ((coordinates.x - state.operation.pickedUpAt.x) / BlockSize) | 0;
+    const deltaY =
+      ((coordinates.y - state.operation.pickedUpAt.y) / BlockSize) | 0;
+
+    dragAndDrop.x = (state.operation.subsystem.position.x + deltaX) * BlockSize;
+    dragAndDrop.y = (state.operation.subsystem.position.y + deltaY) * BlockSize;
+  }
+});
+
+viewport.on("pointerdown", (event: any) => {
+  if (!canvasSimulator) {
+    return;
+  }
+
+  const coordinates = viewport.toWorld(event.data.global);
+
+  const x = Math.floor(coordinates.x / BlockSize) | 0;
+  const y = Math.floor(coordinates.y / BlockSize) | 0;
+
+  const subsystem = canvasSimulator.getSubsystemAt(x, y);
+
+  if (subsystem) {
+    const operation: MoveSystemOperation = {
+      type: "move",
+      subsystem,
+      pickedUpAt: {
+        x: coordinates.x,
+        y: coordinates.y,
+      },
+    };
+
+    state.operation = operation;
+
+    dragAndDrop.visible = true;
+    dragAndDrop.x = subsystem.position.x * BlockSize;
+    dragAndDrop.y = subsystem.position.y * BlockSize;
+    dragAndDrop.width = subsystem.size.width * BlockSize;
+    dragAndDrop.height = subsystem.size.height * BlockSize;
+  }
+});
+
+viewport.on("pointerup", (event: any) => {
+  if (!canvasSimulator) {
+    return;
+  }
+
+  if (state.operation.type === "move") {
+    const coordinates = viewport.toWorld(event.data.global);
+
+    const deltaX =
+      ((coordinates.x - state.operation.pickedUpAt.x) / BlockSize) | 0;
+    const deltaY =
+      ((coordinates.y - state.operation.pickedUpAt.y) / BlockSize) | 0;
+
+    // TODO: wrong type (any)?
+    const currentPosition = state.operation.subsystem.specification.position;
+
+    state.operation.subsystem.specification.position = {
+      x: currentPosition.x + deltaX,
+      y: currentPosition.y + deltaY,
+    };
+
+    const newSpecification = saveYaml(canvasSimulator.system.specification);
+
+    if (loadSimulation(newSpecification)) {
+      yamlEditorDefinition.value = newSpecification;
+    } else {
+      // Rollback.
+      state.operation.subsystem.specification.position = currentPosition;
+    }
+
+    state.operation = { type: "idle" };
+
+    dragAndDrop.visible = false;
+  }
+});
 
 viewport.addChild(canvasSimulatorContainer);
 
@@ -103,17 +332,20 @@ app.ticker.add<void>(deltaTime => {
   }
 });
 
-function loadSimulation(yaml: string): void {
-  canvasSimulator = new CanvasSimulator(yaml);
+function loadSimulation(yaml: string): boolean {
+  const { system, errors } = loadYaml(yaml);
 
-  if (canvasSimulator.errors.length) {
-    yamlEditorMessages.value = canvasSimulator.errors
+  if (errors.length) {
+    yamlEditorMessages.value = errors
       .map(error => [error.path, error.message].join(": "))
       .join("\n");
 
-    return;
+    return false;
   }
 
+  const newCanvasSimulator = new CanvasSimulator(system);
+
+  canvasSimulator = newCanvasSimulator;
   yamlEditorMessages.value = "";
 
   canvasSimulatorContainer.removeChildren();
@@ -131,14 +363,17 @@ function loadSimulation(yaml: string): void {
       canvasSimulatorContainer.addChild(objectToRender);
     }
   }
+
+  return true;
 }
 
 // Redraw the grid when some event occurs.
 function redrawGrid(): void {
-  grid.tilePosition.y = -viewport.top;
   grid.tilePosition.x = -viewport.left;
-  grid.y = viewport.top;
+  grid.tilePosition.y = -viewport.top;
+
   grid.x = viewport.left;
+  grid.y = viewport.top;
 
   grid.width = domContainer.clientWidth / viewport.scale.x;
   grid.height = domContainer.clientHeight / viewport.scale.y;
@@ -298,7 +533,7 @@ document
   });
 
 // Load assets.
-await Assets.load('assets/ibm.woff');
+await Assets.load("assets/ibm.woff");
 
 // Add PixiJS to the DOM.
 // @ts-ignore FIXME
@@ -325,3 +560,6 @@ document.getElementById("canvas")?.replaceChildren(app.view);
 //     }, waitMs);
 //   };
 // }
+
+// TODO: handle out-of-bounds objects
+// TODO: reset state func and do it at various places
