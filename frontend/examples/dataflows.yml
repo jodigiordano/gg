@@ -25,7 +25,7 @@ systems:
           y: 2
   - id: whatever
     position:
-      x: 0
+      x: 1
       y: 14
   - id: datadog
     position:
