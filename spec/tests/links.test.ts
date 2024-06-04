@@ -8,7 +8,10 @@ describe("links", () => {
       const system: System = {
         specificationVersion: "1.0.0",
         title: "test",
-        systems: [{ id: "foo" }, { id: "bar" }],
+        systems: [
+          { id: "foo", position: { x: 1, y: 1 } },
+          { id: "bar", position: { x: 10, y: 1 } },
+        ],
         links: [
           {
             a: "foo",
@@ -42,7 +45,11 @@ describe("links", () => {
         systems: [
           {
             id: "foo",
-            systems: [{ id: "bar" }, { id: "spam" }],
+            position: { x: 1, y: 1 },
+            systems: [
+              { id: "bar", position: { x: 1, y: 1 } },
+              { id: "spam", position: { x: 10, y: 1 } },
+            ],
           },
         ],
         links: [
@@ -78,10 +85,12 @@ describe("links", () => {
         systems: [
           {
             id: "foo",
-            systems: [{ id: "bar" }],
+            position: { x: 1, y: 1 },
+            systems: [{ id: "bar", position: { x: 1, y: 1 } }],
           },
           {
             id: "bar",
+            position: { x: 10, y: 1 },
           },
         ],
         links: [
@@ -117,11 +126,13 @@ describe("links", () => {
         systems: [
           {
             id: "foo",
-            systems: [{ id: "bar" }],
+            position: { x: 1, y: 1 },
+            systems: [{ id: "bar", position: { x: 1, y: 1 } }],
           },
           {
             id: "bar",
-            systems: [{ id: "spam" }],
+            position: { x: 10, y: 1 },
+            systems: [{ id: "spam", position: { x: 1, y: 1 } }],
           },
         ],
         links: [
@@ -154,7 +165,7 @@ describe("links", () => {
       const system: System = {
         specificationVersion: "1.0.0",
         title: "test",
-        systems: [{ id: "foo" }],
+        systems: [{ id: "foo", position: { x: 1, y: 1 } }],
         links: [
           {
             a: "bar",
@@ -177,7 +188,7 @@ describe("links", () => {
       const system: System = {
         specificationVersion: "1.0.0",
         title: "test",
-        systems: [{ id: "foo" }],
+        systems: [{ id: "foo", position: { x: 1, y: 1 } }],
         links: [
           {
             a: "foo",
@@ -200,7 +211,10 @@ describe("links", () => {
       const system: System = {
         specificationVersion: "1.0.0",
         title: "test",
-        systems: [{ id: "foo" }, { id: "bar" }],
+        systems: [
+          { id: "foo", position: { x: 1, y: 1 } },
+          { id: "bar", position: { x: 10, y: 1 } },
+        ],
         links: [
           {
             a: "foo.bar",
@@ -223,7 +237,10 @@ describe("links", () => {
       const system: System = {
         specificationVersion: "1.0.0",
         title: "test",
-        systems: [{ id: "foo" }, { id: "bar" }],
+        systems: [
+          { id: "foo", position: { x: 1, y: 1 } },
+          { id: "bar", position: { x: 10, y: 1 } },
+        ],
         links: [
           {
             a: "bar",
@@ -246,7 +263,14 @@ describe("links", () => {
       const system: System = {
         specificationVersion: "1.0.0",
         title: "test",
-        systems: [{ id: "foo", systems: [{ id: "bar" }] }, { id: "bar" }],
+        systems: [
+          {
+            id: "foo",
+            position: { x: 1, y: 1 },
+            systems: [{ id: "bar", position: { x: 1, y: 1 } }],
+          },
+          { id: "bar", position: { x: 10, y: 1 } },
+        ],
         links: [
           {
             a: "foo",
@@ -269,7 +293,14 @@ describe("links", () => {
       const system: System = {
         specificationVersion: "1.0.0",
         title: "test",
-        systems: [{ id: "foo" }, { id: "bar", systems: [{ id: "spam" }] }],
+        systems: [
+          { id: "foo", position: { x: 1, y: 1 } },
+          {
+            id: "bar",
+            position: { x: 10, y: 1 },
+            systems: [{ id: "spam", position: { x: 1, y: 1 } }],
+          },
+        ],
         links: [
           {
             a: "foo",
@@ -292,7 +323,7 @@ describe("links", () => {
       const system: System = {
         specificationVersion: "1.0.0",
         title: "test",
-        systems: [{ id: "foo" }],
+        systems: [{ id: "foo", position: { x: 1, y: 1 } }],
         links: [
           {
             a: "foo",
@@ -318,9 +349,11 @@ describe("links", () => {
         systems: [
           {
             id: "foo",
+            position: { x: 1, y: 1 },
             systems: [
               {
                 id: "bar",
+                position: { x: 1, y: 1 },
               },
             ],
           },
@@ -354,7 +387,11 @@ describe("links", () => {
         systems: [
           {
             id: "foo",
-            systems: [{ id: "bar" }, { id: "spam" }],
+            position: { x: 1, y: 1 },
+            systems: [
+              { id: "bar", position: { x: 1, y: 1 } },
+              { id: "spam", position: { x: 10, y: 1 } },
+            ],
           },
         ],
         links: [
@@ -377,10 +414,15 @@ describe("links", () => {
         systems: [
           {
             id: "foo",
+            position: { x: 1, y: 1 },
             systems: [
               {
                 id: "bar",
-                systems: [{ id: "spam" }, { id: "baz" }],
+                position: { x: 1, y: 1 },
+                systems: [
+                  { id: "spam", position: { x: 1, y: 1 } },
+                  { id: "baz", position: { x: 10, y: 1 } },
+                ],
               },
             ],
           },

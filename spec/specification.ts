@@ -46,7 +46,7 @@ export interface Subsystem {
   /**
    * The position of the sub-system in the parent system.
    */
-  position?: {
+  position: {
     /**
      * The X position of the sub-system in the parent system.
      */
@@ -211,7 +211,7 @@ const schemas = [
     title: "Subsystem",
     description: "A sub-system",
     type: "object",
-    required: ["id"],
+    required: ["id", "position"],
     additionalProperties: false,
     properties: {
       id: {

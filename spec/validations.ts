@@ -6,6 +6,9 @@ import {
 } from "./index";
 import { System, specification } from "./specification";
 
+// Each system has a margin to make room for ports & routing.
+const SystemMargin = 1;
+
 export class InvalidSystemError extends Error {
   details: unknown;
 
@@ -61,18 +64,19 @@ function validateSystemDistances(
         continue;
       }
 
-      // Each sub-system has a margin to make room for ports & routing.
-      const margin = 1;
+      const aLeft = subsystemA.position.x - SystemMargin;
+      const aRight =
+        subsystemA.position.x + subsystemA.size.width + SystemMargin;
+      const aTop = subsystemA.position.y - SystemMargin;
+      const aBottom =
+        subsystemA.position.y + subsystemA.size.height + SystemMargin;
 
-      const aLeft = subsystemA.position.x - margin;
-      const aRight = subsystemA.position.x + subsystemA.size.width + margin;
-      const aTop = subsystemA.position.y - margin;
-      const aBottom = subsystemA.position.y + subsystemA.size.height + margin;
-
-      const bLeft = subsystemB.position.x - margin;
-      const bRight = subsystemB.position.x + subsystemB.size.width + margin;
-      const bTop = subsystemB.position.y - margin;
-      const bBottom = subsystemB.position.y + subsystemB.size.height + margin;
+      const bLeft = subsystemB.position.x - SystemMargin;
+      const bRight =
+        subsystemB.position.x + subsystemB.size.width + SystemMargin;
+      const bTop = subsystemB.position.y - SystemMargin;
+      const bBottom =
+        subsystemB.position.y + subsystemB.size.height + SystemMargin;
 
       if (
         aLeft <= bRight &&
@@ -237,9 +241,11 @@ function validateSystemBoundaries(
 
   for (const subsystem of system.systems) {
     if (
-      subsystem.position.x + subsystem.size.width >
+      subsystem.position.x - SystemMargin < 0 ||
+      subsystem.position.x + subsystem.size.width + SystemMargin >
         RuntimeLimits.MaxSystemWidth ||
-      subsystem.position.y + subsystem.size.height >
+      subsystem.position.y - SystemMargin < 0 ||
+      subsystem.position.y + subsystem.size.height + SystemMargin >
         RuntimeLimits.MaxSystemHeight
     ) {
       errors.push({
@@ -248,8 +254,8 @@ function validateSystemBoundaries(
       });
     }
 
-    // Validate recursively.
-    errors.push(...validateSystemBoundaries(subsystem));
+    // There is no need to validate recursively, as sub-system
+    // positions are relative to their parent.
   }
 
   return errors;

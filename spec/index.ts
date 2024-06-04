@@ -1,8 +1,19 @@
 import { load as parseYaml } from "js-yaml";
-import { Link, System, Subsystem, Flow, FlowStep } from "./specification";
+import {
+  Link as SpecLink,
+  System as SpecSystem,
+  Subsystem as SpecSubsystem,
+  Flow as SpecFlow,
+  FlowStep as SpecFlowStep,
+} from "./specification";
 import { validate, ValidationError as VError } from "./validations";
 
 export type ValidationError = VError;
+export type Link = SpecLink;
+export type System = SpecSystem;
+export type Subsystem = SpecSubsystem;
+export type Flow = SpecFlow;
+export type FlowStep = SpecFlowStep;
 
 export const TitleCharsPerSquare = 2;
 
@@ -27,12 +38,14 @@ export interface RuntimePosition {
 export interface RuntimePort extends RuntimePosition {}
 
 export interface RuntimeLink extends Link {
+  specification: Link;
   index: number;
   systemA: RuntimeSubsystem;
   systemB: RuntimeSubsystem;
 }
 
 export interface RuntimeSubsystem extends Subsystem {
+  specification: Subsystem;
   canonicalId: string;
   title: string;
   titlePosition: RuntimePosition;
@@ -47,6 +60,7 @@ export interface RuntimeSubsystem extends Subsystem {
 }
 
 export interface RuntimeSystem extends System {
+  specification: System;
   canonicalId: undefined;
   titlePosition: RuntimePosition;
   titleSize: RuntimeSize;
@@ -57,12 +71,14 @@ export interface RuntimeSystem extends System {
 }
 
 export interface RuntimeFlowStep extends FlowStep {
+  specification: FlowStep;
   systemFrom: RuntimeSubsystem;
   systemTo: RuntimeSubsystem;
   links: RuntimeLink[];
 }
 
 export interface RuntimeFlow extends Flow {
+  specification: Flow;
   index: number;
   steps: RuntimeFlowStep[];
 }
@@ -73,6 +89,7 @@ export function load(system: System): {
 } {
   const runtime = structuredClone(system) as RuntimeSystem;
 
+  runtime.specification = system;
   runtime.links ??= [];
   runtime.titlePosition = { x: 0, y: 0 };
   runtime.titleSize = { width: 0, height: 0 };
@@ -84,7 +101,6 @@ export function load(system: System): {
   enhanceSubsystems(runtime);
   enhanceLinks(runtime);
   enhanceFlows(runtime);
-  computePositions(runtime);
   computeSizes(runtime, runtime.links);
 
   const errors = validate(system, runtime);
@@ -103,6 +119,9 @@ function enhanceSubsystems(system: RuntimeSystem | RuntimeSubsystem): void {
   system.systems ??= [];
 
   system.systems.forEach((subsystem, index) => {
+    // Set the specification.
+    subsystem.specification = system.specification.systems!.at(index)!;
+
     // Set array position in the system.
     subsystem.index = index;
 
@@ -136,8 +155,11 @@ function enhanceSubsystems(system: RuntimeSystem | RuntimeSubsystem): void {
   });
 }
 
-function enhanceLinks(system: RuntimeSystem | RuntimeSubsystem): void {
+function enhanceLinks(system: RuntimeSystem): void {
   system.links.forEach((link, index) => {
+    // Set the specification.
+    link.specification = system.specification.links!.at(index)!;
+
     // Set array position in the system.
     link.index = index;
 
@@ -150,7 +172,7 @@ function enhanceLinks(system: RuntimeSystem | RuntimeSubsystem): void {
       }
     });
 
-    link.systemA = systemA as RuntimeSubsystem;
+    link.systemA = systemA as unknown as RuntimeSubsystem;
 
     // Set system B.
     let systemB: RuntimeSubsystem | RuntimeSystem | undefined = system;
@@ -161,7 +183,7 @@ function enhanceLinks(system: RuntimeSystem | RuntimeSubsystem): void {
       }
     });
 
-    link.systemB = systemB as RuntimeSubsystem;
+    link.systemB = systemB as unknown as RuntimeSubsystem;
   });
 }
 
@@ -169,6 +191,9 @@ function enhanceFlows(system: RuntimeSystem): void {
   system.flows ??= [];
 
   system.flows.forEach((flow, index) => {
+    // Set the specification.
+    flow.specification = system.specification.flows!.at(index)!;
+
     // Set array position.
     flow.index = index;
 
@@ -182,7 +207,10 @@ function enhanceFlows(system: RuntimeSystem): void {
 
     const keyframes = Array.from(uniqueKeyframes).sort();
 
-    flow.steps.forEach(step => {
+    flow.steps.forEach((step, index) => {
+      // Set the specification.
+      step.specification = flow.specification.steps.at(index)!;
+
       // Set normalized keyframe.
       step.keyframe = keyframes.indexOf(step.keyframe);
 
@@ -321,25 +349,6 @@ function findLinks(
   }
 
   return pathLinks;
-}
-
-function computePositions(system: RuntimeSystem | RuntimeSubsystem): void {
-  let farRight = 0;
-
-  for (const subsystem of system.systems) {
-    if (subsystem.position) {
-      farRight = Math.max(farRight, subsystem.position.x);
-    } else {
-      subsystem.position = {
-        x: farRight + 10,
-        y: 0,
-      };
-
-      farRight = subsystem.position.x;
-    }
-
-    computePositions(subsystem);
-  }
 }
 
 function computeSizes(

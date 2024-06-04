@@ -11,6 +11,7 @@ describe("systems", () => {
         systems: [
           {
             id: "!",
+            position: { x: 1, y: 1 },
           },
         ],
       };
@@ -28,9 +29,11 @@ describe("systems", () => {
         systems: [
           {
             id: "foo",
+            position: { x: 1, y: 1 },
           },
           {
             id: "foo",
+            position: { x: 10, y: 1 },
           },
         ],
       };
@@ -56,12 +59,15 @@ describe("systems", () => {
         systems: [
           {
             id: "foo",
+            position: { x: 1, y: 1 },
             systems: [
               {
                 id: "bar",
+                position: { x: 1, y: 1 },
               },
               {
                 id: "bar",
+                position: { x: 10, y: 1 },
               },
             ],
           },
@@ -91,6 +97,7 @@ describe("systems", () => {
         systems: [
           {
             id: "foo",
+            position: { x: 1, y: 1 },
             title: "bar spam",
           },
         ],
@@ -99,11 +106,11 @@ describe("systems", () => {
       const { system: runtime } = load(system);
 
       assert.deepEqual(runtime.systems.at(0)?.titleSize, {
-        width: 3,
+        width: 4,
         height: 1,
       });
 
-      assert.deepEqual(runtime.systems.at(0)?.size, { width: 5, height: 3 });
+      assert.deepEqual(runtime.systems.at(0)?.size, { width: 6, height: 3 });
     });
   });
 
@@ -115,6 +122,7 @@ describe("systems", () => {
         systems: [
           {
             id: "foo",
+            position: { x: 1, y: 1 },
           },
         ],
       };
@@ -135,7 +143,7 @@ describe("systems", () => {
             id: "foo",
             position: {
               x: 64,
-              y: 0,
+              y: 1,
             },
           },
         ],
@@ -151,36 +159,6 @@ describe("systems", () => {
       ]);
     });
 
-    it("out of bounds - subsystem", () => {
-      const system: System = {
-        specificationVersion: "1.0.0",
-        title: "test",
-        systems: [
-          {
-            id: "foo",
-            systems: [
-              {
-                id: "bar",
-                position: {
-                  x: 64,
-                  y: 0,
-                },
-              },
-            ],
-          },
-        ],
-      };
-
-      const { errors } = load(system);
-
-      assert.deepEqual(errors, [
-        {
-          message: "out of bounds",
-          path: "/systems/0/systems/0",
-        },
-      ]);
-    });
-
     it("overlaps", () => {
       const system: System = {
         specificationVersion: "1.0.0",
@@ -190,8 +168,8 @@ describe("systems", () => {
             // has size of 3x3
             id: "foo",
             position: {
-              x: 0,
-              y: 0,
+              x: 1,
+              y: 1,
             },
           },
           {
@@ -199,7 +177,7 @@ describe("systems", () => {
             id: "bar",
             position: {
               x: 2,
-              y: 0,
+              y: 1,
             },
           },
         ],
@@ -228,8 +206,8 @@ describe("systems", () => {
             // has size of 3x3
             id: "foo",
             position: {
-              x: 0,
-              y: 0,
+              x: 1,
+              y: 1,
             },
           },
           {
@@ -237,7 +215,7 @@ describe("systems", () => {
             id: "bar",
             position: {
               x: 4,
-              y: 0,
+              y: 1,
             },
           },
         ],
@@ -267,8 +245,8 @@ describe("systems", () => {
             id: "foo",
             title: "has a very long title, which makes it size X grow",
             position: {
-              x: 0,
-              y: 0,
+              x: 1,
+              y: 1,
             },
           },
           {
@@ -276,7 +254,7 @@ describe("systems", () => {
             id: "bar",
             position: {
               x: 10,
-              y: 0,
+              y: 1,
             },
           },
         ],
@@ -303,19 +281,20 @@ describe("systems", () => {
         systems: [
           {
             id: "foo",
+            position: { x: 1, y: 1 },
             systems: [
               {
                 id: "bar",
                 position: {
                   x: 10,
-                  y: 0,
+                  y: 1,
                 },
               },
               {
                 id: "spam",
                 position: {
                   x: 12,
-                  y: 0,
+                  y: 1,
                 },
               },
             ],

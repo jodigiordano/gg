@@ -4,25 +4,52 @@ description: Example demonstrating sub-systems
 systems:
   - id: frontend
     description: Web-based client
+    position:
+      x: 1
+      y: 1
     systems:
       - id: react-app
         description: The React application
+        position:
+          x: 0
+          y: 0
       - id: redux-store
         description: The Redux store
+        position:
+          x: 10
+          y: 0
       - id: api-service
         description: Service to speak to the backend API
+        position:
+          x: 22
+          y: 0
   - id: backend
     description: Backend of the frontend
+    position:
+      x: 10
+      y: 1
     systems:
       - id: server
         description: RESTful HTTP API of the backend
+        position:
+          x: 0
+          y: 0
         systems:
           - id: expressjs
             description: ExpressJS http server
+            position:
+              x: 0
+              y: 0
           - id: handler
             description: Controller handling the HTTP request
+            position:
+              x: 10
+              y: 0
       - id: database
         description: Database of the backend
+        position:
+          x: 10
+          y: 0
 links:
   - a: frontend.api-service
     b: backend.server.expressjs
