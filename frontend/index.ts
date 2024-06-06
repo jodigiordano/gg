@@ -29,10 +29,6 @@ import { BlockSize } from "./consts.js";
 import example1 from "./examples/basic.yml?raw";
 import example2 from "./examples/dataflows.yml?raw";
 
-interface State {
-  operation: IdleOperation | MoveSystemOperation;
-}
-
 interface IdleOperation {
   type: "idle";
 }
@@ -46,9 +42,33 @@ interface MoveSystemOperation {
   };
 }
 
+// State.
+
+interface State {
+  changes: string[];
+  changeIndex: number;
+  operation: IdleOperation | MoveSystemOperation;
+}
+
 const state: State = {
+  changes: [],
+  changeIndex: -1,
   operation: { type: "idle" },
 };
+
+function pushChange(change: string) {
+  state.changes.splice(state.changeIndex + 1, state.changes.length, change);
+  state.changeIndex = state.changes.length - 1;
+}
+
+function resetState(): void {
+  state.changes.length = 0;
+  state.changeIndex = -1;
+  state.operation = { type: "idle" };
+
+  // TODO: NOPE! should broadcast event instead.
+  dragAndDrop.visible = false;
+}
 
 // Setup PixiJS.
 BaseTexture.defaultOptions.mipmap = MIPMAP_MODES.ON;
@@ -310,6 +330,9 @@ viewport.on("pointerup", (event: any) => {
     const newSpecification = saveYaml(canvasSimulator.system.specification);
 
     if (loadSimulation(newSpecification)) {
+      // TODO: broadcast event.
+      pushChange(newSpecification);
+
       yamlEditorDefinition.value = newSpecification;
     } else {
       // Rollback.
@@ -482,6 +505,32 @@ document
   });
 
 document
+  .getElementById("operation-yaml-editor-redo")
+  ?.addEventListener("click", function () {
+    if (state.changeIndex < state.changes.length - 1) {
+      state.changeIndex += 1;
+
+      const value = state.changes[state.changeIndex];
+
+      yamlEditorDefinition.value = value;
+      loadSimulation(yamlEditorDefinition.value);
+    }
+  });
+
+document
+  .getElementById("operation-yaml-editor-undo")
+  ?.addEventListener("click", function () {
+    if (state.changeIndex > 0) {
+      state.changeIndex -= 1;
+
+      const value = state.changes[state.changeIndex];
+
+      yamlEditorDefinition.value = value;
+      loadSimulation(yamlEditorDefinition.value);
+    }
+  });
+
+document
   .getElementById("operation-file-new")
   ?.addEventListener("click", function () {
     yamlEditorDefinition.value = [
@@ -490,6 +539,8 @@ document
     ].join("\n");
 
     loadSimulation(yamlEditorDefinition.value);
+    resetState();
+    pushChange(yamlEditorDefinition.value);
     fitSimulation();
   });
 
@@ -502,6 +553,8 @@ document
       yamlEditorDefinition.value = value;
 
       loadSimulation(yamlEditorDefinition.value);
+      resetState();
+      pushChange(yamlEditorDefinition.value);
       fitSimulation();
     }
   });
@@ -520,6 +573,8 @@ document
     yamlEditorDefinition.value = example1;
 
     loadSimulation(example1);
+    resetState();
+    pushChange(yamlEditorDefinition.value);
     fitSimulation();
   });
 
@@ -529,6 +584,8 @@ document
     yamlEditorDefinition.value = example2;
 
     loadSimulation(example2);
+    resetState();
+    pushChange(yamlEditorDefinition.value);
     fitSimulation();
   });
 
