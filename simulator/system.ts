@@ -64,6 +64,7 @@ export interface SimulatorSystemTitlePadding extends SimulatorObject {
 const PaddingWhiteBox = 2;
 
 interface GridSystem {
+  canonicalId: string;
   x: number;
   y: number;
   width: number;
@@ -371,6 +372,7 @@ export class SystemSimulator {
 
     // Initialize system.
     const gridObject = {
+      canonicalId: system.canonicalId,
       x: -1,
       y: -1,
       width: -1,
