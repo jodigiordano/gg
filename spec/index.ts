@@ -58,6 +58,7 @@ export interface RuntimeSubsystem extends Subsystem {
   position: RuntimePosition;
   ports: RuntimePort[];
   parent?: RuntimeSystem | RuntimeSubsystem;
+  hideSystems: boolean;
   systems: RuntimeSubsystem[];
   links: RuntimeLink[];
 }
@@ -68,6 +69,7 @@ export interface RuntimeSystem extends System {
   titlePosition: RuntimePosition;
   titleSize: RuntimeSize;
   parent?: undefined;
+  hideSystems: false;
   systems: RuntimeSubsystem[];
   links: RuntimeLink[];
   flows: RuntimeFlow[];
@@ -133,6 +135,9 @@ function enhanceSubsystems(system: RuntimeSystem | RuntimeSubsystem): void {
 
     // Set the title, if necessary.
     subsystem.title ??= subsystem.id;
+
+    // Set hide systems default value.
+    subsystem.hideSystems ??= false;
 
     // TODO: Support titles with newlines.
     subsystem.titleSize = {

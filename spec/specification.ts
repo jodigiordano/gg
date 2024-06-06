@@ -57,6 +57,10 @@ export interface Subsystem {
     y: number;
   };
   /**
+   * Whether to show or hide the sub-systems of the system.
+   */
+  hideSystems?: boolean;
+  /**
    * The sub-systems of the system.
    */
   systems?: Subsystem[];
@@ -250,6 +254,10 @@ const schemas = [
             maximum: 64,
           },
         },
+      },
+      hideSystems: {
+        type: "boolean",
+        description: "Whether to show or hide the sub-systems of the system.",
       },
       systems: {
         type: "array",

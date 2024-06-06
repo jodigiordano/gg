@@ -40,6 +40,10 @@
         }
       }
     },
+    "hideSystems": {
+      "type": "boolean",
+      "description": "Whether to show or hide the sub-systems of the system."
+    },
     "systems": {
       "type": "array",
       "description": "The sub-systems of the system.",
