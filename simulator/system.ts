@@ -61,15 +61,6 @@ export interface SimulatorSystemTitlePadding extends SimulatorObject {
   system: RuntimeSubsystem;
 }
 
-export interface SystemSimulatorOptions {
-  // By default, all sub-systems of the system are displayed on the grid.
-  // This option treat a sub-system as a blackbox, i.e. not showing what's
-  // inside.
-  blackBoxes: string[];
-
-  // TODO: option to hide sub-systems ?
-}
-
 const PaddingWhiteBox = 2;
 
 interface GridSystem {
@@ -95,17 +86,12 @@ export class SystemSimulator {
   private routes: Record<string, Record<string, number[][]>>;
   private gridSystems: Record<string, GridSystem>;
   private grid: SimulatorObject[][][];
-  private options: SystemSimulatorOptions;
 
-  constructor(
-    system: RuntimeSystem,
-    options: SystemSimulatorOptions = { blackBoxes: [] },
-  ) {
+  constructor(system: RuntimeSystem) {
     this.system = system;
     this.routes = {};
     this.gridSystems = {};
     this.grid = new Array(RuntimeLimits.MaxSystemHeight);
-    this.options = options;
 
     // Create grid.
     for (let i = 0; i < RuntimeLimits.MaxSystemWidth; i++) {
@@ -134,8 +120,7 @@ export class SystemSimulator {
     while (toDraw.length) {
       const ss = toDraw.shift()!;
 
-      const blackbox =
-        !ss.systems.length || this.options.blackBoxes.includes(ss.canonicalId);
+      const blackbox = !ss.systems.length || ss.hideSystems;
 
       if (!blackbox) {
         for (const sss of ss.systems) {
@@ -411,7 +396,7 @@ export class SystemSimulator {
     for (const ss of system.systems) {
       this.computeGridVisibility(
         ss,
-        hidden || this.options.blackBoxes.includes(ss.canonicalId),
+        hidden || ss.hideSystems
       );
     }
 
@@ -421,9 +406,8 @@ export class SystemSimulator {
     }
 
     const gridObject = this.gridSystems[system.canonicalId]!;
-    const blackbox = this.options.blackBoxes.includes(system.canonicalId);
 
-    gridObject.hidden = !blackbox && hidden;
+    gridObject.hidden = !system.hideSystems && hidden;
   }
 
   private computeGridObjectSizes(
@@ -440,7 +424,7 @@ export class SystemSimulator {
     }
 
     const gridObject = this.gridSystems[system.canonicalId]!;
-    const blackbox = this.options.blackBoxes.includes(system.canonicalId);
+    const blackbox = system.hideSystems;
 
     if (gridObject.hidden) {
       gridObject.width = 0;
@@ -522,7 +506,7 @@ export class SystemSimulator {
   ): void {
     for (const ss of system.systems) {
       const gridObject = this.gridSystems[ss.canonicalId]!;
-      const blackbox = this.options.blackBoxes.includes(ss.canonicalId);
+      const blackbox = ss.hideSystems;
 
       // When the sub-system is hidden, it has the same ports as its parent.
       // I am not making a deep copy here because it is not necessary and
