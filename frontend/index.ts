@@ -57,6 +57,11 @@ const state: State = {
 };
 
 function pushChange(change: string) {
+  // A same change cannot be pushed multiple times consecutively.
+  if (change === state.changes[state.changeIndex]) {
+    return;
+  }
+
   state.changes.splice(state.changeIndex + 1, state.changes.length, change);
   state.changeIndex = state.changes.length - 1;
 }
@@ -500,6 +505,7 @@ document
   .getElementById("operation-yaml-editor-apply-changes")
   ?.addEventListener("click", function () {
     if (yamlEditorDefinition.value) {
+      pushChange(yamlEditorDefinition.value);
       loadSimulation(yamlEditorDefinition.value);
     }
   });
