@@ -15,6 +15,9 @@ export type Subsystem = SpecSubsystem;
 export type Flow = SpecFlow;
 export type FlowStep = SpecFlowStep;
 
+// Each system has a margin to make room for ports & routing.
+export const SystemMargin = 1;
+
 export const TitleCharsPerSquare = 2;
 
 const TitlePadding = 1;

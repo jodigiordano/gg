@@ -3,11 +3,9 @@ import {
   RuntimeLink,
   RuntimeSubsystem,
   RuntimeSystem,
+  SystemMargin,
 } from "./index";
 import { System, specification } from "./specification";
-
-// Each system has a margin to make room for ports & routing.
-const SystemMargin = 1;
 
 export class InvalidSystemError extends Error {
   details: unknown;
