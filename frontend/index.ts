@@ -424,9 +424,16 @@ function fitSimulation() {
   const width = boundaries.right - boundaries.left + BlockSize; /* padding */
   const height = boundaries.bottom - boundaries.top + BlockSize; /* padding */
 
-  viewport.moveCenter(boundaries.left + width / 2, boundaries.top + height / 2);
-
-  viewport.fit(true, width, height);
+  // The operation is executed twice because of a weird issue that I don't
+  // understand yet. Somehow, because we are using "viewport.clamp", the first
+  // tuple ["viewport.moveCenter", "viewport.fit"] below doesn't quite do its
+  // job and part of the simulation is slightly out of the viewport.
+  //
+  // This code feels like slapping the side of the CRT.
+  for (let i = 0; i < 2; i++) {
+    viewport.moveCenter(boundaries.left + width / 2, boundaries.top + height / 2);
+    viewport.fit(true, width, height);
+  }
 
   redrawGrid();
 }
