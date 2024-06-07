@@ -60,7 +60,11 @@ export class CanvasSimulator {
   }
 
   getLinkAt(x: number, y: number): RuntimeLink | null {
-    const object = this.getObjectsAt(x, y).at(0);
+    const objects = this.getObjectsAt(x, y);
+
+    const object = objects
+      .reverse()
+      .find(obj => obj.type === SimulatorObjectType.Link);
 
     if (object && "link" in object) {
       return object.link as RuntimeLink;
