@@ -441,7 +441,10 @@ function fitSimulation() {
   //
   // This code feels like slapping the side of the CRT.
   for (let i = 0; i < 2; i++) {
-    viewport.moveCenter(boundaries.left + width / 2, boundaries.top + height / 2);
+    viewport.moveCenter(
+      boundaries.left + width / 2,
+      boundaries.top + height / 2,
+    );
     viewport.fit(true, width, height);
   }
 
