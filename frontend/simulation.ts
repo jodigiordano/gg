@@ -38,11 +38,12 @@ export class CanvasSimulator {
   getObjectsAt(x: number, y: number): SimulatorObject[] {
     const layout = this.systemSimulator.getLayout();
 
-    return layout[x]![y] ?? [];
+    return layout[x]?.[y] ?? [];
   }
 
   getSubsystemAt(x: number, y: number): RuntimeSubsystem | null {
     const objects = this.getObjectsAt(x, y);
+
     const object = objects
       .reverse()
       .find(
