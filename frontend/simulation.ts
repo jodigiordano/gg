@@ -15,6 +15,46 @@ import {
 } from "@dataflows/simulator";
 import { BlockSize } from "./consts.js";
 
+export interface CanvasSimulatorTextures {
+  whitebox: RenderTexture;
+  blackbox: RenderTexture;
+  link: RenderTexture;
+}
+
+export function generateCanvasSimulatorTextures(
+  app: Application,
+): CanvasSimulatorTextures {
+  // Whitebox
+  const whiteboxGraphic = new Graphics()
+    .beginFill(0xc0c0c0)
+    .drawRect(0, 0, BlockSize, BlockSize)
+    .endFill();
+
+  const whitebox = app.renderer.generateTexture(whiteboxGraphic);
+
+  // Blackbox
+  const blackboxGraphic = new Graphics()
+    .beginFill(0x000000)
+    .drawRect(0, 0, BlockSize, BlockSize)
+    .endFill();
+
+  const blackbox = app.renderer.generateTexture(blackboxGraphic);
+
+  // Link
+  const linkGraphic = new Graphics()
+    .beginFill(0xff0000)
+    .drawRect(0, 0, BlockSize, BlockSize)
+    .endFill();
+
+  const link = app.renderer.generateTexture(linkGraphic);
+
+  return {
+    whitebox,
+    blackbox,
+    link,
+  };
+}
+
 export class CanvasSimulator {
   public system: RuntimeSystem;
   private systemSimulator: SystemSimulator;
@@ -73,30 +113,9 @@ export class CanvasSimulator {
     return null;
   }
 
-  getObjectsToRender(app: Application): (Sprite | Text)[] {
-    // Whitebox
-    const whiteboxGraphic = new Graphics()
-      .beginFill(0xc0c0c0)
-      .drawRect(0, 0, BlockSize, BlockSize)
-      .endFill();
 
-    const whiteboxTexture = app.renderer.generateTexture(whiteboxGraphic);
 
-    // Blackbox
-    const blackboxGraphic = new Graphics()
-      .beginFill(0x000000)
-      .drawRect(0, 0, BlockSize, BlockSize)
-      .endFill();
-
-    const blackboxTexture = app.renderer.generateTexture(blackboxGraphic);
-
-    const linkGraphic = new Graphics()
-      .beginFill(0xff0000)
-      .drawRect(0, 0, BlockSize, BlockSize)
-      .endFill();
-
-    const linkTexture = app.renderer.generateTexture(linkGraphic);
-
+  getObjectsToRender(textures: CanvasSimulatorTextures): (Sprite | Text)[] {
     const toDraw: (Sprite | Text)[] = [];
     const layout = this.systemSimulator.getLayout();
 
@@ -104,21 +123,21 @@ export class CanvasSimulator {
       for (let j = 0; j < RuntimeLimits.MaxSystemHeight; j++) {
         for (const obj of layout[i]![j]!) {
           if (obj.type === SimulatorObjectType.WhiteBox) {
-            const sprite = new Sprite(whiteboxTexture);
+            const sprite = new Sprite(textures.whitebox);
 
             sprite.x = i * BlockSize;
             sprite.y = j * BlockSize;
 
             toDraw.push(sprite);
           } else if (obj.type === SimulatorObjectType.BlackBox) {
-            const sprite = new Sprite(blackboxTexture);
+            const sprite = new Sprite(textures.blackbox);
 
             sprite.x = i * BlockSize;
             sprite.y = j * BlockSize;
 
             toDraw.push(sprite);
           } else if (obj.type === SimulatorObjectType.Link) {
-            const sprite = new Sprite(linkTexture);
+            const sprite = new Sprite(textures.link);
 
             sprite.x = i * BlockSize;
             sprite.y = j * BlockSize;

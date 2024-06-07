@@ -24,7 +24,11 @@ import { dump as saveYaml } from "js-yaml";
 // @ts-ignore FIXME
 import { Viewport } from "pixi-viewport";
 import { loadYaml, RuntimeLimits, RuntimeSubsystem } from "@dataflows/spec";
-import { CanvasSimulator, CanvasFlowPlayer } from "./simulation.js";
+import {
+  CanvasSimulator,
+  CanvasFlowPlayer,
+  generateCanvasSimulatorTextures,
+} from "./simulation.js";
 import { BlockSize } from "./consts.js";
 import example1 from "./examples/basic.yml?raw";
 import example2 from "./examples/dataflows.yml?raw";
@@ -360,6 +364,10 @@ app.ticker.add<void>(deltaTime => {
   }
 });
 
+// Simulation.
+
+const canvasSimulatorTextures = generateCanvasSimulatorTextures(app);
+
 function loadSimulation(yaml: string): boolean {
   const { system, errors } = loadYaml(yaml);
 
@@ -378,7 +386,9 @@ function loadSimulation(yaml: string): boolean {
 
   canvasSimulatorContainer.removeChildren();
 
-  for (const objectToRender of canvasSimulator.getObjectsToRender(app)) {
+  for (const objectToRender of canvasSimulator.getObjectsToRender(
+    canvasSimulatorTextures,
+  )) {
     // @ts-ignore FIXME
     canvasSimulatorContainer.addChild(objectToRender);
   }
