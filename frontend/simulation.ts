@@ -1,4 +1,11 @@
-import { Application, Sprite, Graphics, RenderTexture, Text } from "pixi.js";
+import {
+  Application,
+  Sprite,
+  Graphics,
+  RenderTexture,
+  Text,
+  TilingSprite,
+} from "pixi.js";
 import {
   RuntimeFlow,
   RuntimeLimits,
@@ -19,6 +26,7 @@ export interface CanvasSimulatorTextures {
   whitebox: RenderTexture;
   blackbox: RenderTexture;
   link: RenderTexture;
+  freeSpace: RenderTexture;
 }
 
 export function generateCanvasSimulatorTextures(
@@ -32,7 +40,7 @@ export function generateCanvasSimulatorTextures(
 
   const whitebox = app.renderer.generateTexture(whiteboxGraphic);
 
-  // Blackbox
+  // Blackbox.
   const blackboxGraphic = new Graphics()
     .beginFill(0x000000)
     .drawRect(0, 0, BlockSize, BlockSize)
@@ -40,7 +48,7 @@ export function generateCanvasSimulatorTextures(
 
   const blackbox = app.renderer.generateTexture(blackboxGraphic);
 
-  // Link
+  // Link.
   const linkGraphic = new Graphics()
     .beginFill(0xff0000)
     .drawRect(0, 0, BlockSize, BlockSize)
@@ -48,10 +56,19 @@ export function generateCanvasSimulatorTextures(
 
   const link = app.renderer.generateTexture(linkGraphic);
 
+  // Free space.
+  const freeSpaceGraphic = new Graphics()
+    .beginFill(0x0000ff)
+    .drawRect(0, 0, BlockSize, BlockSize)
+    .endFill();
+
+  const freeSpace = app.renderer.generateTexture(freeSpaceGraphic);
+
   return {
     whitebox,
     blackbox,
     link,
+    freeSpace,
   };
 }
 
@@ -113,7 +130,152 @@ export class CanvasSimulator {
     return null;
   }
 
+  getAvailableSpaceForSystemToRender(
+    textures: CanvasSimulatorTextures,
+    system: RuntimeSubsystem,
+  ): Sprite[] {
+    const toDraw: Sprite[] = [];
 
+    // Make a simpler copy of layout:
+    const rectLayout: number[][] = new Array(RuntimeLimits.MaxSystemHeight);
+
+    for (let i = 0; i < RuntimeLimits.MaxSystemWidth; i++) {
+      rectLayout[i] = Array(RuntimeLimits.MaxSystemWidth).fill(0);
+    }
+
+    // Find the total area covered by free space.
+    let totalArea = 0;
+
+    const nearSystemMargin = (x: number, y: number): boolean => {
+      for (const [i, j] of [
+        [x - 1, y],
+        [x + 1, y],
+        [x, y - 1],
+        [x, y + 1],
+        [x - 1, y - 1],
+        [x + 1, y + 1],
+        [x + 1, y - 1],
+        [x - 1, y + 1],
+      ]) {
+        if (
+          this.getObjectsAt(i, j).some(
+            obj => obj.type === SimulatorObjectType.SystemMargin,
+          )
+        ) {
+          return true;
+        }
+      }
+
+      return false;
+    };
+
+    for (let i = 0; i < RuntimeLimits.MaxSystemWidth; i++) {
+      for (let j = 0; j < RuntimeLimits.MaxSystemHeight; j++) {
+        const objects = this.getObjectsAt(i, j);
+
+        if (
+          objects.some(
+            obj =>
+              (
+                obj.type === SimulatorObjectType.BlackBox ||
+                obj.type === SimulatorObjectType.WhiteBox
+              ) &&
+              "system" in obj &&
+              (obj.system as RuntimeSubsystem).canonicalId ===
+                system.canonicalId,
+          )
+        ) {
+          rectLayout[i]![j]! = 1;
+          totalArea += 1;
+          continue;
+        }
+
+        const object = objects.find(
+          obj =>
+            obj.type === SimulatorObjectType.BlackBox ||
+            obj.type === SimulatorObjectType.WhiteBox ||
+            obj.type === SimulatorObjectType.Port ||
+            obj.type === SimulatorObjectType.SystemMargin,
+        );
+
+        if (!object && !nearSystemMargin(i, j)) {
+          rectLayout[i]![j]! = 1;
+          totalArea += 1;
+        }
+      }
+    }
+
+    // Find all rectangles until the total area is covered.
+    let foundArea = 0;
+
+    while (foundArea < totalArea) {
+      // Find next rectangle.
+      const rect = {
+        x1: 0,
+        x2: RuntimeLimits.MaxSystemWidth - 1,
+        y1: 0,
+        y2: RuntimeLimits.MaxSystemHeight - 1,
+      };
+
+      findTopLeftCorner: {
+        for (let i = 0; i < RuntimeLimits.MaxSystemWidth; i++) {
+          for (let j = 0; j < RuntimeLimits.MaxSystemHeight; j++) {
+            if (rectLayout[i]![j]! === 1) {
+              rect.x1 = i;
+              rect.y1 = j;
+
+              break findTopLeftCorner;
+            }
+          }
+        }
+      }
+
+      findBottomRightCorner: {
+        for (let i = rect.x1; i <= rect.x2; i++) {
+          if (rectLayout[i]![rect.y1]! === 0) {
+            rect.x2 = i - 1;
+            break findBottomRightCorner;
+          }
+
+          for (let j = rect.y1; j <= rect.y2; j++) {
+            if (rectLayout[i]![j]! === 0) {
+              rect.y2 = j - 1;
+              break;
+            }
+          }
+        }
+      }
+
+      // Mark the rectangle.
+      for (let i = rect.x1; i <= rect.x2; i++) {
+        for (let j = rect.y1; j <= rect.y2; j++) {
+          rectLayout[i]![j]! = 0;
+        }
+      }
+
+      // Add to found area.
+      foundArea += (rect.x2 - rect.x1 + 1) * (rect.y2 - rect.y1 + 1);
+
+      // Create sprite.
+      const sprite = new TilingSprite(
+        textures.freeSpace,
+        (rect.x2 - rect.x1 + 1) * BlockSize,
+        (rect.y2 - rect.y1 + 1) * BlockSize,
+      );
+
+      sprite.x = rect.x1 * BlockSize;
+      sprite.y = rect.y1 * BlockSize;
+
+      toDraw.push(sprite);
+
+      // failsafe.
+      if (toDraw.length > 1000) {
+        return toDraw;
+      }
+    }
+
+    return toDraw;
+  }
 
   getObjectsToRender(textures: CanvasSimulatorTextures): (Sprite | Text)[] {
     const toDraw: (Sprite | Text)[] = [];

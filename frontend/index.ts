@@ -76,7 +76,7 @@ function resetState(): void {
   state.operation = { type: "idle" };
 
   // TODO: NOPE! should broadcast event instead.
-  dragAndDrop.visible = false;
+  dragAndDropContainer.removeChildren();
 }
 
 // Setup PixiJS.
@@ -248,6 +248,15 @@ canvasSimulatorContainer.eventMode = "none";
 canvasSimulatorContainer.interactiveChildren = false;
 
 // Drag & drop
+const dragAndDropContainer = new Container();
+
+dragAndDropContainer.sortableChildren = true;
+dragAndDropContainer.zIndex = 100;
+dragAndDropContainer.eventMode = "none";
+dragAndDropContainer.interactiveChildren = false;
+
+viewport.addChild(dragAndDropContainer);
+
 const dragAndDropGraphic = new Graphics()
   .beginFill(0x00ff00)
   .drawRect(0, 0, BlockSize, BlockSize)
@@ -256,13 +265,7 @@ const dragAndDropGraphic = new Graphics()
 const dragAndDropTexture = app.renderer.generateTexture(dragAndDropGraphic);
 
 const dragAndDrop = new Sprite(dragAndDropTexture);
-
-dragAndDrop.eventMode = "none";
-dragAndDrop.interactiveChildren = false;
-dragAndDrop.zIndex = 100;
-dragAndDrop.visible = false;
-
-viewport.addChild(dragAndDrop);
+dragAndDrop.zIndex = 1;
 
 viewport.on("pointermove", (event: any) => {
   const coordinates = viewport.toWorld(event.data.global);
@@ -307,11 +310,21 @@ viewport.on("pointerdown", (event: any) => {
 
     state.operation = operation;
 
-    dragAndDrop.visible = true;
     dragAndDrop.x = subsystem.position.x * BlockSize;
     dragAndDrop.y = subsystem.position.y * BlockSize;
     dragAndDrop.width = subsystem.size.width * BlockSize;
     dragAndDrop.height = subsystem.size.height * BlockSize;
+
+    // @ts-ignore FIXME
+    dragAndDropContainer.addChild(dragAndDrop);
+
+    for (const objectToRender of canvasSimulator.getAvailableSpaceForSystemToRender(
+      canvasSimulatorTextures,
+      subsystem,
+    )) {
+      // @ts-ignore FIXME
+      dragAndDropContainer.addChild(objectToRender);
+    }
   }
 });
 
@@ -350,7 +363,7 @@ viewport.on("pointerup", (event: any) => {
 
     state.operation = { type: "idle" };
 
-    dragAndDrop.visible = false;
+    dragAndDropContainer.removeChildren();
   }
 });
 
