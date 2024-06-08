@@ -391,6 +391,29 @@ export class SystemSimulator {
     };
   }
 
+  getAvailableSpaceForSystems(): boolean[][] {
+    const available = new Array(RuntimeLimits.MaxSystemHeight);
+
+    for (let i = 0; i < RuntimeLimits.MaxSystemWidth; i++) {
+      available[i] = Array.from(
+        { length: RuntimeLimits.MaxSystemWidth },
+        () => [],
+      );
+    }
+
+    for (let i = 0; i < RuntimeLimits.MaxSystemWidth; i++) {
+      for (let j = 0; j < RuntimeLimits.MaxSystemHeight; j++) {
+        available[i][j] =
+          this.grid[i]![j]!.length === 0 ||
+          this.grid[i]![j]!.every(
+            object => object.type === SimulatorObjectType.Link,
+          );
+      }
+    }
+
+    return available;
+  }
+
   getRoute(fromSystemId: string, toSystemId: string): number[][] | undefined {
     return this.routes[fromSystemId]?.[toSystemId];
   }
