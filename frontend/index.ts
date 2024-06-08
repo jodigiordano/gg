@@ -311,6 +311,8 @@ viewport.on("pointerdown", (event: any) => {
       // @ts-ignore FIXME
       dragAndDropContainer.addChild(objectToRender);
     }
+
+    viewport.pause = true;
   }
 });
 
@@ -350,6 +352,8 @@ viewport.on("pointerup", (event: any) => {
     state.operation = { type: "idle" };
 
     dragAndDropContainer.removeChildren();
+
+    viewport.pause = false;
   }
 });
 
