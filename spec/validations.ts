@@ -77,10 +77,10 @@ function validateSystemDistances(
         subsystemB.position.y + subsystemB.size.height + SystemMargin;
 
       if (
-        aLeft <= bRight &&
-        aRight >= bLeft &&
-        aTop <= bBottom &&
-        aBottom >= bTop
+        aLeft < bRight &&
+        aRight > bLeft &&
+        aTop < bBottom &&
+        aBottom > bTop
       ) {
         errors.push({
           path: getSubsystemPath(subsystemA),
