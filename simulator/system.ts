@@ -7,6 +7,7 @@ import {
   RuntimeSubsystem,
   RuntimeLink,
   TitleCharsPerSquare,
+  SystemMargin,
 } from "@dataflows/spec";
 
 // TODO: add SystemTopLeftCorner, SystemTopRightCorner, ...
@@ -16,7 +17,7 @@ export enum SimulatorObjectType {
   WhiteBox = 2,
   Link = 3,
   Port = 4,
-  PortPadding = 5,
+  SystemMargin = 5,
   SystemTitle = 6,
   SystemTitlePadding = 7,
 }
@@ -45,9 +46,9 @@ export interface SimulatorPort extends SimulatorObject {
   system: RuntimeSubsystem;
 }
 
-export interface SimulatorPortPadding extends SimulatorObject {
-  type: SimulatorObjectType.PortPadding;
-  system: RuntimeSubsystem;
+export interface SimulatorSystemMargin extends SimulatorObject {
+  type: SimulatorObjectType.SystemMargin;
+  system: RuntimeSystem | RuntimeSubsystem;
 }
 
 export interface SimulatorSystemTitle extends SimulatorObject {
@@ -115,6 +116,28 @@ export class SystemSimulator {
     this.computeGridObjectPorts(system);
     this.computeGridObjectTitles(system);
 
+    // System margin.
+    const simulatorMargin: SimulatorSystemMargin = Object.freeze({
+      type: SimulatorObjectType.SystemMargin,
+      system,
+    });
+
+    for (let x = 0; x < RuntimeLimits.MaxSystemWidth; x++) {
+      this.grid[x]![0]!.push(simulatorMargin);
+      finderGrid.setWeightAt(x, 0, Infinity);
+
+      this.grid[x]![RuntimeLimits.MaxSystemHeight - 1]!.push(simulatorMargin);
+      finderGrid.setWeightAt(x, RuntimeLimits.MaxSystemHeight - 1, Infinity);
+    }
+
+    for (let y = 0; y < RuntimeLimits.MaxSystemHeight; y++) {
+      this.grid[0]![y]!.push(simulatorMargin);
+      finderGrid.setWeightAt(0, y, Infinity);
+
+      this.grid[RuntimeLimits.MaxSystemWidth - 1]![y]!.push(simulatorMargin);
+      finderGrid.setWeightAt(RuntimeLimits.MaxSystemWidth - 1, y, Infinity);
+    }
+
     // Add sub-systems & ports.
     const toDraw: RuntimeSubsystem[] = [...this.system.systems];
 
@@ -131,26 +154,41 @@ export class SystemSimulator {
 
       const gridSS = this.gridSystems[ss.canonicalId]!;
 
-      // Ports padding.
-      const simulatorPortPadding: SimulatorPortPadding = Object.freeze({
-        type: SimulatorObjectType.PortPadding,
+
+      // Sub-system margin.
+      const simulatorSystemMargin: SimulatorSystemMargin = Object.freeze({
+        type: SimulatorObjectType.SystemMargin,
         system: ss,
       });
 
-      for (let x = gridSS.x - 1; x < gridSS.x + gridSS.width + 1; x++) {
-        this.grid[x]![gridSS.y - 1]!.push(simulatorPortPadding);
-        finderGrid.setWeightAt(x, gridSS.y - 1, Infinity);
+      for (
+        let x = gridSS.x - SystemMargin;
+        x < gridSS.x + gridSS.width + SystemMargin;
+        x++
+      ) {
+        const top = gridSS.y - SystemMargin;
+        const bottom = gridSS.y + gridSS.height - 1 + SystemMargin;
 
-        this.grid[x]![gridSS.y + gridSS.height]!.push(simulatorPortPadding);
-        finderGrid.setWeightAt(x, gridSS.y + gridSS.height, Infinity);
+        this.grid[x]![top]!.push(simulatorSystemMargin);
+        finderGrid.setWeightAt(x, top, Infinity);
+
+        this.grid[x]![bottom]!.push(simulatorSystemMargin);
+        finderGrid.setWeightAt(x, bottom, Infinity);
       }
 
-      for (let y = gridSS.y - 1; y < gridSS.y + gridSS.height + 1; y++) {
-        this.grid[gridSS.x - 1]![y]!.push(simulatorPortPadding);
-        finderGrid.setWeightAt(gridSS.x - 1, y, Infinity);
+      for (
+        let y = gridSS.y - SystemMargin;
+        y < gridSS.y + gridSS.height + SystemMargin;
+        y++
+      ) {
+        const left = gridSS.x - SystemMargin;
+        const right = gridSS.x + gridSS.width - 1 + SystemMargin;
 
-        this.grid[gridSS.x + gridSS.width]![y]!.push(simulatorPortPadding);
-        finderGrid.setWeightAt(gridSS.x + gridSS.width, y, Infinity);
+        this.grid[left]![y]!.push(simulatorSystemMargin);
+        finderGrid.setWeightAt(left, y, Infinity);
+
+        this.grid[right]![y]!.push(simulatorSystemMargin);
+        finderGrid.setWeightAt(right, y, Infinity);
       }
 
       // Sub-systems.
