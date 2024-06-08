@@ -457,10 +457,7 @@ export class SystemSimulator {
   ): void {
     // Depth-first traversal.
     for (const ss of system.systems) {
-      this.computeGridVisibility(
-        ss,
-        hidden || ss.hideSystems
-      );
+      this.computeGridVisibility(ss, hidden || ss.hideSystems);
     }
 
     // Root system.
@@ -539,7 +536,7 @@ export class SystemSimulator {
 
     const parentGridObject = system.canonicalId
       ? this.gridSystems[system.canonicalId]!
-      : { x: 0, y: 0, width: 0, height: 0 };
+      : { x: 0, y: 0 };
 
     for (const ss of system.systems) {
       const gridObject = this.gridSystems[ss.canonicalId]!;
