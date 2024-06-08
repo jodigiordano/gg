@@ -62,28 +62,20 @@
         height: calc(100vh - var(--header-height));
       }
 
-      #debug-menu {
-        flex-shrink: 0;
-        flex-grow: 0;
-        flex-basis: var(--menu-width);
+      #main-menu {
+        padding: 0.5em;
 
         &.closed {
           display: none;
-        }
-
-        ul {
-          list-style-type: none;
         }
       }
 
       #examples-menu {
-        flex-shrink: 0;
-        flex-grow: 0;
-        flex-basis: var(--menu-width);
+       display: grid;
+      }
 
-        &.closed {
-          display: none;
-        }
+      #debug-menu {
+       display: grid;
       }
 
       #canvas {
@@ -128,37 +120,33 @@
     <div id="header">
       <div id="header-title">░▒▓ dataflows.io</div>
       <button>File</button>
-      <button id="operation-examples-menu-toggle">Examples</button>
+      <button id="operation-main-menu-toggle">Menu</button>
       <button>Help</button>
       <button>About</button>
-      <button id="operation-debug-menu-toggle">Debug</button>
     </div>
     <div id="content">
-      <div id="examples-menu" class="closed">
-        <div>examples</div>
-        <button id="operation-examples-load-1">basic</button>
-        <button id="operation-examples-load-2">dataflows</button>
-      </div>
-      <div id="debug-menu">
-        <ul>
-          <li><button id="operation-camera-fit">fit</button></li>
-          <li><button id="operation-camera-zoom-in">zoom in</button></li>
-          <li><button id="operation-camera-zoom-out">zoom out</button></li>
-          <li>
+      <div id="main-menu">
+        <div id="examples-menu">
+          <div>examples</div>
+          <button id="operation-examples-load-1">basic</button>
+          <button id="operation-examples-load-2">dataflows</button>
+        </div>
+        <div id="debug-menu">
+          <div>debug</div>
+            <button id="operation-camera-fit">fit</button>
+            <button id="operation-camera-zoom-in">zoom in</button>
+            <button id="operation-camera-zoom-out">zoom out</button>
             <button id="operation-yaml-editor-toggle">yaml editor</button>
-          </li>
-          <li>
             <button id="operation-yaml-editor-apply-changes">
               apply changes
             </button>
-          </li>
-          <li><button id="operation-yaml-editor-redo">redo</button></li>
-          <li><button id="operation-yaml-editor-undo">undo</button></li>
-          <li><button id="operation-file-new">new file</button></li>
-          <li><button id="operation-file-save">save file</button></li>
-          <li><button id="operation-file-load">load file</button></li>
-          <li>position: <span id="information-position" /></li>
-        </ul>
+            <button id="operation-yaml-editor-redo">redo</button>
+            <button id="operation-yaml-editor-undo">undo</button>
+            <button id="operation-file-new">new file</button>
+            <button id="operation-file-save">save file</button>
+            <button id="operation-file-load">load file</button>
+            position: <span id="information-position" />
+        </div>
       </div>
       <div id="yaml-editor" class="closed">
         <textarea

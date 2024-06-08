@@ -96,8 +96,7 @@ const yamlEditorMessages = document.getElementById(
   "yaml-editor-messages",
 ) as HTMLTextAreaElement;
 
-const debugMenu = document.getElementById("debug-menu") as HTMLDivElement;
-const examplesMenu = document.getElementById("examples-menu") as HTMLDivElement;
+const mainMenu = document.getElementById("main-menu") as HTMLDivElement;
 const domContainer = document.getElementById("canvas") as HTMLDivElement;
 const positionInfo = document.getElementById(
   "information-position",
@@ -498,24 +497,12 @@ document
   });
 
 document
-  .getElementById("operation-debug-menu-toggle")
+  .getElementById("operation-main-menu-toggle")
   ?.addEventListener("click", function () {
-    if (debugMenu.classList.contains("closed")) {
-      debugMenu.classList.remove("closed");
+    if (mainMenu.classList.contains("closed")) {
+      mainMenu.classList.remove("closed");
     } else {
-      debugMenu.classList.add("closed");
-    }
-
-    resizeContainer();
-  });
-
-document
-  .getElementById("operation-examples-menu-toggle")
-  ?.addEventListener("click", function () {
-    if (examplesMenu.classList.contains("closed")) {
-      examplesMenu.classList.remove("closed");
-    } else {
-      examplesMenu.classList.add("closed");
+      mainMenu.classList.add("closed");
     }
 
     resizeContainer();
