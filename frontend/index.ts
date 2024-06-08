@@ -110,7 +110,7 @@ const app = new Application({
   autoDensity: true,
   resolution: window.devicePixelRatio,
   antialias: false,
-  eventMode: "static",
+  eventMode: "none",
   eventFeatures: {
     move: true,
     globalMove: false,
@@ -118,6 +118,9 @@ const app = new Application({
     wheel: true,
   },
 });
+
+app.stage.eventMode = "static";
+app.stage.interactiveChildren = true;
 
 // Create PixiJS viewport.
 const outOfBoundsMargin = 10 * BlockSize;
@@ -170,9 +173,6 @@ const grid = new TilingSprite(
   viewport.worldHeight,
 );
 
-grid.eventMode = "none";
-grid.interactiveChildren = false;
-
 grid.x = viewport.left;
 grid.y = viewport.top;
 
@@ -192,8 +192,6 @@ const outOfBoundsTop = new TilingSprite(
   outOfBoundsMargin,
 );
 
-outOfBoundsTop.eventMode = "none";
-outOfBoundsTop.interactiveChildren = false;
 outOfBoundsTop.x = 0;
 outOfBoundsTop.y = -outOfBoundsMargin;
 
@@ -205,8 +203,6 @@ const outOfBoundsBottom = new TilingSprite(
   outOfBoundsMargin,
 );
 
-outOfBoundsBottom.eventMode = "none";
-outOfBoundsBottom.interactiveChildren = false;
 outOfBoundsBottom.x = 0;
 outOfBoundsBottom.y = RuntimeLimits.MaxSystemHeight * BlockSize;
 
@@ -218,8 +214,6 @@ const outOfBoundsLeft = new TilingSprite(
   RuntimeLimits.MaxSystemHeight * BlockSize + 2 * outOfBoundsMargin,
 );
 
-outOfBoundsLeft.eventMode = "none";
-outOfBoundsLeft.interactiveChildren = false;
 outOfBoundsLeft.x = -outOfBoundsMargin;
 outOfBoundsLeft.y = -outOfBoundsMargin;
 
@@ -231,8 +225,6 @@ const outOfBoundsRight = new TilingSprite(
   RuntimeLimits.MaxSystemHeight * BlockSize + 2 * outOfBoundsMargin,
 );
 
-outOfBoundsRight.eventMode = "none";
-outOfBoundsRight.interactiveChildren = false;
 outOfBoundsRight.x = RuntimeLimits.MaxSystemWidth * BlockSize;
 outOfBoundsRight.y = -outOfBoundsMargin;
 
@@ -244,16 +236,11 @@ let canvasFlowPlayer: CanvasFlowPlayer | null = null;
 
 const canvasSimulatorContainer = new Container();
 
-canvasSimulatorContainer.eventMode = "none";
-canvasSimulatorContainer.interactiveChildren = false;
-
 // Drag & drop
 const dragAndDropContainer = new Container();
 
 dragAndDropContainer.sortableChildren = true;
 dragAndDropContainer.zIndex = 100;
-dragAndDropContainer.eventMode = "none";
-dragAndDropContainer.interactiveChildren = false;
 
 viewport.addChild(dragAndDropContainer);
 
