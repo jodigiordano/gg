@@ -361,7 +361,13 @@ export class SystemSimulator {
 
     for (let i = 0; i < RuntimeLimits.MaxSystemWidth; i++) {
       for (let j = 0; j < RuntimeLimits.MaxSystemHeight; j++) {
-        if (!this.grid[i]![j]!.length) {
+        const hasVisibleObjects = this.grid[i]![j]!.some(obj =>
+          obj.type === SimulatorObjectType.BlackBox ||
+          obj.type === SimulatorObjectType.WhiteBox ||
+          obj.type === SimulatorObjectType.Link
+        );
+
+        if (!hasVisibleObjects) {
           continue;
         }
 
