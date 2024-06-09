@@ -130,6 +130,15 @@ export class CanvasSimulator {
     return null;
   }
 
+  getisSystemTopRightCorner(x: number, y: number): boolean {
+    const objects = this.getObjectsAt(x, y);
+    console.log(objects.map(obj => obj.type));
+
+    return objects.some(
+      obj => obj.type === SimulatorObjectType.SystemTopRightCorner,
+    );
+  }
+
   getAvailableSpaceForSystemToRender(
     textures: CanvasSimulatorTextures,
     system: RuntimeSubsystem,
@@ -176,10 +185,8 @@ export class CanvasSimulator {
         if (
           objects.some(
             obj =>
-              (
-                obj.type === SimulatorObjectType.BlackBox ||
-                obj.type === SimulatorObjectType.WhiteBox
-              ) &&
+              (obj.type === SimulatorObjectType.BlackBox ||
+                obj.type === SimulatorObjectType.WhiteBox) &&
               "system" in obj &&
               (obj.system as RuntimeSubsystem).canonicalId ===
                 system.canonicalId,

@@ -46,12 +46,17 @@ interface MoveSystemOperation {
   };
 }
 
+interface ToggleHideSystemsOperation {
+  type: "toggleHideSystems";
+  subsystem: RuntimeSubsystem;
+}
+
 // State.
 
 interface State {
   changes: string[];
   changeIndex: number;
-  operation: IdleOperation | MoveSystemOperation;
+  operation: IdleOperation | MoveSystemOperation | ToggleHideSystemsOperation;
 }
 
 const state: State = {
@@ -284,35 +289,50 @@ viewport.on("pointerdown", (event: any) => {
 
   const subsystem = canvasSimulator.getSubsystemAt(x, y);
 
-  if (subsystem) {
-    const operation: MoveSystemOperation = {
-      type: "move",
+  if (!subsystem) {
+    return;
+  }
+
+  viewport.pause = true;
+
+  // Operation: Hide systems toggle.
+  if (canvasSimulator.getisSystemTopRightCorner(x, y)) {
+    const operation: ToggleHideSystemsOperation = {
+      type: "toggleHideSystems",
       subsystem,
-      pickedUpAt: {
-        x: coordinates.x,
-        y: coordinates.y,
-      },
     };
 
     state.operation = operation;
 
-    dragAndDrop.x = subsystem.position.x * BlockSize;
-    dragAndDrop.y = subsystem.position.y * BlockSize;
-    dragAndDrop.width = subsystem.size.width * BlockSize;
-    dragAndDrop.height = subsystem.size.height * BlockSize;
+    return;
+  }
 
+  // Operation: Move system.
+  const operation: MoveSystemOperation = {
+    type: "move",
+    subsystem,
+    pickedUpAt: {
+      x: coordinates.x,
+      y: coordinates.y,
+    },
+  };
+
+  state.operation = operation;
+
+  dragAndDrop.x = subsystem.position.x * BlockSize;
+  dragAndDrop.y = subsystem.position.y * BlockSize;
+  dragAndDrop.width = subsystem.size.width * BlockSize;
+  dragAndDrop.height = subsystem.size.height * BlockSize;
+
+  // @ts-ignore FIXME
+  dragAndDropContainer.addChild(dragAndDrop);
+
+  for (const objectToRender of canvasSimulator.getAvailableSpaceForSystemToRender(
+    canvasSimulatorTextures,
+    subsystem,
+  )) {
     // @ts-ignore FIXME
-    dragAndDropContainer.addChild(dragAndDrop);
-
-    for (const objectToRender of canvasSimulator.getAvailableSpaceForSystemToRender(
-      canvasSimulatorTextures,
-      subsystem,
-    )) {
-      // @ts-ignore FIXME
-      dragAndDropContainer.addChild(objectToRender);
-    }
-
-    viewport.pause = true;
+    dragAndDropContainer.addChild(objectToRender);
   }
 });
 
@@ -321,7 +341,27 @@ viewport.on("pointerup", (event: any) => {
     return;
   }
 
-  if (state.operation.type === "move") {
+  // Operation: Hide systems toggle.
+  if (state.operation.type === "toggleHideSystems") {
+    state.operation.subsystem.specification.hideSystems =
+      !state.operation.subsystem.specification.hideSystems;
+
+    const newSpecification = saveYaml(canvasSimulator.system.specification);
+
+    if (loadSimulation(newSpecification)) {
+      // TODO: broadcast event.
+      pushChange(newSpecification);
+
+      yamlEditorDefinition.value = newSpecification;
+    } else {
+      // Rollback.
+      state.operation.subsystem.specification.hideSystems =
+        !state.operation.subsystem.specification.hideSystems;
+    }
+  }
+
+  // Operation: Move system.
+  else if (state.operation.type === "move") {
     const coordinates = viewport.toWorld(event.data.global);
 
     const deltaX =
@@ -349,10 +389,11 @@ viewport.on("pointerup", (event: any) => {
       state.operation.subsystem.specification.position = currentPosition;
     }
 
-    state.operation = { type: "idle" };
-
     dragAndDropContainer.removeChildren();
+  }
 
+  if (state.operation.type !== "idle") {
+    state.operation = { type: "idle" };
     viewport.pause = false;
   }
 });
@@ -435,7 +476,8 @@ function fitSimulation() {
 
   const boundaries = canvasSimulator.getBoundaries();
   const width = boundaries.right - boundaries.left + BlockSize * 2; /* margin */
-  const height = boundaries.bottom - boundaries.top + BlockSize * 2; /* margin */
+  const height =
+    boundaries.bottom - boundaries.top + BlockSize * 2; /* margin */
 
   // The operation is executed twice because of a weird issue that I don't
   // understand yet. Somehow, because we are using "viewport.clamp", the first
