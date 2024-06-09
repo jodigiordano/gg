@@ -20,6 +20,10 @@ export enum SimulatorObjectType {
   SystemMargin = 5,
   SystemTitle = 6,
   SystemTitlePadding = 7,
+  SystemTopLeftCorner = 8,
+  SystemTopRightCorner = 9,
+  SystemBottomLeftCorner = 10,
+  SystemBottomRightCorner = 11,
 }
 
 export interface SimulatorObject {
@@ -59,6 +63,26 @@ export interface SimulatorSystemTitle extends SimulatorObject {
 
 export interface SimulatorSystemTitlePadding extends SimulatorObject {
   type: SimulatorObjectType.SystemTitlePadding;
+  system: RuntimeSubsystem;
+}
+
+export interface SimulatorSystemTopLeftCorner extends SimulatorObject {
+  type: SimulatorObjectType.SystemTopLeftCorner;
+  system: RuntimeSubsystem;
+}
+
+export interface SimulatorSystemTopRightCorner extends SimulatorObject {
+  type: SimulatorObjectType.SystemTopRightCorner;
+  system: RuntimeSubsystem;
+}
+
+export interface SimulatorSystemBottomLeftCorner extends SimulatorObject {
+  type: SimulatorObjectType.SystemBottomLeftCorner;
+  system: RuntimeSubsystem;
+}
+
+export interface SimulatorSystemBottomRightCorner extends SimulatorObject {
+  type: SimulatorObjectType.SystemBottomRightCorner;
   system: RuntimeSubsystem;
 }
 
@@ -208,9 +232,61 @@ export class SystemSimulator {
           system: ss,
         });
 
-      for (let x = gridSS.x; x < Math.min(gridSS.x + gridSS.width, RuntimeLimits.MaxSystemWidth); x++) {
-        for (let y = gridSS.y; y < Math.min(gridSS.y + gridSS.height, RuntimeLimits.MaxSystemHeight); y++) {
+      const simulatorSystemTopLeftCorner: SimulatorSystemTopLeftCorner =
+        Object.freeze({
+          type: SimulatorObjectType.SystemTopLeftCorner,
+          system: ss,
+        });
+
+      const simulatorSystemTopRightCorner: SimulatorSystemTopRightCorner =
+        Object.freeze({
+          type: SimulatorObjectType.SystemTopRightCorner,
+          system: ss,
+        });
+
+      const simulatorSystemBottomLeftCorner: SimulatorSystemBottomLeftCorner =
+        Object.freeze({
+          type: SimulatorObjectType.SystemBottomLeftCorner,
+          system: ss,
+        });
+
+      const simulatorSystemBottomRightCorner: SimulatorSystemBottomRightCorner =
+        Object.freeze({
+          type: SimulatorObjectType.SystemBottomRightCorner,
+          system: ss,
+        });
+
+      for (
+        let x = gridSS.x;
+        x < Math.min(gridSS.x + gridSS.width, RuntimeLimits.MaxSystemWidth);
+        x++
+      ) {
+        for (
+          let y = gridSS.y;
+          y < Math.min(gridSS.y + gridSS.height, RuntimeLimits.MaxSystemHeight);
+          y++
+        ) {
           this.grid[x]![y]!.push(simulatorSystem);
+
+          if (x === gridSS.x && y == gridSS.y) {
+            this.grid[x]![y]!.push(simulatorSystemTopLeftCorner);
+          }
+
+          if (x === gridSS.x + gridSS.width - 1 && y == gridSS.y) {
+            this.grid[x]![y]!.push(simulatorSystemTopRightCorner);
+          }
+
+          if (x === gridSS.x && y == gridSS.y + gridSS.height - 1) {
+            this.grid[x]![y]!.push(simulatorSystemBottomLeftCorner);
+          }
+
+          if (
+            x === gridSS.x + gridSS.width - 1 &&
+            y == gridSS.y + gridSS.height - 1
+          ) {
+            this.grid[x]![y]!.push(simulatorSystemBottomRightCorner);
+          }
+
           finderGrid.setWeightAt(x, y, blackbox ? Infinity : 1);
         }
       }
