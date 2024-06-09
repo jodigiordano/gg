@@ -187,7 +187,11 @@ export class SystemSimulator {
 
       for (
         let x = gridSS.x - SystemMargin;
-        x < Math.min(gridSS.x + gridSS.width + SystemMargin, RuntimeLimits.MaxSystemWidth);
+        x <
+        Math.min(
+          gridSS.x + gridSS.width + SystemMargin,
+          RuntimeLimits.MaxSystemWidth,
+        );
         x++
       ) {
         const top = gridSS.y - SystemMargin;
@@ -206,7 +210,11 @@ export class SystemSimulator {
 
       for (
         let y = gridSS.y - SystemMargin;
-        y < Math.min(gridSS.y + gridSS.height + SystemMargin, RuntimeLimits.MaxSystemHeight);
+        y <
+        Math.min(
+          gridSS.y + gridSS.height + SystemMargin,
+          RuntimeLimits.MaxSystemHeight,
+        );
         y++
       ) {
         const left = gridSS.x - SystemMargin;
@@ -298,7 +306,10 @@ export class SystemSimulator {
       });
 
       for (const port of gridSS.ports) {
-        if (port.x < RuntimeLimits.MaxSystemWidth && port.y < RuntimeLimits.MaxSystemHeight) {
+        if (
+          port.x < RuntimeLimits.MaxSystemWidth &&
+          port.y < RuntimeLimits.MaxSystemHeight
+        ) {
           this.grid[port.x]![port.y]!.push(simulatorPort);
           finderGrid.setWeightAt(port.x, port.y, 1);
         }
@@ -313,12 +324,20 @@ export class SystemSimulator {
 
       for (
         let x = gridSS.title.x - 1;
-        x < Math.min(gridSS.title.x + gridSS.title.width + 1, RuntimeLimits.MaxSystemWidth);
+        x <
+        Math.min(
+          gridSS.title.x + gridSS.title.width + 1,
+          RuntimeLimits.MaxSystemWidth,
+        );
         x++
       ) {
         for (
           let y = gridSS.title.y - 1;
-          y < Math.min(gridSS.title.y + gridSS.title.height + 1, RuntimeLimits.MaxSystemHeight);
+          y <
+          Math.min(
+            gridSS.title.y + gridSS.title.height + 1,
+            RuntimeLimits.MaxSystemHeight,
+          );
           y++
         ) {
           this.grid[x]![y]!.push(simulatorSystemTitlePadding);
@@ -331,12 +350,20 @@ export class SystemSimulator {
 
       for (
         let x = gridSS.title.x, i = 0;
-        x < Math.min(gridSS.title.x + gridSS.title.width, RuntimeLimits.MaxSystemWidth);
+        x <
+        Math.min(
+          gridSS.title.x + gridSS.title.width,
+          RuntimeLimits.MaxSystemWidth,
+        );
         x++, i++
       ) {
         for (
           let y = gridSS.title.y, j = 0;
-          y < Math.min(gridSS.title.y + gridSS.title.height, RuntimeLimits.MaxSystemHeight);
+          y <
+          Math.min(
+            gridSS.title.y + gridSS.title.height,
+            RuntimeLimits.MaxSystemHeight,
+          );
           y++, j++
         ) {
           const simulatorSystemTitle: SimulatorSystemTitle = {
@@ -371,12 +398,14 @@ export class SystemSimulator {
 
       const subsystemAPorts = subsystemA.ports.filter(
         port =>
-          this.grid[port.x]?.[port.y]?.at(-1)?.type === SimulatorObjectType.Port,
+          this.grid[port.x]?.[port.y]?.at(-1)?.type ===
+          SimulatorObjectType.Port,
       );
 
       const subsystemBPorts = subsystemB.ports.filter(
         port =>
-          this.grid[port.x]?.[port.y]?.at(-1)?.type === SimulatorObjectType.Port,
+          this.grid[port.x]?.[port.y]?.at(-1)?.type ===
+          SimulatorObjectType.Port,
       );
 
       const candidates = subsystemAPorts
@@ -447,10 +476,11 @@ export class SystemSimulator {
 
     for (let i = 0; i < RuntimeLimits.MaxSystemWidth; i++) {
       for (let j = 0; j < RuntimeLimits.MaxSystemHeight; j++) {
-        const hasVisibleObjects = this.grid[i]![j]!.some(obj =>
-          obj.type === SimulatorObjectType.BlackBox ||
-          obj.type === SimulatorObjectType.WhiteBox ||
-          obj.type === SimulatorObjectType.Link
+        const hasVisibleObjects = this.grid[i]![j]!.some(
+          obj =>
+            obj.type === SimulatorObjectType.BlackBox ||
+            obj.type === SimulatorObjectType.WhiteBox ||
+            obj.type === SimulatorObjectType.Link,
         );
 
         if (!hasVisibleObjects) {
