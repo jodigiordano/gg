@@ -237,14 +237,15 @@ function validateSystemBoundaries(
 ): ValidationError[] {
   const errors: ValidationError[] = [];
 
+  // We only validate the position of the subsystem.
+  // We don't mind that the size of the subsytem goes out of boundary.
+
   for (const subsystem of system.systems) {
     if (
       subsystem.position.x - SystemMargin < 0 ||
-      subsystem.position.x + subsystem.size.width + SystemMargin >
-        RuntimeLimits.MaxSystemWidth ||
+      subsystem.position.x + SystemMargin > RuntimeLimits.MaxSystemWidth ||
       subsystem.position.y - SystemMargin < 0 ||
-      subsystem.position.y + subsystem.size.height + SystemMargin >
-        RuntimeLimits.MaxSystemHeight
+      subsystem.position.y + SystemMargin > RuntimeLimits.MaxSystemHeight
     ) {
       errors.push({
         path: getSubsystemPath(subsystem),
