@@ -163,32 +163,40 @@ export class SystemSimulator {
 
       for (
         let x = gridSS.x - SystemMargin;
-        x < gridSS.x + gridSS.width + SystemMargin;
+        x < Math.min(gridSS.x + gridSS.width + SystemMargin, RuntimeLimits.MaxSystemWidth);
         x++
       ) {
         const top = gridSS.y - SystemMargin;
         const bottom = gridSS.y + gridSS.height - 1 + SystemMargin;
 
-        this.grid[x]![top]!.push(simulatorSystemMargin);
-        finderGrid.setWeightAt(x, top, Infinity);
+        if (top < RuntimeLimits.MaxSystemHeight) {
+          this.grid[x]![top]!.push(simulatorSystemMargin);
+          finderGrid.setWeightAt(x, top, Infinity);
+        }
 
-        this.grid[x]![bottom]!.push(simulatorSystemMargin);
-        finderGrid.setWeightAt(x, bottom, Infinity);
+        if (bottom < RuntimeLimits.MaxSystemHeight) {
+          this.grid[x]![bottom]!.push(simulatorSystemMargin);
+          finderGrid.setWeightAt(x, bottom, Infinity);
+        }
       }
 
       for (
         let y = gridSS.y - SystemMargin;
-        y < gridSS.y + gridSS.height + SystemMargin;
+        y < Math.min(gridSS.y + gridSS.height + SystemMargin, RuntimeLimits.MaxSystemHeight);
         y++
       ) {
         const left = gridSS.x - SystemMargin;
         const right = gridSS.x + gridSS.width - 1 + SystemMargin;
 
-        this.grid[left]![y]!.push(simulatorSystemMargin);
-        finderGrid.setWeightAt(left, y, Infinity);
+        if (left < RuntimeLimits.MaxSystemWidth) {
+          this.grid[left]![y]!.push(simulatorSystemMargin);
+          finderGrid.setWeightAt(left, y, Infinity);
+        }
 
-        this.grid[right]![y]!.push(simulatorSystemMargin);
-        finderGrid.setWeightAt(right, y, Infinity);
+        if (right < RuntimeLimits.MaxSystemWidth) {
+          this.grid[right]![y]!.push(simulatorSystemMargin);
+          finderGrid.setWeightAt(right, y, Infinity);
+        }
       }
 
       // Sub-systems.
@@ -200,8 +208,8 @@ export class SystemSimulator {
           system: ss,
         });
 
-      for (let x = gridSS.x; x < gridSS.x + gridSS.width; x++) {
-        for (let y = gridSS.y; y < gridSS.y + gridSS.height; y++) {
+      for (let x = gridSS.x; x < Math.min(gridSS.x + gridSS.width, RuntimeLimits.MaxSystemWidth); x++) {
+        for (let y = gridSS.y; y < Math.min(gridSS.y + gridSS.height, RuntimeLimits.MaxSystemHeight); y++) {
           this.grid[x]![y]!.push(simulatorSystem);
           finderGrid.setWeightAt(x, y, blackbox ? Infinity : 1);
         }
@@ -214,8 +222,10 @@ export class SystemSimulator {
       });
 
       for (const port of gridSS.ports) {
-        this.grid[port.x]![port.y]!.push(simulatorPort);
-        finderGrid.setWeightAt(port.x, port.y, 1);
+        if (port.x < RuntimeLimits.MaxSystemWidth && port.y < RuntimeLimits.MaxSystemHeight) {
+          this.grid[port.x]![port.y]!.push(simulatorPort);
+          finderGrid.setWeightAt(port.x, port.y, 1);
+        }
       }
 
       // Title padding.
@@ -227,12 +237,12 @@ export class SystemSimulator {
 
       for (
         let x = gridSS.title.x - 1;
-        x < gridSS.title.x + gridSS.title.width + 1;
+        x < Math.min(gridSS.title.x + gridSS.title.width + 1, RuntimeLimits.MaxSystemWidth);
         x++
       ) {
         for (
           let y = gridSS.title.y - 1;
-          y < gridSS.title.y + gridSS.title.height + 1;
+          y < Math.min(gridSS.title.y + gridSS.title.height + 1, RuntimeLimits.MaxSystemHeight);
           y++
         ) {
           this.grid[x]![y]!.push(simulatorSystemTitlePadding);
@@ -245,12 +255,12 @@ export class SystemSimulator {
 
       for (
         let x = gridSS.title.x, i = 0;
-        x < gridSS.title.x + gridSS.title.width;
+        x < Math.min(gridSS.title.x + gridSS.title.width, RuntimeLimits.MaxSystemWidth);
         x++, i++
       ) {
         for (
           let y = gridSS.title.y, j = 0;
-          y < gridSS.title.y + gridSS.title.height;
+          y < Math.min(gridSS.title.y + gridSS.title.height, RuntimeLimits.MaxSystemHeight);
           y++, j++
         ) {
           const simulatorSystemTitle: SimulatorSystemTitle = {
@@ -285,12 +295,12 @@ export class SystemSimulator {
 
       const subsystemAPorts = subsystemA.ports.filter(
         port =>
-          this.grid[port.x]![port.y]!.at(-1)?.type === SimulatorObjectType.Port,
+          this.grid[port.x]?.[port.y]?.at(-1)?.type === SimulatorObjectType.Port,
       );
 
       const subsystemBPorts = subsystemB.ports.filter(
         port =>
-          this.grid[port.x]![port.y]!.at(-1)?.type === SimulatorObjectType.Port,
+          this.grid[port.x]?.[port.y]?.at(-1)?.type === SimulatorObjectType.Port,
       );
 
       const candidates = subsystemAPorts
