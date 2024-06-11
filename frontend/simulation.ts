@@ -132,7 +132,6 @@ export class CanvasSimulator {
 
   getisSystemTopRightCorner(x: number, y: number): boolean {
     const objects = this.getObjectsAt(x, y);
-    console.log(objects.map(obj => obj.type));
 
     return objects.some(
       obj => obj.type === SimulatorObjectType.SystemTopRightCorner,
