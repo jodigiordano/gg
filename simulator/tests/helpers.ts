@@ -50,7 +50,7 @@ export async function render(simulator: SystemSimulator) {
         ctx.fillStyle = "#005f73";
       } else if (objects.at(-1)?.type === SimulatorObjectType.Port) {
         ctx.fillStyle = "#0066ff";
-      } else if (objects.at(-1)?.type === SimulatorObjectType.PortPadding) {
+      } else if (objects.at(-1)?.type === SimulatorObjectType.SystemMargin) {
         ctx.fillStyle = "#ee9b00";
       } else if (objects.at(-1)?.type === SimulatorObjectType.SystemTitle) {
         ctx.fillStyle = "red";
