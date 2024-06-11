@@ -413,17 +413,25 @@ app.ticker.add<void>(deltaTime => {
 const canvasSimulatorTextures = generateCanvasSimulatorTextures(app);
 
 function loadSimulation(yaml: string): boolean {
-  const { system, errors } = loadYaml(yaml);
+  let result: ReturnType<typeof loadYaml>;
 
-  if (errors.length) {
-    yamlEditorMessages.value = errors
+  try {
+    result = loadYaml(yaml);
+  } catch (error) {
+    yamlEditorMessages.value = (error as Error).message;
+
+    return false;
+  }
+
+  if (result.errors.length) {
+    yamlEditorMessages.value = result.errors
       .map(error => [error.path, error.message].join(": "))
       .join("\n");
 
     return false;
   }
 
-  const newCanvasSimulator = new CanvasSimulator(system);
+  const newCanvasSimulator = new CanvasSimulator(result.system);
 
   canvasSimulator = newCanvasSimulator;
   yamlEditorMessages.value = "";
