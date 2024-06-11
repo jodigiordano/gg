@@ -483,9 +483,15 @@ function fitSimulation() {
   }
 
   const boundaries = canvasSimulator.getBoundaries();
-  const width = boundaries.right - boundaries.left + BlockSize * 2; /* margin */
+
+  const left = boundaries.left - BlockSize; /* margin */
+  const top = boundaries.top - BlockSize; /* margin */
+
+  const width =
+    boundaries.right - boundaries.left + BlockSize + BlockSize * 2; /* margin */
+
   const height =
-    boundaries.bottom - boundaries.top + BlockSize * 2; /* margin */
+    boundaries.bottom - boundaries.top + BlockSize + BlockSize * 2; /* margin */
 
   // The operation is executed twice because of a weird issue that I don't
   // understand yet. Somehow, because we are using "viewport.clamp", the first
@@ -494,10 +500,7 @@ function fitSimulation() {
   //
   // This code feels like slapping the side of the CRT.
   for (let i = 0; i < 2; i++) {
-    viewport.moveCenter(
-      (boundaries.left + width) / 2,
-      (boundaries.top + height) / 2,
-    );
+    viewport.moveCenter(left + width / 2, top + height / 2);
 
     viewport.fit(true, width, height);
   }
