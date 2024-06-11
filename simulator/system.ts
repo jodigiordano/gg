@@ -660,20 +660,159 @@ export class SystemSimulator {
       ? this.gridSystems[system.canonicalId]!
       : { x: 0, y: 0 };
 
-    for (const ss of system.systems) {
+    // Whiteboxes take additional space on the grid and displace other
+    // sub-systems to the right and bottom.
+    //
+    // The position of a sub-system vis-a-vis a blackbox determines if it
+    // will be displaced to the right or to the bottom by its whitebox
+    // sibling.
+    //
+    //  A-------------B--E
+    //  | Black box   |
+    //  D-------------C--F
+    //  |             |
+    //  H             G
+    //
+    //  If you imagine the outer lines B-E, C-F, C-G, D-H going to infinity,
+    //
+    //  - The sub-system is pushed toward the *right* when
+    //    its geometry (rectangle) collides with B-E-F-C (rectangle).
+    //
+    //  - The sub-system is pushed toward the *bottom* when
+    //    its geometry (rectangle) collides with D-C-G-H (rectangle).
+    //
+    //  Additionally, the sub-system is pushed toward the *right* when
+    //  its geometry (rectangle) collides with C-F-?-G. The twist here
+    //  is that the value of B-C is the one from the whitebox sibling,
+    //  so we have:
+    //
+    //  A-------------B--E
+    //  | White box   | Pushed to right.
+    //  D-------------C--F
+    //  | Pushed to   | Pushed to right.
+    //  H bottom.     G
+    //
+    const collides = (
+      ax0: number,
+      ax1: number,
+      ay0: number,
+      ay1: number,
+      bx0: number,
+      bx1: number,
+      by0: number,
+      by1: number,
+    ): boolean => {
+      return (
+        ax0 /* aLeft */ < bx1 /* bRight */ &&
+        ax1 /* aRight */ > bx0 /* bLeft */ &&
+        ay0 /* aTop */ < by1 /* bBottom */ &&
+        ay1 /* aBottom */ > by0 /* bTop */
+      );
+    };
+
+    const displacements: {
+      x: {
+        canonicalId: string;
+        x0: number;
+        // x1: infinity
+        y0: number;
+        y1: number;
+        amount: number;
+      }[];
+      y: {
+        canonicalId: string;
+        y0: number;
+        // y1: infinity
+        x0: number;
+        x1: number;
+        amount: number;
+      }[];
+    } = { x: [], y: [] };
+
+    const sortedLeftToRight = system.systems.sort(
+      (ssA, ssB) => ssA.position.x - ssB.position.x,
+    );
+
+    for (const ss of sortedLeftToRight) {
       const gridObject = this.gridSystems[ss.canonicalId]!;
 
       gridObject.x = parentGridObject.x + ss.position.x;
 
+      for (const displacement of displacements.x) {
+        if (
+          collides(
+            ss.position.x,
+            ss.position.x + gridObject.width,
+            ss.position.y,
+            ss.position.y + gridObject.height,
+            displacement.x0,
+            Number.MAX_SAFE_INTEGER,
+            displacement.y0,
+            displacement.y1,
+          )
+        ) {
+          gridObject.x += displacement.amount;
+        }
+      }
+
+      // i.e. we are in the top system.
       if (system.canonicalId) {
         gridObject.x += PaddingWhiteBox;
       }
 
+      if (!ss.hideSystems && ss.systems.length) {
+        displacements.x.push({
+          canonicalId: ss.canonicalId,
+          x0: ss.position.x + ss.size.width - 1 + SystemMargin * 2,
+          y0: ss.position.y - SystemMargin * 2,
+          // gridObject.height is used here instead of ss.size.height.
+          // See note above on this algorithm to know why.
+          y1: ss.position.y + gridObject.height - 1 + SystemMargin * 2,
+          amount: gridObject.width - ss.size.width,
+        });
+      }
+    }
+
+    const sortedTopToBottom = system.systems.sort(
+      (ssA, ssB) => ssA.position.y - ssB.position.y,
+    );
+
+    for (const ss of sortedTopToBottom) {
+      const gridObject = this.gridSystems[ss.canonicalId]!;
+
       gridObject.y = parentGridObject.y + ss.position.y;
 
+      for (const displacement of displacements.y) {
+        if (
+          collides(
+            ss.position.x,
+            ss.position.x + gridObject.width,
+            ss.position.y,
+            ss.position.y + gridObject.height,
+            displacement.x0,
+            displacement.x1,
+            displacement.y0,
+            Number.MAX_SAFE_INTEGER,
+          )
+        ) {
+          gridObject.y += displacement.amount;
+        }
+      }
+
+      // i.e. we are in the top system.
       if (system.canonicalId) {
         gridObject.y += PaddingWhiteBox;
         gridObject.y += system.titlePosition.y + system.titleSize.height;
+      }
+
+      if (!ss.hideSystems && ss.systems.length) {
+        displacements.y.push({
+          canonicalId: ss.canonicalId,
+          y0: ss.position.y + ss.size.height - 1,
+          x0: ss.position.x - SystemMargin * 2,
+          x1: ss.position.x + ss.size.width - 1 + SystemMargin * 2,
+          amount: gridObject.height - ss.size.height,
+        });
       }
     }
 
