@@ -135,8 +135,7 @@ export class SystemSimulator {
     // Compute grid objects.
     this.initializeGridObjects(system);
     this.computeGridVisibility(system, false);
-    this.computeGridObjectSizes(system);
-    this.computeGridObjectPositions(system);
+    this.computeGridObjectSizesAndPositions(system);
     this.computeGridObjectPorts(system);
     this.computeGridObjectTitles(system);
 
@@ -592,73 +591,50 @@ export class SystemSimulator {
     gridObject.hidden = !system.hideSystems && hidden;
   }
 
-  private computeGridObjectSizes(
+  private computeGridObjectSizesAndPositions(
     system: RuntimeSystem | RuntimeSubsystem,
   ): void {
-    // Depth-first traversal.
+    const gridObject = system.canonicalId
+      ? this.gridSystems[system.canonicalId]!
+      : { x: 0, y: 0, hidden: false, width: 0, height: 0 };
+
     for (const ss of system.systems) {
-      this.computeGridObjectSizes(ss);
+      // Set base positions (as if all blackboxes)
+      const ssGridObject = this.gridSystems[ss.canonicalId]!;
+
+      ssGridObject.x = gridObject.x + ss.position.x;
+      ssGridObject.y = gridObject.y + ss.position.y;
+
+      if (system.canonicalId) {
+        ssGridObject.x += PaddingWhiteBox;
+
+        ssGridObject.y += PaddingWhiteBox;
+        ssGridObject.y += system.titlePosition.y + system.titleSize.height - 1;
+      }
+
+      // Depth-first traversal.
+      this.computeGridObjectSizesAndPositions(ss);
     }
 
-    // Root system.
-    if (!system.canonicalId) {
-      return;
-    }
-
-    const gridObject = this.gridSystems[system.canonicalId]!;
-    const blackbox = system.hideSystems;
-
+    // Hidden system (inside blackbox).
     if (gridObject.hidden) {
       gridObject.width = 0;
       gridObject.height = 0;
-    } else if (!blackbox && system.systems.length) {
-      let maxWidth = 0;
-      let maxHeight = 0;
 
-      for (const ss of system.systems) {
-        const width = ss.position.x + this.gridSystems[ss.canonicalId]!.width;
-        const height = ss.position.y + this.gridSystems[ss.canonicalId]!.height;
-
-        if (width > maxWidth) {
-          maxWidth = width;
-        }
-
-        if (height > maxHeight) {
-          maxHeight = height;
-        }
-      }
-
-      // +----------------------+
-      // | Title                |
-      // | +-----+    +-----+   |
-      // | | Foo |====| Bar |   |
-      // | +-----+    +-----+   |
-      // +----------------------+
-
-      if (system.titleSize.width > maxWidth) {
-        maxWidth = system.titleSize.width;
-      }
-
-      gridObject.width = maxWidth + 2 * PaddingWhiteBox;
-      gridObject.height =
-        maxHeight + 2 * PaddingWhiteBox + 2 * system.titleSize.height;
-    } else {
-      gridObject.width = system.size.width;
-      gridObject.height = system.size.height;
-    }
-  }
-
-  private computeGridObjectPositions(
-    system: RuntimeSystem | RuntimeSubsystem,
-  ): void {
-    // Leaf sub-system. Position already set.
-    if (!system.systems.length) {
       return;
     }
 
-    const parentGridObject = system.canonicalId
-      ? this.gridSystems[system.canonicalId]!
-      : { x: 0, y: 0 };
+    // Blackbox or empty whitebox.
+    if (system.hideSystems || !system.systems.length) {
+      gridObject.width = system.size.width;
+      gridObject.height = system.size.height;
+
+      return;
+    }
+
+    //
+    // Open Whitebox.
+    //
 
     // Whiteboxes take additional space on the grid and displace other
     // sub-systems to the right and bottom.
@@ -701,14 +677,11 @@ export class SystemSimulator {
       bx1: number,
       by0: number,
       by1: number,
-    ): boolean => {
-      return (
-        ax0 /* aLeft */ < bx1 /* bRight */ &&
-        ax1 /* aRight */ > bx0 /* bLeft */ &&
-        ay0 /* aTop */ < by1 /* bBottom */ &&
-        ay1 /* aBottom */ > by0 /* bTop */
-      );
-    };
+    ): boolean =>
+      ax0 /* aLeft */ < bx1 /* bRight */ &&
+      ax1 /* aRight */ > bx0 /* bLeft */ &&
+      ay0 /* aTop */ < by1 /* bBottom */ &&
+      ay1 /* aBottom */ > by0 /* bTop */;
 
     const displacements: {
       x: {
@@ -734,30 +707,23 @@ export class SystemSimulator {
     );
 
     for (const ss of sortedLeftToRight) {
-      const gridObject = this.gridSystems[ss.canonicalId]!;
-
-      gridObject.x = parentGridObject.x + ss.position.x;
+      const ssGridObject = this.gridSystems[ss.canonicalId]!;
 
       for (const displacement of displacements.x) {
         if (
           collides(
             ss.position.x,
-            ss.position.x + gridObject.width,
+            ss.position.x + ssGridObject.width,
             ss.position.y,
-            ss.position.y + gridObject.height,
+            ss.position.y + ssGridObject.height,
             displacement.x0,
             Number.MAX_SAFE_INTEGER,
             displacement.y0,
             displacement.y1,
           )
         ) {
-          gridObject.x += displacement.amount;
+          ssGridObject.x += displacement.amount;
         }
-      }
-
-      // i.e. we are in the top system.
-      if (system.canonicalId) {
-        gridObject.x += PaddingWhiteBox;
       }
 
       if (!ss.hideSystems && ss.systems.length) {
@@ -765,10 +731,10 @@ export class SystemSimulator {
           canonicalId: ss.canonicalId,
           x0: ss.position.x + ss.size.width - 1 + SystemMargin * 2,
           y0: ss.position.y - SystemMargin * 2,
-          // gridObject.height is used here instead of ss.size.height.
+          // ssGridObject.height is used here instead of ss.size.height.
           // See note above on this algorithm to know why.
-          y1: ss.position.y + gridObject.height - 1 + SystemMargin * 2,
-          amount: gridObject.width - ss.size.width,
+          y1: ss.position.y + ssGridObject.height - 1 + SystemMargin * 2,
+          amount: ssGridObject.width - ss.size.width,
         });
       }
     }
@@ -778,31 +744,23 @@ export class SystemSimulator {
     );
 
     for (const ss of sortedTopToBottom) {
-      const gridObject = this.gridSystems[ss.canonicalId]!;
-
-      gridObject.y = parentGridObject.y + ss.position.y;
+      const ssGridObject = this.gridSystems[ss.canonicalId]!;
 
       for (const displacement of displacements.y) {
         if (
           collides(
             ss.position.x,
-            ss.position.x + gridObject.width,
+            ss.position.x + ssGridObject.width,
             ss.position.y,
-            ss.position.y + gridObject.height,
+            ss.position.y + ssGridObject.height,
             displacement.x0,
             displacement.x1,
             displacement.y0,
             Number.MAX_SAFE_INTEGER,
           )
         ) {
-          gridObject.y += displacement.amount;
+          ssGridObject.y += displacement.amount;
         }
-      }
-
-      // i.e. we are in the top system.
-      if (system.canonicalId) {
-        gridObject.y += PaddingWhiteBox;
-        gridObject.y += system.titlePosition.y + system.titleSize.height;
       }
 
       if (!ss.hideSystems && ss.systems.length) {
@@ -811,15 +769,43 @@ export class SystemSimulator {
           y0: ss.position.y + ss.size.height - 1,
           x0: ss.position.x - SystemMargin * 2,
           x1: ss.position.x + ss.size.width - 1 + SystemMargin * 2,
-          amount: gridObject.height - ss.size.height,
+          amount: ssGridObject.height - ss.size.height,
         });
       }
     }
 
+    // Calculate size.
+    let maxWidth = 0;
+    let maxHeight = 0;
+
     for (const ss of system.systems) {
-      // Breadth-first traversal.
-      this.computeGridObjectPositions(ss);
+      const ssGridObject = this.gridSystems[ss.canonicalId]!;
+
+      const width = ssGridObject.x - gridObject.x + ssGridObject.width;
+      const height = ssGridObject.y - gridObject.y + ssGridObject.height;
+
+      if (width > maxWidth) {
+        maxWidth = width;
+      }
+
+      if (height > maxHeight) {
+        maxHeight = height;
+      }
     }
+
+    // +----------------------+
+    // | Title                |
+    // | +-----+    +-----+   |
+    // | | Foo |====| Bar |   |
+    // | +-----+    +-----+   |
+    // +----------------------+
+
+    if (system.titleSize.width > maxWidth) {
+      maxWidth = system.titleSize.width;
+    }
+
+    gridObject.width = maxWidth + PaddingWhiteBox;
+    gridObject.height = maxHeight + system.titleSize.height + PaddingWhiteBox;
   }
 
   private computeGridObjectPorts(
