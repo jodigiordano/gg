@@ -19,11 +19,13 @@ import {
   SimulatorObjectType,
   SimulatorSystemTitle,
   SimulatorObject,
+  SimulatorWhiteBox,
 } from "@dataflows/simulator";
 import { BlockSize } from "./consts.js";
 
 export interface CanvasSimulatorTextures {
-  whitebox: RenderTexture;
+  whiteboxA: RenderTexture;
+  whiteboxB: RenderTexture;
   blackbox: RenderTexture;
   link: RenderTexture;
   freeSpace: RenderTexture;
@@ -32,13 +34,21 @@ export interface CanvasSimulatorTextures {
 export function generateCanvasSimulatorTextures(
   app: Application,
 ): CanvasSimulatorTextures {
-  // Whitebox
-  const whiteboxGraphic = new Graphics()
+  // Whitebox A
+  const whiteboxAGraphic = new Graphics()
     .beginFill(0xc0c0c0)
     .drawRect(0, 0, BlockSize, BlockSize)
     .endFill();
 
-  const whitebox = app.renderer.generateTexture(whiteboxGraphic);
+  const whiteboxA = app.renderer.generateTexture(whiteboxAGraphic);
+
+  // Whitebox B
+  const whiteboxBGraphic = new Graphics()
+    .beginFill(0xa0a0a0)
+    .drawRect(0, 0, BlockSize, BlockSize)
+    .endFill();
+
+  const whiteboxB = app.renderer.generateTexture(whiteboxBGraphic);
 
   // Blackbox.
   const blackboxGraphic = new Graphics()
@@ -65,7 +75,8 @@ export function generateCanvasSimulatorTextures(
   const freeSpace = app.renderer.generateTexture(freeSpaceGraphic);
 
   return {
-    whitebox,
+    whiteboxA,
+    whiteboxB,
     blackbox,
     link,
     freeSpace,
@@ -291,7 +302,11 @@ export class CanvasSimulator {
       for (let j = 0; j < RuntimeLimits.MaxSystemHeight; j++) {
         for (const obj of layout[i]![j]!) {
           if (obj.type === SimulatorObjectType.WhiteBox) {
-            const sprite = new Sprite(textures.whitebox);
+            const { system } = obj as SimulatorWhiteBox;
+
+            const sprite = new Sprite(
+              system.depth % 2 === 0 ? textures.whiteboxA : textures.whiteboxB,
+            );
 
             sprite.x = i * BlockSize;
             sprite.y = j * BlockSize;
