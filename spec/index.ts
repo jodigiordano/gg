@@ -61,6 +61,7 @@ export interface RuntimeSubsystem extends Subsystem {
   hideSystems: boolean;
   systems: RuntimeSubsystem[];
   links: RuntimeLink[];
+  depth: number;
 }
 
 export interface RuntimeSystem extends System {
@@ -68,11 +69,13 @@ export interface RuntimeSystem extends System {
   canonicalId: undefined;
   titlePosition: RuntimePosition;
   titleSize: RuntimeSize;
+  size: RuntimeSize;
   parent?: undefined;
   hideSystems: false;
   systems: RuntimeSubsystem[];
   links: RuntimeLink[];
   flows: RuntimeFlow[];
+  depth: 0;
 }
 
 export interface RuntimeFlowStep extends FlowStep {
@@ -98,6 +101,8 @@ export function load(system: System): {
   runtime.links ??= [];
   runtime.titlePosition = { x: 0, y: 0 };
   runtime.titleSize = { width: 0, height: 0 };
+  runtime.size = { width: 0, height: 0 };
+  runtime.depth = 0;
 
   // TODO: we are enhancing a system that wasn't validated with AJV yet,
   // TODO: so it's the far west in the JSON file.
@@ -120,7 +125,10 @@ export function loadYaml(yaml: string): {
   return load(parseYaml(yaml) as System);
 }
 
-function enhanceSubsystems(system: RuntimeSystem | RuntimeSubsystem): void {
+function enhanceSubsystems(
+  system: RuntimeSystem | RuntimeSubsystem,
+  depth = 1,
+): void {
   system.systems ??= [];
 
   system.systems.forEach((subsystem, index) => {
@@ -158,8 +166,11 @@ function enhanceSubsystems(system: RuntimeSystem | RuntimeSubsystem): void {
       .filter(x => x)
       .join(".");
 
+    // Set the depth.
+    subsystem.depth = depth;
+
     // Enhance recursively.
-    enhanceSubsystems(subsystem);
+    enhanceSubsystems(subsystem, depth + 1);
   });
 }
 
