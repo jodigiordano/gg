@@ -2,6 +2,7 @@ import PathFinderGrid from "./pathfinding/grid";
 import { PathFinder } from "./pathfinding/finder";
 
 import {
+  PaddingWhiteBox,
   RuntimeSystem,
   RuntimeLimits,
   RuntimeSubsystem,
@@ -86,8 +87,6 @@ export interface SimulatorSystemBottomRightCorner extends SimulatorObject {
   system: RuntimeSubsystem;
 }
 
-const PaddingWhiteBox = 2;
-
 interface GridSystem {
   canonicalId: string;
   x: number;
@@ -135,7 +134,8 @@ export class SystemSimulator {
     // Compute grid objects.
     this.initializeGridObjects(system);
     this.computeGridVisibility(system, false);
-    this.computeGridObjectSizesAndPositions(system);
+    this.computeGridObjectPositions(system);
+    this.computeGridObjectSizes(system);
     this.computeGridObjectPorts(system);
     this.computeGridObjectTitles(system);
 
@@ -591,15 +591,14 @@ export class SystemSimulator {
     gridObject.hidden = !system.hideSystems && hidden;
   }
 
-  private computeGridObjectSizesAndPositions(
+  private computeGridObjectPositions(
     system: RuntimeSystem | RuntimeSubsystem,
   ): void {
     const gridObject = system.canonicalId
       ? this.gridSystems[system.canonicalId]!
-      : { x: 0, y: 0, hidden: false, width: 0, height: 0 };
+      : { x: 0, y: 0 };
 
     for (const ss of system.systems) {
-      // Set base positions (as if all blackboxes)
       const ssGridObject = this.gridSystems[ss.canonicalId]!;
 
       ssGridObject.x = gridObject.x + ss.position.x;
@@ -613,8 +612,24 @@ export class SystemSimulator {
       }
 
       // Depth-first traversal.
-      this.computeGridObjectSizesAndPositions(ss);
+      this.computeGridObjectPositions(ss);
     }
+  }
+
+  private computeGridObjectSizes(
+    system: RuntimeSystem | RuntimeSubsystem,
+  ): void {
+    for (const ss of system.systems) {
+      // Depth-first traversal.
+      this.computeGridObjectSizes(ss);
+    }
+
+    // Root system.
+    if (!system.canonicalId) {
+      return;
+    }
+
+    const gridObject = this.gridSystems[system.canonicalId]!;
 
     // Hidden system (inside blackbox).
     if (gridObject.hidden) {
@@ -624,188 +639,8 @@ export class SystemSimulator {
       return;
     }
 
-    // Blackbox or empty whitebox.
-    if (system.hideSystems || !system.systems.length) {
-      gridObject.width = system.size.width;
-      gridObject.height = system.size.height;
-
-      return;
-    }
-
-    //
-    // Open Whitebox.
-    //
-
-    // Whiteboxes take additional space on the grid and displace other
-    // sub-systems to the right and bottom.
-    //
-    // The position of a sub-system vis-a-vis a blackbox determines if it
-    // will be displaced to the right or to the bottom by its whitebox
-    // sibling.
-    //
-    //  A-------------B--E
-    //  | Black box   |
-    //  D-------------C--F
-    //  |             |
-    //  H             G
-    //
-    //  If you imagine the outer lines B-E, C-F, C-G, D-H going to infinity,
-    //
-    //  - The sub-system is pushed toward the *right* when
-    //    its geometry (rectangle) collides with B-E-F-C (rectangle).
-    //
-    //  - The sub-system is pushed toward the *bottom* when
-    //    its geometry (rectangle) collides with D-C-G-H (rectangle).
-    //
-    //  Additionally, the sub-system is pushed toward the *right* when
-    //  its geometry (rectangle) collides with C-F-?-G. The twist here
-    //  is that the value of B-C is the one from the whitebox sibling,
-    //  so we have:
-    //
-    //  A-------------B--E
-    //  | White box   | Pushed to right.
-    //  D-------------C--F
-    //  | Pushed to   | Pushed to right.
-    //  H bottom.     G
-    //
-    const collides = (
-      ax0: number,
-      ax1: number,
-      ay0: number,
-      ay1: number,
-      bx0: number,
-      bx1: number,
-      by0: number,
-      by1: number,
-    ): boolean =>
-      ax0 /* aLeft */ < bx1 /* bRight */ &&
-      ax1 /* aRight */ > bx0 /* bLeft */ &&
-      ay0 /* aTop */ < by1 /* bBottom */ &&
-      ay1 /* aBottom */ > by0 /* bTop */;
-
-    const displacements: {
-      x: {
-        canonicalId: string;
-        x0: number;
-        // x1: infinity
-        y0: number;
-        y1: number;
-        amount: number;
-      }[];
-      y: {
-        canonicalId: string;
-        y0: number;
-        // y1: infinity
-        x0: number;
-        x1: number;
-        amount: number;
-      }[];
-    } = { x: [], y: [] };
-
-    const sortedLeftToRight = system.systems.sort(
-      (ssA, ssB) => ssA.position.x - ssB.position.x,
-    );
-
-    for (const ss of sortedLeftToRight) {
-      const ssGridObject = this.gridSystems[ss.canonicalId]!;
-
-      for (const displacement of displacements.x) {
-        if (
-          collides(
-            ss.position.x,
-            ss.position.x + ssGridObject.width,
-            ss.position.y,
-            ss.position.y + ssGridObject.height,
-            displacement.x0,
-            Number.MAX_SAFE_INTEGER,
-            displacement.y0,
-            displacement.y1,
-          )
-        ) {
-          ssGridObject.x += displacement.amount;
-        }
-      }
-
-      if (!ss.hideSystems && ss.systems.length) {
-        displacements.x.push({
-          canonicalId: ss.canonicalId,
-          x0: ss.position.x + ss.size.width - 1 + SystemMargin * 2,
-          y0: ss.position.y - SystemMargin * 2,
-          // ssGridObject.height is used here instead of ss.size.height.
-          // See note above on this algorithm to know why.
-          y1: ss.position.y + ssGridObject.height - 1 + SystemMargin * 2,
-          amount: ssGridObject.width - ss.size.width,
-        });
-      }
-    }
-
-    const sortedTopToBottom = system.systems.sort(
-      (ssA, ssB) => ssA.position.y - ssB.position.y,
-    );
-
-    for (const ss of sortedTopToBottom) {
-      const ssGridObject = this.gridSystems[ss.canonicalId]!;
-
-      for (const displacement of displacements.y) {
-        if (
-          collides(
-            ss.position.x,
-            ss.position.x + ssGridObject.width,
-            ss.position.y,
-            ss.position.y + ssGridObject.height,
-            displacement.x0,
-            displacement.x1,
-            displacement.y0,
-            Number.MAX_SAFE_INTEGER,
-          )
-        ) {
-          ssGridObject.y += displacement.amount;
-        }
-      }
-
-      if (!ss.hideSystems && ss.systems.length) {
-        displacements.y.push({
-          canonicalId: ss.canonicalId,
-          y0: ss.position.y + ss.size.height - 1,
-          x0: ss.position.x - SystemMargin * 2,
-          x1: ss.position.x + ss.size.width - 1 + SystemMargin * 2,
-          amount: ssGridObject.height - ss.size.height,
-        });
-      }
-    }
-
-    // Calculate size.
-    let maxWidth = 0;
-    let maxHeight = 0;
-
-    for (const ss of system.systems) {
-      const ssGridObject = this.gridSystems[ss.canonicalId]!;
-
-      const width = ssGridObject.x - gridObject.x + ssGridObject.width;
-      const height = ssGridObject.y - gridObject.y + ssGridObject.height;
-
-      if (width > maxWidth) {
-        maxWidth = width;
-      }
-
-      if (height > maxHeight) {
-        maxHeight = height;
-      }
-    }
-
-    // +----------------------+
-    // | Title                |
-    // | +-----+    +-----+   |
-    // | | Foo |====| Bar |   |
-    // | +-----+    +-----+   |
-    // +----------------------+
-
-    if (system.titleSize.width > maxWidth) {
-      maxWidth = system.titleSize.width;
-    }
-
-    gridObject.width = maxWidth + PaddingWhiteBox;
-    gridObject.height = maxHeight + system.titleSize.height + PaddingWhiteBox;
+    gridObject.width = system.size.width;
+    gridObject.height = system.size.height;
   }
 
   private computeGridObjectPorts(
