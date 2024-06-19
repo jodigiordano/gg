@@ -267,10 +267,8 @@ viewport.on("pointermove", (event: any) => {
   positionInfo.textContent = `[${x}, ${y}]`;
 
   if (state.operation.type === "move") {
-    const deltaX =
-      ((coordinates.x - state.operation.pickedUpAt.x) / BlockSize) | 0;
-    const deltaY =
-      ((coordinates.y - state.operation.pickedUpAt.y) / BlockSize) | 0;
+    const deltaX = x - state.operation.pickedUpAt.x;
+    const deltaY = y - state.operation.pickedUpAt.y;
 
     dragAndDrop.x = (state.operation.subsystem.position.x + deltaX) * BlockSize;
     dragAndDrop.y = (state.operation.subsystem.position.y + deltaY) * BlockSize;
@@ -311,10 +309,7 @@ viewport.on("pointerdown", (event: any) => {
   const operation: MoveSystemOperation = {
     type: "move",
     subsystem,
-    pickedUpAt: {
-      x: coordinates.x,
-      y: coordinates.y,
-    },
+    pickedUpAt: { x, y },
   };
 
   state.operation = operation;
@@ -362,16 +357,22 @@ viewport.on("pointerup", (event: any) => {
 
   // Operation: Move system.
   else if (state.operation.type === "move") {
+    // World coordinates, in block size.
     const coordinates = viewport.toWorld(event.data.global);
 
-    const deltaX =
-      ((coordinates.x - state.operation.pickedUpAt.x) / BlockSize) | 0;
-    const deltaY =
-      ((coordinates.y - state.operation.pickedUpAt.y) / BlockSize) | 0;
+    // World coordinates, in spec size.
+    const x = Math.floor(coordinates.x / BlockSize) | 0;
+    const y = Math.floor(coordinates.y / BlockSize) | 0;
 
+    // Delta coordinates, in spec size.
+    const deltaX = (x - state.operation.pickedUpAt.x);
+    const deltaY = (y - state.operation.pickedUpAt.y);
+
+    // Current spec position (relative).
     // TODO: wrong type (any)?
     const currentPosition = state.operation.subsystem.specification.position;
 
+    // New spec position (relative).
     state.operation.subsystem.specification.position = {
       x: currentPosition.x + deltaX,
       y: currentPosition.y + deltaY,
