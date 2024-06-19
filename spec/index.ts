@@ -70,6 +70,7 @@ export interface RuntimeSystem extends System {
   titlePosition: RuntimePosition;
   titleSize: RuntimeSize;
   size: RuntimeSize;
+  position: RuntimePosition;
   parent?: undefined;
   hideSystems: false;
   systems: RuntimeSubsystem[];
@@ -103,6 +104,7 @@ export function load(system: System): {
   runtime.titleSize = { width: 0, height: 0 };
   runtime.size = { width: 0, height: 0 };
   runtime.depth = 0;
+  runtime.position = { x: 0, y: 0 };
 
   // TODO: we are enhancing a system that wasn't validated with AJV yet,
   // TODO: so it's the far west in the JSON file.
