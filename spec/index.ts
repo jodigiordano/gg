@@ -20,6 +20,8 @@ export const SystemMargin = 1;
 
 export const TitleCharsPerSquare = 2;
 
+export const PaddingWhiteBox = 2;
+
 const TitlePadding = 1;
 
 // Must reflect https://dataflows.io/system.json
@@ -114,6 +116,7 @@ export function load(system: System): {
   enhanceLinks(runtime);
   enhanceFlows(runtime);
   computeSizes(runtime, runtime.links);
+  computePorts(runtime);
 
   const errors = validate(system, runtime);
 
@@ -376,39 +379,79 @@ function computeSizes(
   system: RuntimeSystem | RuntimeSubsystem,
   links: RuntimeLink[],
 ): void {
+  // Depth-first traversal.
   for (const subsystem of system.systems) {
-    const linksCount = links.filter(
-      link =>
-        link.a.startsWith(subsystem.canonicalId) ||
-        link.b.startsWith(subsystem.canonicalId),
-    ).length;
+    computeSizes(subsystem, links);
+  }
 
-    const sizeToSupportLinks: RuntimeSize = {
-      width: 3 + (Math.ceil((linksCount - 2) / 2) | 0),
-      height: 3,
-    };
+  // Root system.
+  if (!system.canonicalId) {
+    return;
+  }
 
-    subsystem.size = {
+  const linksCount = links.filter(
+    link =>
+      link.a.startsWith(system.canonicalId) ||
+      link.b.startsWith(system.canonicalId),
+  ).length;
+
+  const sizeToSupportLinks: RuntimeSize = {
+    width: 3 + (Math.ceil((linksCount - 2) / 2) | 0),
+    height: 3,
+  };
+
+  // Blackbox.
+  if (!system.systems.length) {
+    system.size = {
       width: Math.max(
         sizeToSupportLinks.width,
-        subsystem.titleSize.width + 2 * TitlePadding,
+        system.titleSize.width + 2 * TitlePadding,
       ),
       height: Math.max(
         sizeToSupportLinks.height,
-        subsystem.titleSize.height + 2 * TitlePadding,
+        system.titleSize.height + 2 * TitlePadding,
       ),
     };
 
-    // Allowed size: 3, 5, 7, ...
-    if ((subsystem.size.width - 3) % 2 !== 0) {
-      subsystem.size.width += 1;
+    return;
+  }
+
+  // Whitebox
+  let maxWidth = 0;
+  let maxHeight = 0;
+
+  for (const subsystem of system.systems) {
+    const width = subsystem.position.x + subsystem.size.width;
+    const height = subsystem.position.y + subsystem.size.height;
+
+    if (width > maxWidth) {
+      maxWidth = width;
     }
 
-    // Allowed size: 3, 5, 7, ...
-    if ((subsystem.size.height - 3) % 2 !== 0) {
-      subsystem.size.height += 1;
+    if (height > maxHeight) {
+      maxHeight = height;
     }
+  }
 
+  // +----------------------+
+  // | Title                |
+  // | +-----+    +-----+   |
+  // | | Foo |====| Bar |   |
+  // | +-----+    +-----+   |
+  // +----------------------+
+
+  if (system.titleSize.width > maxWidth) {
+    maxWidth = system.titleSize.width;
+  }
+
+  system.size = {
+    width: maxWidth + PaddingWhiteBox * 2,
+    height: maxHeight + system.titleSize.height + PaddingWhiteBox * 2,
+  };
+}
+
+function computePorts(system: RuntimeSystem | RuntimeSubsystem) {
+  for (const subsystem of system.systems) {
     for (let x = 1; x < subsystem.size.width; x += 2) {
       subsystem.ports.push({ x, y: -1 });
       subsystem.ports.push({ x, y: subsystem.size.height });
@@ -419,6 +462,7 @@ function computeSizes(
       subsystem.ports.push({ x: subsystem.size.width, y });
     }
 
-    computeSizes(subsystem, links);
+    // Compute recursively.
+    computePorts(subsystem);
   }
 }
