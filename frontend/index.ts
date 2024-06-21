@@ -343,16 +343,12 @@ viewport.on("pointerup", (event: any) => {
 
     const newSpecification = saveYaml(canvasSimulator.system.specification);
 
-    if (loadSimulation(newSpecification)) {
-      // TODO: broadcast event.
-      pushChange(newSpecification);
+    loadSimulation(newSpecification);
 
-      yamlEditorDefinition.value = newSpecification;
-    } else {
-      // Rollback.
-      state.operation.subsystem.specification.hideSystems =
-        !state.operation.subsystem.specification.hideSystems;
-    }
+    // TODO: broadcast event.
+    pushChange(newSpecification);
+
+    yamlEditorDefinition.value = newSpecification;
   }
 
   // Operation: Move system.
