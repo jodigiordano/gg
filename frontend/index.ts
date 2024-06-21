@@ -361,29 +361,23 @@ viewport.on("pointerup", (event: any) => {
     const y = Math.floor(coordinates.y / BlockSize) | 0;
 
     // Delta coordinates, in spec size.
-    const deltaX = (x - state.operation.pickedUpAt.x);
-    const deltaY = (y - state.operation.pickedUpAt.y);
+    const deltaX = x - state.operation.pickedUpAt.x;
+    const deltaY = y - state.operation.pickedUpAt.y;
 
-    // Current spec position (relative).
-    // TODO: wrong type (any)?
-    const currentPosition = state.operation.subsystem.specification.position;
+    const currentSpecification = saveYaml(canvasSimulator.system.specification);
 
-    // New spec position (relative).
-    state.operation.subsystem.specification.position = {
-      x: currentPosition.x + deltaX,
-      y: currentPosition.y + deltaY,
-    };
+    canvasSimulator.moveSystem(state.operation.subsystem, deltaX, deltaY);
 
     const newSpecification = saveYaml(canvasSimulator.system.specification);
 
-    if (loadSimulation(newSpecification)) {
+    if(loadSimulation(newSpecification)) {
       // TODO: broadcast event.
       pushChange(newSpecification);
 
       yamlEditorDefinition.value = newSpecification;
     } else {
-      // Rollback.
-      state.operation.subsystem.specification.position = currentPosition;
+      // Rollback
+      loadSimulation(currentSpecification)
     }
 
     dragAndDropContainer.removeChildren();
