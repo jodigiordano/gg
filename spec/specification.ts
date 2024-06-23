@@ -243,15 +243,11 @@ const schemas = [
             type: "integer",
             description:
               "The X position of the sub-system in the parent system.",
-            minimum: 0,
-            maximum: 64,
           },
           y: {
             type: "integer",
             description:
               "The Y position of the sub-system in the parent system.",
-            minimum: 0,
-            maximum: 64,
           },
         },
       },

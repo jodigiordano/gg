@@ -24,12 +24,6 @@ export const PaddingWhiteBox = 2;
 
 const TitlePadding = 1;
 
-// Must reflect https://dataflows.io/system.json
-export const RuntimeLimits = {
-  MaxSystemWidth: 64,
-  MaxSystemHeight: 64,
-};
-
 export interface RuntimeSize {
   width: number;
   height: number;
@@ -136,7 +130,7 @@ function enhanceSubsystems(
 ): void {
   system.systems ??= [];
 
-  system.systems.forEach((subsystem, index) => {
+  for (const [index, subsystem] of system.systems.entries()) {
     // Set the specification.
     subsystem.specification = system.specification.systems!.at(index)!;
 
@@ -176,11 +170,11 @@ function enhanceSubsystems(
 
     // Enhance recursively.
     enhanceSubsystems(subsystem, depth + 1);
-  });
+  }
 }
 
 function enhanceLinks(system: RuntimeSystem): void {
-  system.links.forEach((link, index) => {
+  for (const [index, link] of system.links.entries()) {
     // Set the specification.
     link.specification = system.specification.links!.at(index)!;
 
@@ -190,31 +184,31 @@ function enhanceLinks(system: RuntimeSystem): void {
     // Set system A.
     let systemA: RuntimeSubsystem | RuntimeSystem | undefined = system;
 
-    link.a.split(".").forEach(subsystemId => {
+    for (const subsystemId of link.a.split(".")) {
       if (systemA) {
         systemA = systemA.systems.find(ss => ss.id === subsystemId);
       }
-    });
+    }
 
     link.systemA = systemA as unknown as RuntimeSubsystem;
 
     // Set system B.
     let systemB: RuntimeSubsystem | RuntimeSystem | undefined = system;
 
-    link.b.split(".").forEach(subsystemId => {
+    for (const subsystemId of link.b.split(".")) {
       if (systemB) {
         systemB = systemB.systems.find(ss => ss.id === subsystemId);
       }
-    });
+    }
 
     link.systemB = systemB as unknown as RuntimeSubsystem;
-  });
+  }
 }
 
 function enhanceFlows(system: RuntimeSystem): void {
   system.flows ??= [];
 
-  system.flows.forEach((flow, index) => {
+  for (const [index, flow] of system.flows.entries()) {
     // Set the specification.
     flow.specification = system.specification.flows!.at(index)!;
 
@@ -225,13 +219,13 @@ function enhanceFlows(system: RuntimeSystem): void {
     // TODO: put in "normalizedKeyframe" so errors are reported on "keyframe".
     const uniqueKeyframes = new Set<number>();
 
-    flow.steps.forEach(step => {
+    for (const step of flow.steps) {
       uniqueKeyframes.add(step.keyframe);
-    });
+    }
 
     const keyframes = Array.from(uniqueKeyframes).sort();
 
-    flow.steps.forEach((step, index) => {
+    for (const [index, step] of flow.steps.entries()) {
       // Set the specification.
       step.specification = flow.specification.steps.at(index)!;
 
@@ -270,8 +264,8 @@ function enhanceFlows(system: RuntimeSystem): void {
       if (step.systemFrom && step.systemTo) {
         step.links = findLinks(system.links, step.from, step.to);
       }
-    });
-  });
+    }
+  }
 }
 
 function findLinks(
@@ -304,9 +298,9 @@ function findLinks(
 
   const numberToSystemName = new Array(systemNameToNumber.size);
 
-  systemNameToNumber.forEach((index, subsystemName) => {
+  for (const [subsystemName, index] of systemNameToNumber.entries()) {
     numberToSystemName[index] = subsystemName;
-  });
+  }
 
   const graph = new Array<number[]>(systemNameToNumber.size);
 
@@ -379,7 +373,7 @@ function computeSizes(
   system: RuntimeSystem | RuntimeSubsystem,
   links: RuntimeLink[],
 ): void {
-  // Depth-first traversal.
+  // Recursive traversal.
   for (const subsystem of system.systems) {
     computeSizes(subsystem, links);
   }

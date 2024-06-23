@@ -1,5 +1,4 @@
 import {
-  RuntimeLimits,
   RuntimeLink,
   RuntimeSubsystem,
   RuntimeSystem,
@@ -39,16 +38,16 @@ export function validate(
   }
 
   const systemDistanceErrors = validateSystemDistances(runtime);
+  const whiteBoxBoundaryErrors = validateWhiteboxBoundaries(runtime);
   const systemErrors = validateSystems(runtime);
   const linkErrors = validateLinks(runtime);
   const flowErrors = validateFlows(runtime);
-  const systemBoundaryErrors = validateSystemBoundaries(runtime);
 
   return systemDistanceErrors
     .concat(systemErrors)
+    .concat(whiteBoxBoundaryErrors)
     .concat(linkErrors)
-    .concat(flowErrors)
-    .concat(systemBoundaryErrors);
+    .concat(flowErrors);
 }
 
 function validateSystemDistances(
@@ -98,12 +97,36 @@ function validateSystemDistances(
   return errors;
 }
 
+function validateWhiteboxBoundaries(
+  system: RuntimeSystem | RuntimeSubsystem,
+): ValidationError[] {
+  const errors: ValidationError[] = [];
+
+  for (const subsystem of system.systems) {
+    // i.e. in a whitebox.
+    if (
+      system.canonicalId &&
+      (subsystem.position.x < 0 || subsystem.position.y < 0)
+    ) {
+      errors.push({
+        path: getSubsystemPath(subsystem),
+        message: "out of bounds",
+      });
+    }
+
+    // Validate recursively.
+    errors.push(...validateWhiteboxBoundaries(subsystem));
+  }
+
+  return errors;
+}
+
 function validateSystems(
   system: RuntimeSystem | RuntimeSubsystem,
 ): ValidationError[] {
   const errors: ValidationError[] = [];
 
-  system.systems.forEach(subsystem => {
+  for (const subsystem of system.systems) {
     // Duplicate id.
     if (
       system.systems.some(
@@ -118,7 +141,7 @@ function validateSystems(
 
     // Validate recursively.
     errors.push(...validateSystems(subsystem));
-  });
+  }
 
   return errors;
 }
@@ -128,7 +151,7 @@ function validateLinks(
 ): ValidationError[] {
   const errors: ValidationError[] = [];
 
-  system.links.forEach(link => {
+  for (const link of system.links) {
     // A <> A
     if (
       link.a === link.b ||
@@ -184,7 +207,7 @@ function validateLinks(
         message: "inaccurate",
       });
     }
-  });
+  }
 
   return errors;
 }
@@ -192,8 +215,8 @@ function validateLinks(
 function validateFlows(system: RuntimeSystem): ValidationError[] {
   const errors: ValidationError[] = [];
 
-  system.flows.forEach((flow, flowIndex) => {
-    flow.steps.forEach((step, stepIndex) => {
+  for (const [flowIndex, flow] of system.flows.entries()) {
+    for (const [stepIndex, step] of flow.steps.entries()) {
       if (!step.systemFrom) {
         errors.push({
           path: `/flows/${flowIndex}/steps/${stepIndex}/from`,
@@ -226,35 +249,7 @@ function validateFlows(system: RuntimeSystem): ValidationError[] {
           });
         }
       }
-    });
-  });
-
-  return errors;
-}
-
-function validateSystemBoundaries(
-  system: RuntimeSystem | RuntimeSubsystem,
-): ValidationError[] {
-  const errors: ValidationError[] = [];
-
-  // We only validate the position of the subsystem.
-  // We don't mind that the size of the subsytem goes out of boundary.
-
-  for (const subsystem of system.systems) {
-    if (
-      subsystem.position.x - SystemMargin < 0 ||
-      subsystem.position.x + SystemMargin > RuntimeLimits.MaxSystemWidth ||
-      subsystem.position.y - SystemMargin < 0 ||
-      subsystem.position.y + SystemMargin > RuntimeLimits.MaxSystemHeight
-    ) {
-      errors.push({
-        path: getSubsystemPath(subsystem),
-        message: "out of bounds",
-      });
     }
-
-    // There is no need to validate recursively, as sub-system
-    // positions are relative to their parent.
   }
 
   return errors;

@@ -28,15 +28,11 @@
       "properties": {
         "x": {
           "type": "integer",
-          "description": "The X position of the sub-system in the parent system.",
-          "minimum": 0,
-          "maximum": 64
+          "description": "The X position of the sub-system in the parent system."
         },
         "y": {
           "type": "integer",
-          "description": "The Y position of the sub-system in the parent system.",
-          "minimum": 0,
-          "maximum": 64
+          "description": "The Y position of the sub-system in the parent system."
         }
       }
     },
