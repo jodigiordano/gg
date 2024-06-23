@@ -6,29 +6,27 @@ export default class Grid {
   private height: number;
   private nodes: Node[][];
 
-  constructor(matrix: number[][]) {
-    this.width = matrix.length;
-    this.height = matrix.at(0)?.length ?? 0;
+  constructor(width: number, height: number, weight: number) {
+    this.width = width;
+    this.height = height;
 
-    this.nodes = new Array(this.height);
+    this.nodes = new Array(this.width);
 
-    for (let i = 0; i < this.height; i++) {
-      this.nodes[i] = new Array(this.width);
+    for (let i = 0; i < this.width; i++) {
+      this.nodes[i] = new Array(this.height);
 
-      for (let j = 0; j < this.width; j++) {
-        const weight = matrix[i]![j]!;
-
-        this.nodes[i]![j] = new Node(j, i, weight);
+      for (let j = 0; j < this.height; j++) {
+        this.nodes[i]![j] = new Node(i, j, weight);
       }
     }
   }
 
   getNodeAt(x: number, y: number): Node {
-    return this.nodes[y]![x]!;
+    return this.nodes[x]![y]!;
   }
 
   isWalkableAt(x: number, y: number): boolean {
-    return this.isInside(x, y) && this.nodes[y]![x]!.weight !== Infinity;
+    return this.isInside(x, y) && this.nodes[x]![y]!.weight !== Infinity;
   }
 
   isInside(x: number, y: number): boolean {
@@ -36,11 +34,11 @@ export default class Grid {
   }
 
   getWeightAt(x: number, y: number): number {
-    return this.nodes[y]![x]!.weight;
+    return this.nodes[x]![y]!.weight;
   }
 
   setWeightAt(x: number, y: number, weight: number): void {
-    this.nodes[y]![x]!.weight = weight;
+    this.nodes[x]![y]!.weight = weight;
   }
 
   // Get the neighbors of the given node.
@@ -70,25 +68,25 @@ export default class Grid {
 
     // ↑
     if (this.isWalkableAt(x, y - 1)) {
-      neighbors.push(this.nodes[y - 1]![x]!);
+      neighbors.push(this.nodes[x]![y - 1]!);
       s0 = true;
     }
 
     // →
     if (this.isWalkableAt(x + 1, y)) {
-      neighbors.push(this.nodes[y]![x + 1]!);
+      neighbors.push(this.nodes[x + 1]![y]!);
       s1 = true;
     }
 
     // ↓
     if (this.isWalkableAt(x, y + 1)) {
-      neighbors.push(this.nodes[y + 1]![x]!);
+      neighbors.push(this.nodes[x]![y + 1]!);
       s2 = true;
     }
 
     // ←
     if (this.isWalkableAt(x - 1, y)) {
-      neighbors.push(this.nodes[y]![x - 1]!);
+      neighbors.push(this.nodes[x - 1]![y]!);
       s3 = true;
     }
 
@@ -115,22 +113,22 @@ export default class Grid {
 
     // ↖
     if (d0 && this.isWalkableAt(x - 1, y - 1)) {
-      neighbors.push(this.nodes[y - 1]![x - 1]!);
+      neighbors.push(this.nodes[x - 1]![y - 1]!);
     }
 
     // ↗
     if (d1 && this.isWalkableAt(x + 1, y - 1)) {
-      neighbors.push(this.nodes[y - 1]![x + 1]!);
+      neighbors.push(this.nodes[x + 1]![y - 1]!);
     }
 
     // ↘
     if (d2 && this.isWalkableAt(x + 1, y + 1)) {
-      neighbors.push(this.nodes[y + 1]![x + 1]!);
+      neighbors.push(this.nodes[x + 1]![y + 1]!);
     }
 
     // ↙
     if (d3 && this.isWalkableAt(x - 1, y + 1)) {
-      neighbors.push(this.nodes[y + 1]![x - 1]!);
+      neighbors.push(this.nodes[x - 1]![y + 1]!);
     }
 
     return neighbors;

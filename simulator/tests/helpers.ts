@@ -1,5 +1,5 @@
 import { readFileSync, mkdirSync, createWriteStream } from "node:fs";
-import { loadYaml, RuntimeLimits } from "@dataflows/spec";
+import { loadYaml } from "@dataflows/spec";
 import { createCanvas, Canvas } from "canvas";
 import { SystemSimulator, SimulatorObjectType } from "../index";
 
@@ -15,9 +15,11 @@ export function loadExample(name: string) {
 const BlockSize = 8; // pixels.
 
 export async function render(simulator: SystemSimulator) {
+  const boundaries = simulator.getBoundaries();
+
   const canvas = createCanvas(
-    RuntimeLimits.MaxSystemWidth * BlockSize,
-    RuntimeLimits.MaxSystemHeight * BlockSize,
+    boundaries.width * BlockSize,
+    boundaries.height * BlockSize,
   );
 
   const ctx = canvas.getContext("2d");
@@ -27,15 +29,15 @@ export async function render(simulator: SystemSimulator) {
   ctx.fillRect(
     0,
     0,
-    RuntimeLimits.MaxSystemWidth * BlockSize,
-    RuntimeLimits.MaxSystemHeight * BlockSize,
+    boundaries.width * BlockSize,
+    boundaries.height * BlockSize,
   );
 
   // Draw objects.
   const layout = simulator.getLayout();
 
-  for (let i = 0; i < RuntimeLimits.MaxSystemWidth; i++) {
-    for (let j = 0; j < RuntimeLimits.MaxSystemHeight; j++) {
+  for (let i = 0; i < boundaries.width; i++) {
+    for (let j = 0; j < boundaries.height; j++) {
       const objects = layout[i]![j]!;
 
       if (objects.at(-1)?.type === SimulatorObjectType.BlackBox) {

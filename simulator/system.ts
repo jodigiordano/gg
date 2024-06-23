@@ -4,14 +4,12 @@ import { PathFinder } from "./pathfinding/finder";
 import {
   PaddingWhiteBox,
   RuntimeSystem,
-  RuntimeLimits,
   RuntimeSubsystem,
   RuntimeLink,
   TitleCharsPerSquare,
   SystemMargin,
 } from "@dataflows/spec";
 
-// TODO: add SystemTopLeftCorner, SystemTopRightCorner, ...
 // TODO: add LinkRightTurn, LinkDownTurn, ...
 export enum SimulatorObjectType {
   BlackBox = 1,
@@ -87,10 +85,38 @@ export interface SimulatorSystemBottomRightCorner extends SimulatorObject {
   system: RuntimeSubsystem;
 }
 
+export interface SimulatorBoundaries {
+  left: number;
+  top: number;
+  right: number;
+  bottom: number;
+  width: number;
+  height: number;
+  translateX: number;
+  translateY: number;
+}
+
 interface GridSystem {
   canonicalId: string;
-  x: number;
-  y: number;
+
+  /* Left position in a 2D grid. Always >= 0. */
+  x1: number;
+
+  /* Right position in a 2D grid. Always >= 0. */
+  x2: number;
+
+  /* Y position in a 2D grid. Always >= 0. */
+  y1: number;
+
+  /* Bottom position in a 2D grid. Always >= 0. */
+  y2: number;
+
+  /* X position in an infinite grid. Can be ]-inf, inf[. */
+  worldX: number;
+
+  /* Y position in an infinite grid. Can be ]-inf, inf[. */
+  worldY: number;
+
   width: number;
   height: number;
   ports: {
@@ -110,35 +136,46 @@ export class SystemSimulator {
   private routes: Record<string, Record<string, number[][]>>;
   private gridSystems: Record<string, GridSystem>;
   private grid: SimulatorObject[][][];
+  private boundaries: SimulatorBoundaries;
 
   constructor(system: RuntimeSystem) {
     this.routes = {};
     this.gridSystems = {};
-    this.grid = new Array(RuntimeLimits.MaxSystemHeight);
+
+    // Compute grid systems. Part I.
+    this.initializeSystems(system);
+    this.computeSystemVisibility(system, false);
+    this.computeSystemWorldPositions(system);
+    this.computeSystemSizes(system);
+
+    // Compute boundaries.
+    this.boundaries = this.computeBoundaries();
+
+    console.log(this.boundaries);
+    // Compute grid systems. Part II.
+    // Requires sizes & boundaries.
+    this.computeSystemPositions();
+
+    // Compute grid systems. Part III.
+    // Requires positions.
+    this.computeSystemPorts(system);
+    this.computeSystemTitles(system);
 
     // Create grid.
-    for (let i = 0; i < RuntimeLimits.MaxSystemWidth; i++) {
-      this.grid[i] = Array.from(
-        { length: RuntimeLimits.MaxSystemWidth },
-        () => [],
-      );
+    this.grid = new Array(this.boundaries.height);
+
+    for (let i = 0; i < this.boundaries.width; i++) {
+      this.grid[i] = Array.from({ length: this.boundaries.height }, () => []);
     }
 
-    // TODO: faster way to initialize?
+    // Create path finder (routing) grid.
     const finderGrid = new PathFinderGrid(
-      this.grid.map(row => row.map(() => 1)),
+      this.boundaries.width,
+      this.boundaries.height,
+      1,
     );
 
-    // Compute grid objects.
-    this.initializeGridObjects(system);
-    this.computeGridVisibility(system, false);
-    this.computeGridObjectPositions(system);
-    this.computeGridObjectSizes(system);
-    this.computeGridObjectPorts(system);
-    this.computeGridObjectTitles(system);
-
     // Draw grid objects.
-    this.drawSystemMargins(system, finderGrid);
     this.drawSubsystems(system, finderGrid);
     this.drawLinks(system, finderGrid);
 
@@ -149,21 +186,26 @@ export class SystemSimulator {
     return this.grid;
   }
 
-  // Get the boundaries of the system, i.e. a rectangle that encompass all
-  // sub-systems, links, etc.
-  getBoundaries(): {
+  getBoundaries(): SimulatorBoundaries {
+    return this.boundaries;
+  }
+
+  // Get the boundaries of the visible system,
+  // once it has been drawn on the grid.
+  // i.e. a rectangle that encompass all sub-systems, links, etc.
+  getVisibleBoundaries(): {
     left: number;
     top: number;
     right: number;
     bottom: number;
   } {
-    let left = RuntimeLimits.MaxSystemWidth;
+    let left = this.boundaries.width;
     let right = 0;
-    let top = RuntimeLimits.MaxSystemHeight;
+    let top = this.boundaries.height;
     let bottom = 0;
 
-    for (let i = 0; i < RuntimeLimits.MaxSystemWidth; i++) {
-      for (let j = 0; j < RuntimeLimits.MaxSystemHeight; j++) {
+    for (let i = 0; i < this.boundaries.width; i++) {
+      for (let j = 0; j < this.boundaries.height; j++) {
         const hasVisibleObjects = this.grid[i]![j]!.some(
           obj =>
             obj.type === SimulatorObjectType.BlackBox ||
@@ -202,17 +244,14 @@ export class SystemSimulator {
   }
 
   getAvailableSpaceForSystems(): boolean[][] {
-    const available = new Array(RuntimeLimits.MaxSystemHeight);
+    const available = new Array(this.boundaries.height);
 
-    for (let i = 0; i < RuntimeLimits.MaxSystemWidth; i++) {
-      available[i] = Array.from(
-        { length: RuntimeLimits.MaxSystemWidth },
-        () => [],
-      );
+    for (let i = 0; i < this.boundaries.width; i++) {
+      available[i] = Array.from({ length: this.boundaries.width }, () => []);
     }
 
-    for (let i = 0; i < RuntimeLimits.MaxSystemWidth; i++) {
-      for (let j = 0; j < RuntimeLimits.MaxSystemHeight; j++) {
+    for (let i = 0; i < this.boundaries.width; i++) {
+      for (let j = 0; j < this.boundaries.height; j++) {
         available[i][j] =
           this.grid[i]![j]!.length === 0 ||
           this.grid[i]![j]!.every(
@@ -228,12 +267,10 @@ export class SystemSimulator {
     return this.routes[fromSystemId]?.[toSystemId];
   }
 
-  private initializeGridObjects(
-    system: RuntimeSystem | RuntimeSubsystem,
-  ): void {
+  private initializeSystems(system: RuntimeSystem | RuntimeSubsystem): void {
     // Recursive traversal.
     for (const ss of system.systems) {
-      this.initializeGridObjects(ss);
+      this.initializeSystems(ss);
     }
 
     // Root system.
@@ -242,10 +279,14 @@ export class SystemSimulator {
     }
 
     // Initialize system.
-    const gridObject = {
+    const gridSystem: GridSystem = {
       canonicalId: system.canonicalId,
-      x: -1,
-      y: -1,
+      x1: -1,
+      x2: -1,
+      y1: -1,
+      y2: -1,
+      worldX: -1,
+      worldY: -1,
       width: -1,
       height: -1,
       ports: [],
@@ -258,16 +299,16 @@ export class SystemSimulator {
       hidden: false,
     };
 
-    this.gridSystems[system.canonicalId] = gridObject;
+    this.gridSystems[system.canonicalId] = gridSystem;
   }
 
-  private computeGridVisibility(
+  private computeSystemVisibility(
     system: RuntimeSystem | RuntimeSubsystem,
     hidden: boolean,
   ): void {
     // Recursive traversal.
     for (const ss of system.systems) {
-      this.computeGridVisibility(ss, hidden || system.hideSystems);
+      this.computeSystemVisibility(ss, hidden || (system.hideSystems ?? false));
     }
 
     // Root system.
@@ -275,42 +316,50 @@ export class SystemSimulator {
       return;
     }
 
-    const gridObject = this.gridSystems[system.canonicalId]!;
+    const gridSystem = this.gridSystems[system.canonicalId]!;
 
-    gridObject.hidden = hidden;
+    gridSystem.hidden = hidden;
   }
 
-  private computeGridObjectPositions(
+  private computeSystemWorldPositions(
     system: RuntimeSystem | RuntimeSubsystem,
   ): void {
-    const gridObject = system.canonicalId
+    const gridSystem = system.canonicalId
       ? this.gridSystems[system.canonicalId]!
-      : { x: 0, y: 0 };
+      : { worldX: 0, worldY: 0 };
 
     for (const ss of system.systems) {
-      const ssGridObject = this.gridSystems[ss.canonicalId]!;
+      const ssGridSystem = this.gridSystems[ss.canonicalId]!;
 
-      ssGridObject.x = gridObject.x + ss.position.x;
-      ssGridObject.y = gridObject.y + ss.position.y;
+      ssGridSystem.worldX = gridSystem.worldX + ss.position.x;
+      ssGridSystem.worldY = gridSystem.worldY + ss.position.y;
 
       if (system.canonicalId) {
-        ssGridObject.x += PaddingWhiteBox;
+        ssGridSystem.worldX += PaddingWhiteBox;
 
-        ssGridObject.y += PaddingWhiteBox;
-        ssGridObject.y += system.titlePosition.y + system.titleSize.height - 1;
+        ssGridSystem.worldY += PaddingWhiteBox;
+        ssGridSystem.worldY +=
+          system.titlePosition.y + system.titleSize.height - 1;
       }
 
       // Recursive traversal.
-      this.computeGridObjectPositions(ss);
+      this.computeSystemWorldPositions(ss);
     }
   }
 
-  private computeGridObjectSizes(
-    system: RuntimeSystem | RuntimeSubsystem,
-  ): void {
+  private computeSystemPositions(): void {
+    for (const obj of Object.values(this.gridSystems)) {
+      obj.x1 = obj.worldX + this.boundaries.translateX;
+      obj.x2 = obj.x1 + obj.width - 1;
+      obj.y1 = obj.worldY + this.boundaries.translateY;
+      obj.y2 = obj.y1 + obj.height - 1;
+    }
+  }
+
+  private computeSystemSizes(system: RuntimeSystem | RuntimeSubsystem): void {
     for (const ss of system.systems) {
       // Recursive traversal.
-      this.computeGridObjectSizes(ss);
+      this.computeSystemSizes(ss);
     }
 
     // Root system.
@@ -318,34 +367,30 @@ export class SystemSimulator {
       return;
     }
 
-    const gridObject = this.gridSystems[system.canonicalId]!;
+    const gridSystem = this.gridSystems[system.canonicalId]!;
 
-    gridObject.width = system.size.width;
-    gridObject.height = system.size.height;
+    gridSystem.width = system.size.width;
+    gridSystem.height = system.size.height;
   }
 
-  private computeGridObjectPorts(
-    system: RuntimeSystem | RuntimeSubsystem,
-  ): void {
+  private computeSystemPorts(system: RuntimeSystem | RuntimeSubsystem): void {
     for (const ss of system.systems) {
-      const gridObject = this.gridSystems[ss.canonicalId]!;
+      const gridSystem = this.gridSystems[ss.canonicalId]!;
 
-      gridObject.ports = ss.ports.map(port => ({
-        x: gridObject.x + port.x,
-        y: gridObject.y + port.y,
+      gridSystem.ports = ss.ports.map(port => ({
+        x: gridSystem.x1 + port.x,
+        y: gridSystem.y1 + port.y,
       }));
 
       // Recursive traversal.
-      this.computeGridObjectPorts(ss);
+      this.computeSystemPorts(ss);
     }
   }
 
-  private computeGridObjectTitles(
-    system: RuntimeSystem | RuntimeSubsystem,
-  ): void {
+  private computeSystemTitles(system: RuntimeSystem | RuntimeSubsystem): void {
     // Recursive traversal.
     for (const ss of system.systems) {
-      this.computeGridObjectTitles(ss);
+      this.computeSystemTitles(ss);
     }
 
     // Root system.
@@ -353,40 +398,55 @@ export class SystemSimulator {
       return;
     }
 
-    const gridObject = this.gridSystems[system.canonicalId]!;
+    const gridSystem = this.gridSystems[system.canonicalId]!;
 
-    gridObject.title = {
-      x: gridObject.x + system.titlePosition.x,
-      y: gridObject.y + system.titlePosition.y,
+    gridSystem.title = {
+      x: gridSystem.x1 + system.titlePosition.x,
+      y: gridSystem.y1 + system.titlePosition.y,
       width: system.titleSize.width,
       height: system.titleSize.height,
     };
   }
 
-  private drawSystemMargins(
-    system: RuntimeSystem,
-    finderGrid: PathFinderGrid,
-  ): void {
-    const simulatorMargin: SimulatorSystemMargin = Object.freeze({
-      type: SimulatorObjectType.SystemMargin,
-      system,
-    });
+  private computeBoundaries(): SimulatorBoundaries {
+    let left = Number.MAX_SAFE_INTEGER;
+    let right = 0;
+    let top = Number.MAX_SAFE_INTEGER;
+    let bottom = 0;
 
-    for (let x = 0; x < RuntimeLimits.MaxSystemWidth; x++) {
-      this.grid[x]![0]!.push(simulatorMargin);
-      finderGrid.setWeightAt(x, 0, Infinity);
+    for (const obj of Object.values(this.gridSystems)) {
+      if (obj.worldX < left) {
+        left = obj.worldX;
+      }
 
-      this.grid[x]![RuntimeLimits.MaxSystemHeight - 1]!.push(simulatorMargin);
-      finderGrid.setWeightAt(x, RuntimeLimits.MaxSystemHeight - 1, Infinity);
+      if (obj.worldX + obj.width > right) {
+        right = obj.worldX + obj.width;
+      }
+
+      if (obj.worldY < top) {
+        top = obj.worldY;
+      }
+
+      if (obj.worldY + obj.height > bottom) {
+        bottom = obj.worldY + obj.height;
+      }
     }
 
-    for (let y = 0; y < RuntimeLimits.MaxSystemHeight; y++) {
-      this.grid[0]![y]!.push(simulatorMargin);
-      finderGrid.setWeightAt(0, y, Infinity);
+    left -= SystemMargin * 5;
+    right += SystemMargin * 5;
+    top -= SystemMargin * 5;
+    bottom += SystemMargin * 5;
 
-      this.grid[RuntimeLimits.MaxSystemWidth - 1]![y]!.push(simulatorMargin);
-      finderGrid.setWeightAt(RuntimeLimits.MaxSystemWidth - 1, y, Infinity);
-    }
+    return {
+      left,
+      right,
+      top,
+      bottom,
+      width: right - left,
+      height: bottom - top,
+      translateX: left < 0 ? Math.abs(left) : -left,
+      translateY: top < 0 ? Math.abs(top) : -top,
+    };
   }
 
   private drawSubsystems(
@@ -403,49 +463,33 @@ export class SystemSimulator {
       });
 
       for (
-        let x = gridSS.x - SystemMargin;
-        x <
-        Math.min(
-          gridSS.x + gridSS.width + SystemMargin,
-          RuntimeLimits.MaxSystemWidth,
-        );
+        let x = gridSS.x1 - SystemMargin;
+        x <= gridSS.x2 + SystemMargin;
         x++
       ) {
-        const top = gridSS.y - SystemMargin;
-        const bottom = gridSS.y + gridSS.height - 1 + SystemMargin;
+        const top = gridSS.y1 - SystemMargin;
+        const bottom = gridSS.y2 + SystemMargin;
 
-        if (top < RuntimeLimits.MaxSystemHeight) {
-          this.grid[x]![top]!.push(simulatorSystemMargin);
-          finderGrid.setWeightAt(x, top, Infinity);
-        }
+        this.grid[x]![top]!.push(simulatorSystemMargin);
+        finderGrid.setWeightAt(x, top, Infinity);
 
-        if (bottom < RuntimeLimits.MaxSystemHeight) {
-          this.grid[x]![bottom]!.push(simulatorSystemMargin);
-          finderGrid.setWeightAt(x, bottom, Infinity);
-        }
+        this.grid[x]![bottom]!.push(simulatorSystemMargin);
+        finderGrid.setWeightAt(x, bottom, Infinity);
       }
 
       for (
-        let y = gridSS.y - SystemMargin;
-        y <
-        Math.min(
-          gridSS.y + gridSS.height + SystemMargin,
-          RuntimeLimits.MaxSystemHeight,
-        );
+        let y = gridSS.y1 - SystemMargin;
+        y <= gridSS.y2 + SystemMargin;
         y++
       ) {
-        const left = gridSS.x - SystemMargin;
-        const right = gridSS.x + gridSS.width - 1 + SystemMargin;
+        const left = gridSS.x1 - SystemMargin;
+        const right = gridSS.x2 + SystemMargin;
 
-        if (left < RuntimeLimits.MaxSystemWidth) {
-          this.grid[left]![y]!.push(simulatorSystemMargin);
-          finderGrid.setWeightAt(left, y, Infinity);
-        }
+        this.grid[left]![y]!.push(simulatorSystemMargin);
+        finderGrid.setWeightAt(left, y, Infinity);
 
-        if (right < RuntimeLimits.MaxSystemWidth) {
-          this.grid[right]![y]!.push(simulatorSystemMargin);
-          finderGrid.setWeightAt(right, y, Infinity);
-        }
+        this.grid[right]![y]!.push(simulatorSystemMargin);
+        finderGrid.setWeightAt(right, y, Infinity);
       }
 
       // Sub-systems.
@@ -482,16 +526,8 @@ export class SystemSimulator {
           system: ss,
         });
 
-      for (
-        let x = gridSS.x;
-        x < Math.min(gridSS.x + gridSS.width, RuntimeLimits.MaxSystemWidth);
-        x++
-      ) {
-        for (
-          let y = gridSS.y;
-          y < Math.min(gridSS.y + gridSS.height, RuntimeLimits.MaxSystemHeight);
-          y++
-        ) {
+      for (let x = gridSS.x1; x <= gridSS.x2; x++) {
+        for (let y = gridSS.y1; y <= gridSS.y2; y++) {
           finderGrid.setWeightAt(x, y, 1);
 
           // The sub-system is inside a blackbox.
@@ -501,22 +537,19 @@ export class SystemSimulator {
 
           this.grid[x]![y]!.push(simulatorSystem);
 
-          if (x === gridSS.x && y == gridSS.y) {
+          if (x === gridSS.x1 && y == gridSS.y1) {
             this.grid[x]![y]!.push(simulatorSystemTopLeftCorner);
           }
 
-          if (x === gridSS.x + gridSS.width - 1 && y == gridSS.y) {
+          if (x === gridSS.x2 && y == gridSS.y1) {
             this.grid[x]![y]!.push(simulatorSystemTopRightCorner);
           }
 
-          if (x === gridSS.x && y == gridSS.y + gridSS.height - 1) {
+          if (x === gridSS.x1 && y == gridSS.y2) {
             this.grid[x]![y]!.push(simulatorSystemBottomLeftCorner);
           }
 
-          if (
-            x === gridSS.x + gridSS.width - 1 &&
-            y == gridSS.y + gridSS.height - 1
-          ) {
+          if (x === gridSS.x2 && y == gridSS.y2) {
             this.grid[x]![y]!.push(simulatorSystemBottomRightCorner);
           }
         }
@@ -529,10 +562,7 @@ export class SystemSimulator {
       });
 
       for (const port of gridSS.ports) {
-        if (
-          port.x < RuntimeLimits.MaxSystemWidth &&
-          port.y < RuntimeLimits.MaxSystemHeight
-        ) {
+        if (port.x < this.boundaries.width && port.y < this.boundaries.height) {
           this.grid[port.x]![port.y]!.push(simulatorPort);
           finderGrid.setWeightAt(port.x, port.y, 1);
         }
@@ -550,7 +580,7 @@ export class SystemSimulator {
         x <
         Math.min(
           gridSS.title.x + gridSS.title.width + 1,
-          RuntimeLimits.MaxSystemWidth,
+          this.boundaries.width,
         );
         x++
       ) {
@@ -559,7 +589,7 @@ export class SystemSimulator {
           y <
           Math.min(
             gridSS.title.y + gridSS.title.height + 1,
-            RuntimeLimits.MaxSystemHeight,
+            this.boundaries.height,
           );
           y++
         ) {
@@ -574,10 +604,7 @@ export class SystemSimulator {
       for (
         let x = gridSS.title.x, i = 0;
         x <
-        Math.min(
-          gridSS.title.x + gridSS.title.width,
-          RuntimeLimits.MaxSystemWidth,
-        );
+        Math.min(gridSS.title.x + gridSS.title.width, this.boundaries.width);
         x++, i++
       ) {
         for (
@@ -585,7 +612,7 @@ export class SystemSimulator {
           y <
           Math.min(
             gridSS.title.y + gridSS.title.height,
-            RuntimeLimits.MaxSystemHeight,
+            this.boundaries.height,
           );
           y++, j++
         ) {
@@ -705,8 +732,9 @@ export class SystemSimulator {
       // TODO: is it really how we want to tackle this?
       // TODO: or should a runtime system has a "grid" property, alike "specification".
       // TODO: so for a propertu, we would have the "spec" -> "runtime" -> "grid" transformations.
-      ss.position.x = gridSS.x;
-      ss.position.y = gridSS.y;
+      ss.position.x = gridSS.worldX;
+      ss.position.y = gridSS.worldY;
+
       ss.size.width = gridSS.width;
       ss.size.height = gridSS.height;
 
