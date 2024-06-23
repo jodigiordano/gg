@@ -8,7 +8,6 @@ import {
 } from "pixi.js";
 import {
   RuntimeFlow,
-  RuntimeLimits,
   RuntimeLink,
   RuntimeSubsystem,
   RuntimeSystem,
@@ -261,25 +260,30 @@ export class CanvasSimulator {
     } while (displacedThisIteration.length && iterations < 1000);
   }
 
-  getBoundaries() {
-    const systemBoundaries = this.systemSimulator.getBoundaries();
+  getVisibleBoundaries() {
+    const visibleBoundaries = this.systemSimulator.getVisibleBoundaries();
+    const boundaries = this.systemSimulator.getBoundaries();
 
     return {
-      left: systemBoundaries.left * BlockSize,
-      right: systemBoundaries.right * BlockSize,
-      top: systemBoundaries.top * BlockSize,
-      bottom: systemBoundaries.bottom * BlockSize,
+      left: (visibleBoundaries.left - boundaries.translateX) * BlockSize,
+      right: (visibleBoundaries.right - boundaries.translateX) * BlockSize,
+      top: (visibleBoundaries.top - boundaries.translateY) * BlockSize,
+      bottom: (visibleBoundaries.bottom - boundaries.translateY) * BlockSize,
     };
   }
 
-  getObjectsAt(x: number, y: number): SimulatorObject[] {
+  getObjectsAt(worldX: number, worldY: number): SimulatorObject[] {
     const layout = this.systemSimulator.getLayout();
+    const boundaries = this.systemSimulator.getBoundaries();
 
-    return layout[x]?.[y] ?? [];
+    const gridX = worldX + boundaries.translateX;
+    const gridY = worldY + boundaries.translateY;
+
+    return layout[gridX]?.[gridY] ?? [];
   }
 
-  getSubsystemAt(x: number, y: number): RuntimeSubsystem | null {
-    const objects = this.getObjectsAt(x, y);
+  getSubsystemAt(worldX: number, worldY: number): RuntimeSubsystem | null {
+    const objects = this.getObjectsAt(worldX, worldY);
 
     const object = objects
       .reverse()
@@ -296,8 +300,8 @@ export class CanvasSimulator {
     return null;
   }
 
-  getLinkAt(x: number, y: number): RuntimeLink | null {
-    const objects = this.getObjectsAt(x, y);
+  getLinkAt(worldX: number, worldY: number): RuntimeLink | null {
+    const objects = this.getObjectsAt(worldX, worldY);
 
     const object = objects
       .reverse()
@@ -310,8 +314,8 @@ export class CanvasSimulator {
     return null;
   }
 
-  getisSystemTopRightCorner(x: number, y: number): boolean {
-    const objects = this.getObjectsAt(x, y);
+  getIsSystemTopRightCorner(worldX: number, worldY: number): boolean {
+    const objects = this.getObjectsAt(worldX, worldY);
 
     return objects.some(
       obj => obj.type === SimulatorObjectType.SystemTopRightCorner,
@@ -323,12 +327,13 @@ export class CanvasSimulator {
     system: RuntimeSubsystem,
   ): Sprite[] {
     const toDraw: Sprite[] = [];
+    const boundaries = this.systemSimulator.getBoundaries();
 
     // Make a simpler copy of layout:
-    const rectLayout: number[][] = new Array(RuntimeLimits.MaxSystemHeight);
+    const rectLayout: number[][] = new Array(boundaries.height);
 
-    for (let i = 0; i < RuntimeLimits.MaxSystemWidth; i++) {
-      rectLayout[i] = Array(RuntimeLimits.MaxSystemWidth).fill(0);
+    for (let i = 0; i < boundaries.width; i++) {
+      rectLayout[i] = Array(boundaries.width).fill(0);
     }
 
     // Find the total area covered by free space.
@@ -357,8 +362,8 @@ export class CanvasSimulator {
       return false;
     };
 
-    for (let i = 0; i < RuntimeLimits.MaxSystemWidth; i++) {
-      for (let j = 0; j < RuntimeLimits.MaxSystemHeight; j++) {
+    for (let i = 0; i < boundaries.width; i++) {
+      for (let j = 0; j < boundaries.height; j++) {
         const objects = this.getObjectsAt(i, j);
 
         if (
@@ -375,6 +380,8 @@ export class CanvasSimulator {
           totalArea += 1;
           continue;
         }
+
+        // TODO: Handle the 2 * SystemMargin case around the system to move.
 
         const object = objects.find(
           obj =>
@@ -398,14 +405,14 @@ export class CanvasSimulator {
       // Find next rectangle.
       const rect = {
         x1: 0,
-        x2: RuntimeLimits.MaxSystemWidth - 1,
+        x2: boundaries.width - 1,
         y1: 0,
-        y2: RuntimeLimits.MaxSystemHeight - 1,
+        y2: boundaries.height - 1,
       };
 
       findTopLeftCorner: {
-        for (let i = 0; i < RuntimeLimits.MaxSystemWidth; i++) {
-          for (let j = 0; j < RuntimeLimits.MaxSystemHeight; j++) {
+        for (let i = 0; i < boundaries.width; i++) {
+          for (let j = 0; j < boundaries.height; j++) {
             if (rectLayout[i]![j]! === 1) {
               rect.x1 = i;
               rect.y1 = j;
@@ -466,9 +473,10 @@ export class CanvasSimulator {
   getObjectsToRender(textures: CanvasSimulatorTextures): (Sprite | Text)[] {
     const toDraw: (Sprite | Text)[] = [];
     const layout = this.systemSimulator.getLayout();
+    const boundaries = this.systemSimulator.getBoundaries();
 
-    for (let i = 0; i < RuntimeLimits.MaxSystemWidth; i++) {
-      for (let j = 0; j < RuntimeLimits.MaxSystemHeight; j++) {
+    for (let i = 0; i < boundaries.width; i++) {
+      for (let j = 0; j < boundaries.height; j++) {
         for (const obj of layout[i]![j]!) {
           if (obj.type === SimulatorObjectType.WhiteBox) {
             const { system } = obj as SimulatorWhiteBox;
@@ -477,22 +485,22 @@ export class CanvasSimulator {
               system.depth % 2 === 0 ? textures.whiteboxA : textures.whiteboxB,
             );
 
-            sprite.x = i * BlockSize;
-            sprite.y = j * BlockSize;
+            sprite.x = (i - boundaries.translateX) * BlockSize;
+            sprite.y = (j - boundaries.translateY) * BlockSize;
 
             toDraw.push(sprite);
           } else if (obj.type === SimulatorObjectType.BlackBox) {
             const sprite = new Sprite(textures.blackbox);
 
-            sprite.x = i * BlockSize;
-            sprite.y = j * BlockSize;
+            sprite.x = (i - boundaries.translateX) * BlockSize;
+            sprite.y = (j - boundaries.translateY) * BlockSize;
 
             toDraw.push(sprite);
           } else if (obj.type === SimulatorObjectType.Link) {
             const sprite = new Sprite(textures.link);
 
-            sprite.x = i * BlockSize;
-            sprite.y = j * BlockSize;
+            sprite.x = (i - boundaries.translateX) * BlockSize;
+            sprite.y = (j - boundaries.translateY) * BlockSize;
 
             toDraw.push(sprite);
           } else if (obj.type === SimulatorObjectType.SystemTitle) {
@@ -501,8 +509,9 @@ export class CanvasSimulator {
               fontSize: BlockSize,
             });
 
-            title.x = i * BlockSize;
-            title.y = j * BlockSize;
+            title.x = (i - boundaries.translateX) * BlockSize;
+            title.y = (j - boundaries.translateY) * BlockSize;
+
             title.style.fill = "0xffffff";
             title.resolution = 2;
 
@@ -532,6 +541,7 @@ export class CanvasSimulator {
 }
 
 export class CanvasFlowPlayer {
+  private simulator: SystemSimulator;
   private flowSimulator: FlowSimulator;
   private maxKeyframes: number;
   private currentKeyframe: number;
@@ -543,6 +553,7 @@ export class CanvasFlowPlayer {
     flow: RuntimeFlow,
     dataTexture: RenderTexture,
   ) {
+    this.simulator = simulator;
     this.flowSimulator = new FlowSimulator(simulator, flow);
 
     this.currentKeyframe = 0;
@@ -574,9 +585,11 @@ export class CanvasFlowPlayer {
       keyframeProgress: this.currentKeyframeProgress,
     });
 
+    const boundaries = this.simulator.getBoundaries();
+
     for (let i = 0; i < data.length; i++) {
-      this.sprites[i].x = data[i][0] * BlockSize;
-      this.sprites[i].y = data[i][1] * BlockSize;
+      this.sprites[i].x = (data[i][0] - boundaries.translateX) * BlockSize;
+      this.sprites[i].y = (data[i][1] - boundaries.translateY) * BlockSize;
     }
   }
 }

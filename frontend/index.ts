@@ -23,7 +23,7 @@ import {
 import { dump as saveYaml } from "js-yaml";
 // @ts-ignore FIXME
 import { Viewport } from "pixi-viewport";
-import { loadYaml, RuntimeLimits, RuntimeSubsystem } from "@dataflows/spec";
+import { loadYaml, RuntimeSubsystem } from "@dataflows/spec";
 import {
   CanvasSimulator,
   CanvasFlowPlayer,
@@ -109,7 +109,7 @@ const positionInfo = document.getElementById(
 
 // Create PixiJS app.
 const app = new Application({
-  background: "#1099bb",
+  background: "#dddddd",
   resizeTo: domContainer,
   autoDensity: true,
   resolution: window.devicePixelRatio,
@@ -127,13 +127,11 @@ app.stage.eventMode = "static";
 app.stage.interactiveChildren = true;
 
 // Create PixiJS viewport.
-const outOfBoundsMargin = 10 * BlockSize;
-
 const viewport = new Viewport({
   screenWidth: window.innerWidth,
   screenHeight: window.innerHeight,
-  worldWidth: RuntimeLimits.MaxSystemWidth * BlockSize,
-  worldHeight: RuntimeLimits.MaxSystemHeight * BlockSize,
+  worldWidth: window.innerWidth,
+  worldHeight: window.innerHeight,
   events: app.renderer.events,
   eventMode: "static",
   interactiveChildren: false,
@@ -147,13 +145,6 @@ viewport
   .clampZoom({
     minScale: 0.2,
     maxScale: 2.0,
-  })
-  .clamp({
-    left: -outOfBoundsMargin,
-    right: RuntimeLimits.MaxSystemWidth * BlockSize + outOfBoundsMargin,
-    top: -outOfBoundsMargin,
-    bottom: RuntimeLimits.MaxSystemHeight * BlockSize + outOfBoundsMargin,
-    underflow: "center",
   });
 
 viewport.sortableChildren = true;
@@ -181,58 +172,6 @@ grid.x = viewport.left;
 grid.y = viewport.top;
 
 viewport.addChild(grid);
-
-// Canvas layer: boundaries
-const outOfBoundGraphic = new Graphics()
-  .beginFill(0xff0000)
-  .drawRect(0, 0, BlockSize, BlockSize)
-  .endFill();
-
-const outOfBoundTexture = app.renderer.generateTexture(outOfBoundGraphic);
-
-const outOfBoundsTop = new TilingSprite(
-  outOfBoundTexture,
-  RuntimeLimits.MaxSystemWidth * BlockSize,
-  outOfBoundsMargin,
-);
-
-outOfBoundsTop.x = 0;
-outOfBoundsTop.y = -outOfBoundsMargin;
-
-viewport.addChild(outOfBoundsTop);
-
-const outOfBoundsBottom = new TilingSprite(
-  outOfBoundTexture,
-  RuntimeLimits.MaxSystemWidth * BlockSize,
-  outOfBoundsMargin,
-);
-
-outOfBoundsBottom.x = 0;
-outOfBoundsBottom.y = RuntimeLimits.MaxSystemHeight * BlockSize;
-
-viewport.addChild(outOfBoundsBottom);
-
-const outOfBoundsLeft = new TilingSprite(
-  outOfBoundTexture,
-  outOfBoundsMargin,
-  RuntimeLimits.MaxSystemHeight * BlockSize + 2 * outOfBoundsMargin,
-);
-
-outOfBoundsLeft.x = -outOfBoundsMargin;
-outOfBoundsLeft.y = -outOfBoundsMargin;
-
-viewport.addChild(outOfBoundsLeft);
-
-const outOfBoundsRight = new TilingSprite(
-  outOfBoundTexture,
-  outOfBoundsMargin,
-  RuntimeLimits.MaxSystemHeight * BlockSize + 2 * outOfBoundsMargin,
-);
-
-outOfBoundsRight.x = RuntimeLimits.MaxSystemWidth * BlockSize;
-outOfBoundsRight.y = -outOfBoundsMargin;
-
-viewport.addChild(outOfBoundsRight);
 
 // Canvas layer: simulation
 let canvasSimulator: CanvasSimulator | null = null;
@@ -294,7 +233,7 @@ viewport.on("pointerdown", (event: any) => {
   viewport.pause = true;
 
   // Operation: Hide systems toggle.
-  if (canvasSimulator.getisSystemTopRightCorner(x, y)) {
+  if (canvasSimulator.getIsSystemTopRightCorner(x, y)) {
     const operation: ToggleHideSystemsOperation = {
       type: "toggleHideSystems",
       subsystem,
@@ -473,16 +412,16 @@ function fitSimulation() {
     return;
   }
 
-  const boundaries = canvasSimulator.getBoundaries();
+  const boundaries = canvasSimulator.getVisibleBoundaries();
 
   const left = boundaries.left - BlockSize; /* margin */
   const top = boundaries.top - BlockSize; /* margin */
 
   const width =
-    boundaries.right - boundaries.left + BlockSize + BlockSize * 2; /* margin */
+    (boundaries.right - boundaries.left) + BlockSize + BlockSize * 2; /* margin */
 
   const height =
-    boundaries.bottom - boundaries.top + BlockSize + BlockSize * 2; /* margin */
+    (boundaries.bottom - boundaries.top) + BlockSize + BlockSize * 2; /* margin */
 
   // The operation is executed twice because of a weird issue that I don't
   // understand yet. Somehow, because we are using "viewport.clamp", the first
@@ -658,11 +597,6 @@ await Assets.load("assets/ibm.woff");
 // @ts-ignore FIXME
 document.getElementById("canvas")?.replaceChildren(app.view);
 
-// TODO: debug show elements under the cursor
-// grid.on('mousemove', (event) => {
-//   // TODO.
-// });
-
 // TODO: make sure the app consume the least amount of CPU / memory possible.
 // TODO: the ticker should be controlled manually so when nothing moves on the
 // TODO: screen, we don't refresh.
@@ -680,5 +614,4 @@ document.getElementById("canvas")?.replaceChildren(app.view);
 //   };
 // }
 
-// TODO: handle out-of-bounds objects
 // TODO: reset state func and do it at various places
