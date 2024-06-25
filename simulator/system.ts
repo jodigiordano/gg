@@ -151,7 +151,6 @@ export class SystemSimulator {
     // Compute boundaries.
     this.boundaries = this.computeBoundaries();
 
-    console.log(this.boundaries);
     // Compute grid systems. Part II.
     // Requires sizes & boundaries.
     this.computeSystemPositions();
