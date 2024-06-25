@@ -23,7 +23,13 @@ import {
 import { dump as saveYaml } from "js-yaml";
 // @ts-ignore FIXME
 import { Viewport } from "pixi-viewport";
-import { loadYaml, RuntimeSubsystem } from "@dataflows/spec";
+import {
+  insertSubsystemAt,
+  loadYaml,
+  removeSubsystemAt,
+  RuntimePosition,
+  RuntimeSubsystem,
+} from "@dataflows/spec";
 import {
   CanvasSimulator,
   CanvasFlowPlayer,
@@ -48,7 +54,17 @@ interface MoveSystemOperation {
 
 interface ToggleHideSystemsOperation {
   type: "toggleHideSystems";
-  subsystem: RuntimeSubsystem;
+  subsystem?: RuntimeSubsystem;
+}
+
+interface AddSystemOperation {
+  type: "addSystem";
+  position?: RuntimePosition;
+}
+
+interface RemoveSystemOperation {
+  type: "removeSystem";
+  subsystem?: RuntimeSubsystem;
 }
 
 // State.
@@ -56,7 +72,12 @@ interface ToggleHideSystemsOperation {
 interface State {
   changes: string[];
   changeIndex: number;
-  operation: IdleOperation | MoveSystemOperation | ToggleHideSystemsOperation;
+  operation:
+    | IdleOperation
+    | MoveSystemOperation
+    | AddSystemOperation
+    | RemoveSystemOperation
+    | ToggleHideSystemsOperation;
 }
 
 const state: State = {
@@ -224,6 +245,12 @@ viewport.on("pointerdown", (event: any) => {
   const x = Math.floor(coordinates.x / BlockSize) | 0;
   const y = Math.floor(coordinates.y / BlockSize) | 0;
 
+  if (state.operation.type === "addSystem") {
+    state.operation.position = { x, y };
+
+    return;
+  }
+
   const subsystem = canvasSimulator.getSubsystemAt(x, y);
 
   if (!subsystem) {
@@ -233,13 +260,14 @@ viewport.on("pointerdown", (event: any) => {
   viewport.pause = true;
 
   // Operation: Hide systems toggle.
-  if (canvasSimulator.getIsSystemTopRightCorner(x, y)) {
-    const operation: ToggleHideSystemsOperation = {
-      type: "toggleHideSystems",
-      subsystem,
-    };
+  if (state.operation.type === "toggleHideSystems") {
+    state.operation.subsystem = subsystem;
 
-    state.operation = operation;
+    return;
+  }
+
+  if (state.operation.type === "removeSystem") {
+    state.operation.subsystem = subsystem;
 
     return;
   }
@@ -277,17 +305,70 @@ viewport.on("pointerup", (event: any) => {
 
   // Operation: Hide systems toggle.
   if (state.operation.type === "toggleHideSystems") {
-    state.operation.subsystem.specification.hideSystems =
-      !state.operation.subsystem.specification.hideSystems;
+    if (state.operation.subsystem) {
+      state.operation.subsystem.specification.hideSystems =
+        !state.operation.subsystem.specification.hideSystems;
 
-    const newSpecification = saveYaml(canvasSimulator.system.specification);
+      const newSpecification = saveYaml(canvasSimulator.system.specification);
 
-    loadSimulation(newSpecification);
+      loadSimulation(newSpecification);
 
-    // TODO: broadcast event.
-    pushChange(newSpecification);
+      // TODO: broadcast event.
+      pushChange(newSpecification);
 
-    yamlEditorDefinition.value = newSpecification;
+      yamlEditorDefinition.value = newSpecification;
+    }
+  } else if (state.operation.type === "addSystem") {
+    if (state.operation.position) {
+      const currentSpecification = saveYaml(
+        canvasSimulator.system.specification,
+      );
+
+      const system =
+        canvasSimulator.getSubsystemAt(
+          state.operation.position.x,
+          state.operation.position.y,
+        ) ?? canvasSimulator.system;
+
+      const newSystem = insertSubsystemAt(
+        system,
+        state.operation.position.x,
+        state.operation.position.y,
+      );
+
+      canvasSimulator.moveSystem(newSystem, 0, 0);
+
+      const newSpecification = saveYaml(canvasSimulator.system.specification);
+
+      if (loadSimulation(newSpecification)) {
+        pushChange(newSpecification);
+        yamlEditorDefinition.value = newSpecification;
+      } else {
+        // Rollback
+        loadSimulation(currentSpecification);
+      }
+    }
+  } else if (state.operation.type === "removeSystem") {
+    if (state.operation.subsystem) {
+      const currentSpecification = saveYaml(
+        canvasSimulator.system.specification,
+      );
+
+      removeSubsystemAt(
+        state.operation.subsystem.parent!,
+        state.operation.subsystem.index,
+      );
+
+      const newSpecification = saveYaml(canvasSimulator.system.specification);
+
+      if (loadSimulation(newSpecification)) {
+        pushChange(newSpecification);
+        yamlEditorDefinition.value = newSpecification;
+      } else {
+        // Rollback
+        loadSimulation(currentSpecification);
+      }
+    }
   }
 
   // Operation: Move system.
@@ -309,14 +390,12 @@ viewport.on("pointerup", (event: any) => {
 
     const newSpecification = saveYaml(canvasSimulator.system.specification);
 
-    if(loadSimulation(newSpecification)) {
-      // TODO: broadcast event.
+    if (loadSimulation(newSpecification)) {
       pushChange(newSpecification);
-
       yamlEditorDefinition.value = newSpecification;
     } else {
       // Rollback
-      loadSimulation(currentSpecification)
+      loadSimulation(currentSpecification);
     }
 
     dragAndDropContainer.removeChildren();
@@ -588,6 +667,24 @@ document
     resetState();
     pushChange(yamlEditorDefinition.value);
     fitSimulation();
+  });
+
+document
+  .getElementById("operation-system-hide-systems")
+  ?.addEventListener("click", function () {
+    state.operation = { type: "toggleHideSystems" };
+  });
+
+document
+  .getElementById("operation-system-add")
+  ?.addEventListener("click", function () {
+    state.operation = { type: "addSystem" };
+  });
+
+document
+  .getElementById("operation-system-remove")
+  ?.addEventListener("click", function () {
+    state.operation = { type: "removeSystem" };
   });
 
 // Load assets.

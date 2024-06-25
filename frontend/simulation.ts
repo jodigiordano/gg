@@ -314,14 +314,6 @@ export class CanvasSimulator {
     return null;
   }
 
-  getIsSystemTopRightCorner(worldX: number, worldY: number): boolean {
-    const objects = this.getObjectsAt(worldX, worldY);
-
-    return objects.some(
-      obj => obj.type === SimulatorObjectType.SystemTopRightCorner,
-    );
-  }
-
   getAvailableSpaceForSystemToRender(
     textures: CanvasSimulatorTextures,
     system: RuntimeSubsystem,
