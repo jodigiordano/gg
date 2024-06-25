@@ -12,7 +12,7 @@ export default {
     }),
   ],
   build: {
-    target: 'es2022',
-    sourcemap: true
-  }
+    target: "es2022",
+    sourcemap: true,
+  },
 };
