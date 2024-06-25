@@ -148,6 +148,79 @@ export function insertSubsystemAt(
 
   return newSystem as RuntimeSubsystem;
 }
+
+/*
+ * Remove a subsystem in the given parent system.
+ * The resulting system is not validated and may be invalid.
+ */
+export function removeSubsystemAt(
+  parent: RuntimeSystem | RuntimeSubsystem,
+  index: number,
+): void {
+  const subsystem = parent.systems.splice(index, 1).at(0);
+
+  if (!subsystem) {
+    return;
+  }
+
+  parent.specification.systems?.splice(index, 1);
+
+  let rootSystem: RuntimeSystem = parent as RuntimeSystem;
+
+  while (rootSystem.parent) {
+    rootSystem = rootSystem.parent;
+  }
+
+  // Remove links.
+  let linkReadIndex = 0;
+  let linkWriteIndex = 0;
+
+  while (linkReadIndex < rootSystem.links.length) {
+    const link = rootSystem.links[linkReadIndex]!;
+    const specLink = rootSystem.specification.links![linkReadIndex]!;
+
+    if (
+      !link.a.startsWith(subsystem.canonicalId) &&
+      !link.b.startsWith(subsystem.canonicalId)
+    ) {
+      rootSystem.links[linkWriteIndex] = link;
+      rootSystem.specification.links![linkWriteIndex] = specLink;
+
+      linkWriteIndex++;
+    }
+
+    linkReadIndex++;
+  }
+
+  rootSystem.links.length = linkWriteIndex;
+  rootSystem.specification.links!.length = linkWriteIndex;
+
+  // Remove flows.
+  // TODO: instead of removing the entire flow, try to remove steps.
+  let flowReadIndex = 0;
+  let flowWriteIndex = 0;
+
+  while (flowReadIndex < rootSystem.flows.length) {
+    const flow = rootSystem.flows[flowReadIndex]!;
+    const specFlow = rootSystem.specification.flows![flowReadIndex]!;
+
+    if (!flow.steps.some(step =>
+      step.from.startsWith(subsystem.canonicalId) ||
+      step.to.startsWith(subsystem.canonicalId)
+    )) {
+      rootSystem.flows[flowWriteIndex] = flow;
+      rootSystem.specification.flows![flowWriteIndex] = specFlow;
+
+      flowWriteIndex++;
+    }
+
+    flowReadIndex++;
+  }
+
+  rootSystem.flows.length = flowWriteIndex;
+  rootSystem.specification.flows!.length = flowWriteIndex;
+}
+
 function enhanceSubsystems(
   system: RuntimeSystem | RuntimeSubsystem,
   depth = 1,
