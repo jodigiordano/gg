@@ -124,6 +124,30 @@ export function loadYaml(yaml: string): {
   return load(parseYaml(yaml) as System);
 }
 
+/*
+ * Insert a subsystem in the given parent system.
+ * The resulting system is not validated and may be invalid.
+ */
+export function insertSubsystemAt(
+  parent: RuntimeSystem | RuntimeSubsystem,
+  x: number,
+  y: number
+): RuntimeSubsystem {
+  const newSystem = {
+    id: (Math.random() + 1).toString(36).substring(7),
+    position: { x, y },
+  }
+
+  parent.specification.systems ??= [];
+  parent.specification.systems.push(structuredClone(newSystem));
+  parent.systems.push(newSystem as RuntimeSubsystem);
+
+  enhanceSubsystems(parent);
+  computeSizes(parent, parent.links);
+  computePorts(parent);
+
+  return newSystem as RuntimeSubsystem;
+}
 function enhanceSubsystems(
   system: RuntimeSystem | RuntimeSubsystem,
   depth = 1,
