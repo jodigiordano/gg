@@ -234,6 +234,15 @@ export class SystemSimulator {
       }
     }
 
+    // Happens when nothing is visible on the grid.
+    if (left > right) {
+      left = right;
+    }
+
+    if (top > bottom) {
+      top = bottom;
+    }
+
     return {
       left,
       right,
@@ -431,6 +440,16 @@ export class SystemSimulator {
       }
     }
 
+    // Happens when there are no subsystems.
+    if (left > right) {
+      left = right;
+    }
+
+    if (top > bottom) {
+      top = bottom;
+    }
+
+    // Apply system margins.
     left -= SystemMargin * 5;
     right += SystemMargin * 5;
     top -= SystemMargin * 5;
