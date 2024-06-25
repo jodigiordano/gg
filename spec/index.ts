@@ -131,12 +131,12 @@ export function loadYaml(yaml: string): {
 export function insertSubsystemAt(
   parent: RuntimeSystem | RuntimeSubsystem,
   x: number,
-  y: number
+  y: number,
 ): RuntimeSubsystem {
   const newSystem = {
     id: (Math.random() + 1).toString(36).substring(7),
     position: { x, y },
-  }
+  };
 
   parent.specification.systems ??= [];
   parent.specification.systems.push(structuredClone(newSystem));
@@ -204,10 +204,13 @@ export function removeSubsystemAt(
     const flow = rootSystem.flows[flowReadIndex]!;
     const specFlow = rootSystem.specification.flows![flowReadIndex]!;
 
-    if (!flow.steps.some(step =>
-      step.from.startsWith(subsystem.canonicalId) ||
-      step.to.startsWith(subsystem.canonicalId)
-    )) {
+    if (
+      !flow.steps.some(
+        step =>
+          step.from.startsWith(subsystem.canonicalId) ||
+          step.to.startsWith(subsystem.canonicalId),
+      )
+    ) {
       rootSystem.flows[flowWriteIndex] = flow;
       rootSystem.specification.flows![flowWriteIndex] = specFlow;
 
