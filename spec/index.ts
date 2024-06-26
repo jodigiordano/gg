@@ -128,7 +128,7 @@ export function loadYaml(yaml: string): {
  * Insert a subsystem in the given parent system.
  * The resulting system is not validated and may be invalid.
  */
-export function insertSubsystemAt(
+export function addSubsystem(
   parent: RuntimeSystem | RuntimeSubsystem,
   x: number,
   y: number,
@@ -153,19 +153,11 @@ export function insertSubsystemAt(
  * Remove a subsystem in the given parent system.
  * The resulting system is not validated and may be invalid.
  */
-export function removeSubsystemAt(
-  parent: RuntimeSystem | RuntimeSubsystem,
-  index: number,
-): void {
-  const subsystem = parent.systems.splice(index, 1).at(0);
+export function removeSubsystem(subsystem: RuntimeSubsystem): void {
+  subsystem.parent!.systems.splice(subsystem.index, 1);
+  subsystem.parent!.specification.systems?.splice(subsystem.index, 1);
 
-  if (!subsystem) {
-    return;
-  }
-
-  parent.specification.systems?.splice(index, 1);
-
-  let rootSystem: RuntimeSystem = parent as RuntimeSystem;
+  let rootSystem: RuntimeSystem = subsystem.parent as RuntimeSystem;
 
   while (rootSystem.parent) {
     rootSystem = rootSystem.parent;
@@ -225,12 +217,35 @@ export function removeSubsystemAt(
 }
 
 /*
+ * Add a link in the given system.
+ * The resulting system is not validated and may be invalid.
+ */
+export function addLink(
+  system: RuntimeSystem,
+  aCanonicalId: string,
+  bCanonicalId: string,
+): RuntimeLink {
+  const newLink = {
+    a: aCanonicalId,
+    b: bCanonicalId,
+  };
+
+  system.specification.links ??= [];
+  system.specification.links.push(structuredClone(newLink));
+  system.links.push(newLink as RuntimeLink);
+
+  enhanceLinks(system);
+
+  return newLink as RuntimeLink;
+}
+
+/*
  * Remove a link in the given system.
  * The resulting system is not validated and may be invalid.
  */
-export function removeLinkAt(system: RuntimeSystem, index: number): void {
-  system.links.splice(index, 1);
-  system.specification.links!.splice(index, 1);
+export function removeLink(system: RuntimeSystem, link: RuntimeLink): void {
+  system.links.splice(link.index, 1);
+  system.specification.links!.splice(link.index, 1);
 }
 
 function enhanceSubsystems(
