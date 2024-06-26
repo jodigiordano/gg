@@ -24,10 +24,11 @@ import { dump as saveYaml } from "js-yaml";
 // @ts-ignore FIXME
 import { Viewport } from "pixi-viewport";
 import {
-  insertSubsystemAt,
+  addLink,
+  addSubsystem,
   loadYaml,
-  removeSubsystemAt,
-  removeLinkAt,
+  removeSubsystem,
+  removeLink,
   RuntimeLink,
   RuntimePosition,
   RuntimeSubsystem,
@@ -69,6 +70,12 @@ interface RemoveSystemOperation {
   subsystem: RuntimeSubsystem | null;
 }
 
+interface AddLinkOperation {
+  type: "addLink";
+  a: RuntimeSubsystem | null;
+  b: RuntimeSubsystem | null;
+}
+
 interface RemoveLinkOperation {
   type: "removeLink";
   link: RuntimeLink | null;
@@ -85,6 +92,7 @@ interface State {
     | AddSystemOperation
     | RemoveSystemOperation
     | ToggleHideSystemsOperation
+    | AddLinkOperation
     | RemoveLinkOperation;
 }
 
@@ -259,8 +267,6 @@ viewport.on("pointerdown", (event: any) => {
     return;
   }
 
-  viewport.pause = true;
-
   // Operation: Hide systems toggle.
   if (state.operation.type === "toggleHideSystems") {
     state.operation.subsystem = canvasSimulator.getSubsystemAt(x, y);
@@ -270,6 +276,29 @@ viewport.on("pointerdown", (event: any) => {
 
   if (state.operation.type === "removeSystem") {
     state.operation.subsystem = canvasSimulator.getSubsystemAt(x, y);
+
+    return;
+  }
+
+  if (state.operation.type === "addLink") {
+    const subsystem = canvasSimulator.getSubsystemAt(x, y);
+
+    if (!subsystem) {
+      return;
+    }
+
+    if (
+      state.operation.a?.canonicalId === subsystem.canonicalId ||
+      state.operation.b?.canonicalId === subsystem.canonicalId
+    ) {
+      return;
+    }
+
+    if (state.operation.a) {
+      state.operation.b = subsystem;
+    } else {
+      state.operation.a = subsystem;
+    }
 
     return;
   }
@@ -286,6 +315,8 @@ viewport.on("pointerdown", (event: any) => {
   if (!subsystem) {
     return;
   }
+
+  viewport.pause = true;
 
   const operation: MoveSystemOperation = {
     type: "move",
@@ -317,6 +348,8 @@ viewport.on("pointerup", (event: any) => {
     return;
   }
 
+  let operationInProgress = false;
+
   // Operation: Hide systems toggle.
   if (state.operation.type === "toggleHideSystems") {
     if (state.operation.subsystem) {
@@ -344,7 +377,7 @@ viewport.on("pointerup", (event: any) => {
           state.operation.position.y,
         ) ?? canvasSimulator.system;
 
-      const newSystem = insertSubsystemAt(
+      const newSystem = addSubsystem(
         system,
         state.operation.position.x,
         state.operation.position.y,
@@ -368,10 +401,7 @@ viewport.on("pointerup", (event: any) => {
         canvasSimulator.system.specification,
       );
 
-      removeSubsystemAt(
-        state.operation.subsystem.parent!,
-        state.operation.subsystem.index,
-      );
+      removeSubsystem(state.operation.subsystem);
 
       const newSpecification = saveYaml(canvasSimulator.system.specification);
 
@@ -383,13 +413,37 @@ viewport.on("pointerup", (event: any) => {
         loadSimulation(currentSpecification);
       }
     }
+  } else if (state.operation.type === "addLink") {
+    if (state.operation.a && state.operation.b) {
+      const currentSpecification = saveYaml(
+        canvasSimulator.system.specification,
+      );
+
+      addLink(
+        canvasSimulator.system,
+        state.operation.a.canonicalId,
+        state.operation.b.canonicalId,
+      );
+
+      const newSpecification = saveYaml(canvasSimulator.system.specification);
+
+      if (loadSimulation(newSpecification)) {
+        pushChange(newSpecification);
+        yamlEditorDefinition.value = newSpecification;
+      } else {
+        // Rollback
+        loadSimulation(currentSpecification);
+      }
+    } else if (state.operation.a || state.operation.b) {
+      operationInProgress = true;
+    }
   } else if (state.operation.type === "removeLink") {
     if (state.operation.link) {
       const currentSpecification = saveYaml(
         canvasSimulator.system.specification,
       );
 
-      removeLinkAt(canvasSimulator.system, state.operation.link.index);
+      removeLink(canvasSimulator.system, state.operation.link);
 
       const newSpecification = saveYaml(canvasSimulator.system.specification);
 
@@ -433,7 +487,7 @@ viewport.on("pointerup", (event: any) => {
     dragAndDropContainer.removeChildren();
   }
 
-  if (state.operation.type !== "idle") {
+  if (!operationInProgress) {
     state.operation = { type: "idle" };
     viewport.pause = false;
   }
@@ -717,6 +771,12 @@ document
   .getElementById("operation-system-remove")
   ?.addEventListener("click", function () {
     state.operation = { type: "removeSystem", subsystem: null };
+  });
+
+document
+  .getElementById("operation-link-add")
+  ?.addEventListener("click", function () {
+    state.operation = { type: "addLink", a: null, b: null };
   });
 
 document
