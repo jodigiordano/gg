@@ -224,6 +224,15 @@ export function removeSubsystemAt(
   rootSystem.specification.flows!.length = flowWriteIndex;
 }
 
+/*
+ * Remove a link in the given system.
+ * The resulting system is not validated and may be invalid.
+ */
+export function removeLinkAt(system: RuntimeSystem, index: number): void {
+  system.links.splice(index, 1);
+  system.specification.links!.splice(index, 1);
+}
+
 function enhanceSubsystems(
   system: RuntimeSystem | RuntimeSubsystem,
   depth = 1,
