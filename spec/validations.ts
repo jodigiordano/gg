@@ -1,10 +1,6 @@
-import {
-  RuntimeLink,
-  RuntimeSubsystem,
-  RuntimeSystem,
-  SystemMargin,
-} from "./index";
-import { System, specification } from "./specification";
+import { RuntimeLink, RuntimeSubsystem, RuntimeSystem } from "./runtime.js";
+import { SystemMargin } from "./consts.js";
+import { System, specification } from "./specification.js";
 
 export class InvalidSystemError extends Error {
   details: unknown;

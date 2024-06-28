@@ -29,6 +29,7 @@ import {
   loadYaml,
   removeSubsystem,
   removeLink,
+  moveSystem,
   RuntimeLink,
   RuntimePosition,
   RuntimeSubsystem,
@@ -373,13 +374,11 @@ viewport.on("pointerup", (event: any) => {
         ) ?? canvasSimulator.system;
 
       modifySpecification(() => {
-        const newSystem = addSubsystem(
+        addSubsystem(
           system,
           (state.operation as AddSystemOperation).position!.x,
           (state.operation as AddSystemOperation).position!.y,
         );
-
-        canvasSimulator!.moveSystem(newSystem, 0, 0);
       });
     }
   } else if (state.operation.type === "removeSystem") {
@@ -448,7 +447,7 @@ viewport.on("pointerup", (event: any) => {
     const deltaY = y - state.operation.pickedUpAt.y;
 
     modifySpecification(() => {
-      canvasSimulator!.moveSystem(
+      moveSystem(
         (state.operation as MoveSystemOperation).subsystem!,
         deltaX,
         deltaY,
@@ -512,6 +511,8 @@ function loadSimulation(yaml: string): boolean {
   } catch (error) {
     yamlEditorMessages.value = (error as Error).message;
 
+    console.warn((error as Error).message);
+
     return false;
   }
 
@@ -519,6 +520,10 @@ function loadSimulation(yaml: string): boolean {
     yamlEditorMessages.value = result.errors
       .map(error => [error.path, error.message].join(": "))
       .join("\n");
+
+    for (const error of result.errors) {
+      console.warn(error.path, error.message);
+    }
 
     return false;
   }
