@@ -309,7 +309,8 @@ viewport.on("pointerdown", (event: any) => {
     }
   } else if (state.operation.type === "removeLink") {
     state.operation.link = canvasSimulator.getLinkAt(x, y);
-  } else { // Operation: Move system.
+  } else {
+    // Operation: Move system.
     const subsystem = canvasSimulator.getSubsystemAt(x, y);
 
     if (!subsystem) {
@@ -347,7 +348,9 @@ viewport.on("pointerup", (event: any) => {
   if (state.operation.type === "toggleHideSystems") {
     if (state.operation.subsystem) {
       modifySpecification(() => {
-        const { specification } = (state.operation as ToggleHideSystemsOperation).subsystem!;
+        const { specification } = (
+          state.operation as ToggleHideSystemsOperation
+        ).subsystem!;
 
         specification.hideSystems = !specification.hideSystems;
       });
@@ -373,7 +376,7 @@ viewport.on("pointerup", (event: any) => {
   } else if (state.operation.type === "removeSystem") {
     if (state.operation.subsystem) {
       modifySpecification(() => {
-        removeSubsystem((state.operation as RemoveSystemOperation).subsystem!)
+        removeSubsystem((state.operation as RemoveSystemOperation).subsystem!);
       });
     }
   } else if (state.operation.type === "setSystemTitle") {
@@ -396,7 +399,6 @@ viewport.on("pointerup", (event: any) => {
           // TODO: move flows.
         });
       }
-
     } else if (state.operation.parentAt || state.operation.subsystem) {
       operationInProgress = true;
     }
@@ -417,7 +419,7 @@ viewport.on("pointerup", (event: any) => {
       modifySpecification(() => {
         removeLink(
           canvasSimulator!.system,
-          (state.operation as RemoveLinkOperation).link!
+          (state.operation as RemoveLinkOperation).link!,
         );
       });
     }
@@ -440,7 +442,7 @@ viewport.on("pointerup", (event: any) => {
       canvasSimulator!.moveSystem(
         (state.operation as MoveSystemOperation).subsystem!,
         deltaX,
-        deltaY
+        deltaY,
       );
     });
 
@@ -472,9 +474,7 @@ function modifySpecification(modifier: () => void): void {
   }
 
   // Make a copy of the specification.
-  const currentSpecification = saveYaml(
-    canvasSimulator.system.specification,
-  );
+  const currentSpecification = saveYaml(canvasSimulator.system.specification);
 
   // Call a function that modifies the specification.
   modifier();
@@ -571,10 +571,10 @@ function fitSimulation() {
   const top = boundaries.top - BlockSize; /* margin */
 
   const width =
-    (boundaries.right - boundaries.left) + BlockSize + BlockSize * 2; /* margin */
+    boundaries.right - boundaries.left + BlockSize + BlockSize * 2; /* margin */
 
   const height =
-    (boundaries.bottom - boundaries.top) + BlockSize + BlockSize * 2; /* margin */
+    boundaries.bottom - boundaries.top + BlockSize + BlockSize * 2; /* margin */
 
   // The operation is executed twice because of a weird issue that I don't
   // understand yet. Somehow, because we are using "viewport.clamp", the first
