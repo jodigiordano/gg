@@ -39,7 +39,6 @@ export function addSubsystem(
   );
 
   computeSystemSize(newRuntimeSystem, rootSystem.links);
-  console.log(newRuntimeSystem);
   moveSystem(newRuntimeSystem, 0, 0);
 }
 
