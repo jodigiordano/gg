@@ -260,14 +260,13 @@ export class CanvasSimulator {
   }
 
   getVisibleBoundaries() {
-    const visibleBoundaries = this.systemSimulator.getVisibleBoundaries();
-    const boundaries = this.systemSimulator.getBoundaries();
+    const visibleBoundaries = this.systemSimulator.getVisibleWorldBoundaries();
 
     return {
-      left: (visibleBoundaries.left - boundaries.translateX) * BlockSize,
-      right: (visibleBoundaries.right - boundaries.translateX) * BlockSize,
-      top: (visibleBoundaries.top - boundaries.translateY) * BlockSize,
-      bottom: (visibleBoundaries.bottom - boundaries.translateY) * BlockSize,
+      left: visibleBoundaries.left * BlockSize,
+      right: visibleBoundaries.right * BlockSize,
+      top: visibleBoundaries.top * BlockSize,
+      bottom: visibleBoundaries.bottom * BlockSize,
     };
   }
 

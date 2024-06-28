@@ -192,7 +192,7 @@ export class SystemSimulator {
   // Get the boundaries of the visible system,
   // once it has been drawn on the grid.
   // i.e. a rectangle that encompass all sub-systems, links, etc.
-  getVisibleBoundaries(): {
+  getVisibleWorldBoundaries(): {
     left: number;
     top: number;
     right: number;
@@ -244,10 +244,10 @@ export class SystemSimulator {
     }
 
     return {
-      left,
-      right,
-      top,
-      bottom,
+      left: left - this.boundaries.translateX,
+      right: right - this.boundaries.translateX,
+      top: top - this.boundaries.translateY,
+      bottom: bottom - this.boundaries.translateY,
     };
   }
 
