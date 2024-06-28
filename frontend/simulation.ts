@@ -7,7 +7,6 @@ import {
 } from "pixi.js";
 import {
   RuntimeFlow,
-  RuntimeLink,
   RuntimeSubsystem,
   RuntimeSystem,
   SystemMargin,
@@ -17,7 +16,6 @@ import {
   FlowSimulator,
   SimulatorObjectType,
   SimulatorSystemTitle,
-  SimulatorObject,
   SimulatorWhiteBox,
 } from "@dataflows/simulator";
 import { BlockSize } from "./consts.js";
@@ -84,7 +82,7 @@ export function generateCanvasSimulatorTextures(
 
 export class CanvasSimulator {
   public system: RuntimeSystem;
-  private systemSimulator: SystemSimulator;
+  public systemSimulator: SystemSimulator;
 
   constructor(system: RuntimeSystem) {
     this.system = system;
@@ -268,48 +266,6 @@ export class CanvasSimulator {
       top: visibleBoundaries.top * BlockSize,
       bottom: visibleBoundaries.bottom * BlockSize,
     };
-  }
-
-  getObjectsAt(worldX: number, worldY: number): SimulatorObject[] {
-    const layout = this.systemSimulator.getLayout();
-    const boundaries = this.systemSimulator.getBoundaries();
-
-    const gridX = worldX + boundaries.translateX;
-    const gridY = worldY + boundaries.translateY;
-
-    return layout[gridX]?.[gridY] ?? [];
-  }
-
-  getSubsystemAt(worldX: number, worldY: number): RuntimeSubsystem | null {
-    const objects = this.getObjectsAt(worldX, worldY);
-
-    const object = objects
-      .reverse()
-      .find(
-        obj =>
-          obj.type === SimulatorObjectType.BlackBox ||
-          obj.type === SimulatorObjectType.WhiteBox,
-      );
-
-    if (object && "system" in object) {
-      return object.system as RuntimeSubsystem;
-    }
-
-    return null;
-  }
-
-  getLinkAt(worldX: number, worldY: number): RuntimeLink | null {
-    const objects = this.getObjectsAt(worldX, worldY);
-
-    const object = objects
-      .reverse()
-      .find(obj => obj.type === SimulatorObjectType.Link);
-
-    if (object && "link" in object) {
-      return object.link as RuntimeLink;
-    }
-
-    return null;
   }
 
   getObjectsToRender(textures: CanvasSimulatorTextures): (Sprite | Text)[] {

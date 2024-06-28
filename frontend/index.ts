@@ -275,13 +275,13 @@ viewport.on("pointerdown", (event: any) => {
   if (state.operation.type === "addSystem") {
     state.operation.position = { x, y };
   } else if (state.operation.type === "toggleHideSystems") {
-    state.operation.subsystem = canvasSimulator.getSubsystemAt(x, y);
+    state.operation.subsystem = canvasSimulator.systemSimulator.getSubsystemAt(x, y);
   } else if (state.operation.type === "removeSystem") {
-    state.operation.subsystem = canvasSimulator.getSubsystemAt(x, y);
+    state.operation.subsystem = canvasSimulator.systemSimulator.getSubsystemAt(x, y);
   } else if (state.operation.type === "setSystemTitle") {
-    state.operation.subsystem = canvasSimulator.getSubsystemAt(x, y);
+    state.operation.subsystem = canvasSimulator.systemSimulator.getSubsystemAt(x, y);
   } else if (state.operation.type === "setSystemParent") {
-    const subsystem = canvasSimulator.getSubsystemAt(x, y);
+    const subsystem = canvasSimulator.systemSimulator.getSubsystemAt(x, y);
 
     if (state.operation.subsystem) {
       state.operation.parentAt = { x, y };
@@ -289,7 +289,7 @@ viewport.on("pointerdown", (event: any) => {
       state.operation.subsystem = subsystem;
     }
   } else if (state.operation.type === "addLink") {
-    const subsystem = canvasSimulator.getSubsystemAt(x, y);
+    const subsystem = canvasSimulator.systemSimulator.getSubsystemAt(x, y);
 
     if (!subsystem) {
       return;
@@ -308,10 +308,10 @@ viewport.on("pointerdown", (event: any) => {
       state.operation.a = subsystem;
     }
   } else if (state.operation.type === "removeLink") {
-    state.operation.link = canvasSimulator.getLinkAt(x, y);
+    state.operation.link = canvasSimulator.systemSimulator.getLinkAt(x, y);
   } else {
     // Operation: Move system.
-    const subsystem = canvasSimulator.getSubsystemAt(x, y);
+    const subsystem = canvasSimulator.systemSimulator.getSubsystemAt(x, y);
 
     if (!subsystem) {
       return;
@@ -358,7 +358,7 @@ viewport.on("pointerup", (event: any) => {
   } else if (state.operation.type === "addSystem") {
     if (state.operation.position) {
       const system =
-        canvasSimulator.getSubsystemAt(
+        canvasSimulator.systemSimulator.getSubsystemAt(
           state.operation.position.x,
           state.operation.position.y,
         ) ?? canvasSimulator.system;
@@ -386,7 +386,7 @@ viewport.on("pointerup", (event: any) => {
   } else if (state.operation.type === "setSystemParent") {
     if (state.operation.parentAt && state.operation.subsystem) {
       const parent =
-        canvasSimulator.getSubsystemAt(
+        canvasSimulator.systemSimulator.getSubsystemAt(
           state.operation.parentAt.x,
           state.operation.parentAt.y,
         ) ?? canvasSimulator.system;

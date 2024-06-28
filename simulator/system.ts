@@ -251,6 +251,45 @@ export class SystemSimulator {
     };
   }
 
+  getObjectsAt(worldX: number, worldY: number): SimulatorObject[] {
+    const gridX = worldX + this.boundaries.translateX;
+    const gridY = worldY + this.boundaries.translateY;
+
+    return this.grid[gridX]?.[gridY] ?? [];
+  }
+
+  getSubsystemAt(worldX: number, worldY: number): RuntimeSubsystem | null {
+    const objects = this.getObjectsAt(worldX, worldY);
+
+    const object = objects
+      .reverse()
+      .find(
+        obj =>
+          obj.type === SimulatorObjectType.BlackBox ||
+          obj.type === SimulatorObjectType.WhiteBox,
+      );
+
+    if (object && "system" in object) {
+      return object.system as RuntimeSubsystem;
+    }
+
+    return null;
+  }
+
+  getLinkAt(worldX: number, worldY: number): RuntimeLink | null {
+    const objects = this.getObjectsAt(worldX, worldY);
+
+    const object = objects
+      .reverse()
+      .find(obj => obj.type === SimulatorObjectType.Link);
+
+    if (object && "link" in object) {
+      return object.link as RuntimeLink;
+    }
+
+    return null;
+  }
+
   getRoute(fromSystemId: string, toSystemId: string): number[][] | undefined {
     return this.routes[fromSystemId]?.[toSystemId];
   }
