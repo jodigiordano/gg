@@ -95,8 +95,8 @@ export function computeSystemSize(
   let maxHeight = 0;
 
   for (const subsystem of system.systems) {
-    const width = subsystem.position.x + subsystem.size.width;
-    const height = subsystem.position.y + subsystem.size.height;
+    const width = subsystem.specification.position.x + subsystem.size.width;
+    const height = subsystem.specification.position.y + subsystem.size.height;
 
     if (width > maxWidth) {
       maxWidth = width;
