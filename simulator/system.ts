@@ -251,26 +251,6 @@ export class SystemSimulator {
     };
   }
 
-  getAvailableSpaceForSystems(): boolean[][] {
-    const available = new Array(this.boundaries.height);
-
-    for (let i = 0; i < this.boundaries.width; i++) {
-      available[i] = Array.from({ length: this.boundaries.width }, () => []);
-    }
-
-    for (let i = 0; i < this.boundaries.width; i++) {
-      for (let j = 0; j < this.boundaries.height; j++) {
-        available[i][j] =
-          this.grid[i]![j]!.length === 0 ||
-          this.grid[i]![j]!.every(
-            object => object.type === SimulatorObjectType.Link,
-          );
-      }
-    }
-
-    return available;
-  }
-
   getRoute(fromSystemId: string, toSystemId: string): number[][] | undefined {
     return this.routes[fromSystemId]?.[toSystemId];
   }
