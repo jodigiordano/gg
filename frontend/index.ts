@@ -333,14 +333,6 @@ viewport.on("pointerdown", (event: any) => {
 
     // @ts-ignore FIXME
     dragAndDropContainer.addChild(dragAndDrop);
-
-    for (const objectToRender of canvasSimulator.getAvailableSpaceForSystemToRender(
-      canvasSimulatorTextures,
-      subsystem,
-    )) {
-      // @ts-ignore FIXME
-      dragAndDropContainer.addChild(objectToRender);
-    }
   }
 });
 
