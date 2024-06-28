@@ -605,6 +605,19 @@ function fitSimulation() {
   redrawGrid();
 }
 
+function loadFile(): void {
+  const value = window.localStorage.getItem("file");
+
+  if (value) {
+    yamlEditorDefinition.value = value;
+
+    loadSimulation(yamlEditorDefinition.value);
+    resetState();
+    pushChange(yamlEditorDefinition.value);
+    fitSimulation();
+  }
+}
+
 //
 // Events
 //
@@ -714,18 +727,7 @@ document
 
 document
   .getElementById("operation-file-load")
-  ?.addEventListener("click", function () {
-    const value = window.localStorage.getItem("file");
-
-    if (value) {
-      yamlEditorDefinition.value = value;
-
-      loadSimulation(yamlEditorDefinition.value);
-      resetState();
-      pushChange(yamlEditorDefinition.value);
-      fitSimulation();
-    }
-  });
+  ?.addEventListener("click", loadFile);
 
 document
   .getElementById("operation-file-save")
@@ -809,3 +811,6 @@ await Assets.load("assets/ibm.woff");
 // Add PixiJS to the DOM.
 // @ts-ignore FIXME
 document.getElementById("canvas")?.replaceChildren(app.view);
+
+// Load saved file.
+loadFile();
