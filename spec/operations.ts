@@ -161,6 +161,7 @@ export function moveSystem(
   // Resolve collisions.
 
   let iterations = 0;
+  const displacers: Record<string, string[]> = {};
   const displacedThisIteration: string[] = [];
 
   do {
@@ -189,41 +190,55 @@ export function moveSystem(
         // displaces is always the one nearest (center to center) to the
         // subsystem being moved (i.e. the first parameter of this function).
         //
-        // Special case: the subsyssAstem being moved is always displacing.
-        const ssACandidateCenterX =
-          ssACandidate.specification.position.x + ssACandidate.size.width / 2;
+        // Special case: the subsystem being moved is always displacing.
+        let ssA: RuntimeSubsystem;
+        let ssB: RuntimeSubsystem;
 
-        const ssaCandidateCenterY =
-          ssACandidate.specification.position.y + ssACandidate.size.height / 2;
+        if (displacers[ssACandidate.canonicalId]?.includes(ssBCandidate.canonicalId)) {
+          ssA = ssACandidate;
+          ssB = ssBCandidate;
+        } else if (displacers[ssBCandidate.canonicalId]?.includes(ssACandidate.canonicalId)) {
+          ssA = ssBCandidate;
+          ssB = ssACandidate;
+        } else {
+          const ssACandidateCenterX =
+            ssACandidate.specification.position.x + ssACandidate.size.width / 2;
 
-        const ssACandidateDistance = Math.sqrt(
-          Math.pow(ssACandidateCenterX - centerSS.x, 2) +
-            Math.pow(ssaCandidateCenterY - centerSS.y, 2),
-        );
+          const ssaCandidateCenterY =
+            ssACandidate.specification.position.y + ssACandidate.size.height / 2;
 
-        const ssBCandidateCenterX =
-          ssBCandidate.specification.position.x + ssBCandidate.size.width / 2;
+          const ssACandidateDistance = Math.sqrt(
+            Math.pow(ssACandidateCenterX - centerSS.x, 2) +
+              Math.pow(ssaCandidateCenterY - centerSS.y, 2),
+          );
 
-        const ssBCandidateCenterY =
-          ssBCandidate.specification.position.y + ssBCandidate.size.height / 2;
+          const ssBCandidateCenterX =
+            ssBCandidate.specification.position.x + ssBCandidate.size.width / 2;
 
-        const ssBCandidateDistance = Math.sqrt(
-          Math.pow(ssBCandidateCenterX - centerSS.x, 2) +
-            Math.pow(ssBCandidateCenterY - centerSS.y, 2),
-        );
+          const ssBCandidateCenterY =
+            ssBCandidate.specification.position.y + ssBCandidate.size.height / 2;
 
-        // Subsystem displacing.
-        const ssA =
-          ssACandidate.canonicalId === system.canonicalId ||
-          ssACandidateDistance < ssBCandidateDistance
-            ? ssACandidate
-            : ssBCandidate;
+          const ssBCandidateDistance = Math.sqrt(
+            Math.pow(ssBCandidateCenterX - centerSS.x, 2) +
+              Math.pow(ssBCandidateCenterY - centerSS.y, 2),
+          );
 
-        // Subsystem being displaced.
-        const ssB =
-          ssA.canonicalId === ssACandidate.canonicalId
-            ? ssBCandidate
-            : ssACandidate;
+          // Subsystem displacing.
+          ssA =
+            ssACandidate.canonicalId === system.canonicalId ||
+            ssACandidateDistance < ssBCandidateDistance
+              ? ssACandidate
+              : ssBCandidate;
+
+          // Subsystem being displaced.
+          ssB =
+            ssA.canonicalId === ssACandidate.canonicalId
+              ? ssBCandidate
+              : ssACandidate;
+
+          displacers[ssA.canonicalId] ??= [];
+          displacers[ssA.canonicalId]!.push(ssB.canonicalId);
+        }
 
         const aPositionX1 = ssA.specification.position.x - SystemMargin;
         const aPositionX2 =
@@ -278,21 +293,15 @@ export function moveSystem(
         const centerToCenterUnitVectorY =
           (bCenterY - aCenterY) / centerToCenterMagnitude;
 
-        // TODO:
-        //
-        // find the optimal length of displacement
-        // to reduce the number of iterations.
-        const displacementLength = 1;
-
         const displacementX =
           centerToCenterUnitVectorX >= 0
-            ? Math.ceil(centerToCenterUnitVectorX * displacementLength) | 0
-            : Math.floor(centerToCenterUnitVectorX * displacementLength) | 0;
+            ? Math.ceil(centerToCenterUnitVectorX) | 0
+            : Math.floor(centerToCenterUnitVectorX) | 0;
 
         const displacementY =
           centerToCenterUnitVectorY >= 0
-            ? Math.ceil(centerToCenterUnitVectorY * displacementLength) | 0
-            : Math.floor(centerToCenterUnitVectorY * displacementLength) | 0;
+            ? Math.ceil(centerToCenterUnitVectorY) | 0
+            : Math.floor(centerToCenterUnitVectorY) | 0;
 
         console.log(
           ssA.canonicalId,
@@ -301,18 +310,16 @@ export function moveSystem(
           overlapY,
           "with",
           ssB.canonicalId,
+          ' | ',
           "move",
           ssB.canonicalId,
           displacementX,
           displacementY,
-          "in direction",
-          centerToCenterUnitVectorX,
-          centerToCenterUnitVectorY,
         );
 
         // TODO: quick test. Instead of a radial displacement, try a
         // horizontal / vertical displacement.
-        if (Math.abs(displacementX) > Math.abs(displacementY)) {
+        if (Math.abs(centerToCenterUnitVectorX) >= Math.abs(centerToCenterUnitVectorY)) {
           ssB.specification.position.x += displacementX;
         } else {
           ssB.specification.position.y += displacementY;
@@ -321,10 +328,37 @@ export function moveSystem(
         displacedThisIteration.push(
           [ssA.canonicalId, ssB.canonicalId].join("."),
         );
+
         displacedThisIteration.push(
           [ssB.canonicalId, ssA.canonicalId].join("."),
         );
       }
     }
   } while (displacedThisIteration.length && iterations < 1000);
+
+  // Recursive traversal.
+  //
+  // When a subsystem is part of a parent subsystem,
+  // it may make that parent subsystem grows and potentially displaces
+  // other subsystems.
+  if (system.parent && system.parent.canonicalId) {
+    let rootSystem: RuntimeSystem = system.parent as unknown as RuntimeSystem;
+
+    while (rootSystem.parent) {
+      rootSystem = rootSystem.parent;
+    }
+
+    const sizeBefore = structuredClone(system.parent.size);
+
+    computeSystemSize(system.parent, rootSystem.links);
+
+    // Optimization: when the parent subsystem shrinks,
+    // it won't create collisions.
+    if (
+      system.parent.size.width > sizeBefore.width ||
+      system.parent.size.height > sizeBefore.height
+    ) {
+      moveSystem(system.parent, 0, 0);
+    }
+  }
 }
