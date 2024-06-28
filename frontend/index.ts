@@ -275,11 +275,20 @@ viewport.on("pointerdown", (event: any) => {
   if (state.operation.type === "addSystem") {
     state.operation.position = { x, y };
   } else if (state.operation.type === "toggleHideSystems") {
-    state.operation.subsystem = canvasSimulator.systemSimulator.getSubsystemAt(x, y);
+    state.operation.subsystem = canvasSimulator.systemSimulator.getSubsystemAt(
+      x,
+      y,
+    );
   } else if (state.operation.type === "removeSystem") {
-    state.operation.subsystem = canvasSimulator.systemSimulator.getSubsystemAt(x, y);
+    state.operation.subsystem = canvasSimulator.systemSimulator.getSubsystemAt(
+      x,
+      y,
+    );
   } else if (state.operation.type === "setSystemTitle") {
-    state.operation.subsystem = canvasSimulator.systemSimulator.getSubsystemAt(x, y);
+    state.operation.subsystem = canvasSimulator.systemSimulator.getSubsystemAt(
+      x,
+      y,
+    );
   } else if (state.operation.type === "setSystemParent") {
     const subsystem = canvasSimulator.systemSimulator.getSubsystemAt(x, y);
 
