@@ -1,7 +1,7 @@
 import { RuntimeSystem, RuntimeSubsystem, RuntimeLink } from "./runtime.js";
 import { SystemMargin } from "./consts.js";
 import { Link, FlowStep } from "./specification.js";
-import { computeSystemSize, initSystem } from "./system.js";
+import { computeSystemSize, getRootSystem, initSystem } from "./system.js";
 
 /*
  * Insert a subsystem in the given parent system.
@@ -20,11 +20,7 @@ export function addSubsystem(
   parent.specification.systems ??= [];
   parent.specification.systems.push(newSpecSystem);
 
-  let rootSystem: RuntimeSystem = parent as RuntimeSystem;
-
-  while (rootSystem.parent) {
-    rootSystem = rootSystem.parent;
-  }
+  const rootSystem = getRootSystem(parent as RuntimeSubsystem);
 
   const newRuntimeSystem = structuredClone(newSpecSystem) as RuntimeSubsystem;
 
@@ -49,11 +45,7 @@ export function addSubsystem(
 export function removeSubsystem(subsystem: RuntimeSubsystem): void {
   subsystem.parent!.specification.systems?.splice(subsystem.index, 1);
 
-  let rootSystem: RuntimeSystem = subsystem.parent as RuntimeSystem;
-
-  while (rootSystem.parent) {
-    rootSystem = rootSystem.parent;
-  }
+  const rootSystem = getRootSystem(subsystem);
 
   // Remove links.
   let linkReadIndex = 0;
@@ -426,11 +418,7 @@ export function moveSystem(
   // it may make that parent subsystem grows and potentially displaces
   // other subsystems.
   if (system.parent && system.parent.canonicalId) {
-    let rootSystem: RuntimeSystem = system.parent as unknown as RuntimeSystem;
-
-    while (rootSystem.parent) {
-      rootSystem = rootSystem.parent;
-    }
+    const rootSystem = getRootSystem(system);
 
     const sizeBefore = structuredClone(system.parent.size);
 

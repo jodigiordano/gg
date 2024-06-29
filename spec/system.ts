@@ -59,6 +59,16 @@ export function initSystem(
   system.depth = depth;
 }
 
+export function getRootSystem(system: RuntimeSubsystem): RuntimeSystem {
+  let rootSystem: RuntimeSystem = system as unknown as RuntimeSystem;
+
+  while (rootSystem.parent) {
+    rootSystem = rootSystem.parent;
+  }
+
+  return rootSystem;
+}
+
 export function computeSystemSize(
   system: RuntimeSubsystem,
   links: RuntimeLink[],
