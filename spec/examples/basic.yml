@@ -4,18 +4,18 @@ systems:
   - id: frontend
     description: Web-based client
     position:
-      x: 1
-      y: 1
+      x: 0
+      y: 0
   - id: backend
     description: Backend of the frontend
     position:
       x: 10
-      y: 1
+      y: 0
   - id: database
     description: Database of the backend
     position:
       x: 20
-      y: 1
+      y: 0
 links:
   - a: frontend
     b: backend

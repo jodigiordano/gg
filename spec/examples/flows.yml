@@ -5,8 +5,8 @@ systems:
   - id: frontend
     description: Web-based client
     position:
-      x: 1
-      y: 1
+      x: 0
+      y: 0
     systems:
       - id: react-app
         description: The React application
@@ -26,8 +26,8 @@ systems:
   - id: backend
     description: Backend of the frontend
     position:
-      x: 10
-      y: 1
+      x: 40
+      y: 0
     systems:
       - id: server
         description: RESTful HTTP API of the backend
@@ -48,7 +48,7 @@ systems:
       - id: database
         description: Database of the backend
         position:
-          x: 10
+          x: 25
           y: 0
 links:
   - a: frontend.api-service
