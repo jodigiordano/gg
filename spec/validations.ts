@@ -51,11 +51,10 @@ function validateSystemDistances(
 ): ValidationError[] {
   const errors: ValidationError[] = [];
 
-  for (const subsystemA of system.systems) {
-    for (const subsystemB of system.systems) {
-      if (subsystemA.id === subsystemB.id) {
-        continue;
-      }
+  for (let i = 0; i < system.systems.length; i++) {
+    for (let j = i + 1; j < system.systems.length; j++) {
+      const subsystemA = system.systems[i]!;
+      const subsystemB = system.systems[j]!;
 
       const aLeft = subsystemA.position.x - SystemMargin;
       const aRight =
@@ -79,7 +78,7 @@ function validateSystemDistances(
       ) {
         errors.push({
           path: getSubsystemPath(subsystemA),
-          message: `overlaps with ${getSubsystemPath(subsystemB)}`,
+          message: `${subsystemA.canonicalId} overlaps with ${subsystemB.canonicalId}`,
         });
       }
     }
