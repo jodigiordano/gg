@@ -37,10 +37,11 @@ export function initSystem(
   system.hideSystems ??= false;
 
   // Set the title size.
-  // TODO: Support titles with newlines.
+  const titleLengths = system.title.split("\\n").map(line => line.length);
+
   system.titleSize = {
-    width: Math.ceil(system.title.length / TitleCharsPerSquare) | 0,
-    height: 1,
+    width: Math.ceil(Math.max(...titleLengths) / TitleCharsPerSquare) | 0,
+    height: titleLengths.length,
   };
 
   // Set the title position.

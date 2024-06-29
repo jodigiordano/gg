@@ -636,7 +636,7 @@ export class SystemSimulator {
       }
 
       // Title.
-      const titleLines = ss.title.split("\n");
+      const titleLines = ss.title.split("\\n");
 
       for (
         let x = gridSS.title.x, i = 0;

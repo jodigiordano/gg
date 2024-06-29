@@ -48,7 +48,7 @@ interface IdleOperation {
 }
 
 interface MoveSystemOperation {
-  type: "move";
+  type: "moveSystem";
   subsystem: RuntimeSubsystem;
   pickedUpAt: RuntimePosition;
 }
@@ -254,7 +254,7 @@ viewport.on("pointermove", (event: any) => {
 
   positionInfo.textContent = `[${x}, ${y}]`;
 
-  if (state.operation.type === "move") {
+  if (state.operation.type === "moveSystem") {
     const deltaX = x - state.operation.pickedUpAt.x;
     const deltaY = y - state.operation.pickedUpAt.y;
 
@@ -330,7 +330,7 @@ viewport.on("pointerdown", (event: any) => {
     viewport.pause = true;
 
     const operation: MoveSystemOperation = {
-      type: "move",
+      type: "moveSystem",
       subsystem,
       pickedUpAt: { x, y },
     };
@@ -434,7 +434,7 @@ viewport.on("pointerup", (event: any) => {
   }
 
   // Operation: Move system.
-  else if (state.operation.type === "move") {
+  else if (state.operation.type === "moveSystem") {
     // World coordinates, in block size.
     const coordinates = viewport.toWorld(event.data.global);
 

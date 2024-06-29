@@ -11,7 +11,7 @@ describe("systems", () => {
         systems: [
           {
             id: "!",
-            position: { x: 1, y: 1 },
+            position: { x: 0, y: 0 },
           },
         ],
       };
@@ -29,11 +29,11 @@ describe("systems", () => {
         systems: [
           {
             id: "foo",
-            position: { x: 1, y: 1 },
+            position: { x: 0, y: 0 },
           },
           {
             id: "foo",
-            position: { x: 10, y: 1 },
+            position: { x: 10, y: 0 },
           },
         ],
       };
@@ -59,15 +59,15 @@ describe("systems", () => {
         systems: [
           {
             id: "foo",
-            position: { x: 1, y: 1 },
+            position: { x: 0, y: 0 },
             systems: [
               {
                 id: "bar",
-                position: { x: 1, y: 1 },
+                position: { x: 0, y: 0 },
               },
               {
                 id: "bar",
-                position: { x: 10, y: 1 },
+                position: { x: 10, y: 0 },
               },
             ],
           },
@@ -90,14 +90,14 @@ describe("systems", () => {
   });
 
   describe("titleSize", () => {
-    it("calculated", () => {
+    it("default", () => {
       const system: System = {
         specificationVersion: "1.0.0",
         title: "test",
         systems: [
           {
             id: "foo",
-            position: { x: 1, y: 1 },
+            position: { x: 0, y: 0 },
             title: "bar spam",
           },
         ],
@@ -109,8 +109,27 @@ describe("systems", () => {
         width: 4,
         height: 1,
       });
+    });
 
-      assert.deepEqual(runtime.systems.at(0)?.size, { width: 6, height: 3 });
+    it("multiline", () => {
+      const system: System = {
+        specificationVersion: "1.0.0",
+        title: "test",
+        systems: [
+          {
+            id: "foo",
+            position: { x: 0, y: 0 },
+            title: "bar\\nspam",
+          },
+        ],
+      };
+
+      const { system: runtime } = load(system);
+
+      assert.deepEqual(runtime.systems.at(0)?.titleSize, {
+        width: 2,
+        height: 2,
+      });
     });
   });
 
@@ -122,7 +141,7 @@ describe("systems", () => {
         systems: [
           {
             id: "foo",
-            position: { x: 1, y: 1 },
+            position: { x: 0, y: 0 },
           },
         ],
       };
@@ -134,31 +153,6 @@ describe("systems", () => {
   });
 
   describe("position", () => {
-    it("out of bounds", () => {
-      const system: System = {
-        specificationVersion: "1.0.0",
-        title: "test",
-        systems: [
-          {
-            id: "foo",
-            position: {
-              x: 64,
-              y: 1,
-            },
-          },
-        ],
-      };
-
-      const { errors } = load(system);
-
-      assert.deepEqual(errors, [
-        {
-          message: "out of bounds",
-          path: "/systems/0",
-        },
-      ]);
-    });
-
     it("overlaps", () => {
       const system: System = {
         specificationVersion: "1.0.0",
@@ -168,8 +162,8 @@ describe("systems", () => {
             // has size of 3x3
             id: "foo",
             position: {
-              x: 1,
-              y: 1,
+              x: 0,
+              y: 0,
             },
           },
           {
@@ -177,7 +171,7 @@ describe("systems", () => {
             id: "bar",
             position: {
               x: 2,
-              y: 1,
+              y: 0,
             },
           },
         ],
@@ -187,12 +181,8 @@ describe("systems", () => {
 
       assert.deepEqual(errors, [
         {
-          message: "overlaps with /systems/1",
+          message: "foo overlaps with bar",
           path: "/systems/0",
-        },
-        {
-          message: "overlaps with /systems/0",
-          path: "/systems/1",
         },
       ]);
     });
@@ -206,8 +196,8 @@ describe("systems", () => {
             // has size of 3x3
             id: "foo",
             position: {
-              x: 1,
-              y: 1,
+              x: 0,
+              y: 0,
             },
           },
           {
@@ -215,7 +205,7 @@ describe("systems", () => {
             id: "bar",
             position: {
               x: 4,
-              y: 1,
+              y: 0,
             },
           },
         ],
@@ -225,12 +215,8 @@ describe("systems", () => {
 
       assert.deepEqual(errors, [
         {
-          message: "overlaps with /systems/1",
+          message: "foo overlaps with bar",
           path: "/systems/0",
-        },
-        {
-          message: "overlaps with /systems/0",
-          path: "/systems/1",
         },
       ]);
     });
@@ -245,8 +231,8 @@ describe("systems", () => {
             id: "foo",
             title: "has a very long title, which makes it size X grow",
             position: {
-              x: 1,
-              y: 1,
+              x: 0,
+              y: 0,
             },
           },
           {
@@ -254,7 +240,7 @@ describe("systems", () => {
             id: "bar",
             position: {
               x: 10,
-              y: 1,
+              y: 0,
             },
           },
         ],
@@ -264,37 +250,33 @@ describe("systems", () => {
 
       assert.deepEqual(errors, [
         {
-          message: "overlaps with /systems/1",
+          message: "foo overlaps with bar",
           path: "/systems/0",
-        },
-        {
-          message: "overlaps with /systems/0",
-          path: "/systems/1",
         },
       ]);
     });
 
-    it("out of bounds - subsystem", () => {
+    it("overlaps - subsystem", () => {
       const system: System = {
         specificationVersion: "1.0.0",
         title: "test",
         systems: [
           {
             id: "foo",
-            position: { x: 1, y: 1 },
+            position: { x: 0, y: 0 },
             systems: [
               {
                 id: "bar",
                 position: {
                   x: 10,
-                  y: 1,
+                  y: 0,
                 },
               },
               {
                 id: "spam",
                 position: {
                   x: 12,
-                  y: 1,
+                  y: 0,
                 },
               },
             ],
@@ -306,14 +288,84 @@ describe("systems", () => {
 
       assert.deepEqual(errors, [
         {
-          message: "overlaps with /systems/0/systems/1",
+          message: "foo.bar overlaps with foo.spam",
           path: "/systems/0/systems/0",
         },
+      ]);
+    });
+
+    it("out of bounds - subsystem", () => {
+      const system: System = {
+        specificationVersion: "1.0.0",
+        title: "test",
+        systems: [
+          {
+            id: "foo",
+            position: { x: 0, y: 0 },
+            systems: [
+              {
+                id: "bar",
+                position: {
+                  x: -1,
+                  y: 0,
+                },
+              },
+            ],
+          },
+        ],
+      };
+
+      const { errors } = load(system);
+
+      assert.deepEqual(errors, [
         {
-          message: "overlaps with /systems/0/systems/0",
-          path: "/systems/0/systems/1",
+          message: "foo.bar is out of bounds of foo",
+          path: "/systems/0/systems/0",
         },
       ]);
+    });
+  });
+
+  describe("size", () => {
+    it("default", () => {
+      const system: System = {
+        specificationVersion: "1.0.0",
+        title: "test",
+        systems: [
+          {
+            id: "foo",
+            position: { x: 0, y: 0 },
+          },
+        ],
+      };
+
+      const { system: runtime } = load(system);
+
+      assert.deepEqual(runtime.systems.at(0)?.size, {
+        width: 4,
+        height: 3,
+      });
+    });
+
+    it("title", () => {
+      const system: System = {
+        specificationVersion: "1.0.0",
+        title: "test",
+        systems: [
+          {
+            id: "foo",
+            position: { x: 0, y: 0 },
+            title: "foo bar spam",
+          },
+        ],
+      };
+
+      const { system: runtime } = load(system);
+
+      assert.deepEqual(runtime.systems.at(0)?.size, {
+        width: 8,
+        height: 3,
+      });
     });
   });
 });

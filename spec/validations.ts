@@ -33,20 +33,20 @@ export function validate(
     }));
   }
 
-  const systemDistanceErrors = validateSystemDistances(runtime);
+  const systemOverlapErrors = validateSystemOverlaps(runtime);
   const whiteBoxBoundaryErrors = validateWhiteboxBoundaries(runtime);
   const systemErrors = validateSystems(runtime);
   const linkErrors = validateLinks(runtime);
   const flowErrors = validateFlows(runtime);
 
-  return systemDistanceErrors
+  return systemOverlapErrors
     .concat(systemErrors)
     .concat(whiteBoxBoundaryErrors)
     .concat(linkErrors)
     .concat(flowErrors);
 }
 
-function validateSystemDistances(
+function validateSystemOverlaps(
   system: RuntimeSystem | RuntimeSubsystem,
 ): ValidationError[] {
   const errors: ValidationError[] = [];
@@ -86,7 +86,7 @@ function validateSystemDistances(
 
   // Validate recursively.
   for (const subsystem of system.systems) {
-    errors.push(...validateSystemDistances(subsystem));
+    errors.push(...validateSystemOverlaps(subsystem));
   }
 
   return errors;
@@ -105,7 +105,7 @@ function validateWhiteboxBoundaries(
     ) {
       errors.push({
         path: getSubsystemPath(subsystem),
-        message: "out of bounds",
+        message: `${subsystem.canonicalId} is out of bounds of ${system.canonicalId}`,
       });
     }
 
