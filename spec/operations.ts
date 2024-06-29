@@ -303,14 +303,14 @@ export function moveSystem(
             ? Math.ceil(centerToCenterUnitVectorY) | 0
             : Math.floor(centerToCenterUnitVectorY) | 0;
 
-        console.log(
+        console.debug(
           ssA.canonicalId,
           "collides",
           overlapX,
           overlapY,
           "with",
           ssB.canonicalId,
-          ' | ',
+          ' => ',
           "move",
           ssB.canonicalId,
           displacementX,
@@ -335,6 +335,90 @@ export function moveSystem(
       }
     }
   } while (displacedThisIteration.length && iterations < 1000);
+
+  console.debug('iterations to resolve collisions', iterations);
+
+  for (const system of subsystems) {
+    const ssPosition = system.specification.position;
+
+    // For a subsystem inside a parent subsystem,
+    // a negative X or Y is not possible, as a subsystem inside another
+    // subsystem always have X >= 0 and Y >= 0.
+    //
+    // Therefore, the strategy here is to recursively apply the
+    // negative delta to the parent subsystems.
+    //
+    // For example, if we have:
+    //
+    //   root
+    //     subsystemA, x: 3, y: 2
+    //       subsystemB: x: 0, y: 1
+    //         subsystemC: x: -4, y: -1
+    //
+    //  We end up with:
+    //
+    //   root
+    //     subsystemA, x: -1, y: 2     <- absorb x: -4 from subsystemC.
+    //       subsystemB: x: 0, y: 0    <- absorb y: -1 from subsystemC.
+    //         subsystemC: x: 0, y: 0
+    if ((ssPosition.x < 0 || ssPosition.y < 0) && system.depth > 1) {
+      let parent = system.parent as RuntimeSubsystem;
+      let displacementX = ssPosition.x < 0 ? Math.abs(ssPosition.x) : 0;
+      let displacementY = ssPosition.y < 0 ? Math.abs(ssPosition.y) : 0;
+
+      console.debug(
+        system.canonicalId,
+        'out of bounds',
+        ' => displacing',
+        parent.canonicalId,
+        displacementX,
+        displacementY,
+      );
+
+      if (ssPosition.x < 0) {
+        ssPosition.x = 0;
+      }
+
+      if (ssPosition.y < 0) {
+        ssPosition.y = 0;
+      }
+
+      // Sibling systems need to stay at their relative position while the
+      // parent system is being moved.
+      for (const siblingSystem of subsystems) {
+        if (siblingSystem.canonicalId !== system.canonicalId) {
+          const siblingPosition = siblingSystem.specification.position;
+
+          siblingPosition.x += displacementX;
+          siblingPosition.y += displacementY;
+        }
+      }
+
+      for (let depth = system.depth - 1; depth > 0; depth--) {
+        const parentPosition = parent.specification.position;
+
+        parentPosition.x -= displacementX;
+        parentPosition.y -= displacementY;
+
+        displacementX = parentPosition.x < 0 ? Math.abs(parentPosition.x) : 0;
+        displacementY = parentPosition.y < 0 ? Math.abs(parentPosition.y) : 0;
+
+        if (displacementX === 0 && displacementY === 0) {
+          break;
+        }
+
+        if (depth > 1 && parentPosition.x < 0) {
+          parentPosition.x = 0;
+        }
+
+        if (depth > 1 && parentPosition.y < 0) {
+          parentPosition.y = 0;
+        }
+
+        parent = parent!.parent as RuntimeSubsystem;
+      }
+    }
+  }
 
   // Recursive traversal.
   //
