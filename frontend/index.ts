@@ -273,6 +273,16 @@ setSystemTitleEditor.style.fill = "0xffffff";
 setSystemTitleEditor.resolution = 2;
 setSystemTitleEditor.zIndex = 2;
 
+const setSystemTitleCursor = new Text("▋", {
+  fontFamily: "Ibm",
+  fontSize: BlockSize,
+  lineHeight: BlockSize,
+});
+
+setSystemTitleCursor.style.fill = "0xffffff";
+setSystemTitleCursor.resolution = 2;
+setSystemTitleCursor.zIndex = 3;
+
 // Drag & drop
 const dragAndDropContainer = new Container();
 
@@ -459,12 +469,29 @@ viewport.on("pointerup", (event: any) => {
         // @ts-ignore FIXME
         setSystemTitleContainer.addChild(setSystemTitleMask);
 
-        setSystemTitleEditor.text = subsystem.title.replace(/\\n/g, "\n");
+        const title = subsystem.title.replace(/\\n/g, "\n");
+
+        setSystemTitleEditor.text = title;
         setSystemTitleEditor.x = titleX;
         setSystemTitleEditor.y = titleY;
 
         // @ts-ignore FIXME
         setSystemTitleContainer.addChild(setSystemTitleEditor);
+
+        const titleLastLineLength = title.split("\n").at(-1)!.length;
+
+        setSystemTitleCursor.x =
+          setSystemTitleEditor.x +
+          (titleLastLineLength % 2 === 0
+            ? (titleLastLineLength / TitleCharsPerSquare) * BlockSize
+            : ((titleLastLineLength - 1) / TitleCharsPerSquare) * BlockSize +
+              BlockSize / TitleCharsPerSquare);
+
+        setSystemTitleCursor.y =
+          setSystemTitleEditor.y + setSystemTitleEditor.height - BlockSize;
+
+        // @ts-ignore FIXME
+        setSystemTitleContainer.addChild(setSystemTitleCursor);
 
         state.operation.editing = true;
         operationInProgress = true;
@@ -541,6 +568,14 @@ viewport.on("pointerup", (event: any) => {
   }
 });
 
+// FIXME: instead of always having the callback registered,
+// FIXME it should be added / removed when switching simulations / flows.
+app.ticker.add<void>(() => {
+  if (state.operation.type === "setSystemTitle" && state.operation.editing) {
+    setSystemTitleCursor.visible = ((Date.now() / 500) | 0) % 2 === 0;
+  }
+});
+
 window.addEventListener("click", () => {
   if (state.operation.type === "setSystemTitle" && state.operation.subsystem) {
     // Trick to show the virtual keyboard on mobile.
@@ -605,8 +640,19 @@ window.addEventListener("keydown", event => {
 
       setSystemTitleMask.width =
         Math.max(currentTitleWidth, newTitleWidth) * BlockSize;
+
       setSystemTitleMask.height =
         Math.max(currentTitleHeight, newTitleHeight) * BlockSize;
+
+      setSystemTitleCursor.x =
+        setSystemTitleEditor.x +
+        (titleLengths.at(-1)! % 2 === 0
+          ? (titleLengths.at(-1)! / TitleCharsPerSquare) * BlockSize
+          : ((titleLengths.at(-1)! - 1) / TitleCharsPerSquare) * BlockSize +
+            BlockSize / TitleCharsPerSquare);
+
+      setSystemTitleCursor.y =
+        setSystemTitleEditor.y + setSystemTitleEditor.height - BlockSize;
     }
   }
 });
