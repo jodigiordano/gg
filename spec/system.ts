@@ -1,9 +1,4 @@
-import {
-  RuntimeSystem,
-  RuntimeSubsystem,
-  RuntimeLink,
-  RuntimeSize,
-} from "./runtime.js";
+import { RuntimeSystem, RuntimeSubsystem, RuntimeLink } from "./runtime.js";
 import {
   TitlePadding,
   TitleCharsPerSquare,
@@ -74,28 +69,29 @@ export function computeSystemSize(
   system: RuntimeSubsystem,
   links: RuntimeLink[],
 ): void {
-  const linksCount = links.filter(
-    link =>
-      link.a.startsWith(system.canonicalId) ||
-      link.b.startsWith(system.canonicalId),
-  ).length;
-
-  const sizeToSupportLinks: RuntimeSize = {
-    width: 3 + (Math.ceil((linksCount - 2) / 2) | 0),
-    height: 3,
-  };
-
   // Blackbox.
   if (!system.systems.length) {
+    const titleWidth = system.titleSize.width + 2 * TitlePadding;
+    const titleHeight = system.titleSize.height + 2 * TitlePadding;
+
+    const linksCount = links.filter(
+      link =>
+        link.a.startsWith(system.canonicalId) ||
+        link.b.startsWith(system.canonicalId),
+    ).length;
+
+    const linksWidth =
+      linksCount === 0
+        ? 0
+        : linksCount < 5
+          ? 3
+          : linksCount % 2 === 0
+            ? linksCount - 1
+            : linksCount;
+
     system.size = {
-      width: Math.max(
-        sizeToSupportLinks.width,
-        system.titleSize.width + 2 * TitlePadding,
-      ),
-      height: Math.max(
-        sizeToSupportLinks.height,
-        system.titleSize.height + 2 * TitlePadding,
-      ),
+      width: Math.max(titleWidth, linksWidth),
+      height: titleHeight,
     };
 
     return;
