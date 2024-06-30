@@ -9,8 +9,8 @@ describe("links", () => {
         specificationVersion: "1.0.0",
         title: "test",
         systems: [
-          { id: "foo", position: { x: 1, y: 1 } },
-          { id: "bar", position: { x: 10, y: 1 } },
+          { id: "foo", position: { x: 0, y: 0 } },
+          { id: "bar", position: { x: 10, y: 0 } },
         ],
         links: [
           {
@@ -45,10 +45,10 @@ describe("links", () => {
         systems: [
           {
             id: "foo",
-            position: { x: 1, y: 1 },
+            position: { x: 0, y: 0 },
             systems: [
-              { id: "bar", position: { x: 1, y: 1 } },
-              { id: "spam", position: { x: 10, y: 1 } },
+              { id: "bar", position: { x: 0, y: 0 } },
+              { id: "spam", position: { x: 10, y: 0 } },
             ],
           },
         ],
@@ -85,12 +85,12 @@ describe("links", () => {
         systems: [
           {
             id: "foo",
-            position: { x: 1, y: 1 },
-            systems: [{ id: "bar", position: { x: 1, y: 1 } }],
+            position: { x: 0, y: 0 },
+            systems: [{ id: "bar", position: { x: 0, y: 0 } }],
           },
           {
             id: "bar",
-            position: { x: 10, y: 1 },
+            position: { x: 10, y: 0 },
           },
         ],
         links: [
@@ -126,13 +126,13 @@ describe("links", () => {
         systems: [
           {
             id: "foo",
-            position: { x: 1, y: 1 },
-            systems: [{ id: "bar", position: { x: 1, y: 1 } }],
+            position: { x: 0, y: 0 },
+            systems: [{ id: "bar", position: { x: 0, y: 0 } }],
           },
           {
             id: "bar",
-            position: { x: 10, y: 1 },
-            systems: [{ id: "spam", position: { x: 1, y: 1 } }],
+            position: { x: 10, y: 0 },
+            systems: [{ id: "spam", position: { x: 0, y: 0 } }],
           },
         ],
         links: [
@@ -165,7 +165,7 @@ describe("links", () => {
       const system: System = {
         specificationVersion: "1.0.0",
         title: "test",
-        systems: [{ id: "foo", position: { x: 1, y: 1 } }],
+        systems: [{ id: "foo", position: { x: 0, y: 0 } }],
         links: [
           {
             a: "bar",
@@ -188,7 +188,7 @@ describe("links", () => {
       const system: System = {
         specificationVersion: "1.0.0",
         title: "test",
-        systems: [{ id: "foo", position: { x: 1, y: 1 } }],
+        systems: [{ id: "foo", position: { x: 0, y: 0 } }],
         links: [
           {
             a: "foo",
@@ -212,8 +212,8 @@ describe("links", () => {
         specificationVersion: "1.0.0",
         title: "test",
         systems: [
-          { id: "foo", position: { x: 1, y: 1 } },
-          { id: "bar", position: { x: 10, y: 1 } },
+          { id: "foo", position: { x: 0, y: 0 } },
+          { id: "bar", position: { x: 10, y: 0 } },
         ],
         links: [
           {
@@ -238,8 +238,8 @@ describe("links", () => {
         specificationVersion: "1.0.0",
         title: "test",
         systems: [
-          { id: "foo", position: { x: 1, y: 1 } },
-          { id: "bar", position: { x: 10, y: 1 } },
+          { id: "foo", position: { x: 0, y: 0 } },
+          { id: "bar", position: { x: 10, y: 0 } },
         ],
         links: [
           {
@@ -266,10 +266,10 @@ describe("links", () => {
         systems: [
           {
             id: "foo",
-            position: { x: 1, y: 1 },
-            systems: [{ id: "bar", position: { x: 1, y: 1 } }],
+            position: { x: 0, y: 0 },
+            systems: [{ id: "bar", position: { x: 0, y: 0 } }],
           },
-          { id: "bar", position: { x: 10, y: 1 } },
+          { id: "bar", position: { x: 10, y: 0 } },
         ],
         links: [
           {
@@ -294,11 +294,11 @@ describe("links", () => {
         specificationVersion: "1.0.0",
         title: "test",
         systems: [
-          { id: "foo", position: { x: 1, y: 1 } },
+          { id: "foo", position: { x: 0, y: 0 } },
           {
             id: "bar",
-            position: { x: 10, y: 1 },
-            systems: [{ id: "spam", position: { x: 1, y: 1 } }],
+            position: { x: 10, y: 0 },
+            systems: [{ id: "spam", position: { x: 0, y: 0 } }],
           },
         ],
         links: [
@@ -323,7 +323,7 @@ describe("links", () => {
       const system: System = {
         specificationVersion: "1.0.0",
         title: "test",
-        systems: [{ id: "foo", position: { x: 1, y: 1 } }],
+        systems: [{ id: "foo", position: { x: 0, y: 0 } }],
         links: [
           {
             a: "foo",
@@ -349,11 +349,11 @@ describe("links", () => {
         systems: [
           {
             id: "foo",
-            position: { x: 1, y: 1 },
+            position: { x: 0, y: 0 },
             systems: [
               {
                 id: "bar",
-                position: { x: 1, y: 1 },
+                position: { x: 0, y: 0 },
               },
             ],
           },
@@ -387,10 +387,10 @@ describe("links", () => {
         systems: [
           {
             id: "foo",
-            position: { x: 1, y: 1 },
+            position: { x: 0, y: 0 },
             systems: [
-              { id: "bar", position: { x: 1, y: 1 } },
-              { id: "spam", position: { x: 10, y: 1 } },
+              { id: "bar", position: { x: 0, y: 0 } },
+              { id: "spam", position: { x: 10, y: 0 } },
             ],
           },
         ],
@@ -414,14 +414,14 @@ describe("links", () => {
         systems: [
           {
             id: "foo",
-            position: { x: 1, y: 1 },
+            position: { x: 0, y: 0 },
             systems: [
               {
                 id: "bar",
-                position: { x: 1, y: 1 },
+                position: { x: 0, y: 0 },
                 systems: [
-                  { id: "spam", position: { x: 1, y: 1 } },
-                  { id: "baz", position: { x: 10, y: 1 } },
+                  { id: "spam", position: { x: 0, y: 0 } },
+                  { id: "baz", position: { x: 10, y: 0 } },
                 ],
               },
             ],
