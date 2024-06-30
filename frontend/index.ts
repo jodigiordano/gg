@@ -130,12 +130,9 @@ function pushChange(change: string) {
 function resetState(): void {
   state.changes.length = 0;
   state.changeIndex = -1;
-  state.operation = { type: "idle" };
 
   // TODO: Hmmm...
-  viewport.pause = false;
-  dragAndDropContainer.removeChildren();
-  setSystemTitleContainer.removeChildren();
+  teardownOperation();
 }
 
 // Setup PixiJS.
@@ -453,8 +450,6 @@ viewport.on("pointerup", (event: any) => {
             setSystemTitleEditor.text.replace(/\n/g, "\\n"),
           );
         });
-
-        setSystemTitleContainer.removeChildren();
       } else {
         const titleX =
           (subsystem.position.x + subsystem.titlePosition.x) * BlockSize;
@@ -559,12 +554,10 @@ viewport.on("pointerup", (event: any) => {
         deltaY,
       );
     });
-
-    dragAndDropContainer.removeChildren();
   }
 
   if (!operationInProgress) {
-    finishOperation();
+    teardownOperation();
   }
 });
 
@@ -596,8 +589,7 @@ window.addEventListener("keydown", event => {
       setSystemTitleEditor.text = setSystemTitleEditor.text.slice(0, -1);
       titleModified = true;
     } else if (event.key === "Escape") {
-      setSystemTitleContainer.removeChildren();
-      finishOperation();
+      teardownOperation();
     } else if (event.shiftKey && event.key === "Enter") {
       setSystemTitleEditor.text = setSystemTitleEditor.text + "\n";
       titleModified = true;
@@ -609,14 +601,12 @@ window.addEventListener("keydown", event => {
         );
       });
 
-      setSystemTitleContainer.removeChildren();
-
       // Trick to hide the virtual keyboard on mobile.
       document.getElementById(
         "operation-system-set-title-input",
       )!.style.display = "none";
 
-      finishOperation();
+      teardownOperation();
     } else if (event.key.length === 1) {
       setSystemTitleEditor.text = setSystemTitleEditor.text + event.key;
 
@@ -660,7 +650,11 @@ window.addEventListener("keydown", event => {
 /**
  * Finish an ongoing operation.
  */
-function finishOperation(): void {
+function teardownOperation(): void {
+  // TODO: hmmm...
+  setSystemTitleContainer.removeChildren();
+  dragAndDropContainer.removeChildren();
+
   state.operation = { type: "idle" };
   viewport.pause = false;
 }
@@ -954,24 +948,32 @@ document
 document
   .getElementById("operation-system-hide-systems")
   ?.addEventListener("click", function () {
+    teardownOperation();
+
     state.operation = { type: "toggleHideSystems", subsystem: null };
   });
 
 document
   .getElementById("operation-system-add")
   ?.addEventListener("click", function () {
+    teardownOperation();
+
     state.operation = { type: "addSystem", position: null };
   });
 
 document
   .getElementById("operation-system-remove")
   ?.addEventListener("click", function () {
+    teardownOperation();
+
     state.operation = { type: "removeSystem", subsystem: null };
   });
 
 document
   .getElementById("operation-system-set-title")
   ?.addEventListener("click", function () {
+    teardownOperation();
+
     state.operation = {
       type: "setSystemTitle",
       subsystem: null,
@@ -982,6 +984,8 @@ document
 document
   .getElementById("operation-system-set-parent")
   ?.addEventListener("click", function () {
+    teardownOperation();
+
     state.operation = {
       type: "setSystemParent",
       subsystem: null,
@@ -992,12 +996,16 @@ document
 document
   .getElementById("operation-link-add")
   ?.addEventListener("click", function () {
+    teardownOperation();
+
     state.operation = { type: "addLink", a: null, b: null };
   });
 
 document
   .getElementById("operation-link-remove")
   ?.addEventListener("click", function () {
+    teardownOperation();
+
     state.operation = { type: "removeLink", link: null };
   });
 
