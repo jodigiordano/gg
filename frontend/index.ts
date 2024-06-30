@@ -35,6 +35,7 @@ import {
   RuntimePosition,
   RuntimeSubsystem,
   TitleCharsPerSquare,
+  setSubsystemTitle,
 } from "@dataflows/spec";
 import {
   CanvasSimulator,
@@ -437,11 +438,10 @@ viewport.on("pointerup", (event: any) => {
 
       if (state.operation.editing) {
         modifySpecification(() => {
-          subsystem.specification.title = setSystemTitleEditor.text.replace(
-            /\n/g,
-            "\\n",
+          setSubsystemTitle(
+            subsystem,
+            setSystemTitleEditor.text.replace(/\n/g, "\\n"),
           );
-          moveSystem(subsystem, 0, 0);
         });
 
         setSystemTitleContainer.removeChildren();
@@ -541,8 +541,18 @@ viewport.on("pointerup", (event: any) => {
   }
 });
 
-window.addEventListener("keydown", (event: any) => {
-  if (state.operation.type === "setSystemTitle") {
+window.addEventListener("click", () => {
+  if (state.operation.type === "setSystemTitle" && state.operation.subsystem) {
+    // Trick to show the virtual keyboard on mobile.
+    const input = document.getElementById("operation-system-set-title-input")!;
+
+    input.style.display = "inline-block";
+    input.focus();
+  }
+});
+
+window.addEventListener("keydown", event => {
+  if (state.operation.type === "setSystemTitle" && state.operation.subsystem) {
     const { subsystem } = state.operation;
 
     let titleModified = false;
@@ -558,14 +568,18 @@ window.addEventListener("keydown", (event: any) => {
       titleModified = true;
     } else if (event.key === "Enter") {
       modifySpecification(() => {
-        subsystem!.specification.title = setSystemTitleEditor.text.replace(
-          /\n/g,
-          "\\n",
+        setSubsystemTitle(
+          subsystem!,
+          setSystemTitleEditor.text.replace(/\n/g, "\\n"),
         );
-        moveSystem(subsystem!, 0, 0);
       });
 
       setSystemTitleContainer.removeChildren();
+
+      // Trick to hide the virtual keyboard on mobile.
+      document.getElementById(
+        "operation-system-set-title-input",
+      )!.style.display = "none";
 
       finishOperation();
     } else if (event.key.length === 1) {

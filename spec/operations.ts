@@ -1,4 +1,9 @@
-import { RuntimeSystem, RuntimeSubsystem, RuntimeLink } from "./runtime.js";
+import {
+  RuntimeSystem,
+  RuntimeSubsystem,
+  RuntimeLink,
+  RuntimePosition,
+} from "./runtime.js";
 import { SystemMargin } from "./consts.js";
 import { Link, FlowStep } from "./specification.js";
 import { computeSystemSize, getRootSystem, initSystem } from "./system.js";
@@ -100,6 +105,27 @@ export function removeSubsystem(subsystem: RuntimeSubsystem): void {
   if (rootSystem.specification.flows) {
     rootSystem.specification.flows.length = flowWriteIndex;
   }
+}
+
+export function setSubsystemTitle(
+  subsystem: RuntimeSubsystem,
+  newTitle: string,
+): void {
+  subsystem.specification.title = newTitle;
+  subsystem.title = newTitle;
+
+  const rootSystem = getRootSystem(subsystem);
+
+  initSystem(
+    subsystem,
+    subsystem.parent!,
+    subsystem.specification,
+    subsystem.index,
+    subsystem.depth,
+  );
+
+  computeSystemSize(subsystem, rootSystem.links);
+  moveSystem(subsystem, 0, 0);
 }
 
 /*
