@@ -467,4 +467,30 @@ describe("systems", () => {
       });
     });
   });
+
+  describe("ports", () => {
+    it("simple", () => {
+      const system: System = {
+        specificationVersion: "1.0.0",
+        title: "test",
+        systems: [
+          {
+            id: "foo",
+            position: { x: 0, y: 0 },
+          },
+        ],
+      };
+
+      const { system: runtime } = load(system);
+
+      assert.deepEqual(runtime.systems.at(0)?.ports, [
+        { x: 1, y: -1 },
+        { x: 1, y: 3 },
+        { x: 3, y: -1 },
+        { x: 3, y: 3 },
+        { x: -1, y: 1 },
+        { x: 4, y: 1 },
+      ]);
+    });
+  });
 });
