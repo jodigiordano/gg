@@ -9,8 +9,8 @@ describe("flows", () => {
         specificationVersion: "1.0.0",
         title: "test",
         systems: [
-          { id: "foo", position: { x: 1, y: 1 } },
-          { id: "bar", position: { x: 10, y: 1 } },
+          { id: "foo", position: { x: 0, y: 0 } },
+          { id: "bar", position: { x: 10, y: 0 } },
         ],
         links: [
           {
@@ -43,7 +43,7 @@ describe("flows", () => {
       const system: System = {
         specificationVersion: "1.0.0",
         title: "test",
-        systems: [{ id: "bar", position: { x: 1, y: 1 } }],
+        systems: [{ id: "bar", position: { x: 0, y: 0 } }],
         links: [],
         flows: [
           {
@@ -73,8 +73,8 @@ describe("flows", () => {
         specificationVersion: "1.0.0",
         title: "test",
         systems: [
-          { id: "foo", position: { x: 1, y: 1 } },
-          { id: "bar", position: { x: 10, y: 1 } },
+          { id: "foo", position: { x: 0, y: 0 } },
+          { id: "bar", position: { x: 10, y: 0 } },
         ],
         links: [{ a: "foo", b: "bar" }],
         flows: [
@@ -107,10 +107,10 @@ describe("flows", () => {
         systems: [
           {
             id: "foo",
-            position: { x: 1, y: 1 },
-            systems: [{ id: "bar", position: { x: 1, y: 1 } }],
+            position: { x: 0, y: 0 },
+            systems: [{ id: "bar", position: { x: 0, y: 0 } }],
           },
-          { id: "bar", position: { x: 10, y: 1 } },
+          { id: "bar", position: { x: 10, y: 0 } },
         ],
         links: [{ a: "foo.bar", b: "bar" }],
         flows: [
@@ -141,11 +141,11 @@ describe("flows", () => {
         specificationVersion: "1.0.0",
         title: "test",
         systems: [
-          { id: "foo", position: { x: 1, y: 1 } },
+          { id: "foo", position: { x: 0, y: 0 } },
           {
             id: "bar",
-            position: { x: 10, y: 1 },
-            systems: [{ id: "spam", position: { x: 1, y: 1 } }],
+            position: { x: 10, y: 0 },
+            systems: [{ id: "spam", position: { x: 0, y: 0 } }],
           },
         ],
         links: [{ a: "foo", b: "bar.spam" }],
@@ -177,8 +177,8 @@ describe("flows", () => {
         specificationVersion: "1.0.0",
         title: "test",
         systems: [
-          { id: "foo", position: { x: 1, y: 1 } },
-          { id: "bar", position: { x: 10, y: 1 } },
+          { id: "foo", position: { x: 0, y: 0 } },
+          { id: "bar", position: { x: 10, y: 0 } },
         ],
         links: [],
         flows: [
@@ -211,15 +211,15 @@ describe("flows", () => {
         systems: [
           {
             id: "foo",
-            position: { x: 1, y: 1 },
+            position: { x: 0, y: 0 },
             systems: [
               {
                 id: "bar",
-                position: { x: 1, y: 1 },
+                position: { x: 0, y: 0 },
                 systems: [
                   {
                     id: "spam",
-                    position: { x: 1, y: 1 },
+                    position: { x: 0, y: 0 },
                   },
                 ],
               },
@@ -227,15 +227,15 @@ describe("flows", () => {
           },
           {
             id: "bar",
-            position: { x: 10, y: 1 },
+            position: { x: 20, y: 0 },
             systems: [
               {
                 id: "spam",
-                position: { x: 1, y: 1 },
+                position: { x: 0, y: 0 },
               },
               {
                 id: "baz",
-                position: { x: 10, y: 1 },
+                position: { x: 10, y: 0 },
               },
             ],
           },
