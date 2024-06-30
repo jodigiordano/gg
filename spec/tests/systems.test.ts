@@ -430,5 +430,41 @@ describe("systems", () => {
         height: 3,
       });
     });
+
+    it("whitebox", () => {
+      const system: System = {
+        specificationVersion: "1.0.0",
+        title: "test",
+        systems: [
+          {
+            id: "foo",
+            position: { x: 0, y: 0 },
+            systems: [
+              {
+                id: "bar",
+                position: { x: 0, y: 0 },
+              },
+              {
+                id: "spam",
+                position: { x: 10, y: 10 },
+                systems: [
+                  {
+                    id: "baz",
+                    position: { x: 0, y: 0 },
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      };
+
+      const { system: runtime } = load(system);
+
+      assert.deepEqual(runtime.systems.at(0)?.size, {
+        width: 22,
+        height: 23,
+      });
+    });
   });
 });
