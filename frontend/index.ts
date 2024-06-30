@@ -19,6 +19,7 @@ import {
   Container,
   Assets,
   Sprite,
+  Text,
 } from "pixi.js";
 import { dump as saveYaml } from "js-yaml";
 // @ts-ignore FIXME
@@ -33,6 +34,7 @@ import {
   RuntimeLink,
   RuntimePosition,
   RuntimeSubsystem,
+  TitleCharsPerSquare,
 } from "@dataflows/spec";
 import {
   CanvasSimulator,
@@ -61,6 +63,7 @@ interface ToggleHideSystemsOperation {
 interface SetSystemTitleOperation {
   type: "setSystemTitle";
   subsystem: RuntimeSubsystem | null;
+  editing: boolean;
 }
 
 interface AddSystemOperation {
@@ -131,6 +134,7 @@ function resetState(): void {
   // TODO: Hmmm...
   viewport.pause = false;
   dragAndDropContainer.removeChildren();
+  setSystemTitleContainer.removeChildren();
 }
 
 // Setup PixiJS.
@@ -227,6 +231,46 @@ let canvasSimulator: CanvasSimulator | null = null;
 let canvasFlowPlayer: CanvasFlowPlayer | null = null;
 
 const canvasSimulatorContainer = new Container();
+
+viewport.addChild(canvasSimulatorContainer);
+
+// FIXME: instead of always having the callback registered,
+// FIXME it should be added / removed when switching simulations / flows.
+app.ticker.add<void>(deltaTime => {
+  if (canvasFlowPlayer) {
+    canvasFlowPlayer.update(deltaTime);
+  }
+});
+
+// Set system title
+const setSystemTitleContainer = new Container();
+
+setSystemTitleContainer.sortableChildren = true;
+setSystemTitleContainer.zIndex = 100;
+
+viewport.addChild(setSystemTitleContainer);
+
+const setSystemTitleGraphic = new Graphics()
+  .beginFill(0x000000)
+  .drawRect(0, 0, BlockSize, BlockSize)
+  .endFill();
+
+const setSystemTitleTexture = app.renderer.generateTexture(
+  setSystemTitleGraphic,
+);
+
+const setSystemTitleMask = new Sprite(setSystemTitleTexture);
+setSystemTitleMask.zIndex = 1;
+
+const setSystemTitleEditor = new Text("", {
+  fontFamily: "Ibm",
+  fontSize: BlockSize,
+  lineHeight: BlockSize,
+});
+
+setSystemTitleEditor.style.fill = "0xffffff";
+setSystemTitleEditor.resolution = 2;
+setSystemTitleEditor.zIndex = 2;
 
 // Drag & drop
 const dragAndDropContainer = new Container();
@@ -389,7 +433,42 @@ viewport.on("pointerup", (event: any) => {
     }
   } else if (state.operation.type === "setSystemTitle") {
     if (state.operation.subsystem) {
-      // TODO.
+      const { subsystem } = state.operation;
+
+      if (state.operation.editing) {
+        modifySpecification(() => {
+          subsystem.specification.title = setSystemTitleEditor.text.replace(
+            /\n/g,
+            "\\n",
+          );
+          moveSystem(subsystem, 0, 0);
+        });
+
+        setSystemTitleContainer.removeChildren();
+      } else {
+        const titleX =
+          (subsystem.position.x + subsystem.titlePosition.x) * BlockSize;
+        const titleY =
+          (subsystem.position.y + subsystem.titlePosition.y) * BlockSize;
+
+        setSystemTitleMask.x = titleX;
+        setSystemTitleMask.y = titleY;
+        setSystemTitleMask.width = subsystem.titleSize.width * BlockSize;
+        setSystemTitleMask.height = subsystem.titleSize.height * BlockSize;
+
+        // @ts-ignore FIXME
+        setSystemTitleContainer.addChild(setSystemTitleMask);
+
+        setSystemTitleEditor.text = subsystem.title.replace(/\\n/g, "\n");
+        setSystemTitleEditor.x = titleX;
+        setSystemTitleEditor.y = titleY;
+
+        // @ts-ignore FIXME
+        setSystemTitleContainer.addChild(setSystemTitleEditor);
+
+        state.operation.editing = true;
+        operationInProgress = true;
+      }
     }
   } else if (state.operation.type === "setSystemParent") {
     if (state.operation.parentAt && state.operation.subsystem) {
@@ -458,20 +537,73 @@ viewport.on("pointerup", (event: any) => {
   }
 
   if (!operationInProgress) {
-    state.operation = { type: "idle" };
-    viewport.pause = false;
+    finishOperation();
   }
 });
 
-viewport.addChild(canvasSimulatorContainer);
+window.addEventListener("keydown", (event: any) => {
+  if (state.operation.type === "setSystemTitle") {
+    const { subsystem } = state.operation;
 
-// FIXME: instead of always having the callback registered,
-// FIXME it should be added / removed when switching simulations / flows.
-app.ticker.add<void>(deltaTime => {
-  if (canvasFlowPlayer) {
-    canvasFlowPlayer.update(deltaTime);
+    let titleModified = false;
+
+    if (event.key === "Backspace") {
+      setSystemTitleEditor.text = setSystemTitleEditor.text.slice(0, -1);
+      titleModified = true;
+    } else if (event.key === "Escape") {
+      setSystemTitleContainer.removeChildren();
+      finishOperation();
+    } else if (event.shiftKey && event.key === "Enter") {
+      setSystemTitleEditor.text = setSystemTitleEditor.text + "\n";
+      titleModified = true;
+    } else if (event.key === "Enter") {
+      modifySpecification(() => {
+        subsystem!.specification.title = setSystemTitleEditor.text.replace(
+          /\n/g,
+          "\\n",
+        );
+        moveSystem(subsystem!, 0, 0);
+      });
+
+      setSystemTitleContainer.removeChildren();
+
+      finishOperation();
+    } else if (event.key.length === 1) {
+      setSystemTitleEditor.text = setSystemTitleEditor.text + event.key;
+
+      // Example: prevents "/" from opening the Quick Search in Firefox.
+      event.preventDefault();
+
+      titleModified = true;
+    }
+
+    if (titleModified) {
+      const currentTitleWidth = subsystem!.titleSize.width;
+      const currentTitleHeight = subsystem!.titleSize.height;
+
+      const titleLengths = setSystemTitleEditor.text
+        .split("\n")
+        .map(line => line.length);
+
+      const newTitleWidth =
+        Math.ceil(Math.max(...titleLengths) / TitleCharsPerSquare) | 0;
+      const newTitleHeight = titleLengths.length;
+
+      setSystemTitleMask.width =
+        Math.max(currentTitleWidth, newTitleWidth) * BlockSize;
+      setSystemTitleMask.height =
+        Math.max(currentTitleHeight, newTitleHeight) * BlockSize;
+    }
   }
 });
+
+/**
+ * Finish an ongoing operation.
+ */
+function finishOperation(): void {
+  state.operation = { type: "idle" };
+  viewport.pause = false;
+}
 
 /**
  * Modifies the specification transactionally.
@@ -780,7 +912,11 @@ document
 document
   .getElementById("operation-system-set-title")
   ?.addEventListener("click", function () {
-    state.operation = { type: "setSystemTitle", subsystem: null };
+    state.operation = {
+      type: "setSystemTitle",
+      subsystem: null,
+      editing: false,
+    };
   });
 
 document
