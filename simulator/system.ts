@@ -631,10 +631,8 @@ export class SystemSimulator {
       });
 
       for (const port of gridSS.ports) {
-        if (port.x < this.boundaries.width && port.y < this.boundaries.height) {
-          this.grid[port.x]![port.y]!.push(simulatorPort);
-          finderGrid.setWeightAt(port.x, port.y, 1);
-        }
+        this.grid[port.x]![port.y]!.push(simulatorPort);
+        finderGrid.setWeightAt(port.x, port.y, 1);
       }
 
       // Title padding.
@@ -647,20 +645,12 @@ export class SystemSimulator {
 
       for (
         let x = gridSS.title.x - 1;
-        x <
-        Math.min(
-          gridSS.title.x + gridSS.title.width + 1,
-          this.boundaries.width,
-        );
+        x < gridSS.title.x + gridSS.title.width + 1;
         x++
       ) {
         for (
           let y = gridSS.title.y - 1;
-          y <
-          Math.min(
-            gridSS.title.y + gridSS.title.height + 1,
-            this.boundaries.height,
-          );
+          y < gridSS.title.y + gridSS.title.height + 1;
           y++
         ) {
           this.grid[x]![y]!.push(simulatorSystemTitlePadding);
@@ -673,17 +663,12 @@ export class SystemSimulator {
 
       for (
         let x = gridSS.title.x, i = 0;
-        x <
-        Math.min(gridSS.title.x + gridSS.title.width, this.boundaries.width);
+        x < gridSS.title.x + gridSS.title.width;
         x++, i++
       ) {
         for (
           let y = gridSS.title.y, j = 0;
-          y <
-          Math.min(
-            gridSS.title.y + gridSS.title.height,
-            this.boundaries.height,
-          );
+          y < gridSS.title.y + gridSS.title.height;
           y++, j++
         ) {
           finderGrid.setWeightAt(x, y, Infinity);
