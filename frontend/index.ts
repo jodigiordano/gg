@@ -1,12 +1,3 @@
-// Current layout:
-//
-// app stage (receives events)
-//   viewport (receives viewport events)
-//     grid (no events)
-//     out of bounds (no events)
-//     simulator container (no events)
-//       simulator objects (no events)
-
 import {
   Application,
   Graphics,
@@ -19,6 +10,7 @@ import {
   Container,
   Assets,
   Sprite,
+  Spritesheet,
   Text,
 } from "pixi.js";
 import { dump as saveYaml } from "js-yaml";
@@ -33,18 +25,22 @@ import {
   moveSystem,
   RuntimeLink,
   RuntimePosition,
+  RuntimeSystem,
   RuntimeSubsystem,
+  moveSubsystemToParent,
   TitleCharsPerSquare,
   setSubsystemTitle,
 } from "@dataflows/spec";
-import {
-  CanvasSimulator,
-  CanvasFlowPlayer,
-  generateCanvasSimulatorTextures,
-} from "./simulation.js";
+import { CanvasSimulator, CanvasFlowPlayer } from "./simulation.js";
 import { BlockSize } from "./consts.js";
 import example1 from "./examples/basic.yml?raw";
 import example2 from "./examples/dataflows.yml?raw";
+
+//@ts-ignore
+import spritesheetData from "./assets/spritesheet.png?base64";
+
+//@ts-ignore
+import fontData from "./assets/ibm.woff?base64";
 
 interface IdleOperation {
   type: "idle";
@@ -79,6 +75,7 @@ interface RemoveSystemOperation {
 
 interface SetSystemParentOperation {
   type: "setSystemParent";
+  parent: RuntimeSystem | RuntimeSubsystem | null;
   parentAt: RuntimePosition | null;
   subsystem: RuntimeSubsystem | null;
 }
@@ -137,7 +134,7 @@ function resetState(): void {
 
 // Setup PixiJS.
 BaseTexture.defaultOptions.mipmap = MIPMAP_MODES.ON;
-BaseTexture.defaultOptions.scaleMode = SCALE_MODES.LINEAR;
+BaseTexture.defaultOptions.scaleMode = SCALE_MODES.NEAREST;
 BaseTexture.defaultOptions.wrapMode = WRAP_MODES.REPEAT;
 
 settings.ROUND_PIXELS = true;
@@ -177,6 +174,66 @@ const app = new Application({
 app.stage.eventMode = "static";
 app.stage.interactiveChildren = true;
 
+// Load assets.
+await Assets.load({
+  name: "ibm",
+  src: `data:font/woff;base64,${fontData}`,
+  data: {
+    family: 'ibm',
+  },
+});
+
+await Assets.load({
+  name: 'spritesheet',
+  src: `data:image/png;base64,${spritesheetData}`,
+});
+
+const spritesheet = new Spritesheet(Assets.get('spritesheet'), {
+  frames: {
+    systemTopLeft: {
+      frame: { x: 0, y: 0, w: 8, h: 8 },
+    },
+    systemTopRight: {
+      frame: { x: 16, y: 0, w: 8, h: 8 },
+    },
+    systemBottomLeft: {
+      frame: { x: 0, y: 16, w: 8, h: 8 },
+    },
+    systemBottomRight: {
+      frame: { x: 16, y: 16, w: 8, h: 8 },
+    },
+    systemCenterLeft: {
+      frame: { x: 0, y: 8, w: 8, h: 8 },
+    },
+    systemCenterRight: {
+      frame: { x: 16, y: 8, w: 8, h: 8 },
+    },
+    systemTopCenter: {
+      frame: { x: 8, y: 0, w: 8, h: 8 },
+    },
+    systemBottomCenter: {
+      frame: { x: 8, y: 16, w: 8, h: 8 },
+    },
+    systemCenterCenter: {
+      frame: { x: 8, y: 8, w: 8, h: 8 },
+    },
+    link: {
+      frame: { x: 24, y: 8, w: 8, h: 8 },
+    },
+    linkCorner: {
+      frame: { x: 24, y: 16, w: 8, h: 8 },
+    },
+  },
+  meta: {
+    image: "spritesheet.png",
+    format: "RGBA8888",
+    size: { w: 128, h: 128 },
+    scale: 1,
+  },
+});
+
+await spritesheet.parse();
+
 // Create PixiJS viewport.
 const viewport = new Viewport({
   screenWidth: window.innerWidth,
@@ -212,6 +269,8 @@ const gridGraphic = new Graphics()
   .endFill();
 
 const gridTexture = app.renderer.generateTexture(gridGraphic);
+
+gridTexture.baseTexture.scaleMode = SCALE_MODES.LINEAR;
 
 const grid = new TilingSprite(
   gridTexture,
@@ -346,6 +405,7 @@ viewport.on("pointerdown", (event: any) => {
     const subsystem = canvasSimulator.systemSimulator.getSubsystemAt(x, y);
 
     if (state.operation.subsystem) {
+      state.operation.parent = subsystem ?? canvasSimulator.system;
       state.operation.parentAt = { x, y };
     } else {
       state.operation.subsystem = subsystem;
@@ -473,7 +533,7 @@ viewport.on("pointerup", (event: any) => {
         // @ts-ignore FIXME
         setSystemTitleContainer.addChild(setSystemTitleEditor);
 
-        const titleLastLineLength = title.split("\n").at(-1)!.length;
+        const titleLastLineLength = title.split("\n")[-1]!.length;
 
         setSystemTitleCursor.x =
           setSystemTitleEditor.x +
@@ -493,19 +553,28 @@ viewport.on("pointerup", (event: any) => {
       }
     }
   } else if (state.operation.type === "setSystemParent") {
-    if (state.operation.parentAt && state.operation.subsystem) {
-      const parent =
-        canvasSimulator.systemSimulator.getSubsystemAt(
-          state.operation.parentAt.x,
-          state.operation.parentAt.y,
-        ) ?? canvasSimulator.system;
+    if (
+      state.operation.parent &&
+      state.operation.parentAt &&
+      state.operation.subsystem
+    ) {
+      const { parent, parentAt, subsystem } = state.operation;
 
-      if (parent.canonicalId !== state.operation.subsystem.canonicalId) {
+      if (
+        parent.canonicalId !== subsystem.canonicalId &&
+        parent.canonicalId !== subsystem.parent?.canonicalId
+      ) {
+        const positionInParent = {
+          x: parentAt.x - parent.position.x,
+          y: parentAt.y - parent.position.y,
+        };
+
         modifySpecification(() => {
-          // TODO: move from current parent subsystems to new parent subsystems.
-          // TODO: set subsystem to new position => move other systems.
-          // TODO: move links.
-          // TODO: move flows.
+          moveSubsystemToParent(subsystem, parent, positionInParent);
+
+          if (parent.canonicalId) {
+            parent.specification.hideSystems = false;
+          }
         });
       }
     } else if (state.operation.parentAt || state.operation.subsystem) {
@@ -636,9 +705,9 @@ window.addEventListener("keydown", event => {
 
       setSystemTitleCursor.x =
         setSystemTitleEditor.x +
-        (titleLengths.at(-1)! % 2 === 0
-          ? (titleLengths.at(-1)! / TitleCharsPerSquare) * BlockSize
-          : ((titleLengths.at(-1)! - 1) / TitleCharsPerSquare) * BlockSize +
+        (titleLengths[-1]! % 2 === 0
+          ? (titleLengths[-1]! / TitleCharsPerSquare) * BlockSize
+          : ((titleLengths[-1]! - 1) / TitleCharsPerSquare) * BlockSize +
             BlockSize / TitleCharsPerSquare);
 
       setSystemTitleCursor.y =
@@ -687,8 +756,6 @@ function modifySpecification(modifier: () => void): void {
 
 // Simulation.
 
-const canvasSimulatorTextures = generateCanvasSimulatorTextures(app);
-
 function loadSimulation(yaml: string): boolean {
   let result: ReturnType<typeof loadYaml>;
 
@@ -722,7 +789,7 @@ function loadSimulation(yaml: string): boolean {
   canvasSimulatorContainer.removeChildren();
 
   for (const objectToRender of canvasSimulator.getObjectsToRender(
-    canvasSimulatorTextures,
+    spritesheet,
   )) {
     // @ts-ignore FIXME
     canvasSimulatorContainer.addChild(objectToRender);
@@ -989,6 +1056,7 @@ document
     state.operation = {
       type: "setSystemParent",
       subsystem: null,
+      parent: null,
       parentAt: null,
     };
   });
@@ -1008,9 +1076,6 @@ document
 
     state.operation = { type: "removeLink", link: null };
   });
-
-// Load assets.
-await Assets.load("assets/ibm.woff");
 
 // Add PixiJS to the DOM.
 // @ts-ignore FIXME

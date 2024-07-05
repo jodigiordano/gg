@@ -1,73 +1,24 @@
-import { Application, Sprite, Graphics, RenderTexture, Text } from "pixi.js";
+import {
+  Application,
+  Sprite,
+  Graphics,
+  RenderTexture,
+  Text,
+  Spritesheet,
+  SCALE_MODES,
+} from "pixi.js";
 import { RuntimeFlow, RuntimeSystem } from "@dataflows/spec";
 import {
   SystemSimulator,
   FlowSimulator,
   SimulatorObjectType,
   SimulatorSystemTitle,
-  SimulatorWhiteBox,
+  SimulatorSubsystem,
+  SimulatorLinkDirectionType,
+  SimulatorLink,
+  SimulatorSystemDirectionType,
 } from "@dataflows/simulator";
 import { BlockSize } from "./consts.js";
-
-export interface CanvasSimulatorTextures {
-  whiteboxA: RenderTexture;
-  whiteboxB: RenderTexture;
-  blackbox: RenderTexture;
-  link: RenderTexture;
-  freeSpace: RenderTexture;
-}
-
-export function generateCanvasSimulatorTextures(
-  app: Application,
-): CanvasSimulatorTextures {
-  // Whitebox A
-  const whiteboxAGraphic = new Graphics()
-    .beginFill(0xc0c0c0)
-    .drawRect(0, 0, BlockSize, BlockSize)
-    .endFill();
-
-  const whiteboxA = app.renderer.generateTexture(whiteboxAGraphic);
-
-  // Whitebox B
-  const whiteboxBGraphic = new Graphics()
-    .beginFill(0xa0a0a0)
-    .drawRect(0, 0, BlockSize, BlockSize)
-    .endFill();
-
-  const whiteboxB = app.renderer.generateTexture(whiteboxBGraphic);
-
-  // Blackbox.
-  const blackboxGraphic = new Graphics()
-    .beginFill(0x000000)
-    .drawRect(0, 0, BlockSize, BlockSize)
-    .endFill();
-
-  const blackbox = app.renderer.generateTexture(blackboxGraphic);
-
-  // Link.
-  const linkGraphic = new Graphics()
-    .beginFill(0xff0000)
-    .drawRect(0, 0, BlockSize, BlockSize)
-    .endFill();
-
-  const link = app.renderer.generateTexture(linkGraphic);
-
-  // Free space.
-  const freeSpaceGraphic = new Graphics()
-    .beginFill(0x0000ff)
-    .drawRect(0, 0, BlockSize, BlockSize)
-    .endFill();
-
-  const freeSpace = app.renderer.generateTexture(freeSpaceGraphic);
-
-  return {
-    whiteboxA,
-    whiteboxB,
-    blackbox,
-    link,
-    freeSpace,
-  };
-}
 
 export class CanvasSimulator {
   public system: RuntimeSystem;
@@ -89,7 +40,7 @@ export class CanvasSimulator {
     };
   }
 
-  getObjectsToRender(textures: CanvasSimulatorTextures): (Sprite | Text)[] {
+  getObjectsToRender(spritesheet: Spritesheet): (Sprite | Text)[] {
     const toDraw: (Sprite | Text)[] = [];
     const layout = this.systemSimulator.getLayout();
     const boundaries = this.systemSimulator.getBoundaries();
@@ -97,42 +48,94 @@ export class CanvasSimulator {
     for (let i = 0; i < boundaries.width; i++) {
       for (let j = 0; j < boundaries.height; j++) {
         for (const obj of layout[i]![j]!) {
-          if (obj.type === SimulatorObjectType.WhiteBox) {
-            const { system } = obj as SimulatorWhiteBox;
-
-            const sprite = new Sprite(
-              system.depth % 2 === 0 ? textures.whiteboxA : textures.whiteboxB,
-            );
+          if (obj.type === SimulatorObjectType.System) {
+            const sprite = new Sprite();
 
             sprite.x = (i - boundaries.translateX) * BlockSize;
             sprite.y = (j - boundaries.translateY) * BlockSize;
+            sprite.width = BlockSize;
+            sprite.height = BlockSize;
 
-            toDraw.push(sprite);
-          } else if (obj.type === SimulatorObjectType.BlackBox) {
-            const sprite = new Sprite(textures.blackbox);
+            const { system, blackbox, direction } = obj as SimulatorSubsystem;
 
-            sprite.x = (i - boundaries.translateX) * BlockSize;
-            sprite.y = (j - boundaries.translateY) * BlockSize;
+            sprite.tint = blackbox
+              ? "3d348b"
+              : system.depth % 2 === 0
+                ? "f18701"
+                : system.depth % 3 === 0
+                  ? "f35b04"
+                  : "f7b801";
+
+            if (direction === SimulatorSystemDirectionType.TopLeft) {
+              sprite.texture = spritesheet.textures.systemTopLeft;
+            } else if (direction === SimulatorSystemDirectionType.TopCenter) {
+              sprite.texture = spritesheet.textures.systemTopCenter;
+            } else if (direction === SimulatorSystemDirectionType.TopRight) {
+              sprite.texture = spritesheet.textures.systemTopRight;
+            } else if (direction === SimulatorSystemDirectionType.CenterLeft) {
+              sprite.texture = spritesheet.textures.systemCenterLeft;
+            } else if (direction === SimulatorSystemDirectionType.CenterRight) {
+              sprite.texture = spritesheet.textures.systemCenterRight;
+            } else if (direction === SimulatorSystemDirectionType.BottomLeft) {
+              sprite.texture = spritesheet.textures.systemBottomLeft;
+            } else if (
+              direction === SimulatorSystemDirectionType.BottomCenter
+            ) {
+              sprite.texture = spritesheet.textures.systemBottomCenter;
+            } else if (direction === SimulatorSystemDirectionType.BottomRight) {
+              sprite.texture = spritesheet.textures.systemBottomRight;
+            } else {
+              // CenterCenter
+              sprite.texture = spritesheet.textures.systemCenterCenter;
+            }
 
             toDraw.push(sprite);
           } else if (obj.type === SimulatorObjectType.Link) {
-            const sprite = new Sprite(textures.link);
+            const sprite = new Sprite();
 
-            sprite.x = (i - boundaries.translateX) * BlockSize;
-            sprite.y = (j - boundaries.translateY) * BlockSize;
+            sprite.x = (i - boundaries.translateX) * BlockSize + BlockSize / 2;
+            sprite.y = (j - boundaries.translateY) * BlockSize + BlockSize / 2;
+            sprite.width = BlockSize;
+            sprite.height = BlockSize;
+            sprite.anchor.x = 0.5;
+            sprite.anchor.y = 0.5;
+
+            const { direction } = obj as SimulatorLink;
+
+            if (direction === SimulatorLinkDirectionType.Horizontal) {
+              sprite.texture = spritesheet.textures.link;
+              sprite.rotation = -Math.PI / 2;
+            } else if (direction === SimulatorLinkDirectionType.TopToLeft) {
+              sprite.texture = spritesheet.textures.linkCorner;
+              sprite.rotation = -Math.PI / 2;
+            } else if (direction === SimulatorLinkDirectionType.TopToRight) {
+              sprite.texture = spritesheet.textures.linkCorner;
+            } else if (direction === SimulatorLinkDirectionType.BottomToLeft) {
+              sprite.texture = spritesheet.textures.linkCorner;
+              sprite.rotation = Math.PI;
+            } else if (direction === SimulatorLinkDirectionType.BottomToRight) {
+              sprite.texture = spritesheet.textures.linkCorner;
+              sprite.rotation = Math.PI / 2;
+            } else {
+              // Vertical.
+              sprite.texture = spritesheet.textures.link;
+            }
 
             toDraw.push(sprite);
           } else if (obj.type === SimulatorObjectType.SystemTitle) {
+            const { blackbox } = obj as SimulatorSubsystem;
+
             const title = new Text((obj as SimulatorSystemTitle).chars, {
-              fontFamily: "Ibm",
+              fontFamily: "ibm",
               fontSize: BlockSize,
             });
 
             title.x = (i - boundaries.translateX) * BlockSize;
             title.y = (j - boundaries.translateY) * BlockSize;
 
-            title.style.fill = "0xffffff";
+            title.style.fill = blackbox ? "ffffff" : "000000";
             title.resolution = 2;
+            title.texture.baseTexture.scaleMode = SCALE_MODES.LINEAR;
 
             toDraw.push(title);
           }
