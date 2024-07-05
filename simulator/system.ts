@@ -10,43 +10,56 @@ import {
   SystemMargin,
 } from "@dataflows/spec";
 
-// TODO: add LinkRightTurn, LinkDownTurn, ...
 export enum SimulatorObjectType {
-  BlackBox = 1,
-  WhiteBox = 2,
+  System = 1,
+  Port = 2,
   Link = 3,
-  Port = 4,
-  SystemMargin = 5,
-  SystemTitle = 6,
-  SystemTitlePadding = 7,
-  SystemTopLeftCorner = 8,
-  SystemTopRightCorner = 9,
-  SystemBottomLeftCorner = 10,
-  SystemBottomRightCorner = 11,
+  SystemMargin = 4,
+  SystemTitle = 5,
+  SystemTitlePadding = 6,
+}
+
+export enum SimulatorLinkDirectionType {
+  Horizontal = 1,
+  Vertical = 2,
+  BottomToRight = 3,
+  BottomToLeft = 4,
+  TopToRight = 5,
+  TopToLeft = 6,
+}
+
+export enum SimulatorSystemDirectionType {
+  TopLeft = 1,
+  TopCenter = 2,
+  TopRight = 3,
+  CenterLeft = 4,
+  CenterCenter = 5,
+  CenterRight = 6,
+  BottomLeft = 7,
+  BottomCenter = 8,
+  BottomRight = 9,
 }
 
 export interface SimulatorObject {
   type: SimulatorObjectType;
 }
 
-export interface SimulatorBlackBox extends SimulatorObject {
-  type: SimulatorObjectType.BlackBox;
+export interface SimulatorSubsystem extends SimulatorObject {
+  type: SimulatorObjectType.System;
   system: RuntimeSubsystem;
-}
-
-export interface SimulatorWhiteBox extends SimulatorObject {
-  type: SimulatorObjectType.WhiteBox;
-  system: RuntimeSubsystem;
-}
-
-export interface SimulatorLink extends SimulatorObject {
-  type: SimulatorObjectType.Link;
-  link: RuntimeLink;
+  direction: SimulatorSystemDirectionType;
+  blackbox: boolean;
 }
 
 export interface SimulatorPort extends SimulatorObject {
   type: SimulatorObjectType.Port;
   system: RuntimeSubsystem;
+}
+
+export interface SimulatorLink extends SimulatorObject {
+  type: SimulatorObjectType.Link;
+  direction: SimulatorLinkDirectionType;
+  link: RuntimeLink;
 }
 
 export interface SimulatorSystemMargin extends SimulatorObject {
@@ -57,32 +70,14 @@ export interface SimulatorSystemMargin extends SimulatorObject {
 export interface SimulatorSystemTitle extends SimulatorObject {
   type: SimulatorObjectType.SystemTitle;
   system: RuntimeSubsystem;
+  blackbox: boolean;
   chars: string;
 }
 
 export interface SimulatorSystemTitlePadding extends SimulatorObject {
   type: SimulatorObjectType.SystemTitlePadding;
   system: RuntimeSubsystem;
-}
-
-export interface SimulatorSystemTopLeftCorner extends SimulatorObject {
-  type: SimulatorObjectType.SystemTopLeftCorner;
-  system: RuntimeSubsystem;
-}
-
-export interface SimulatorSystemTopRightCorner extends SimulatorObject {
-  type: SimulatorObjectType.SystemTopRightCorner;
-  system: RuntimeSubsystem;
-}
-
-export interface SimulatorSystemBottomLeftCorner extends SimulatorObject {
-  type: SimulatorObjectType.SystemBottomLeftCorner;
-  system: RuntimeSubsystem;
-}
-
-export interface SimulatorSystemBottomRightCorner extends SimulatorObject {
-  type: SimulatorObjectType.SystemBottomRightCorner;
-  system: RuntimeSubsystem;
+  blackbox: boolean;
 }
 
 export interface SimulatorBoundaries {
@@ -207,8 +202,7 @@ export class SystemSimulator {
       for (let j = 0; j < this.boundaries.height; j++) {
         const hasVisibleObjects = this.grid[i]![j]!.some(
           obj =>
-            obj.type === SimulatorObjectType.BlackBox ||
-            obj.type === SimulatorObjectType.WhiteBox ||
+            obj.type === SimulatorObjectType.System ||
             obj.type === SimulatorObjectType.Link,
         );
 
@@ -265,8 +259,9 @@ export class SystemSimulator {
       .reverse()
       .find(
         obj =>
-          obj.type === SimulatorObjectType.BlackBox ||
-          obj.type === SimulatorObjectType.WhiteBox,
+          obj.type === SimulatorObjectType.System ||
+          obj.type === SimulatorObjectType.SystemTitle ||
+          obj.type === SimulatorObjectType.SystemTitlePadding,
       );
 
     if (object && "system" in object) {
@@ -530,38 +525,73 @@ export class SystemSimulator {
       }
 
       // Sub-systems.
-      const simulatorSystem: SimulatorBlackBox | SimulatorWhiteBox =
-        Object.freeze({
-          type:
-            gridSS.hidden || ss.hideSystems || !ss.systems.length
-              ? SimulatorObjectType.BlackBox
-              : SimulatorObjectType.WhiteBox,
+      const blackbox = gridSS.hidden || ss.hideSystems || !ss.systems.length;
+
+      const simulatorSystem: SimulatorSubsystem = Object.freeze({
+        type: SimulatorObjectType.System,
+        blackbox,
+        system: ss,
+        direction: SimulatorSystemDirectionType.CenterCenter,
+      });
+
+      const simulatorSystemTopLeftCorner: SimulatorSubsystem = Object.freeze({
+        type: SimulatorObjectType.System,
+        blackbox,
+        system: ss,
+        direction: SimulatorSystemDirectionType.TopLeft,
+      });
+
+      const simulatorSystemTopRightCorner: SimulatorSubsystem = Object.freeze({
+        type: SimulatorObjectType.System,
+        blackbox,
+        system: ss,
+        direction: SimulatorSystemDirectionType.TopRight,
+      });
+
+      const simulatorSystemBottomLeftCorner: SimulatorSubsystem = Object.freeze(
+        {
+          type: SimulatorObjectType.System,
+          blackbox,
           system: ss,
+          direction: SimulatorSystemDirectionType.BottomLeft,
+        },
+      );
+
+      const simulatorSystemBottomRightCorner: SimulatorSubsystem =
+        Object.freeze({
+          type: SimulatorObjectType.System,
+          blackbox,
+          system: ss,
+          direction: SimulatorSystemDirectionType.BottomRight,
         });
 
-      const simulatorSystemTopLeftCorner: SimulatorSystemTopLeftCorner =
-        Object.freeze({
-          type: SimulatorObjectType.SystemTopLeftCorner,
-          system: ss,
-        });
+      const simulatorSystemLeft: SimulatorSubsystem = Object.freeze({
+        type: SimulatorObjectType.System,
+        blackbox,
+        system: ss,
+        direction: SimulatorSystemDirectionType.CenterLeft,
+      });
 
-      const simulatorSystemTopRightCorner: SimulatorSystemTopRightCorner =
-        Object.freeze({
-          type: SimulatorObjectType.SystemTopRightCorner,
-          system: ss,
-        });
+      const simulatorSystemRight: SimulatorSubsystem = Object.freeze({
+        type: SimulatorObjectType.System,
+        blackbox,
+        system: ss,
+        direction: SimulatorSystemDirectionType.CenterRight,
+      });
 
-      const simulatorSystemBottomLeftCorner: SimulatorSystemBottomLeftCorner =
-        Object.freeze({
-          type: SimulatorObjectType.SystemBottomLeftCorner,
-          system: ss,
-        });
+      const simulatorSystemTop: SimulatorSubsystem = Object.freeze({
+        type: SimulatorObjectType.System,
+        blackbox,
+        system: ss,
+        direction: SimulatorSystemDirectionType.TopCenter,
+      });
 
-      const simulatorSystemBottomRightCorner: SimulatorSystemBottomRightCorner =
-        Object.freeze({
-          type: SimulatorObjectType.SystemBottomRightCorner,
-          system: ss,
-        });
+      const simulatorSystemBottom: SimulatorSubsystem = Object.freeze({
+        type: SimulatorObjectType.System,
+        blackbox,
+        system: ss,
+        direction: SimulatorSystemDirectionType.BottomCenter,
+      });
 
       for (let x = gridSS.x1; x <= gridSS.x2; x++) {
         for (let y = gridSS.y1; y <= gridSS.y2; y++) {
@@ -572,22 +602,24 @@ export class SystemSimulator {
             continue;
           }
 
-          this.grid[x]![y]!.push(simulatorSystem);
-
           if (x === gridSS.x1 && y == gridSS.y1) {
             this.grid[x]![y]!.push(simulatorSystemTopLeftCorner);
-          }
-
-          if (x === gridSS.x2 && y == gridSS.y1) {
+          } else if (x === gridSS.x2 && y == gridSS.y1) {
             this.grid[x]![y]!.push(simulatorSystemTopRightCorner);
-          }
-
-          if (x === gridSS.x1 && y == gridSS.y2) {
+          } else if (x === gridSS.x1 && y == gridSS.y2) {
             this.grid[x]![y]!.push(simulatorSystemBottomLeftCorner);
-          }
-
-          if (x === gridSS.x2 && y == gridSS.y2) {
+          } else if (x === gridSS.x2 && y == gridSS.y2) {
             this.grid[x]![y]!.push(simulatorSystemBottomRightCorner);
+          } else if (x === gridSS.x1) {
+            this.grid[x]![y]!.push(simulatorSystemLeft);
+          } else if (x === gridSS.x2) {
+            this.grid[x]![y]!.push(simulatorSystemRight);
+          } else if (y === gridSS.y1) {
+            this.grid[x]![y]!.push(simulatorSystemTop);
+          } else if (y === gridSS.y2) {
+            this.grid[x]![y]!.push(simulatorSystemBottom);
+          } else {
+            this.grid[x]![y]!.push(simulatorSystem);
           }
         }
       }
@@ -609,6 +641,7 @@ export class SystemSimulator {
       const simulatorSystemTitlePadding: SimulatorSystemTitlePadding =
         Object.freeze({
           type: SimulatorObjectType.SystemTitlePadding,
+          blackbox,
           system: ss,
         });
 
@@ -663,6 +696,7 @@ export class SystemSimulator {
           const simulatorSystemTitle: SimulatorSystemTitle = {
             type: SimulatorObjectType.SystemTitle,
             system: ss,
+            blackbox,
             chars: titleLines[j]!.slice(
               i * TitleCharsPerSquare,
               i * TitleCharsPerSquare + TitleCharsPerSquare,
@@ -687,6 +721,18 @@ export class SystemSimulator {
     for (const link of system.links) {
       const subsystemA = this.gridSystems[link.a]!;
       const subsystemB = this.gridSystems[link.b]!;
+
+      // TODO: set walkable for some whiteboxes.
+      //
+      // For a link of A <-> B, we permit the route to walk
+      // in A.parent[.parent] and B.parent[.parent]
+      // but not in A.systems and B.systems.
+      //
+      // TODO:
+      //
+      // 1. By default, set unwalkable for all whiteboxes and blackboxes.
+      // 2. Make a copy of finderGrid.
+      // 3. Set walkable for whitelisted whiteboxes.
 
       const subsystemAPorts = subsystemA.ports.filter(
         port =>
@@ -730,25 +776,144 @@ export class SystemSimulator {
           this.routes[link.b] ??= {};
           this.routes[link.b]![link.a] = route.slice().reverse();
 
-          const simulatorLink: SimulatorLink = Object.freeze({
+          const simulatorLinkHorizontal: SimulatorLink = Object.freeze({
             type: SimulatorObjectType.Link,
+            direction: SimulatorLinkDirectionType.Horizontal,
             link,
           });
 
-          for (const [x, y] of route) {
+          const simulatorLinkVertical: SimulatorLink = Object.freeze({
+            type: SimulatorObjectType.Link,
+            direction: SimulatorLinkDirectionType.Vertical,
+            link,
+          });
+
+          const simulatorLinkBottomToRight: SimulatorLink = Object.freeze({
+            type: SimulatorObjectType.Link,
+            direction: SimulatorLinkDirectionType.BottomToRight,
+            link,
+          });
+
+          const simulatorLinkBottomToLeft: SimulatorLink = Object.freeze({
+            type: SimulatorObjectType.Link,
+            direction: SimulatorLinkDirectionType.BottomToLeft,
+            link,
+          });
+
+          const simulatorLinkTopToLeft: SimulatorLink = Object.freeze({
+            type: SimulatorObjectType.Link,
+            direction: SimulatorLinkDirectionType.TopToLeft,
+            link,
+          });
+
+          const simulatorLinkTopToRight: SimulatorLink = Object.freeze({
+            type: SimulatorObjectType.Link,
+            direction: SimulatorLinkDirectionType.TopToRight,
+            link,
+          });
+
+          for (let i = 0; i < route.length; i++) {
+            const [x, y] = route[i]!;
+
             // A path is still considered walkable but it has a higher cost
-            // than an Empty tile. It enables tunnels.
+            // than an empty tile. It enables tunnels.
             finderGrid.setWeightAt(x!, y!, 2);
 
             const blackbox = this.grid[x!]![y!]!.find(
-              obj => obj.type === SimulatorObjectType.BlackBox,
+              obj => "blackbox" in obj && obj.blackbox,
             );
 
             // The link part is inside a blackbox.
             if (blackbox) {
-              this.grid[x!]![y!]!.push(blackbox);
+              // this.grid[x!]![y!]!.push(blackbox);
+              continue;
+            }
+
+            let xBefore: number;
+            let yBefore: number;
+            let xAfter: number;
+            let yAfter: number;
+
+            // There is no before / after.
+            if (route.length === 1) {
+              xBefore = portA.x;
+              yBefore = portA.y;
+
+              xAfter = portB.x;
+              yAfter = portB.y;
+
+              // There is no before.
+            } else if (i === 0) {
+              xBefore = portA.x;
+              yBefore = portA.y;
+
+              xAfter = route[i + 1]![0]!;
+              yAfter = route[i + 1]![1]!;
+
+              // There is no after.
+            } else if (i === route.length - 1) {
+              xBefore = route[i - 1]![0]!;
+              yBefore = route[i - 1]![1]!;
+
+              xAfter = portB.x;
+              yAfter = portB.y;
+
+              // There is a before / after.
             } else {
-              this.grid[x!]![y!]!.push(simulatorLink);
+              xBefore = route[i - 1]![0]!;
+              yBefore = route[i - 1]![1]!;
+
+              xAfter = route[i + 1]![0]!;
+              yAfter = route[i + 1]![1]!;
+            }
+
+            // ...    ...
+            // BxA or AxB
+            // ...    ...
+            if (yBefore === y && yAfter === y) {
+              this.grid[x!]![y!]!.push(simulatorLinkHorizontal);
+
+              // .B.    .A.
+              // .x. or .x.
+              // .A.    .B.
+            } else if (xBefore === x && xAfter === x) {
+              this.grid[x!]![y!]!.push(simulatorLinkVertical);
+
+              // ...    ...
+              // .xA or .xB
+              // .B.    .A.
+            } else if (
+              (xBefore === x && yBefore > y! && xAfter > x! && yAfter === y) ||
+              (yBefore === y && xBefore > x! && yAfter > y! && xAfter === x)
+            ) {
+              this.grid[x!]![y!]!.push(simulatorLinkBottomToRight);
+
+              // ...    ...
+              // .Bx or .Ax
+              // ..A    ..B
+            } else if (
+              (xBefore < x! && yBefore === y && xAfter === x && yAfter > y!) ||
+              (yBefore > y! && xBefore === x && yAfter === y && xAfter < x!)
+            ) {
+              this.grid[x!]![y!]!.push(simulatorLinkBottomToLeft);
+
+              // ...    ...
+              // ..B or ..A
+              // .Ax    .Bx
+            } else if (
+              (xBefore === x && yBefore < y! && xAfter < x! && yAfter === y) ||
+              (yBefore === y && xBefore < x! && yAfter < y! && xAfter === x)
+            ) {
+              this.grid[x!]![y!]!.push(simulatorLinkTopToLeft);
+
+              // ...    ...
+              // .A. or .B.
+              // .xB    .xA
+            } else if (
+              (xBefore > x! && yBefore === y && xAfter === x && yAfter < y!) ||
+              (yBefore < y! && xBefore === x && yAfter === y && xAfter > x!)
+            ) {
+              this.grid[x!]![y!]!.push(simulatorLinkTopToRight);
             }
           }
 
