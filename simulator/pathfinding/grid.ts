@@ -1,5 +1,18 @@
-import Node from "./node";
 import DiagonalMovement from "./diagonalMovement";
+
+interface Node {
+  x: number;
+  y: number;
+  weight: number;
+
+  // Properties set when finding a path between two nodes.
+  parent: Node | undefined;
+  f: number;
+  g: number;
+  h: number;
+  opened: boolean;
+  closed: boolean;
+}
 
 export default class Grid {
   private width: number;
@@ -12,11 +25,11 @@ export default class Grid {
 
     this.nodes = new Array(this.width);
 
-    for (let i = 0; i < this.width; i++) {
-      this.nodes[i] = new Array(this.height);
+    for (let x = 0; x < this.width; x++) {
+      this.nodes[x] = new Array(this.height);
 
-      for (let j = 0; j < this.height; j++) {
-        this.nodes[i]![j] = new Node(i, j, weight);
+      for (let y = 0; y < this.height; y++) {
+        this.nodes[x]![y] = { x, y, weight, parent: undefined, f: 0, g: 0, h: 0, opened: false, closed: false };
       }
     }
   }
@@ -137,7 +150,12 @@ export default class Grid {
   reset(): void {
     for (const row of this.nodes) {
       for (const node of row) {
-        node.reset();
+        node.parent = undefined;
+        node.f = 0;
+        node.g = 0;
+        node.h = 0;
+        node.opened = false;
+        node.closed = false;
       }
     }
   }
