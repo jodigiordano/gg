@@ -1,7 +1,7 @@
 import { readFileSync, mkdirSync, createWriteStream } from "node:fs";
 import { loadYaml } from "@dataflows/spec";
 import { createCanvas, Canvas } from "canvas";
-import { SystemSimulator, SimulatorObjectType } from "../index";
+import { SystemSimulator, SimulatorObjectType, SimulatorSubsystem } from "../index";
 
 export function loadExample(name: string) {
   return loadYaml(
@@ -40,10 +40,12 @@ export async function render(simulator: SystemSimulator) {
     for (let j = 0; j < boundaries.height; j++) {
       const objects = layout[i]![j]!;
 
-      if (objects.at(-1)?.type === SimulatorObjectType.BlackBox) {
-        ctx.fillStyle = "#e9d8a6";
-      } else if (objects.at(-1)?.type === SimulatorObjectType.WhiteBox) {
-        ctx.fillStyle = "#d9d9d9";
+      if (objects.at(-1)?.type === SimulatorObjectType.System) {
+        if ((objects.at(-1) as SimulatorSubsystem).blackbox) {
+          ctx.fillStyle = "#e9d8a6";
+        } else {
+          ctx.fillStyle = "#d9d9d9";
+        }
       } else if (
         objects.filter(obj => obj.type === SimulatorObjectType.Link).length > 1
       ) {
