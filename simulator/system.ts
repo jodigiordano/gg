@@ -255,17 +255,16 @@ export class SystemSimulator {
   getSubsystemAt(worldX: number, worldY: number): RuntimeSubsystem | null {
     const objects = this.getObjectsAt(worldX, worldY);
 
-    const object = objects
-      .reverse()
-      .find(
-        obj =>
-          obj.type === SimulatorObjectType.System ||
-          obj.type === SimulatorObjectType.SystemTitle ||
-          obj.type === SimulatorObjectType.SystemTitlePadding,
-      );
+    for (let i = objects.length - 1; i >= 0; i--) {
+      const obj = objects[i]!;
 
-    if (object && "system" in object) {
-      return object.system as RuntimeSubsystem;
+      if (
+        obj.type === SimulatorObjectType.System ||
+        obj.type === SimulatorObjectType.SystemTitle ||
+        obj.type === SimulatorObjectType.SystemTitlePadding
+      ) {
+        return (obj as SimulatorSubsystem).system;
+      }
     }
 
     return null;
@@ -274,12 +273,12 @@ export class SystemSimulator {
   getLinkAt(worldX: number, worldY: number): RuntimeLink | null {
     const objects = this.getObjectsAt(worldX, worldY);
 
-    const object = objects
-      .reverse()
-      .find(obj => obj.type === SimulatorObjectType.Link);
+    for (let i = objects.length - 1; i >= 0; i--) {
+      const obj = objects[i]!;
 
-    if (object && "link" in object) {
-      return object.link as RuntimeLink;
+      if (obj.type === SimulatorObjectType.Link) {
+        return (obj as SimulatorLink).link;
+      }
     }
 
     return null;
