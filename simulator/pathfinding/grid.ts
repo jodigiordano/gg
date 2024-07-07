@@ -29,7 +29,17 @@ export default class Grid {
       this.nodes[x] = new Array(this.height);
 
       for (let y = 0; y < this.height; y++) {
-        this.nodes[x]![y] = { x, y, weight, parent: undefined, f: 0, g: 0, h: 0, opened: false, closed: false };
+        this.nodes[x]![y] = {
+          x,
+          y,
+          weight,
+          parent: undefined,
+          f: 0,
+          g: 0,
+          h: 0,
+          opened: false,
+          closed: false,
+        };
       }
     }
   }
