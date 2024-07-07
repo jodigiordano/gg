@@ -1,5 +1,5 @@
 import checker from "vite-plugin-checker";
-import fs from 'node:fs';
+import fs from "node:fs";
 
 function base64Loader() {
   return {
@@ -32,6 +32,6 @@ export default {
   build: {
     target: "es2022",
     sourcemap: true,
-    assetsInlineLimit: 1024 * 1024 // 1MB.
+    assetsInlineLimit: 1024 * 1024, // 1MB.
   },
 };
