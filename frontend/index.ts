@@ -33,6 +33,7 @@ import {
 } from "@dataflows/spec";
 import { CanvasSimulator, CanvasFlowPlayer } from "./simulation.js";
 import { BlockSize } from "./consts.js";
+import { initializeDropdowns } from "./dropdown.js";
 import example1 from "./examples/basic.yml?raw";
 import example2 from "./examples/dataflows.yml?raw";
 
@@ -42,14 +43,10 @@ import spritesheetData from "./assets/spritesheet.png?base64";
 //@ts-ignore
 import fontData from "./assets/ibm.woff?base64";
 
-interface IdleOperation {
-  type: "idle";
-}
-
 interface MoveSystemOperation {
   type: "moveSystem";
-  subsystem: RuntimeSubsystem;
-  pickedUpAt: RuntimePosition;
+  subsystem: RuntimeSubsystem | null;
+  pickedUpAt: RuntimePosition | null;
 }
 
 interface ToggleHideSystemsOperation {
@@ -68,9 +65,10 @@ interface AddSystemOperation {
   position: RuntimePosition | null;
 }
 
-interface RemoveSystemOperation {
-  type: "removeSystem";
+interface RemoveSystemOrLinkOperation {
+  type: "removeSystemOrLink";
   subsystem: RuntimeSubsystem | null;
+  link: RuntimeLink | null;
 }
 
 interface SetSystemParentOperation {
@@ -86,32 +84,25 @@ interface AddLinkOperation {
   b: RuntimeSubsystem | null;
 }
 
-interface RemoveLinkOperation {
-  type: "removeLink";
-  link: RuntimeLink | null;
-}
-
 // State.
 
 interface State {
   changes: string[];
   changeIndex: number;
   operation:
-    | IdleOperation
     | MoveSystemOperation
     | SetSystemTitleOperation
     | AddSystemOperation
-    | RemoveSystemOperation
+    | RemoveSystemOrLinkOperation
     | SetSystemParentOperation
     | ToggleHideSystemsOperation
-    | AddLinkOperation
-    | RemoveLinkOperation;
+    | AddLinkOperation;
 }
 
 const state: State = {
   changes: [],
   changeIndex: -1,
-  operation: { type: "idle" },
+  operation: { type: "moveSystem", subsystem: null, pickedUpAt: null },
 };
 
 function pushChange(change: string) {
@@ -129,7 +120,7 @@ function resetState(): void {
   state.changeIndex = -1;
 
   // TODO: Hmmm...
-  teardownOperation();
+  teardownAnyOperation();
 }
 
 // Setup PixiJS.
@@ -139,26 +130,25 @@ BaseTexture.defaultOptions.wrapMode = WRAP_MODES.REPEAT;
 
 settings.ROUND_PIXELS = true;
 
-const yamlEditor = document.getElementById("yaml-editor") as HTMLDivElement;
+// HTML selectors.
+const yamlEditorDialog = document.getElementById(
+  "yaml-editor",
+) as HTMLDialogElement;
 
-const yamlEditorDefinition = document.getElementById(
-  "yaml-editor-definition",
+const yamlEditor = yamlEditorDialog.querySelector(
+  "textarea",
 ) as HTMLTextAreaElement;
 
-const yamlEditorMessages = document.getElementById(
-  "yaml-editor-messages",
-) as HTMLTextAreaElement;
+const canvasContainer = document.getElementById("canvas") as HTMLDivElement;
 
-const mainMenu = document.getElementById("main-menu") as HTMLDivElement;
-const domContainer = document.getElementById("canvas") as HTMLDivElement;
-const positionInfo = document.getElementById(
-  "information-position",
-) as HTMLSpanElement;
+const singleChoiceButtons = document.querySelectorAll(
+  "#toolbox .single-choice button",
+);
 
 // Create PixiJS app.
 const app = new Application({
   background: "#dddddd",
-  resizeTo: domContainer,
+  resizeTo: canvasContainer,
   autoDensity: true,
   resolution: window.devicePixelRatio,
   antialias: false,
@@ -179,16 +169,16 @@ await Assets.load({
   name: "ibm",
   src: `data:font/woff;base64,${fontData}`,
   data: {
-    family: 'ibm',
+    family: "ibm",
   },
 });
 
 await Assets.load({
-  name: 'spritesheet',
+  name: "spritesheet",
   src: `data:image/png;base64,${spritesheetData}`,
 });
 
-const spritesheet = new Spritesheet(Assets.get('spritesheet'), {
+const spritesheet = new Spritesheet(Assets.get("spritesheet"), {
   frames: {
     systemTopLeft: {
       frame: { x: 0, y: 0, w: 8, h: 8 },
@@ -363,14 +353,16 @@ viewport.on("pointermove", (event: any) => {
   const x = Math.floor(coordinates.x / BlockSize) | 0;
   const y = Math.floor(coordinates.y / BlockSize) | 0;
 
-  positionInfo.textContent = `[${x}, ${y}]`;
-
   if (state.operation.type === "moveSystem") {
-    const deltaX = x - state.operation.pickedUpAt.x;
-    const deltaY = y - state.operation.pickedUpAt.y;
+    if (state.operation.subsystem && state.operation.pickedUpAt) {
+      const deltaX = x - state.operation.pickedUpAt.x;
+      const deltaY = y - state.operation.pickedUpAt.y;
 
-    dragAndDrop.x = (state.operation.subsystem.position.x + deltaX) * BlockSize;
-    dragAndDrop.y = (state.operation.subsystem.position.y + deltaY) * BlockSize;
+      dragAndDrop.x =
+        (state.operation.subsystem.position.x + deltaX) * BlockSize;
+      dragAndDrop.y =
+        (state.operation.subsystem.position.y + deltaY) * BlockSize;
+    }
   }
 });
 
@@ -391,12 +383,37 @@ viewport.on("pointerdown", (event: any) => {
       x,
       y,
     );
-  } else if (state.operation.type === "removeSystem") {
-    state.operation.subsystem = canvasSimulator.systemSimulator.getSubsystemAt(
-      x,
-      y,
-    );
+  } else if (state.operation.type === "removeSystemOrLink") {
+    const link = canvasSimulator.systemSimulator.getLinkAt(x, y);
+
+    if (link) {
+      state.operation.link = link;
+    } else {
+      state.operation.subsystem =
+        canvasSimulator.systemSimulator.getSubsystemAt(x, y);
+    }
   } else if (state.operation.type === "setSystemTitle") {
+    // Happens when the user selects the subsystem B
+    // while editing the subsystem A.
+    if (state.operation.subsystem && state.operation.editing) {
+      // Apply operation.
+      modifySpecification(() => {
+        setSubsystemTitle(
+          (state.operation as SetSystemTitleOperation).subsystem!,
+          setSystemTitleEditor.text.replace(/\n/g, "\\n"),
+        );
+      });
+
+      // Reset operation.
+      setSystemTitleContainer.removeChildren();
+
+      state.operation = {
+        type: "setSystemTitle",
+        subsystem: null,
+        editing: false,
+      };
+    }
+
     state.operation.subsystem = canvasSimulator.systemSimulator.getSubsystemAt(
       x,
       y,
@@ -429,9 +446,7 @@ viewport.on("pointerdown", (event: any) => {
     } else {
       state.operation.a = subsystem;
     }
-  } else if (state.operation.type === "removeLink") {
-    state.operation.link = canvasSimulator.systemSimulator.getLinkAt(x, y);
-  } else {
+  } else if (state.operation.type === "moveSystem") {
     // Operation: Move system.
     const subsystem = canvasSimulator.systemSimulator.getSubsystemAt(x, y);
 
@@ -441,13 +456,8 @@ viewport.on("pointerdown", (event: any) => {
 
     viewport.pause = true;
 
-    const operation: MoveSystemOperation = {
-      type: "moveSystem",
-      subsystem,
-      pickedUpAt: { x, y },
-    };
-
-    state.operation = operation;
+    state.operation.subsystem = subsystem;
+    state.operation.pickedUpAt = { x, y };
 
     dragAndDrop.x = subsystem.position.x * BlockSize;
     dragAndDrop.y = subsystem.position.y * BlockSize;
@@ -464,11 +474,10 @@ viewport.on("pointerup", (event: any) => {
     return;
   }
 
-  let operationInProgress = false;
-
   // Operation: Hide systems toggle.
   if (state.operation.type === "toggleHideSystems") {
     if (state.operation.subsystem) {
+      // Apply operation.
       modifySpecification(() => {
         const { specification } = (
           state.operation as ToggleHideSystemsOperation
@@ -476,9 +485,16 @@ viewport.on("pointerup", (event: any) => {
 
         specification.hideSystems = !specification.hideSystems;
       });
+
+      // Reset operation.
+      state.operation = {
+        type: "toggleHideSystems",
+        subsystem: null,
+      };
     }
   } else if (state.operation.type === "addSystem") {
     if (state.operation.position) {
+      // Apply operation.
       const system =
         canvasSimulator.systemSimulator.getSubsystemAt(
           state.operation.position.x,
@@ -492,24 +508,59 @@ viewport.on("pointerup", (event: any) => {
           (state.operation as AddSystemOperation).position!.y,
         );
       });
+
+      // Reset operation.
+      state.operation = {
+        type: "addSystem",
+        position: null,
+      };
     }
-  } else if (state.operation.type === "removeSystem") {
+  } else if (state.operation.type === "removeSystemOrLink") {
+    // Apply operation.
     if (state.operation.subsystem) {
       modifySpecification(() => {
-        removeSubsystem((state.operation as RemoveSystemOperation).subsystem!);
+        removeSubsystem(
+          (state.operation as RemoveSystemOrLinkOperation).subsystem!,
+        );
       });
+    } else if (state.operation.link) {
+      modifySpecification(() => {
+        removeLink(
+          canvasSimulator!.system,
+          (state.operation as RemoveSystemOrLinkOperation).link!,
+        );
+      });
+    }
+
+    // Reset the operation.
+    if (state.operation.subsystem || state.operation.link) {
+      state.operation = {
+        type: "removeSystemOrLink",
+        subsystem: null,
+        link: null,
+      };
     }
   } else if (state.operation.type === "setSystemTitle") {
     if (state.operation.subsystem) {
       const { subsystem } = state.operation;
 
       if (state.operation.editing) {
+        // Apply operation.
         modifySpecification(() => {
           setSubsystemTitle(
             subsystem,
             setSystemTitleEditor.text.replace(/\n/g, "\\n"),
           );
         });
+
+        // Reset operation.
+        setSystemTitleContainer.removeChildren();
+
+        state.operation = {
+          type: "setSystemTitle",
+          subsystem: null,
+          editing: false,
+        };
       } else {
         const titleX =
           (subsystem.position.x + subsystem.titlePosition.x) * BlockSize;
@@ -533,7 +584,7 @@ viewport.on("pointerup", (event: any) => {
         // @ts-ignore FIXME
         setSystemTitleContainer.addChild(setSystemTitleEditor);
 
-        const titleLastLineLength = title.split("\n")[-1]!.length;
+        const titleLastLineLength = title.split("\n").at(-1)!.length;
 
         setSystemTitleCursor.x =
           setSystemTitleEditor.x +
@@ -549,7 +600,6 @@ viewport.on("pointerup", (event: any) => {
         setSystemTitleContainer.addChild(setSystemTitleCursor);
 
         state.operation.editing = true;
-        operationInProgress = true;
       }
     }
   } else if (state.operation.type === "setSystemParent") {
@@ -558,6 +608,7 @@ viewport.on("pointerup", (event: any) => {
       state.operation.parentAt &&
       state.operation.subsystem
     ) {
+      // Apply operation.
       const { parent, parentAt, subsystem } = state.operation;
 
       if (
@@ -577,11 +628,18 @@ viewport.on("pointerup", (event: any) => {
           }
         });
       }
-    } else if (state.operation.parentAt || state.operation.subsystem) {
-      operationInProgress = true;
+
+      // Reset operation.
+      state.operation = {
+        type: "setSystemParent",
+        subsystem: null,
+        parent: null,
+        parentAt: null,
+      };
     }
   } else if (state.operation.type === "addLink") {
     if (state.operation.a && state.operation.b) {
+      // Apply operation.
       modifySpecification(() => {
         addLink(
           canvasSimulator!.system,
@@ -589,44 +647,47 @@ viewport.on("pointerup", (event: any) => {
           (state.operation as AddLinkOperation).b!.canonicalId,
         );
       });
-    } else if (state.operation.a || state.operation.b) {
-      operationInProgress = true;
-    }
-  } else if (state.operation.type === "removeLink") {
-    if (state.operation.link) {
-      modifySpecification(() => {
-        removeLink(
-          canvasSimulator!.system,
-          (state.operation as RemoveLinkOperation).link!,
-        );
-      });
+
+      // Reset operation.
+      state.operation = { type: "addLink", a: null, b: null };
     }
   }
 
   // Operation: Move system.
   else if (state.operation.type === "moveSystem") {
-    // World coordinates, in block size.
-    const coordinates = viewport.toWorld(event.data.global);
+    if (state.operation.subsystem && state.operation.pickedUpAt) {
+      // Apply operation.
 
-    // World coordinates, in spec size.
-    const x = Math.floor(coordinates.x / BlockSize) | 0;
-    const y = Math.floor(coordinates.y / BlockSize) | 0;
+      // World coordinates, in block size.
+      const coordinates = viewport.toWorld(event.data.global);
 
-    // Delta coordinates, in spec size.
-    const deltaX = x - state.operation.pickedUpAt.x;
-    const deltaY = y - state.operation.pickedUpAt.y;
+      // World coordinates, in spec size.
+      const x = Math.floor(coordinates.x / BlockSize) | 0;
+      const y = Math.floor(coordinates.y / BlockSize) | 0;
 
-    modifySpecification(() => {
-      moveSystem(
-        (state.operation as MoveSystemOperation).subsystem!,
-        deltaX,
-        deltaY,
-      );
-    });
-  }
+      // Delta coordinates, in spec size.
+      const deltaX = x - state.operation.pickedUpAt.x;
+      const deltaY = y - state.operation.pickedUpAt.y;
 
-  if (!operationInProgress) {
-    teardownOperation();
+      modifySpecification(() => {
+        moveSystem(
+          (state.operation as MoveSystemOperation).subsystem!,
+          deltaX,
+          deltaY,
+        );
+      });
+
+      // Reset operation.
+      dragAndDropContainer.removeChildren();
+
+      viewport.pause = false;
+
+      state.operation = {
+        type: "moveSystem",
+        subsystem: null,
+        pickedUpAt: null,
+      };
+    }
   }
 });
 
@@ -653,12 +714,13 @@ window.addEventListener("keydown", event => {
     const { subsystem } = state.operation;
 
     let titleModified = false;
+    let finishOperation = false;
 
     if (event.key === "Backspace") {
       setSystemTitleEditor.text = setSystemTitleEditor.text.slice(0, -1);
       titleModified = true;
     } else if (event.key === "Escape") {
-      teardownOperation();
+      finishOperation = true;
     } else if (event.shiftKey && event.key === "Enter") {
       setSystemTitleEditor.text = setSystemTitleEditor.text + "\n";
       titleModified = true;
@@ -675,7 +737,7 @@ window.addEventListener("keydown", event => {
         "operation-system-set-title-input",
       )!.style.display = "none";
 
-      teardownOperation();
+      finishOperation = true;
     } else if (event.key.length === 1) {
       setSystemTitleEditor.text = setSystemTitleEditor.text + event.key;
 
@@ -705,27 +767,47 @@ window.addEventListener("keydown", event => {
 
       setSystemTitleCursor.x =
         setSystemTitleEditor.x +
-        (titleLengths[-1]! % 2 === 0
-          ? (titleLengths[-1]! / TitleCharsPerSquare) * BlockSize
-          : ((titleLengths[-1]! - 1) / TitleCharsPerSquare) * BlockSize +
+        (titleLengths.at(-1)! % 2 === 0
+          ? (titleLengths.at(-1)! / TitleCharsPerSquare) * BlockSize
+          : ((titleLengths.at(-1)! - 1) / TitleCharsPerSquare) * BlockSize +
             BlockSize / TitleCharsPerSquare);
 
       setSystemTitleCursor.y =
         setSystemTitleEditor.y + setSystemTitleEditor.height - BlockSize;
     }
+
+    // Reset operation.
+    if (finishOperation) {
+      setSystemTitleContainer.removeChildren();
+
+      state.operation = {
+        type: "setSystemTitle",
+        subsystem: null,
+        editing: false,
+      };
+    }
+    // The user press "Esc" to cancel any ongoing operation.
+  } else if (event.key === "Escape") {
+    teardownAnyOperation();
   }
 });
 
 /**
  * Finish an ongoing operation.
  */
-function teardownOperation(): void {
+function teardownAnyOperation(): void {
   // TODO: hmmm...
   setSystemTitleContainer.removeChildren();
   dragAndDropContainer.removeChildren();
 
-  state.operation = { type: "idle" };
+  state.operation = { type: "moveSystem", subsystem: null, pickedUpAt: null };
   viewport.pause = false;
+
+  for (const button of singleChoiceButtons) {
+    button.classList.remove("selected");
+  }
+
+  document.getElementById("operation-move")?.classList?.add("selected");
 }
 
 /**
@@ -747,7 +829,7 @@ function modifySpecification(modifier: () => void): void {
 
   if (loadSimulation(newSpecification)) {
     pushChange(newSpecification);
-    yamlEditorDefinition.value = newSpecification;
+    yamlEditor.value = newSpecification;
   } else {
     // Rollback if the new configuration is invalid.
     loadSimulation(currentSpecification);
@@ -762,18 +844,12 @@ function loadSimulation(yaml: string): boolean {
   try {
     result = loadYaml(yaml);
   } catch (error) {
-    yamlEditorMessages.value = (error as Error).message;
-
     console.warn((error as Error).message);
 
     return false;
   }
 
   if (result.errors.length) {
-    yamlEditorMessages.value = result.errors
-      .map(error => [error.path, error.message].join(": "))
-      .join("\n");
-
     for (const error of result.errors) {
       console.warn(error.path, error.message);
     }
@@ -784,7 +860,6 @@ function loadSimulation(yaml: string): boolean {
   const newCanvasSimulator = new CanvasSimulator(result.system);
 
   canvasSimulator = newCanvasSimulator;
-  yamlEditorMessages.value = "";
 
   canvasSimulatorContainer.removeChildren();
 
@@ -815,14 +890,17 @@ function redrawGrid(): void {
   grid.x = viewport.left;
   grid.y = viewport.top;
 
-  grid.width = domContainer.clientWidth / viewport.scale.x;
-  grid.height = domContainer.clientHeight / viewport.scale.y;
+  grid.width = canvasContainer.clientWidth / viewport.scale.x;
+  grid.height = canvasContainer.clientHeight / viewport.scale.y;
 }
 
 function resizeContainer(): void {
-  app.renderer.resize(domContainer.clientWidth, domContainer.clientHeight);
+  app.renderer.resize(
+    canvasContainer.clientWidth,
+    canvasContainer.clientHeight,
+  );
 
-  viewport.resize(domContainer.clientWidth, domContainer.clientHeight);
+  viewport.resize(canvasContainer.clientWidth, canvasContainer.clientHeight);
 
   redrawGrid();
 }
@@ -862,11 +940,11 @@ function loadFile(): void {
   const value = window.localStorage.getItem("file");
 
   if (value) {
-    yamlEditorDefinition.value = value;
+    yamlEditor.value = value;
 
-    loadSimulation(yamlEditorDefinition.value);
+    loadSimulation(yamlEditor.value);
     resetState();
-    pushChange(yamlEditorDefinition.value);
+    pushChange(yamlEditor.value);
     fitSimulation();
   }
 }
@@ -906,75 +984,78 @@ document
   });
 
 document
-  .getElementById("operation-yaml-editor-toggle")
+  .getElementById("operation-yaml-editor-open")
   ?.addEventListener("click", function () {
-    if (yamlEditor.classList.contains("closed")) {
-      yamlEditor.classList.remove("closed");
-    } else {
-      yamlEditor.classList.add("closed");
-    }
+    // Disable autofocus on the first input when opening the modal.
+    yamlEditorDialog.inert = true;
 
-    resizeContainer();
-  });
+    yamlEditorDialog.showModal();
 
-document
-  .getElementById("operation-main-menu-toggle")
-  ?.addEventListener("click", function () {
-    if (mainMenu.classList.contains("closed")) {
-      mainMenu.classList.remove("closed");
-    } else {
-      mainMenu.classList.add("closed");
-    }
-
-    resizeContainer();
+    yamlEditorDialog.inert = false;
   });
 
 document
   .getElementById("operation-yaml-editor-apply-changes")
   ?.addEventListener("click", function () {
-    if (yamlEditorDefinition.value) {
-      pushChange(yamlEditorDefinition.value);
-      loadSimulation(yamlEditorDefinition.value);
+    if (yamlEditor.value) {
+      pushChange(yamlEditor.value);
+      loadSimulation(yamlEditor.value);
     }
   });
 
 document
-  .getElementById("operation-yaml-editor-redo")
+  .getElementById("operation-help-about")
+  ?.addEventListener("click", function () {
+    const dialog = document.getElementById("about") as HTMLDialogElement;
+
+    dialog.showModal();
+  });
+
+document
+  .getElementById("operation-help-privacy")
+  ?.addEventListener("click", function () {
+    const dialog = document.getElementById("privacy") as HTMLDialogElement;
+
+    dialog.showModal();
+  });
+
+document
+  .getElementById("operation-redo")
   ?.addEventListener("click", function () {
     if (state.changeIndex < state.changes.length - 1) {
       state.changeIndex += 1;
 
       const value = state.changes[state.changeIndex];
 
-      yamlEditorDefinition.value = value;
-      loadSimulation(yamlEditorDefinition.value);
+      yamlEditor.value = value;
+      loadSimulation(yamlEditor.value);
     }
   });
 
 document
-  .getElementById("operation-yaml-editor-undo")
+  .getElementById("operation-undo")
   ?.addEventListener("click", function () {
     if (state.changeIndex > 0) {
       state.changeIndex -= 1;
 
       const value = state.changes[state.changeIndex];
 
-      yamlEditorDefinition.value = value;
-      loadSimulation(yamlEditorDefinition.value);
+      yamlEditor.value = value;
+      loadSimulation(yamlEditor.value);
     }
   });
 
 document
   .getElementById("operation-file-new")
   ?.addEventListener("click", function () {
-    yamlEditorDefinition.value = [
+    yamlEditor.value = [
       "specificationVersion: 1.0.0",
       "title: New system",
     ].join("\n");
 
-    loadSimulation(yamlEditorDefinition.value);
+    loadSimulation(yamlEditor.value);
     resetState();
-    pushChange(yamlEditorDefinition.value);
+    pushChange(yamlEditor.value);
     fitSimulation();
   });
 
@@ -985,37 +1066,45 @@ document
 document
   .getElementById("operation-file-save")
   ?.addEventListener("click", function () {
-    if (yamlEditorDefinition.value) {
-      window.localStorage.setItem("file", yamlEditorDefinition.value);
+    if (yamlEditor.value) {
+      window.localStorage.setItem("file", yamlEditor.value);
     }
   });
 
 document
   .getElementById("operation-examples-load-1")
   ?.addEventListener("click", function () {
-    yamlEditorDefinition.value = example1;
+    yamlEditor.value = example1;
 
     loadSimulation(example1);
     resetState();
-    pushChange(yamlEditorDefinition.value);
+    pushChange(yamlEditor.value);
     fitSimulation();
   });
 
 document
   .getElementById("operation-examples-load-2")
   ?.addEventListener("click", function () {
-    yamlEditorDefinition.value = example2;
+    yamlEditor.value = example2;
 
     loadSimulation(example2);
     resetState();
-    pushChange(yamlEditorDefinition.value);
+    pushChange(yamlEditor.value);
     fitSimulation();
+  });
+
+document
+  .getElementById("operation-move")
+  ?.addEventListener("click", function () {
+    teardownAnyOperation();
+
+    state.operation = { type: "moveSystem", subsystem: null, pickedUpAt: null };
   });
 
 document
   .getElementById("operation-system-hide-systems")
   ?.addEventListener("click", function () {
-    teardownOperation();
+    teardownAnyOperation();
 
     state.operation = { type: "toggleHideSystems", subsystem: null };
   });
@@ -1023,23 +1112,27 @@ document
 document
   .getElementById("operation-system-add")
   ?.addEventListener("click", function () {
-    teardownOperation();
+    teardownAnyOperation();
 
     state.operation = { type: "addSystem", position: null };
   });
 
 document
-  .getElementById("operation-system-remove")
+  .getElementById("operation-erase")
   ?.addEventListener("click", function () {
-    teardownOperation();
+    teardownAnyOperation();
 
-    state.operation = { type: "removeSystem", subsystem: null };
+    state.operation = {
+      type: "removeSystemOrLink",
+      subsystem: null,
+      link: null,
+    };
   });
 
 document
   .getElementById("operation-system-set-title")
   ?.addEventListener("click", function () {
-    teardownOperation();
+    teardownAnyOperation();
 
     state.operation = {
       type: "setSystemTitle",
@@ -1051,7 +1144,7 @@ document
 document
   .getElementById("operation-system-set-parent")
   ?.addEventListener("click", function () {
-    teardownOperation();
+    teardownAnyOperation();
 
     state.operation = {
       type: "setSystemParent",
@@ -1064,22 +1157,26 @@ document
 document
   .getElementById("operation-link-add")
   ?.addEventListener("click", function () {
-    teardownOperation();
+    teardownAnyOperation();
 
     state.operation = { type: "addLink", a: null, b: null };
   });
 
-document
-  .getElementById("operation-link-remove")
-  ?.addEventListener("click", function () {
-    teardownOperation();
+for (const button of singleChoiceButtons) {
+  button.addEventListener("click", function () {
+    for (const other of singleChoiceButtons) {
+      other.classList.remove("selected");
+    }
 
-    state.operation = { type: "removeLink", link: null };
+    button.classList.add("selected");
   });
+}
+
+initializeDropdowns();
 
 // Add PixiJS to the DOM.
 // @ts-ignore FIXME
-document.getElementById("canvas")?.replaceChildren(app.view);
+canvasContainer.replaceChildren(app.view);
 
 // Load saved file.
 loadFile();

@@ -183,6 +183,47 @@
 
         /* Show a pointer icon over buttons */
         cursor: pointer;
+
+        /* Remove 300ms delay on mobile */
+        touch-action: none;
+      }
+
+      .dropdown {
+        position: relative;
+        display: inline-block;
+
+        .content {
+          position: absolute;
+          left: 0.5em;
+          background-color: #f9f9f9;
+          box-shadow: 0 0.5em 1em 0 rgba(0, 0, 0, 0.2);
+          padding-top: 0.5em;
+          padding-bottom: 0.5em;
+          z-index: 1;
+
+          &.closed {
+            display: none;
+          }
+
+          li {
+            padding: 0.5em 1em;
+            white-space: nowrap;
+            cursor: pointer;
+
+            &:hover {
+              background: #ccc;
+            }
+
+            &:active {
+              background: #bbb;
+            }
+
+            &.separator {
+              border-top: solid 1px #bbb;
+              padding: 0;
+            }
+          }
+        }
       }
 
       /* Top of the page header */
@@ -193,7 +234,7 @@
         flex-wrap: nowrap;
 
         height: var(--header-height);
-        background: #eeeeee;
+        background: #eee;
 
         button {
           margin-left: 0.25em;
@@ -221,57 +262,62 @@
         height: calc(100vh - var(--header-height));
       }
 
-      #main-menu {
+      /* Menu on the left of the content */
+      #toolbox {
         padding: 0.5em;
         overflow-y: scroll;
 
-        &.closed {
-          display: none;
+        .operations {
+          display: grid;
+          grid-template-columns: 3em 3em;
+          grid-auto-rows: 3em;
+          column-gap: 0.5em;
+          row-gap: 0.5em;
+
+          button {
+            &.selected {
+              background: #aaa;
+            }
+          }
+        }
+
+        .separator {
+          border-top: solid 1px #bbb;
+          margin: 1em 0.5em;
         }
       }
 
-      #examples-menu {
-        display: grid;
-      }
-
-      #debug-menu {
-        display: grid;
-      }
-
+      /* Canvas on the right of the content */
       #canvas {
         flex-shrink: 1;
         flex-grow: 1;
         overflow: auto;
       }
 
+      dialog {
+        .content {
+          display: flex;
+          flex-direction: column;
+          gap: 1em;
+
+          h1 {
+            font-weight: bold;
+          }
+        }
+      }
+
+      /* Modal showing the YAML of the chart */
       #yaml-editor {
-        /* as a child of a flexbox */
-        flex-shrink: 0;
-        flex-grow: 0;
-        flex-basis: 30%;
+        width: 80%;
+        height: 80%;
 
-        /* as a container */
-        display: flex;
-        flex-direction: column;
-        flex-wrap: nowrap;
+        .content {
+          height: 100%;
 
-        textarea {
-          resize: none;
-        }
-
-        #yaml-editor-definition {
-          flex-shrink: 0;
-          flex-grow: 0;
-          flex-basis: 90%;
-        }
-
-        #yaml-editor-messages {
-          flex-shrink: 0;
-          flex-grow: 1;
-        }
-
-        &.closed {
-          display: none;
+          textarea {
+            flex: 1;
+            resize: none;
+          }
         }
       }
 
@@ -284,61 +330,140 @@
   <body>
     <div id="header">
       <div id="header-title">░▒▓ dataflows.io</div>
-      <button>File</button>
-      <button id="operation-main-menu-toggle">Menu</button>
-      <button>Help</button>
-      <button>About</button>
+      <div class="dropdown">
+        <button>File</button>
+        <ul class="content closed">
+          <li id="operation-file-new">new file</li>
+          <li id="operation-file-save">save file</li>
+          <li id="operation-file-load">load file</li>
+          <li class="separator"></li>
+          <li id="operation-yaml-editor-open">yaml editor</li>
+        </ul>
+      </div>
+      <div class="dropdown">
+        <button>Examples</button>
+        <ul class="content closed">
+          <li id="operation-examples-load-1">basic</li>
+          <li id="operation-examples-load-2">dataflows</li>
+        </ul>
+      </div>
+      <div class="dropdown">
+        <button>Help</button>
+        <ul class="content closed">
+          <li id="operation-help-about">about</li>
+          <li id="operation-help-privacy">privacy</li>
+        </ul>
+      </div>
     </div>
     <div id="content">
-      <div id="main-menu">
-        <div id="examples-menu">
-          <div>examples</div>
-          <button id="operation-examples-load-1">basic</button>
-          <button id="operation-examples-load-2">dataflows</button>
-        </div>
-        <div id="debug-menu">
-          <div>camera</div>
-          <button id="operation-camera-fit">fit</button>
-          <button id="operation-camera-zoom-in">zoom in</button>
-          <button id="operation-camera-zoom-out">zoom out</button>
-          <div>editor</div>
-          <button id="operation-yaml-editor-toggle">yaml editor</button>
-          <button id="operation-yaml-editor-apply-changes">
-            apply changes
+      <div id="toolbox">
+        <div class="operations single-choice">
+          <button id="operation-move" title="Move" class="selected">
+            <img src="./assets/icon-move.svg" />
           </button>
-          <button id="operation-yaml-editor-redo">redo</button>
-          <button id="operation-yaml-editor-undo">undo</button>
-          <div>file</div>
-          <button id="operation-file-new">new file</button>
-          <button id="operation-file-save">save file</button>
-          <button id="operation-file-load">load file</button>
-          <div>system</div>
-          <button id="operation-system-hide-systems">toggle hide</button>
-          <button id="operation-system-set-title">set title</button>
-          <button id="operation-system-add">add</button>
-          <button id="operation-system-remove">remove</button>
-          <button id="operation-system-set-parent">parent</button>
-          <div>link</div>
-          <button id="operation-link-add">add</button>
-          <button id="operation-link-remove">remove</button>
-          position: <span id="information-position"></span>
+          <button id="operation-erase" title="Eraser">
+            <img src="./assets/icon-eraser.svg" />
+          </button>
+          <button id="operation-system-set-title" title="Set system title">
+            <img src="./assets/icon-text.svg" />
+          </button>
+          <button id="operation-system-set-parent" title="Set system parent">
+            <img src="./assets/icon-parent.svg" />
+          </button>
+          <button id="operation-system-add" title="Add system">
+            <img src="./assets/icon-system.svg" />
+          </button>
+          <button id="operation-link-add" title="Add link">
+            <img src="./assets/icon-link.svg" />
+          </button>
+          <button id="operation-system-hide-systems" title="Hide sub-systems">
+            <img src="./assets/icon-hide.svg" />
+          </button>
         </div>
-      </div>
-      <div id="yaml-editor" class="closed">
-        <textarea
-          id="yaml-editor-definition"
-          autocomplete="off"
-          class="closed"
-        ></textarea>
-        <textarea
-          id="yaml-editor-messages"
-          autocomplete="off"
-          class="closed"
-        ></textarea>
+        <div class="separator"></div>
+        <div class="operations">
+          <button id="operation-undo" title="Undo">
+            <img src="./assets/icon-undo.svg" />
+          </button>
+          <button id="operation-redo" title="Redo">
+            <img src="./assets/icon-redo.svg" />
+          </button>
+          <button id="operation-camera-fit" title="Fit to screen">
+            <img src="./assets/icon-zoom-fit.svg" />
+          </button>
+          <button id="operation-camera-zoom-in" title="Zoom in">
+            <img src="./assets/icon-zoom-in.svg" />
+          </button>
+          <button id="operation-camera-zoom-out" title="Zoom out">
+            <img src="./assets/icon-zoom-out.svg" />
+          </button>
+        </div>
       </div>
       <div id="canvas">Loading...</div>
     </div>
     <input type="text" id="operation-system-set-title-input" />
+    <dialog id="yaml-editor">
+      <div class="content">
+        <h1>YAML Editor</h1>
+        <textarea autocomplete="off"></textarea>
+        <form method="dialog">
+          <button>close</button>
+          <button id="operation-yaml-editor-apply-changes">
+            apply changes
+          </button>
+        </form>
+      </div>
+    </dialog>
+    <dialog id="about">
+      <div class="content">
+        <h1>About</h1>
+        <p>
+          gg aims to help you quickly produce
+          <br />
+          good looking diagrams, by letting you focus on
+          <br />
+          its components instead of fiddling with its layout.
+        </p>
+        <p>
+          When building a diagram to explain a dynamic system,
+          <br />
+          like a software architecture, you can go a step further
+          <br />
+          and display data flowing in your system.
+        </p>
+        <p>
+          For any request (bug report, question, feature, etc.)
+          <br />
+          send me an e-mail at jodi@ggcharts.com!
+        </p>
+        <p>Enjoy!</p>
+        <form method="dialog">
+          <button>close</button>
+        </form>
+      </div>
+    </dialog>
+    <dialog id="privacy">
+      <div class="content">
+        <h1>Privacy</h1>
+        <p>gg value your time and your privacy:</p>
+        <ul>
+          <li>- There are no ads.</li>
+          <li>- There are no analytics.</li>
+          <li>- There are no cookies.</li>
+          <li>
+            - There are no PII collected (i.e. email, IP, user agent, etc.).
+          </li>
+        </ul>
+        <p>
+          More importantly, the data you enter in the editor
+          <br />
+          is kept 100% on your side and is never collected.
+        </p>
+        <form method="dialog">
+          <button>close</button>
+        </form>
+      </div>
+    </dialog>
     <script type="module" src="/index.ts"></script>
   </body>
 </html>
