@@ -1,6 +1,6 @@
 import assert from "node:assert";
-import { System } from "../specification";
-import { load } from "../index";
+import { System } from "../src/specification";
+import { load } from "../src/index";
 
 describe("flows", () => {
   describe("keyframe", () => {

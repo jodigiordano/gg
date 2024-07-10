@@ -1,5 +1,5 @@
 {
-  "$id": "https://dataflows.io/subsystem.json",
+  "$id": "subsystem",
   "title": "Subsystem",
   "description": "A sub-system",
   "type": "object",
@@ -44,7 +44,7 @@
       "type": "array",
       "description": "The sub-systems of the system.",
       "items": {
-        "$ref": "https://dataflows.io/subsystem.json"
+        "$ref": "subsystem"
       }
     }
   }

@@ -2,7 +2,7 @@ import { compileFromFile } from "json-schema-to-typescript";
 import { FileInfo } from "@apidevtools/json-schema-ref-parser";
 import fs from "fs";
 
-const schemasDirectory = [import.meta.dirname, "schemas"].join("/");
+const schemasDirectory = [import.meta.dirname, "..", "schemas"].join("/");
 
 async function generateTypes() {
   const compiled = await compileFromFile(`${schemasDirectory}/system.json`, {
@@ -28,9 +28,7 @@ async function generateTypes() {
             file: FileInfo,
             _callback?: (error: Error | null, data: string | null) => unknown,
           ): Promise<string> {
-            const filename = file.url.split("https://dataflows.io/").at(1);
-
-            return fs.readFileSync(`${schemasDirectory}/${filename}`, "utf8");
+            return fs.readFileSync(`${file.url}.json`, "utf8");
           },
         },
       },

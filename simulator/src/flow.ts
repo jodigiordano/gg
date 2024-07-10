@@ -1,5 +1,5 @@
-import { RuntimeFlow } from "@dataflows/spec";
-import { SystemSimulator } from "./system";
+import { RuntimeFlow } from "@gg/spec";
+import { SystemSimulator } from "./system.js";
 
 export interface FlowSimulatorTickOptions {
   keyframe: number;

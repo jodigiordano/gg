@@ -1,5 +1,5 @@
 {
-  "$id": "https://dataflows.io/system.json",
+  "$id": "system",
   "title": "System",
   "description": "A system",
   "type": "object",
@@ -23,21 +23,21 @@
       "type": "array",
       "description": "The sub-systems of the system.",
       "items": {
-        "$ref": "https://dataflows.io/subsystem.json"
+        "$ref": "subsystem"
       }
     },
     "links": {
       "type": "array",
       "description": "The links of the system and sub-systems.",
       "items": {
-        "$ref": "https://dataflows.io/link.json"
+        "$ref": "link"
       }
     },
     "flows": {
       "type": "array",
       "description": "The flows of the system.",
       "items": {
-        "$ref": "https://dataflows.io/flow.json"
+        "$ref": "flow"
       }
     }
   }

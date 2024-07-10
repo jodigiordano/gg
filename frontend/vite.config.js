@@ -18,8 +18,8 @@ function base64Loader() {
 }
 
 export default {
+  root: "src",
   cacheDir: "tmp",
-  assetsInclude: ["./examples/*.yml"],
   server: {
     host: "0.0.0.0",
   },
@@ -30,6 +30,8 @@ export default {
     base64Loader(),
   ],
   build: {
+    outDir: "../dist",
+    emptyOutDir: true,
     target: "es2022",
     sourcemap: true,
     assetsInlineLimit: 1024 * 1024, // 1MB.

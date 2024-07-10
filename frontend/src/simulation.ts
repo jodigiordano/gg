@@ -7,7 +7,7 @@ import {
   Spritesheet,
   SCALE_MODES,
 } from "pixi.js";
-import { RuntimeFlow, RuntimeSystem } from "@dataflows/spec";
+import { RuntimeFlow, RuntimeSystem } from "@gg/spec";
 import {
   SystemSimulator,
   FlowSimulator,
@@ -17,7 +17,7 @@ import {
   SimulatorLinkDirectionType,
   SimulatorLink,
   SimulatorSystemDirectionType,
-} from "@dataflows/simulator";
+} from "@gg/simulator";
 import { BlockSize } from "./consts.js";
 
 export class CanvasSimulator {
@@ -181,10 +181,8 @@ export class CanvasFlowPlayer {
     this.currentKeyframe = 0;
     this.currentKeyframeProgress = 0;
 
-    // @ts-ignore FIXME
     this.maxKeyframes = Math.max(...flow.steps.map(step => step.keyframe)) + 1;
 
-    // @ts-ignore FIXME
     this.sprites = flow.steps.map(() => new Sprite(dataTexture));
   }
 

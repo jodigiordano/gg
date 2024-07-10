@@ -1,5 +1,5 @@
 import { readFileSync } from "node:fs";
-import { loadYaml } from "../index";
+import { loadYaml } from "../src/index";
 
 export function loadExample(name: string) {
   return loadYaml(

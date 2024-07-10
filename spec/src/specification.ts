@@ -128,7 +128,7 @@ export interface FlowStep {
 
 const schemas = [
   {
-    $id: "https://dataflows.io/flow.json",
+    $id: "flow",
     title: "Flow",
     description: "A flow",
     type: "object",
@@ -183,7 +183,7 @@ const schemas = [
     },
   },
   {
-    $id: "https://dataflows.io/link.json",
+    $id: "link",
     title: "Link",
     description: "A link",
     type: "object",
@@ -211,7 +211,7 @@ const schemas = [
     },
   },
   {
-    $id: "https://dataflows.io/subsystem.json",
+    $id: "subsystem",
     title: "Subsystem",
     description: "A sub-system",
     type: "object",
@@ -259,13 +259,13 @@ const schemas = [
         type: "array",
         description: "The sub-systems of the system.",
         items: {
-          $ref: "https://dataflows.io/subsystem.json",
+          $ref: "subsystem",
         },
       },
     },
   },
   {
-    $id: "https://dataflows.io/system.json",
+    $id: "system",
     title: "System",
     description: "A system",
     type: "object",
@@ -289,21 +289,21 @@ const schemas = [
         type: "array",
         description: "The sub-systems of the system.",
         items: {
-          $ref: "https://dataflows.io/subsystem.json",
+          $ref: "subsystem",
         },
       },
       links: {
         type: "array",
         description: "The links of the system and sub-systems.",
         items: {
-          $ref: "https://dataflows.io/link.json",
+          $ref: "link",
         },
       },
       flows: {
         type: "array",
         description: "The flows of the system.",
         items: {
-          $ref: "https://dataflows.io/flow.json",
+          $ref: "flow",
         },
       },
     },

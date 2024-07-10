@@ -1,12 +1,12 @@
 specificationVersion: 1.0.0
-title: dataflows
+title: complex
 description: Tool to build beautiful software system designs
 systems:
   - id: frontend
     description: Web-based client
     position:
-      x: 0
-      y: 0
+      x: 2
+      y: 2
   - id: backend
     description: Backend of the frontend
     position:
@@ -22,14 +22,18 @@ systems:
         description: Database of the backend
         position:
           x: 10
-          y: 0
+          y: 2
   - id: whatever
     position:
-      x: 9
-      y: 15
+      x: 1
+      y: 14
   - id: datadog
     position:
-      x: 20
+      x: 15
+      y: 30
+  - id: whatever2
+    position:
+      x: 50
       y: 20
 links:
   - a: frontend
@@ -39,6 +43,8 @@ links:
   - a: datadog
     b: backend.server
   - a: backend.server
+    b: backend.database
+  - a: whatever
     b: backend.database
 flows:
   - steps:

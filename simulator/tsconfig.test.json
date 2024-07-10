@@ -4,10 +4,10 @@
     "target": "es2022",
     "module": "es2022",
     "moduleResolution": "node",
-    "rootDir": "src",
-    "outDir": "dist",
-    "declaration": true,
-    "sourceMap": true
+    "rootDir": ".",
+    "noEmit": true,
+    "declaration": false,
+    "sourceMap": false
   },
   "include": ["src"]
 }

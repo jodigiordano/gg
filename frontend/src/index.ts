@@ -7,6 +7,7 @@ import {
   SCALE_MODES,
   WRAP_MODES,
   BaseTexture,
+  DisplayObject,
   Container,
   Assets,
   Sprite,
@@ -14,7 +15,7 @@ import {
   Text,
 } from "pixi.js";
 import { dump as saveYaml } from "js-yaml";
-// @ts-ignore FIXME
+// @ts-ignore
 import { Viewport } from "pixi-viewport";
 import {
   addLink,
@@ -30,12 +31,12 @@ import {
   moveSubsystemToParent,
   TitleCharsPerSquare,
   setSubsystemTitle,
-} from "@dataflows/spec";
+} from "@gg/spec";
 import { CanvasSimulator, CanvasFlowPlayer } from "./simulation.js";
 import { BlockSize } from "./consts.js";
 import { initializeDropdowns } from "./dropdown.js";
-import example1 from "./examples/basic.yml?raw";
-import example2 from "./examples/dataflows.yml?raw";
+import example1 from "./assets/basic.yml?raw";
+import example2 from "./assets/complex.yml?raw";
 
 //@ts-ignore
 import spritesheetData from "./assets/spritesheet.png?base64";
@@ -464,8 +465,7 @@ viewport.on("pointerdown", (event: any) => {
     dragAndDrop.width = subsystem.size.width * BlockSize;
     dragAndDrop.height = subsystem.size.height * BlockSize;
 
-    // @ts-ignore FIXME
-    dragAndDropContainer.addChild(dragAndDrop);
+    dragAndDropContainer.addChild(dragAndDrop as DisplayObject);
   }
 });
 
@@ -572,8 +572,7 @@ viewport.on("pointerup", (event: any) => {
         setSystemTitleMask.width = subsystem.titleSize.width * BlockSize;
         setSystemTitleMask.height = subsystem.titleSize.height * BlockSize;
 
-        // @ts-ignore FIXME
-        setSystemTitleContainer.addChild(setSystemTitleMask);
+        setSystemTitleContainer.addChild(setSystemTitleMask as DisplayObject);
 
         const title = subsystem.title.replace(/\\n/g, "\n");
 
@@ -581,8 +580,7 @@ viewport.on("pointerup", (event: any) => {
         setSystemTitleEditor.x = titleX;
         setSystemTitleEditor.y = titleY;
 
-        // @ts-ignore FIXME
-        setSystemTitleContainer.addChild(setSystemTitleEditor);
+        setSystemTitleContainer.addChild(setSystemTitleEditor as DisplayObject);
 
         const titleLastLineLength = title.split("\n").at(-1)!.length;
 
@@ -596,8 +594,7 @@ viewport.on("pointerup", (event: any) => {
         setSystemTitleCursor.y =
           setSystemTitleEditor.y + setSystemTitleEditor.height - BlockSize;
 
-        // @ts-ignore FIXME
-        setSystemTitleContainer.addChild(setSystemTitleCursor);
+        setSystemTitleContainer.addChild(setSystemTitleCursor as DisplayObject);
 
         state.operation.editing = true;
       }
@@ -866,16 +863,14 @@ function loadSimulation(yaml: string): boolean {
   for (const objectToRender of canvasSimulator.getObjectsToRender(
     spritesheet,
   )) {
-    // @ts-ignore FIXME
-    canvasSimulatorContainer.addChild(objectToRender);
+    canvasSimulatorContainer.addChild(objectToRender as DisplayObject);
   }
 
   if (canvasSimulator.system.flows.length) {
     canvasFlowPlayer = canvasSimulator.createFlowPlayer(app, 0);
 
     for (const objectToRender of canvasFlowPlayer.getObjectsToRender()) {
-      // @ts-ignore FIXME
-      canvasSimulatorContainer.addChild(objectToRender);
+      canvasSimulatorContainer.addChild(objectToRender as DisplayObject);
     }
   }
 
@@ -1175,8 +1170,7 @@ for (const button of singleChoiceButtons) {
 initializeDropdowns();
 
 // Add PixiJS to the DOM.
-// @ts-ignore FIXME
-canvasContainer.replaceChildren(app.view);
+canvasContainer.replaceChildren(app.view as unknown as Node);
 
 // Load saved file.
 loadFile();

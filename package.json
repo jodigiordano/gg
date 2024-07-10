@@ -1,13 +1,8 @@
 {
-  "name": "@dataflows",
+  "name": "@gg",
   "version": "0.1.0",
-  "description": "",
   "type": "module",
-  "license": "See LICENSE",
-  "engines": {
-    "node": ">= 21.6",
-    "npm": ">= 10.2"
-  },
+  "license": "See LICENSE.md",
   "scripts": {
     "compile": "npm run compile --workspaces",
     "lint": "npm run lint --workspaces",

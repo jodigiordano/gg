@@ -1,10 +1,10 @@
 import assert from "node:assert";
-import { SystemSimulator } from "../index";
-import { loadExample, render } from "./helpers";
+import { SystemSimulator } from "../src/index.js";
+import { loadExample, render } from "./helpers.js";
 
 describe("examples", () => {
   it("valid", async () => {
-    const example = loadExample("dataflows");
+    const example = loadExample("complex");
 
     assert.deepEqual(example.errors, []);
 

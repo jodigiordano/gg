@@ -1,5 +1,5 @@
 {
-  "$id": "https://dataflows.io/flow.json",
+  "$id": "flow",
   "title": "Flow",
   "description": "A flow",
   "type": "object",

@@ -1,5 +1,4 @@
-import PathFinderGrid from "./pathfinding/grid";
-import { PathFinder } from "./pathfinding/finder";
+import { Grid as PathFinderGrid, PathFinder } from "./pathfinding.js";
 
 import {
   PaddingWhiteBox,
@@ -8,7 +7,7 @@ import {
   RuntimeLink,
   TitleCharsPerSquare,
   SystemMargin,
-} from "@dataflows/spec";
+} from "@gg/spec";
 
 export enum SimulatorObjectType {
   System = 1,

@@ -7,11 +7,12 @@
     "skipLibCheck": true,
     "moduleResolution": "nodenext",
     "isolatedModules": true,
+    "rootDir": "src",
     "noEmit": true,
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["*.ts"]
+  "include": ["src"]
 }

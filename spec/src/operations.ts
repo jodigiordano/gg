@@ -156,11 +156,50 @@ export function removeLink(system: RuntimeSystem, link: RuntimeLink): void {
   system.specification.links!.splice(link.index, 1);
 }
 
+export function moveSubsystemToParent(
+  subsystem: RuntimeSubsystem,
+  parent: RuntimeSystem | RuntimeSubsystem,
+  position: RuntimePosition,
+): void {
+  console.debug("moving", subsystem.canonicalId, "into", parent.canonicalId);
+
+  subsystem.parent!.specification.systems?.splice(subsystem.index, 1);
+
+  parent.specification.systems ??= [];
+  parent.specification.systems!.push(subsystem.specification);
+
+  // TODO: move links.
+  // TODO: move flows.
+
+  subsystem.specification.position.x = position.x;
+  subsystem.specification.position.y = position.y;
+
+  parent.systems.push(subsystem);
+
+  const rootSystem = getRootSystem(subsystem);
+
+  initSystem(
+    subsystem,
+    rootSystem,
+    subsystem.specification,
+    parent.systems.length - 1,
+    parent.depth + 1,
+  );
+
+  if (parent.canonicalId) {
+    computeSystemSize(parent, rootSystem.links);
+  }
+
+  moveSystem(subsystem, 0, 0);
+}
+
 export function moveSystem(
   system: RuntimeSubsystem,
   deltaX: number,
   deltaY: number,
 ): void {
+  console.debug("moving", system.canonicalId);
+
   // Move the ss.
   const ssPosition = system.specification.position;
 
@@ -212,10 +251,18 @@ export function moveSystem(
         let ssA: RuntimeSubsystem;
         let ssB: RuntimeSubsystem;
 
-        if (displacers[ssACandidate.canonicalId]?.includes(ssBCandidate.canonicalId)) {
+        if (
+          displacers[ssACandidate.canonicalId]?.includes(
+            ssBCandidate.canonicalId,
+          )
+        ) {
           ssA = ssACandidate;
           ssB = ssBCandidate;
-        } else if (displacers[ssBCandidate.canonicalId]?.includes(ssACandidate.canonicalId)) {
+        } else if (
+          displacers[ssBCandidate.canonicalId]?.includes(
+            ssACandidate.canonicalId,
+          )
+        ) {
           ssA = ssBCandidate;
           ssB = ssACandidate;
         } else {
@@ -223,7 +270,8 @@ export function moveSystem(
             ssACandidate.specification.position.x + ssACandidate.size.width / 2;
 
           const ssaCandidateCenterY =
-            ssACandidate.specification.position.y + ssACandidate.size.height / 2;
+            ssACandidate.specification.position.y +
+            ssACandidate.size.height / 2;
 
           const ssACandidateDistance = Math.sqrt(
             Math.pow(ssACandidateCenterX - centerSS.x, 2) +
@@ -234,7 +282,8 @@ export function moveSystem(
             ssBCandidate.specification.position.x + ssBCandidate.size.width / 2;
 
           const ssBCandidateCenterY =
-            ssBCandidate.specification.position.y + ssBCandidate.size.height / 2;
+            ssBCandidate.specification.position.y +
+            ssBCandidate.size.height / 2;
 
           const ssBCandidateDistance = Math.sqrt(
             Math.pow(ssBCandidateCenterX - centerSS.x, 2) +
@@ -328,7 +377,7 @@ export function moveSystem(
           overlapY,
           "with",
           ssB.canonicalId,
-          ' => ',
+          " => ",
           "move",
           ssB.canonicalId,
           displacementX,
@@ -337,7 +386,10 @@ export function moveSystem(
 
         // TODO: quick test. Instead of a radial displacement, try a
         // horizontal / vertical displacement.
-        if (Math.abs(centerToCenterUnitVectorX) >= Math.abs(centerToCenterUnitVectorY)) {
+        if (
+          Math.abs(centerToCenterUnitVectorX) >=
+          Math.abs(centerToCenterUnitVectorY)
+        ) {
           ssB.specification.position.x += displacementX;
         } else {
           ssB.specification.position.y += displacementY;
@@ -354,7 +406,7 @@ export function moveSystem(
     }
   } while (displacedThisIteration.length && iterations < 1000);
 
-  console.debug('iterations to resolve collisions', iterations);
+  console.debug("iterations to resolve collisions", iterations);
 
   for (const system of subsystems) {
     const ssPosition = system.specification.position;
@@ -386,8 +438,8 @@ export function moveSystem(
 
       console.debug(
         system.canonicalId,
-        'out of bounds',
-        ' => displacing',
+        "out of bounds",
+        " => displacing",
         parent.canonicalId,
         displacementX,
         displacementY,

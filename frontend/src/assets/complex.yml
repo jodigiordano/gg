@@ -1,5 +1,5 @@
 specificationVersion: 1.0.0
-title: dataflows
+title: complex
 description: Tool to build beautiful software system designs
 systems:
   - id: frontend

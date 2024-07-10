@@ -1,11 +1,11 @@
 import { readFileSync, mkdirSync, createWriteStream } from "node:fs";
-import { loadYaml } from "@dataflows/spec";
+import { loadYaml } from "@gg/spec";
 import { createCanvas, Canvas } from "canvas";
 import {
   SystemSimulator,
   SimulatorObjectType,
   SimulatorSubsystem,
-} from "../index";
+} from "../src/index.js";
 
 export function loadExample(name: string) {
   return loadYaml(

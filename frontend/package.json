@@ -1,23 +1,16 @@
 {
-  "name": "@dataflows/frontend",
+  "name": "@gg/frontend",
   "version": "0.1.0",
-  "description": "",
   "type": "module",
-  "license": "See LICENSE",
-  "engines": {
-    "node": ">= 21.6",
-    "npm": ">= 10.2"
-  },
+  "license": "See ../LICENSE.md",
   "types": "./dist/index.d.ts",
   "exports": "./dist/index.js",
-  "files": [
-    "dist"
-  ],
+  "files": ["dist"],
   "scripts": {
     "prepublishOnly": "npm run lint && npm run compile",
     "lint": "prettier . --write",
     "dev": "vite",
-    "compile": "rm -rf dist && tsc && vite build",
+    "compile": "tsc && vite build",
     "preview": "vite preview"
   },
   "devDependencies": {
@@ -27,8 +20,8 @@
     "vite-plugin-checker": "0.6.x"
   },
   "dependencies": {
-    "@dataflows/simulator": "0.x",
-    "@dataflows/spec": "0.x",
+    "@gg/simulator": "0.x",
+    "@gg/spec": "0.x",
     "pixi-viewport": "5.0.1",
     "pixi.js": "7.x"
   }

@@ -20,9 +20,7 @@ export function validate(
   system: System,
   runtime: RuntimeSystem,
 ): ValidationError[] {
-  const validateAjv = specification.getSchema<System>(
-    "https://dataflows.io/system.json",
-  )!;
+  const validateAjv = specification.getSchema<System>("system")!;
 
   validateAjv(system);
 

@@ -1,26 +1,19 @@
 {
-  "name": "@dataflows/spec",
+  "name": "@gg/spec",
   "version": "0.1.0",
-  "description": "",
   "type": "module",
-  "license": "See LICENSE",
-  "engines": {
-    "node": ">= 21.6",
-    "npm": ">= 10.2"
-  },
+  "license": "See ../LICENSE.md",
   "types": "./dist/index.d.ts",
   "exports": "./dist/index.js",
-  "files": [
-    "dist"
-  ],
+  "files": ["dist"],
   "scripts": {
     "prepublishOnly": "npm run lint && npm run test && npm run compile",
     "lint": "prettier . --write",
-    "test": "NODE_OPTIONS='--import tsx' mocha tests/**/*.ts",
-    "test:debug": "NODE_OPTIONS='--import tsx' mocha --inspect-brk tests/**/*.ts",
-    "dev": "npm run compile && tsc --watch --preserveWatchOutput",
-    "compile:types": "tsx generate.ts > specification.ts && npx prettier specification.ts --write",
-    "compile": "npm run compile:types && tsc && cp -r schemas dist/schemas"
+    "dev": "npm run compile:types && tsc --watch --preserveWatchOutput",
+    "test": "tsc --project tsconfig.test.json && NODE_OPTIONS='--import tsx' mocha tests/**/*.ts",
+    "test:debug": "tsc --project tsconfig.test.json && NODE_OPTIONS='--import tsx' mocha --inspect-brk tests/**/*.ts",
+    "compile:types": "tsx scripts/generate.ts > src/specification.ts && npx prettier src/specification.ts --write",
+    "compile": "rm -rf dist && npm run compile:types && tsc"
   },
   "devDependencies": {
     "@tsconfig/strictest": "2.x",

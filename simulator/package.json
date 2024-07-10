@@ -1,25 +1,18 @@
 {
-  "name": "@dataflows/simulator",
+  "name": "@gg/simulator",
   "version": "0.1.0",
-  "description": "",
   "type": "module",
-  "license": "See LICENSE",
-  "engines": {
-    "node": ">= 21.6",
-    "npm": ">= 10.2"
-  },
+  "license": "See ../LICENSE.md",
   "types": "./dist/index.d.ts",
   "exports": "./dist/index.js",
-  "files": [
-    "dist"
-  ],
+  "files": ["dist"],
   "scripts": {
     "prepublishOnly": "npm run lint && npm run test && npm run compile",
     "lint": "prettier . --write",
-    "dev": "npm run compile && tsc --watch --preserveWatchOutput",
-    "test": "NODE_OPTIONS='--import tsx' mocha tests/**/*.ts",
-    "test:debug": "NODE_OPTIONS='--import tsx' mocha --inspect-brk tests/**/*.ts",
-    "compile": "tsc"
+    "dev": "tsc --watch --preserveWatchOutput",
+    "test": "tsc --project tsconfig.test.json && NODE_OPTIONS='--import tsx' mocha tests/**/*.ts",
+    "test:debug": "tsc --project tsconfig.test.json && NODE_OPTIONS='--import tsx' mocha --inspect-brk tests/**/*.ts",
+    "compile": "rm -rf dist && tsc"
   },
   "devDependencies": {
     "@tsconfig/strictest": "2.x",
@@ -34,7 +27,7 @@
     "typescript": "5.x"
   },
   "dependencies": {
-    "@dataflows/spec": "0.x",
+    "@gg/spec": "0.x",
     "heap": "0.2.x"
   }
 }
