@@ -227,10 +227,10 @@ await spritesheet.parse();
 
 // Create PixiJS viewport.
 const viewport = new Viewport({
-  screenWidth: window.innerWidth,
-  screenHeight: window.innerHeight,
-  worldWidth: window.innerWidth,
-  worldHeight: window.innerHeight,
+  screenWidth: canvasContainer.offsetWidth,
+  screenHeight: canvasContainer.offsetHeight,
+  worldWidth: canvasContainer.offsetWidth,
+  worldHeight: canvasContainer.offsetHeight,
   events: app.renderer.events,
   eventMode: "static",
   interactiveChildren: false,
@@ -1051,7 +1051,17 @@ document
     loadSimulation(yamlEditor.value);
     resetState();
     pushChange(yamlEditor.value);
-    fitSimulation();
+
+    viewport.moveCenter(
+      canvasContainer.offsetWidth / 2,
+      canvasContainer.offsetHeight / 2
+    );
+
+    viewport.fit(
+      true,
+      canvasContainer.offsetWidth,
+      canvasContainer.offsetHeight
+    );
   });
 
 document
