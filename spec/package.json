@@ -5,7 +5,9 @@
   "license": "See ../LICENSE.md",
   "types": "./dist/index.d.ts",
   "exports": "./dist/index.js",
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "prepublishOnly": "npm run lint && npm run test && npm run compile",
     "lint": "prettier . --write",
