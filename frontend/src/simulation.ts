@@ -1,12 +1,3 @@
-import {
-  Application,
-  Sprite,
-  Graphics,
-  RenderTexture,
-  Text,
-  Spritesheet,
-  SCALE_MODES,
-} from "pixi.js";
 import { RuntimeFlow, RuntimeSystem } from "@gg/spec";
 import {
   SystemSimulator,
@@ -18,6 +9,15 @@ import {
   SimulatorLink,
   SimulatorSystemDirectionType,
 } from "@gg/simulator";
+import {
+  Application,
+  Sprite,
+  Graphics,
+  RenderTexture,
+  Text,
+  Spritesheet,
+  SCALE_MODES,
+} from "./pixi.js";
 import { BlockSize } from "./consts.js";
 
 export class CanvasSimulator {

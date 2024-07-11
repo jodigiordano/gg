@@ -1,19 +1,3 @@
-import {
-  Application,
-  Graphics,
-  TilingSprite,
-  settings,
-  MIPMAP_MODES,
-  SCALE_MODES,
-  WRAP_MODES,
-  BaseTexture,
-  DisplayObject,
-  Container,
-  Assets,
-  Sprite,
-  Spritesheet,
-  Text,
-} from "pixi.js";
 import { dump as saveYaml } from "js-yaml";
 // @ts-ignore
 import { Viewport } from "pixi-viewport";
@@ -32,16 +16,27 @@ import {
   TitleCharsPerSquare,
   setSubsystemTitle,
 } from "@gg/spec";
+import {
+  Application,
+  Graphics,
+  TilingSprite,
+  settings,
+  MIPMAP_MODES,
+  SCALE_MODES,
+  WRAP_MODES,
+  BaseTexture,
+  Container,
+  Assets,
+  Sprite,
+  Spritesheet,
+  Text,
+} from "./pixi.js";
 import { CanvasSimulator, CanvasFlowPlayer } from "./simulation.js";
 import { BlockSize } from "./consts.js";
 import { initializeDropdowns } from "./dropdown.js";
 import example1 from "./assets/basic.yml?raw";
 import example2 from "./assets/complex.yml?raw";
-
-//@ts-ignore
 import spritesheetData from "./assets/spritesheet.png?base64";
-
-//@ts-ignore
 import fontData from "./assets/ibm.woff?base64";
 
 interface MoveSystemOperation {
@@ -465,7 +460,7 @@ viewport.on("pointerdown", (event: any) => {
     dragAndDrop.width = subsystem.size.width * BlockSize;
     dragAndDrop.height = subsystem.size.height * BlockSize;
 
-    dragAndDropContainer.addChild(dragAndDrop as DisplayObject);
+    dragAndDropContainer.addChild(dragAndDrop);
   }
 });
 
@@ -572,7 +567,7 @@ viewport.on("pointerup", (event: any) => {
         setSystemTitleMask.width = subsystem.titleSize.width * BlockSize;
         setSystemTitleMask.height = subsystem.titleSize.height * BlockSize;
 
-        setSystemTitleContainer.addChild(setSystemTitleMask as DisplayObject);
+        setSystemTitleContainer.addChild(setSystemTitleMask);
 
         const title = subsystem.title.replace(/\\n/g, "\n");
 
@@ -580,7 +575,7 @@ viewport.on("pointerup", (event: any) => {
         setSystemTitleEditor.x = titleX;
         setSystemTitleEditor.y = titleY;
 
-        setSystemTitleContainer.addChild(setSystemTitleEditor as DisplayObject);
+        setSystemTitleContainer.addChild(setSystemTitleEditor);
 
         const titleLastLineLength = title.split("\n").at(-1)!.length;
 
@@ -594,7 +589,7 @@ viewport.on("pointerup", (event: any) => {
         setSystemTitleCursor.y =
           setSystemTitleEditor.y + setSystemTitleEditor.height - BlockSize;
 
-        setSystemTitleContainer.addChild(setSystemTitleCursor as DisplayObject);
+        setSystemTitleContainer.addChild(setSystemTitleCursor);
 
         state.operation.editing = true;
       }
@@ -863,14 +858,14 @@ function loadSimulation(yaml: string): boolean {
   for (const objectToRender of canvasSimulator.getObjectsToRender(
     spritesheet,
   )) {
-    canvasSimulatorContainer.addChild(objectToRender as DisplayObject);
+    canvasSimulatorContainer.addChild(objectToRender);
   }
 
   if (canvasSimulator.system.flows.length) {
     canvasFlowPlayer = canvasSimulator.createFlowPlayer(app, 0);
 
     for (const objectToRender of canvasFlowPlayer.getObjectsToRender()) {
-      canvasSimulatorContainer.addChild(objectToRender as DisplayObject);
+      canvasSimulatorContainer.addChild(objectToRender);
     }
   }
 
