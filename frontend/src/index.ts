@@ -1047,16 +1047,14 @@ document
     resetState();
     pushChange(yamlEditor.value);
 
-    viewport.moveCenter(
-      canvasContainer.offsetWidth / 2,
-      canvasContainer.offsetHeight / 2
-    );
+    const width = canvasContainer.offsetWidth * 1.5;
+    const height = canvasContainer.offsetHeight * 1.5;
 
-    viewport.fit(
-      true,
-      canvasContainer.offsetWidth,
-      canvasContainer.offsetHeight
-    );
+    viewport.moveCenter(width / 2, height / 2);
+
+    viewport.fit(true, width, height);
+
+    redrawGrid();
   });
 
 document
