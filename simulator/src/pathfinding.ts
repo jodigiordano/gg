@@ -14,7 +14,7 @@ interface Node {
 
   // Variant properties set when finding a path between two nodes.
   parent: Node | undefined;
-  f: number;
+  priority: number;
   costToVisit: number;
   distanceToEnd: number;
   state: NodeState;
@@ -31,9 +31,11 @@ export function findPath(
   const startNode = grid.getNodeAt(startX, startY);
   const endNode = grid.getNodeAt(endX, endY);
 
-  const openList = new Heap((nodeA: Node, nodeB: Node) => nodeA.f - nodeB.f);
+  const openList = new Heap(
+    (nodeA: Node, nodeB: Node) => nodeA.priority - nodeB.priority,
+  );
 
-  startNode.f = 0;
+  startNode.priority = 0;
   startNode.costToVisit = 0;
 
   // Search start at the "start" node.
@@ -62,7 +64,7 @@ export function findPath(
     }
 
     // Get neigbours of the current node.
-    const neighbors = grid.getNeighbors(node);
+    const neighbors = grid.getNeighborsAt(node.x, node.y);
 
     for (const neighbor of neighbors) {
       if (neighbor.state === NodeState.Visited) {
@@ -108,7 +110,7 @@ export function findPath(
           // Manhattan distance.
           Math.abs(x - endX) + Math.abs(y - endY);
 
-        neighbor.f = neighbor.costToVisit + neighbor.distanceToEnd;
+        neighbor.priority = neighbor.costToVisit + neighbor.distanceToEnd;
         neighbor.parent = node;
 
         if (neighbor.state !== NodeState.WillVisit) {
@@ -148,7 +150,7 @@ export class Grid {
           y,
           weight,
           parent: undefined,
-          f: 0,
+          priority: 0,
           costToVisit: 0,
           distanceToEnd: 0,
           state: NodeState.NotVisited,
@@ -177,8 +179,7 @@ export class Grid {
     this.nodes[x]![y]!.weight = weight;
   }
 
-  getNeighbors(node: Node): Node[] {
-    const { x, y } = node;
+  getNeighborsAt(x: number, y: number): Node[] {
     const neighbors: Node[] = [];
 
     if (this.isWalkableAt(x, y - 1)) {
@@ -204,7 +205,7 @@ export class Grid {
     for (const row of this.nodes) {
       for (const node of row) {
         node.parent = undefined;
-        node.f = 0;
+        node.priority = 0;
         node.costToVisit = 0;
         node.distanceToEnd = 0;
         node.state = NodeState.NotVisited;
