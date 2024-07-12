@@ -1,16 +1,10 @@
 import Heap from "heap"; // todo: remove dependency.
 
 export interface FinderOptions {
-  // Heuristic function to estimate the distance.
-  // Default: manhattan.
-  heuristic?: Heuristic;
   // Weight to apply to the heuristic to allow for
   // suboptimal paths, in order to speed up the search.
   // Default: 1.
   weight?: number;
-  // Add penalties to discourage turning and causing a 'staircase' effect.
-  // Default: false.
-  avoidStaircase?: boolean;
   // Penalty to add to turning. Higher numbers discourage turning more.
   // Default: 1.
   turnPenalty?: number;
@@ -30,43 +24,12 @@ interface Node {
   closed: boolean;
 }
 
-// A collection of heuristic functions.
-type Heuristic = (dx: number, dy: number) => number;
-
-const Heuristics = {
-  // Manhattan distance.
-  manhattan: function (dx: number, dy: number): number {
-    return dx + dy;
-  },
-
-  // Euclidean distance.
-  euclidean: function (dx: number, dy: number): number {
-    return Math.sqrt(dx * dx + dy * dy);
-  },
-
-  // Octile distance.
-  octile: function (dx: number, dy: number): number {
-    const F = Math.SQRT2 - 1;
-
-    return dx < dy ? F * dx + dy : F * dy + dx;
-  },
-
-  // Chebyshev distance.
-  chebyshev: function (dx: number, dy: number): number {
-    return Math.max(dx, dy);
-  },
-};
-
 export class PathFinder {
-  private heuristic: Heuristic;
   private weight: number;
-  private avoidStaircase: boolean;
   private turnPenalty: number;
 
   constructor(options: FinderOptions = {}) {
-    this.heuristic = options.heuristic ?? Heuristics.manhattan;
     this.weight = options.weight ?? 1;
-    this.avoidStaircase = options.avoidStaircase ?? true;
     this.turnPenalty = options.turnPenalty ?? 1;
   }
 
@@ -131,30 +94,29 @@ export class PathFinder {
 
         // If we're avoiding staircasing,
         // add penalties if the direction will change.
-        if (this.avoidStaircase) {
-          const lastDirection =
-            node.parent === undefined
-              ? undefined
-              : { x: node.x - node.parent.x, y: node.y - node.parent.y };
+        const lastDirection =
+          node.parent === undefined
+            ? undefined
+            : { x: node.x - node.parent.x, y: node.y - node.parent.y };
 
-          const turned =
-            lastDirection === undefined
-              ? 0
-              : lastDirection.x !== x - node.x || lastDirection.y !== y - node.y
-                ? 1
-                : 0;
+        const turned =
+          lastDirection === undefined
+            ? 0
+            : lastDirection.x !== x - node.x || lastDirection.y !== y - node.y
+              ? 1
+              : 0;
 
-          nextG += this.turnPenalty * turned;
-        }
+        nextG += this.turnPenalty * turned;
 
         // Check if the neighbor has not been inspected yet, or
         // can be reached with smaller cost from the current node.
         if (!neighbor.opened || nextG < neighbor.g) {
           neighbor.g = nextG;
+
           neighbor.h =
             neighbor.h ||
-            this.weight *
-              this.heuristic(Math.abs(x - endX), Math.abs(y - endY));
+            this.weight * (Math.abs(x - endX) + Math.abs(y - endY));
+
           neighbor.f = neighbor.g + neighbor.h;
           neighbor.parent = node;
 

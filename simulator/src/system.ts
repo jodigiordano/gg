@@ -705,7 +705,6 @@ export class SystemSimulator {
 
   private drawLinks(system: RuntimeSystem, finderGrid: PathFinderGrid): void {
     const finder = new PathFinder({
-      avoidStaircase: true,
       turnPenalty: 1,
     });
 
