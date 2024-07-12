@@ -30,7 +30,7 @@ import {
   Sprite,
   Spritesheet,
   Text,
-} from "./pixi.js";
+} from "pixi.js";
 import { CanvasSimulator, CanvasFlowPlayer } from "./simulation.js";
 import { BlockSize } from "./consts.js";
 import { initializeDropdowns } from "./dropdown.js";

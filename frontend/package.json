@@ -24,22 +24,7 @@
   "dependencies": {
     "@gg/simulator": "0.x",
     "@gg/spec": "0.x",
-    "@pixi/app": "7.x",
-    "@pixi/assets": "7.x",
-    "@pixi/constants": "7.x",
-    "@pixi/core": "7.x",
-    "@pixi/display": "7.x",
-    "@pixi/events": "7.x",
-    "@pixi/graphics": "7.x",
-    "@pixi/math": "7.x",
-    "@pixi/runner": "7.x",
-    "@pixi/settings": "7.x",
-    "@pixi/sprite": "7.x",
-    "@pixi/sprite-tiling": "7.x",
-    "@pixi/spritesheet": "7.x",
-    "@pixi/text": "7.x",
-    "@pixi/ticker": "7.x",
-    "@pixi/utils": "7.x",
+    "pixi.js": "7.x",
     "pixi-viewport": "5.0.1"
   }
 }

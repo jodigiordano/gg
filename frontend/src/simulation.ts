@@ -17,7 +17,7 @@ import {
   Text,
   Spritesheet,
   SCALE_MODES,
-} from "./pixi.js";
+} from "pixi.js";
 import { BlockSize } from "./consts.js";
 
 export class CanvasSimulator {
