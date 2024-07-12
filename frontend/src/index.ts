@@ -143,7 +143,7 @@ const singleChoiceButtons = document.querySelectorAll(
 
 // Create PixiJS app.
 const app = new Application({
-  background: "#dddddd",
+  backgroundAlpha: 0,
   resizeTo: canvasContainer,
   autoDensity: true,
   resolution: window.devicePixelRatio,
@@ -1055,6 +1055,27 @@ document
     resetState();
     pushChange(yamlEditor.value);
     fitSimulation();
+  });
+
+document
+  .getElementById("operation-export-png")
+  ?.addEventListener("click", async function () {
+    app.stop();
+    grid.visible = false;
+
+    viewport.backgroundColor = "0xffffff";
+
+    // @ts-ignore
+    const dataUri = await app.renderer.extract.image(viewport, "test");
+
+    const link = document.createElement("a");
+
+    link.setAttribute("href", dataUri.src);
+    link.setAttribute("download", "gg.png");
+    link.click();
+
+    grid.visible = true;
+    app.start();
   });
 
 //
