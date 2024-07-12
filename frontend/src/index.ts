@@ -58,7 +58,6 @@ interface SetSystemTitleOperation {
 
 interface AddSystemOperation {
   type: "addSystem";
-  position: RuntimePosition | null;
 }
 
 interface RemoveSystemOrLinkOperation {
@@ -372,9 +371,7 @@ viewport.on("pointerdown", (event: any) => {
   const x = Math.floor(coordinates.x / BlockSize) | 0;
   const y = Math.floor(coordinates.y / BlockSize) | 0;
 
-  if (state.operation.type === "addSystem") {
-    state.operation.position = { x, y };
-  } else if (state.operation.type === "toggleHideSystems") {
+  if (state.operation.type === "toggleHideSystems") {
     state.operation.subsystem = canvasSimulator.systemSimulator.getSubsystemAt(
       x,
       y,
@@ -469,6 +466,11 @@ viewport.on("pointerup", (event: any) => {
     return;
   }
 
+  const coordinates = viewport.toWorld(event.data.global);
+
+  const x = Math.floor(coordinates.x / BlockSize) | 0;
+  const y = Math.floor(coordinates.y / BlockSize) | 0;
+
   // Operation: Hide systems toggle.
   if (state.operation.type === "toggleHideSystems") {
     if (state.operation.subsystem) {
@@ -488,28 +490,25 @@ viewport.on("pointerup", (event: any) => {
       };
     }
   } else if (state.operation.type === "addSystem") {
-    if (state.operation.position) {
-      // Apply operation.
-      const system =
-        canvasSimulator.systemSimulator.getSubsystemAt(
-          state.operation.position.x,
-          state.operation.position.y,
-        ) ?? canvasSimulator.system;
+    // Apply operation.
+    const system =
+      canvasSimulator.systemSimulator.getSubsystemAt(
+        x,
+        y,
+      ) ?? canvasSimulator.system;
 
-      modifySpecification(() => {
-        addSubsystem(
-          system,
-          (state.operation as AddSystemOperation).position!.x,
-          (state.operation as AddSystemOperation).position!.y,
-        );
-      });
+    modifySpecification(() => {
+      addSubsystem(
+        system,
+        x,
+        y,
+      );
+    });
 
-      // Reset operation.
-      state.operation = {
-        type: "addSystem",
-        position: null,
-      };
-    }
+    // Reset operation.
+    state.operation = {
+      type: "addSystem",
+    };
   } else if (state.operation.type === "removeSystemOrLink") {
     // Apply operation.
     if (state.operation.subsystem) {
@@ -1103,7 +1102,7 @@ const operationSystemAdd = document.getElementById("operation-system-add")!;
 function setupOperationSystemAdd() {
   teardownAnyOperation();
 
-  state.operation = { type: "addSystem", position: null };
+  state.operation = { type: "addSystem" };
 
   operationSystemAdd.classList.add("selected");
 }
