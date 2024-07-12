@@ -116,7 +116,7 @@ function resetState(): void {
   state.changeIndex = -1;
 
   // TODO: Hmmm...
-  teardownAnyOperation();
+  setupOperationSystemMove();
 }
 
 // Setup PixiJS.
@@ -780,7 +780,21 @@ window.addEventListener("keydown", event => {
     }
     // The user press "Esc" to cancel any ongoing operation.
   } else if (event.key === "Escape") {
-    teardownAnyOperation();
+    setupOperationSystemMove();
+  } else if (event.key === '1') {
+    setupOperationSystemMove();
+  } else if (event.key === '2') {
+    setupOperationSystemAdd();
+  } else if (event.key === '3') {
+    setupOperationSystemSetTitle();
+  } else if (event.key === '4') {
+    setupOperationLinkAdd();
+  } else if (event.key === 'q') {
+    setupOperationSystemSetParent();
+  } else if (event.key === 'w') {
+    setupOperationErase();
+  } else if (event.key === 'e') {
+    setupOperationSystemHideSystems();
   }
 });
 
@@ -798,8 +812,6 @@ function teardownAnyOperation(): void {
   for (const button of singleChoiceButtons) {
     button.classList.remove("selected");
   }
-
-  document.getElementById("operation-move")?.classList?.add("selected");
 }
 
 /**
@@ -954,26 +966,6 @@ window.addEventListener("resize", resizeContainer);
 //
 
 document
-  .getElementById("operation-camera-fit")
-  ?.addEventListener("click", fitSimulation);
-
-document
-  .getElementById("operation-camera-zoom-in")
-  ?.addEventListener("click", function () {
-    viewport.zoomPercent(0.25, true);
-
-    redrawGrid();
-  });
-
-document
-  .getElementById("operation-camera-zoom-out")
-  ?.addEventListener("click", function () {
-    viewport.zoomPercent(-0.25, true);
-
-    redrawGrid();
-  });
-
-document
   .getElementById("operation-yaml-editor-open")
   ?.addEventListener("click", function () {
     // Disable autofocus on the first input when opening the modal.
@@ -1010,32 +1002,6 @@ document
   });
 
 document
-  .getElementById("operation-redo")
-  ?.addEventListener("click", function () {
-    if (state.changeIndex < state.changes.length - 1) {
-      state.changeIndex += 1;
-
-      const value = state.changes[state.changeIndex];
-
-      yamlEditor.value = value;
-      loadSimulation(yamlEditor.value);
-    }
-  });
-
-document
-  .getElementById("operation-undo")
-  ?.addEventListener("click", function () {
-    if (state.changeIndex > 0) {
-      state.changeIndex -= 1;
-
-      const value = state.changes[state.changeIndex];
-
-      yamlEditor.value = value;
-      loadSimulation(yamlEditor.value);
-    }
-  });
-
-document
   .getElementById("operation-file-new")
   ?.addEventListener("click", function () {
     yamlEditor.value = [
@@ -1050,9 +1016,16 @@ document
     const width = canvasContainer.offsetWidth * 1.5;
     const height = canvasContainer.offsetHeight * 1.5;
 
-    viewport.moveCenter(width / 2, height / 2);
+    viewport.moveCenter(
+      width / 2,
+      height / 2
+    );
 
-    viewport.fit(true, width, height);
+    viewport.fit(
+      true,
+      width,
+      height
+    );
 
     redrawGrid();
   });
@@ -1091,75 +1064,178 @@ document
     fitSimulation();
   });
 
-document
-  .getElementById("operation-move")
-  ?.addEventListener("click", function () {
-    teardownAnyOperation();
+//
+// Toolbox
+//
 
-    state.operation = { type: "moveSystem", subsystem: null, pickedUpAt: null };
+// Operation: SystemMove
+
+const operationSystemMove = document.getElementById("operation-system-move")!;
+
+function setupOperationSystemMove() {
+  teardownAnyOperation();
+
+  state.operation = { type: "moveSystem", subsystem: null, pickedUpAt: null };
+
+  operationSystemMove.classList.add("selected");
+}
+
+operationSystemMove.addEventListener("click", setupOperationSystemMove);
+
+// Operation: SystemAdd
+
+const operationSystemAdd = document.getElementById("operation-system-add")!;
+
+function setupOperationSystemAdd() {
+  teardownAnyOperation();
+
+  state.operation = { type: "addSystem", position: null };
+
+  operationSystemAdd.classList.add("selected");
+}
+
+operationSystemAdd.addEventListener("click", setupOperationSystemAdd);
+
+// Operation: SystemSetTitle
+
+const operationSystemSetTitle = document.getElementById("operation-system-set-title")!;
+
+function setupOperationSystemSetTitle() {
+  teardownAnyOperation();
+
+  state.operation = {
+    type: "setSystemTitle",
+    subsystem: null,
+    editing: false,
+  };
+
+  operationSystemSetTitle.classList.add("selected");
+}
+
+operationSystemSetTitle.addEventListener("click", setupOperationSystemSetTitle);
+
+// Operation: LinkAdd
+
+const operationLinkAdd = document.getElementById("operation-link-add")!;
+
+function setupOperationLinkAdd() {
+  teardownAnyOperation();
+
+  state.operation = { type: "addLink", a: null, b: null };
+
+  operationLinkAdd.classList.add("selected");
+}
+
+operationLinkAdd.addEventListener("click", setupOperationLinkAdd);
+
+// Operation: SystemSetParent
+
+const operationSystemSetParent = document.getElementById("operation-system-set-parent")!;
+
+function setupOperationSystemSetParent() {
+  teardownAnyOperation();
+
+  state.operation = {
+    type: "setSystemParent",
+    subsystem: null,
+    parent: null,
+    parentAt: null,
+  };
+
+  operationSystemSetParent.classList.add("selected");
+}
+
+operationSystemSetParent.addEventListener("click", setupOperationSystemSetParent);
+
+// Operation: Erase
+
+const operationErase = document.getElementById("operation-erase")!;
+
+function setupOperationErase() {
+  teardownAnyOperation();
+
+  state.operation = {
+    type: "removeSystemOrLink",
+    subsystem: null,
+    link: null,
+  };
+
+  operationErase.classList.add("selected");
+}
+
+operationErase.addEventListener("click", setupOperationErase);
+
+// Operation: SystemHideSystems
+
+const operationSystemHideSystems = document.getElementById("operation-system-hide-systems")!;
+
+function setupOperationSystemHideSystems() {
+  teardownAnyOperation();
+
+  state.operation = { type: "toggleHideSystems", subsystem: null };
+
+  operationSystemHideSystems.classList.add("selected");
+}
+
+operationSystemHideSystems.addEventListener("click", setupOperationSystemHideSystems);
+
+// Operation: Undo
+
+document
+  .getElementById("operation-undo")
+  ?.addEventListener("click", function() {
+    if (state.changeIndex > 0) {
+      state.changeIndex -= 1;
+
+      const value = state.changes[state.changeIndex];
+
+      yamlEditor.value = value;
+      loadSimulation(yamlEditor.value);
+    }
   });
 
-document
-  .getElementById("operation-system-hide-systems")
-  ?.addEventListener("click", function () {
-    teardownAnyOperation();
-
-    state.operation = { type: "toggleHideSystems", subsystem: null };
-  });
+// Operation: Redo
 
 document
-  .getElementById("operation-system-add")
+  .getElementById("operation-redo")
   ?.addEventListener("click", function () {
-    teardownAnyOperation();
+    if (state.changeIndex < state.changes.length - 1) {
+      state.changeIndex += 1;
 
-    state.operation = { type: "addSystem", position: null };
+      const value = state.changes[state.changeIndex];
+
+      yamlEditor.value = value;
+      loadSimulation(yamlEditor.value);
+    }
   });
+
+// Operation: CameraFit
 
 document
-  .getElementById("operation-erase")
-  ?.addEventListener("click", function () {
-    teardownAnyOperation();
+  .getElementById("operation-camera-fit")
+  ?.addEventListener("click", fitSimulation);
 
-    state.operation = {
-      type: "removeSystemOrLink",
-      subsystem: null,
-      link: null,
-    };
-  });
+// Operation: CameraZoomIn
 
 document
-  .getElementById("operation-system-set-title")
+  .getElementById("operation-camera-zoom-in")
   ?.addEventListener("click", function () {
-    teardownAnyOperation();
+    viewport.zoomPercent(0.25, true);
 
-    state.operation = {
-      type: "setSystemTitle",
-      subsystem: null,
-      editing: false,
-    };
+    redrawGrid();
   });
+
+// Operation: CameraZoomOut
 
 document
-  .getElementById("operation-system-set-parent")
+  .getElementById("operation-camera-zoom-out")
   ?.addEventListener("click", function () {
-    teardownAnyOperation();
+    viewport.zoomPercent(-0.25, true);
 
-    state.operation = {
-      type: "setSystemParent",
-      subsystem: null,
-      parent: null,
-      parentAt: null,
-    };
+    redrawGrid();
   });
 
-document
-  .getElementById("operation-link-add")
-  ?.addEventListener("click", function () {
-    teardownAnyOperation();
-
-    state.operation = { type: "addLink", a: null, b: null };
-  });
-
+// Initialize toolbox
 for (const button of singleChoiceButtons) {
   button.addEventListener("click", function () {
     for (const other of singleChoiceButtons) {
@@ -1170,6 +1246,7 @@ for (const button of singleChoiceButtons) {
   });
 }
 
+// Initialize dropdowns.
 initializeDropdowns();
 
 // Add PixiJS to the DOM.

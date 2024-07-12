@@ -275,8 +275,17 @@
           row-gap: 0.5em;
 
           button {
+            position: relative;
+
             &.selected {
               background: #aaa;
+            }
+
+            .keyboard {
+              position: absolute;
+              right: 1px;
+              bottom: 0;
+              color: #888;
             }
           }
         }
@@ -361,26 +370,33 @@
     <div id="content">
       <div id="toolbox">
         <div class="operations single-choice">
-          <button id="operation-move" title="Move" class="selected">
+          <button id="operation-system-move" title="Move" class="selected">
             <img src="./assets/icon-move.svg" />
+            <div class="keyboard">1</div>
           </button>
           <button id="operation-system-add" title="Add system">
             <img src="./assets/icon-system.svg" />
+            <div class="keyboard">2</div>
           </button>
-          <button id="operation-system-set-title" title="Set system title">
+          <button id="operation-system-set-title" title="Edit system title">
             <img src="./assets/icon-text.svg" />
+            <div class="keyboard">3</div>
           </button>
           <button id="operation-link-add" title="Add link">
             <img src="./assets/icon-link.svg" />
+            <div class="keyboard">4</div>
           </button>
           <button id="operation-system-set-parent" title="Set system parent">
             <img src="./assets/icon-parent.svg" />
+            <div class="keyboard">q</div>
           </button>
           <button id="operation-erase" title="Eraser">
             <img src="./assets/icon-eraser.svg" />
+            <div class="keyboard">w</div>
           </button>
           <button id="operation-system-hide-systems" title="Hide sub-systems">
             <img src="./assets/icon-hide.svg" />
+            <div class="keyboard">e</div>
           </button>
         </div>
         <div class="separator"></div>
