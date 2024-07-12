@@ -346,7 +346,10 @@ viewport.on("pointermove", (event: any) => {
   const x = Math.floor(coordinates.x / BlockSize) | 0;
   const y = Math.floor(coordinates.y / BlockSize) | 0;
 
-  if (state.operation.type === "moveSystem" || state.operation.type === "setSystemParent") {
+  if (
+    state.operation.type === "moveSystem" ||
+    state.operation.type === "setSystemParent"
+  ) {
     if (state.operation.subsystem && state.operation.pickedUpAt) {
       const deltaX = x - state.operation.pickedUpAt.x;
       const deltaY = y - state.operation.pickedUpAt.y;
@@ -428,7 +431,10 @@ viewport.on("pointerdown", (event: any) => {
     } else {
       state.operation.a = subsystem;
     }
-  } else if (state.operation.type === "moveSystem" || state.operation.type === "setSystemParent") {
+  } else if (
+    state.operation.type === "moveSystem" ||
+    state.operation.type === "setSystemParent"
+  ) {
     // Operation: Move system.
     // Operation: Set system parent.
     const subsystem = canvasSimulator.systemSimulator.getSubsystemAt(x, y);
@@ -482,17 +488,11 @@ viewport.on("pointerup", (event: any) => {
   } else if (state.operation.type === "addSystem") {
     // Apply operation.
     const system =
-      canvasSimulator.systemSimulator.getSubsystemAt(
-        x,
-        y,
-      ) ?? canvasSimulator.system;
+      canvasSimulator.systemSimulator.getSubsystemAt(x, y) ??
+      canvasSimulator.system;
 
     modifySpecification(() => {
-      addSubsystem(
-        system,
-        x,
-        y,
-      );
+      addSubsystem(system, x, y);
     });
 
     // Reset operation.
@@ -588,7 +588,9 @@ viewport.on("pointerup", (event: any) => {
       // Apply operation.
       const { subsystem } = state.operation;
 
-      const parent = canvasSimulator.systemSimulator.getSubsystemAt(x, y) ?? canvasSimulator.system;
+      const parent =
+        canvasSimulator.systemSimulator.getSubsystemAt(x, y) ??
+        canvasSimulator.system;
 
       if (
         parent.canonicalId !== subsystem.canonicalId &&
