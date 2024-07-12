@@ -10,7 +10,6 @@ import {
   moveSystem,
   RuntimeLink,
   RuntimePosition,
-  RuntimeSystem,
   RuntimeSubsystem,
   moveSubsystemToParent,
   TitleCharsPerSquare,
@@ -68,9 +67,8 @@ interface RemoveSystemOrLinkOperation {
 
 interface SetSystemParentOperation {
   type: "setSystemParent";
-  parent: RuntimeSystem | RuntimeSubsystem | null;
-  parentAt: RuntimePosition | null;
   subsystem: RuntimeSubsystem | null;
+  pickedUpAt: RuntimePosition | null;
 }
 
 interface AddLinkOperation {
@@ -348,7 +346,7 @@ viewport.on("pointermove", (event: any) => {
   const x = Math.floor(coordinates.x / BlockSize) | 0;
   const y = Math.floor(coordinates.y / BlockSize) | 0;
 
-  if (state.operation.type === "moveSystem") {
+  if (state.operation.type === "moveSystem" || state.operation.type === "setSystemParent") {
     if (state.operation.subsystem && state.operation.pickedUpAt) {
       const deltaX = x - state.operation.pickedUpAt.x;
       const deltaY = y - state.operation.pickedUpAt.y;
@@ -411,15 +409,6 @@ viewport.on("pointerdown", (event: any) => {
       x,
       y,
     );
-  } else if (state.operation.type === "setSystemParent") {
-    const subsystem = canvasSimulator.systemSimulator.getSubsystemAt(x, y);
-
-    if (state.operation.subsystem) {
-      state.operation.parent = subsystem ?? canvasSimulator.system;
-      state.operation.parentAt = { x, y };
-    } else {
-      state.operation.subsystem = subsystem;
-    }
   } else if (state.operation.type === "addLink") {
     const subsystem = canvasSimulator.systemSimulator.getSubsystemAt(x, y);
 
@@ -439,8 +428,9 @@ viewport.on("pointerdown", (event: any) => {
     } else {
       state.operation.a = subsystem;
     }
-  } else if (state.operation.type === "moveSystem") {
+  } else if (state.operation.type === "moveSystem" || state.operation.type === "setSystemParent") {
     // Operation: Move system.
+    // Operation: Set system parent.
     const subsystem = canvasSimulator.systemSimulator.getSubsystemAt(x, y);
 
     if (!subsystem) {
@@ -594,21 +584,19 @@ viewport.on("pointerup", (event: any) => {
       }
     }
   } else if (state.operation.type === "setSystemParent") {
-    if (
-      state.operation.parent &&
-      state.operation.parentAt &&
-      state.operation.subsystem
-    ) {
+    if (state.operation.subsystem) {
       // Apply operation.
-      const { parent, parentAt, subsystem } = state.operation;
+      const { subsystem } = state.operation;
+
+      const parent = canvasSimulator.systemSimulator.getSubsystemAt(x, y) ?? canvasSimulator.system;
 
       if (
         parent.canonicalId !== subsystem.canonicalId &&
         parent.canonicalId !== subsystem.parent?.canonicalId
       ) {
         const positionInParent = {
-          x: parentAt.x - parent.position.x,
-          y: parentAt.y - parent.position.y,
+          x: x - parent.position.x,
+          y: y - parent.position.y,
         };
 
         modifySpecification(() => {
@@ -621,11 +609,14 @@ viewport.on("pointerup", (event: any) => {
       }
 
       // Reset operation.
+      dragAndDropContainer.removeChildren();
+
+      viewport.pause = false;
+
       state.operation = {
         type: "setSystemParent",
         subsystem: null,
-        parent: null,
-        parentAt: null,
+        pickedUpAt: null,
       };
     }
   } else if (state.operation.type === "addLink") {
@@ -1155,8 +1146,7 @@ function setupOperationSystemSetParent() {
   state.operation = {
     type: "setSystemParent",
     subsystem: null,
-    parent: null,
-    parentAt: null,
+    pickedUpAt: null,
   };
 
   operationSystemSetParent.classList.add("selected");
