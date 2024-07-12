@@ -1,9 +1,6 @@
 import Heap from "heap"; // todo: remove dependency.
 
 export interface FinderOptions {
-  // Allowed diagonal movement.
-  // Default: never.
-  diagonalMovement?: DiagonalMovement;
   // Heuristic function to estimate the distance.
   // Default: manhattan.
   heuristic?: Heuristic;
@@ -31,13 +28,6 @@ interface Node {
   h: number;
   opened: boolean;
   closed: boolean;
-}
-
-enum DiagonalMovement {
-  Always = 1,
-  Never = 2,
-  IfAtMostOneObstacle = 3,
-  OnlyWhenNoObstacles = 4,
 }
 
 // A collection of heuristic functions.
@@ -68,26 +58,16 @@ const Heuristics = {
 };
 
 export class PathFinder {
-  private diagonalMovement: DiagonalMovement;
   private heuristic: Heuristic;
   private weight: number;
   private avoidStaircase: boolean;
   private turnPenalty: number;
 
   constructor(options: FinderOptions = {}) {
-    // this.allowDiagonal = options.allowDiagonal;
-    // this.dontCrossCorners = options.dontCrossCorners;
-    this.diagonalMovement = options.diagonalMovement ?? DiagonalMovement.Never;
     this.heuristic = options.heuristic ?? Heuristics.manhattan;
     this.weight = options.weight ?? 1;
     this.avoidStaircase = options.avoidStaircase ?? true;
     this.turnPenalty = options.turnPenalty ?? 1;
-
-    // When diagonal movement is allowed the manhattan heuristic is not
-    // admissible. It should be octile instead.
-    if (this.diagonalMovement === DiagonalMovement.Never) {
-      this.heuristic = options.heuristic ?? Heuristics.octile;
-    }
   }
 
   findPath(
@@ -132,7 +112,7 @@ export class PathFinder {
       }
 
       // Get neigbours of the current node.
-      const neighbors = grid.getNeighbors(node, this.diagonalMovement);
+      const neighbors = grid.getNeighbors(node);
 
       for (const neighbor of neighbors) {
         if (neighbor.closed) {
@@ -246,94 +226,24 @@ export class Grid {
     this.nodes[x]![y]!.weight = weight;
   }
 
-  // Get the neighbors of the given node.
-  //
-  //     offsets      diagonalOffsets:
-  //  +---+---+---+    +---+---+---+
-  //  |   | 0 |   |    | 0 |   | 1 |
-  //  +---+---+---+    +---+---+---+
-  //  | 3 |   | 1 |    |   |   |   |
-  //  +---+---+---+    +---+---+---+
-  //  |   | 2 |   |    | 3 |   | 2 |
-  //  +---+---+---+    +---+---+---+
-  //
-  getNeighbors(node: Node, diagonalMovement: DiagonalMovement): Node[] {
+  getNeighbors(node: Node): Node[] {
     const { x, y } = node;
     const neighbors: Node[] = [];
 
-    let s0 = false;
-    let s1 = false;
-    let s2 = false;
-    let s3 = false;
-
-    let d0 = false;
-    let d1 = false;
-    let d2 = false;
-    let d3 = false;
-
-    // ↑
     if (this.isWalkableAt(x, y - 1)) {
       neighbors.push(this.nodes[x]![y - 1]!);
-      s0 = true;
     }
 
-    // →
     if (this.isWalkableAt(x + 1, y)) {
       neighbors.push(this.nodes[x + 1]![y]!);
-      s1 = true;
     }
 
-    // ↓
     if (this.isWalkableAt(x, y + 1)) {
       neighbors.push(this.nodes[x]![y + 1]!);
-      s2 = true;
     }
 
-    // ←
     if (this.isWalkableAt(x - 1, y)) {
       neighbors.push(this.nodes[x - 1]![y]!);
-      s3 = true;
-    }
-
-    if (diagonalMovement === DiagonalMovement.Never) {
-      return neighbors;
-    }
-
-    if (diagonalMovement === DiagonalMovement.OnlyWhenNoObstacles) {
-      d0 = s3 && s0;
-      d1 = s0 && s1;
-      d2 = s1 && s2;
-      d3 = s2 && s3;
-    } else if (diagonalMovement === DiagonalMovement.IfAtMostOneObstacle) {
-      d0 = s3 || s0;
-      d1 = s0 || s1;
-      d2 = s1 || s2;
-      d3 = s2 || s3;
-    } else if (diagonalMovement === DiagonalMovement.Always) {
-      d0 = true;
-      d1 = true;
-      d2 = true;
-      d3 = true;
-    }
-
-    // ↖
-    if (d0 && this.isWalkableAt(x - 1, y - 1)) {
-      neighbors.push(this.nodes[x - 1]![y - 1]!);
-    }
-
-    // ↗
-    if (d1 && this.isWalkableAt(x + 1, y - 1)) {
-      neighbors.push(this.nodes[x + 1]![y - 1]!);
-    }
-
-    // ↘
-    if (d2 && this.isWalkableAt(x + 1, y + 1)) {
-      neighbors.push(this.nodes[x + 1]![y + 1]!);
-    }
-
-    // ↙
-    if (d3 && this.isWalkableAt(x - 1, y + 1)) {
-      neighbors.push(this.nodes[x - 1]![y + 1]!);
     }
 
     return neighbors;
