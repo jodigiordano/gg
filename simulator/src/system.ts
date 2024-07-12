@@ -254,6 +254,14 @@ export class SystemSimulator {
   getSubsystemAt(worldX: number, worldY: number): RuntimeSubsystem | null {
     const objects = this.getObjectsAt(worldX, worldY);
 
+    // Traverse the objects from bottom to top first to detect a blackbox.
+    for (const obj of objects) {
+      if ('blackbox' in obj && obj.blackbox) {
+        return (obj as SimulatorSubsystem).system;
+      }
+    }
+
+    // Traverse the objects from top to bottom to detect a whitebox.
     for (let i = objects.length - 1; i >= 0; i--) {
       const obj = objects[i]!;
 
