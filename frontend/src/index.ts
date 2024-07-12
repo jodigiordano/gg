@@ -781,19 +781,19 @@ window.addEventListener("keydown", event => {
     // The user press "Esc" to cancel any ongoing operation.
   } else if (event.key === "Escape") {
     setupOperationSystemMove();
-  } else if (event.key === '1') {
+  } else if (event.key === "1") {
     setupOperationSystemMove();
-  } else if (event.key === '2') {
+  } else if (event.key === "2") {
     setupOperationSystemAdd();
-  } else if (event.key === '3') {
+  } else if (event.key === "3") {
     setupOperationSystemSetTitle();
-  } else if (event.key === '4') {
+  } else if (event.key === "4") {
     setupOperationLinkAdd();
-  } else if (event.key === 'q') {
+  } else if (event.key === "q") {
     setupOperationSystemSetParent();
-  } else if (event.key === 'w') {
+  } else if (event.key === "w") {
     setupOperationErase();
-  } else if (event.key === 'e') {
+  } else if (event.key === "e") {
     setupOperationSystemHideSystems();
   }
 });
@@ -1016,16 +1016,9 @@ document
     const width = canvasContainer.offsetWidth * 1.5;
     const height = canvasContainer.offsetHeight * 1.5;
 
-    viewport.moveCenter(
-      width / 2,
-      height / 2
-    );
+    viewport.moveCenter(width / 2, height / 2);
 
-    viewport.fit(
-      true,
-      width,
-      height
-    );
+    viewport.fit(true, width, height);
 
     redrawGrid();
   });
@@ -1098,7 +1091,9 @@ operationSystemAdd.addEventListener("click", setupOperationSystemAdd);
 
 // Operation: SystemSetTitle
 
-const operationSystemSetTitle = document.getElementById("operation-system-set-title")!;
+const operationSystemSetTitle = document.getElementById(
+  "operation-system-set-title",
+)!;
 
 function setupOperationSystemSetTitle() {
   teardownAnyOperation();
@@ -1130,7 +1125,9 @@ operationLinkAdd.addEventListener("click", setupOperationLinkAdd);
 
 // Operation: SystemSetParent
 
-const operationSystemSetParent = document.getElementById("operation-system-set-parent")!;
+const operationSystemSetParent = document.getElementById(
+  "operation-system-set-parent",
+)!;
 
 function setupOperationSystemSetParent() {
   teardownAnyOperation();
@@ -1145,7 +1142,10 @@ function setupOperationSystemSetParent() {
   operationSystemSetParent.classList.add("selected");
 }
 
-operationSystemSetParent.addEventListener("click", setupOperationSystemSetParent);
+operationSystemSetParent.addEventListener(
+  "click",
+  setupOperationSystemSetParent,
+);
 
 // Operation: Erase
 
@@ -1167,7 +1167,9 @@ operationErase.addEventListener("click", setupOperationErase);
 
 // Operation: SystemHideSystems
 
-const operationSystemHideSystems = document.getElementById("operation-system-hide-systems")!;
+const operationSystemHideSystems = document.getElementById(
+  "operation-system-hide-systems",
+)!;
 
 function setupOperationSystemHideSystems() {
   teardownAnyOperation();
@@ -1177,13 +1179,16 @@ function setupOperationSystemHideSystems() {
   operationSystemHideSystems.classList.add("selected");
 }
 
-operationSystemHideSystems.addEventListener("click", setupOperationSystemHideSystems);
+operationSystemHideSystems.addEventListener(
+  "click",
+  setupOperationSystemHideSystems,
+);
 
 // Operation: Undo
 
 document
   .getElementById("operation-undo")
-  ?.addEventListener("click", function() {
+  ?.addEventListener("click", function () {
     if (state.changeIndex > 0) {
       state.changeIndex -= 1;
 
