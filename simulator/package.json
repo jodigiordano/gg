@@ -18,10 +18,8 @@
   },
   "devDependencies": {
     "@tsconfig/strictest": "2.x",
-    "@types/heap": "^0.2.34",
     "@types/mocha": "10.x",
     "@types/node": "20.x",
-    "@types/pathfinding": "^0.0.9",
     "canvas": "2.x",
     "mocha": "10.x",
     "prettier": "3.x",
@@ -29,7 +27,6 @@
     "typescript": "5.x"
   },
   "dependencies": {
-    "@gg/spec": "0.x",
-    "heap": "0.2.x"
+    "@gg/spec": "0.x"
   }
 }

@@ -1,5 +1,3 @@
-import Heap from "heap"; // todo: remove dependency.
-
 enum NodeState {
   NotVisited = 1,
   WillVisit = 2,
@@ -31,39 +29,35 @@ export function findPath(
   const startNode = grid.getNodeAt(startX, startY);
   const endNode = grid.getNodeAt(endX, endY);
 
-  const openList = new Heap(
-    (nodeA: Node, nodeB: Node) => nodeA.priority - nodeB.priority,
-  );
-
   startNode.priority = 0;
   startNode.costToVisit = 0;
 
   // Search start at the "start" node.
   startNode.state = NodeState.WillVisit;
 
-  openList.push(startNode);
+  const nodesToVisit = [startNode];
 
-  while (!openList.empty()) {
-    // Pop the position of node which has the minimum "f" value.
-    const node = openList.pop() as Node;
+  while (nodesToVisit.length) {
+    // Get the next node to visit with the highest priority.
+    const node = nodesToVisit.pop() as Node;
 
     node.state = NodeState.Visited;
 
-    // If reached the end position, construct the path and return it.
+    // We reached the end node => stop processing.
     if (node === endNode) {
-      let pathNode = node;
+      let nodeInPath = node;
 
-      const path: number[][] = [[pathNode.x, pathNode.y]];
+      const path: number[][] = [[nodeInPath.x, nodeInPath.y]];
 
-      while (pathNode.parent) {
-        pathNode = pathNode.parent;
-        path.push([pathNode.x, pathNode.y]);
+      while (nodeInPath.parent) {
+        nodeInPath = nodeInPath.parent;
+        path.push([nodeInPath.x, nodeInPath.y]);
       }
 
       return path.reverse();
     }
 
-    // Get neigbours of the current node.
+    // Get the neigbours of the current node.
     const neighbors = grid.getNeighborsAt(node.x, node.y);
 
     for (const neighbor of neighbors) {
@@ -74,8 +68,7 @@ export function findPath(
       const x = neighbor.x;
       const y = neighbor.y;
 
-      // Get the distance between current node and the neighbor
-      // and calculate the next "g" score.
+      // Calculate the cost to visit the neighbor.
       let nextCostToVisit =
         node.costToVisit +
         (x - node.x === 0 || y - node.y === 0 ? 1 : Math.SQRT2);
@@ -97,30 +90,40 @@ export function findPath(
         nextCostToVisit += 1; // penalty cost to turn.
       }
 
-      // Check if the neighbor has not been inspected yet, or
-      // can be reached with smaller cost from the current node.
+      // Visit the neighbor if it wasn't done before OR
+      // if the cost to visit it is lower than before.
       if (
         neighbor.state !== NodeState.WillVisit ||
         nextCostToVisit < neighbor.costToVisit
       ) {
         neighbor.costToVisit = nextCostToVisit;
 
+        // Calculate the approximated distance to reach the end node.
         neighbor.distanceToEnd =
           neighbor.distanceToEnd ||
-          // Manhattan distance.
+          // Approximation algorithm: manhattan distance.
           Math.abs(x - endX) + Math.abs(y - endY);
 
+        // Calculate the priority of the neighbor.
         neighbor.priority = neighbor.costToVisit + neighbor.distanceToEnd;
+
+        // Keep the parent to:
+        //
+        // 1. Construct the path when the end node is reached (breadcrumb).
+        // 2. Determine if we turned along the way (turn penalty).
         neighbor.parent = node;
 
+        // Add a new node to visit.
         if (neighbor.state !== NodeState.WillVisit) {
           neighbor.state = NodeState.WillVisit;
-          openList.push(neighbor);
+          nodesToVisit.push(neighbor);
+          nodesToVisit.sort((a, b) => b.priority - a.priority);
+        // Update an existing node previously visited.
         } else {
-          // The neighbor can be reached with smaller cost.
-          // Since its "f" value has been updated, we have to
-          // update its position in the open list.
-          openList.updateItem(neighbor);
+          nodesToVisit.splice(nodesToVisit.indexOf(neighbor), 1);
+          neighbor.state = NodeState.WillVisit;
+          nodesToVisit.push(neighbor);
+          nodesToVisit.sort((a, b) => b.priority - a.priority);
         }
       }
     }
