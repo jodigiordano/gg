@@ -1,4 +1,4 @@
-import { Grid as PathFinderGrid, PathFinder } from "./pathfinding.js";
+import { Grid as PathFinderGrid, findPath } from "./pathfinding.js";
 
 import {
   PaddingWhiteBox,
@@ -256,7 +256,7 @@ export class SystemSimulator {
 
     // Traverse the objects from bottom to top first to detect a blackbox.
     for (const obj of objects) {
-      if ('blackbox' in obj && obj.blackbox) {
+      if ("blackbox" in obj && obj.blackbox) {
         return (obj as SimulatorSubsystem).system;
       }
     }
@@ -704,10 +704,6 @@ export class SystemSimulator {
   }
 
   private drawLinks(system: RuntimeSystem, finderGrid: PathFinderGrid): void {
-    const finder = new PathFinder({
-      turnPenalty: 1,
-    });
-
     for (const link of system.links) {
       const subsystemA = this.gridSystems[link.a]!;
       const subsystemB = this.gridSystems[link.b]!;
@@ -751,13 +747,7 @@ export class SystemSimulator {
       for (const { portA, portB } of candidates) {
         finderGrid.reset();
 
-        const route = finder.findPath(
-          portA.x,
-          portA.y,
-          portB.x,
-          portB.y,
-          finderGrid,
-        );
+        const route = findPath(portA.x, portA.y, portB.x, portB.y, finderGrid);
 
         if (route.length) {
           this.routes[link.a] ??= {};

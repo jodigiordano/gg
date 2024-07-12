@@ -1,15 +1,5 @@
 import Heap from "heap"; // todo: remove dependency.
 
-export interface FinderOptions {
-  // Weight to apply to the heuristic to allow for
-  // suboptimal paths, in order to speed up the search.
-  // Default: 1.
-  weight?: number;
-  // Penalty to add to turning. Higher numbers discourage turning more.
-  // Default: 1.
-  turnPenalty?: number;
-}
-
 enum NodeState {
   NotVisited = 1,
   WillVisit = 2,
@@ -25,122 +15,117 @@ interface Node {
   // Variant properties set when finding a path between two nodes.
   parent: Node | undefined;
   f: number;
-  g: number;
-  h: number;
+  costToVisit: number;
+  distanceToEnd: number;
   state: NodeState;
 }
 
-export class PathFinder {
-  private weight: number;
-  private turnPenalty: number;
+export function findPath(
+  startX: number,
+  startY: number,
+  endX: number,
+  endY: number,
+  grid: Grid,
+): number[][] {
+  // Initialize the search.
+  const startNode = grid.getNodeAt(startX, startY);
+  const endNode = grid.getNodeAt(endX, endY);
 
-  constructor(options: FinderOptions = {}) {
-    this.weight = options.weight ?? 1;
-    this.turnPenalty = options.turnPenalty ?? 1;
-  }
+  const openList = new Heap((nodeA: Node, nodeB: Node) => nodeA.f - nodeB.f);
 
-  findPath(
-    startX: number,
-    startY: number,
-    endX: number,
-    endY: number,
-    grid: Grid,
-  ): number[][] {
-    // Initialize the search.
-    const startNode = grid.getNodeAt(startX, startY);
-    const endNode = grid.getNodeAt(endX, endY);
+  startNode.f = 0;
+  startNode.costToVisit = 0;
 
-    const openList = new Heap((nodeA: Node, nodeB: Node) => nodeA.f - nodeB.f);
+  // Search start at the "start" node.
+  startNode.state = NodeState.WillVisit;
 
-    startNode.f = 0;
-    startNode.g = 0;
+  openList.push(startNode);
 
-    // Search start at the "start" node.
-    startNode.state = NodeState.WillVisit;
+  while (!openList.empty()) {
+    // Pop the position of node which has the minimum "f" value.
+    const node = openList.pop() as Node;
 
-    openList.push(startNode);
+    node.state = NodeState.Visited;
 
-    while (!openList.empty()) {
-      // Pop the position of node which has the minimum "f" value.
-      const node = openList.pop() as Node;
+    // If reached the end position, construct the path and return it.
+    if (node === endNode) {
+      let pathNode = node;
 
-      node.state = NodeState.Visited;
+      const path: number[][] = [[pathNode.x, pathNode.y]];
 
-      // If reached the end position, construct the path and return it.
-      if (node === endNode) {
-        let pathNode = node;
-
-        const path: number[][] = [[pathNode.x, pathNode.y]];
-
-        while (pathNode.parent) {
-          pathNode = pathNode.parent;
-          path.push([pathNode.x, pathNode.y]);
-        }
-
-        return path.reverse();
+      while (pathNode.parent) {
+        pathNode = pathNode.parent;
+        path.push([pathNode.x, pathNode.y]);
       }
 
-      // Get neigbours of the current node.
-      const neighbors = grid.getNeighbors(node);
+      return path.reverse();
+    }
 
-      for (const neighbor of neighbors) {
-        if (neighbor.state === NodeState.Visited) {
-          continue;
-        }
+    // Get neigbours of the current node.
+    const neighbors = grid.getNeighbors(node);
 
-        const x = neighbor.x;
-        const y = neighbor.y;
+    for (const neighbor of neighbors) {
+      if (neighbor.state === NodeState.Visited) {
+        continue;
+      }
 
-        // Get the distance between current node and the neighbor
-        // and calculate the next "g" score.
-        let nextG =
-          node.g + (x - node.x === 0 || y - node.y === 0 ? 1 : Math.SQRT2);
+      const x = neighbor.x;
+      const y = neighbor.y;
 
-        nextG *= neighbor.weight;
+      // Get the distance between current node and the neighbor
+      // and calculate the next "g" score.
+      let nextCostToVisit =
+        node.costToVisit +
+        (x - node.x === 0 || y - node.y === 0 ? 1 : Math.SQRT2);
 
-        // To avoid a "staircase" effect, add a "turn penalty" when the
-        // direction changes.
-        const lastDirection =
-          node.parent === undefined
-            ? undefined
-            : { x: node.x - node.parent.x, y: node.y - node.parent.y };
+      nextCostToVisit *= neighbor.weight;
 
-        const hasTurned =
-          lastDirection !== undefined &&
-          (lastDirection.x !== x - node.x || lastDirection.y !== y - node.y);
+      // To avoid a "staircase" effect, add a "turn penalty" when the
+      // direction changes.
+      const lastDirection =
+        node.parent === undefined
+          ? undefined
+          : { x: node.x - node.parent.x, y: node.y - node.parent.y };
 
-        if (hasTurned) {
-          nextG += this.turnPenalty;
-        }
+      const hasTurned =
+        lastDirection !== undefined &&
+        (lastDirection.x !== x - node.x || lastDirection.y !== y - node.y);
 
-        // Check if the neighbor has not been inspected yet, or
-        // can be reached with smaller cost from the current node.
-        if (neighbor.state !== NodeState.WillVisit || nextG < neighbor.g) {
-          neighbor.g = nextG;
+      if (hasTurned) {
+        nextCostToVisit += 1; // penalty cost to turn.
+      }
 
-          neighbor.h =
-            neighbor.h ||
-            this.weight * (Math.abs(x - endX) + Math.abs(y - endY));
+      // Check if the neighbor has not been inspected yet, or
+      // can be reached with smaller cost from the current node.
+      if (
+        neighbor.state !== NodeState.WillVisit ||
+        nextCostToVisit < neighbor.costToVisit
+      ) {
+        neighbor.costToVisit = nextCostToVisit;
 
-          neighbor.f = neighbor.g + neighbor.h;
-          neighbor.parent = node;
+        neighbor.distanceToEnd =
+          neighbor.distanceToEnd ||
+          // Manhattan distance.
+          Math.abs(x - endX) + Math.abs(y - endY);
 
-          if (neighbor.state !== NodeState.WillVisit) {
-            neighbor.state = NodeState.WillVisit;
-            openList.push(neighbor);
-          } else {
-            // The neighbor can be reached with smaller cost.
-            // Since its "f" value has been updated, we have to
-            // update its position in the open list.
-            openList.updateItem(neighbor);
-          }
+        neighbor.f = neighbor.costToVisit + neighbor.distanceToEnd;
+        neighbor.parent = node;
+
+        if (neighbor.state !== NodeState.WillVisit) {
+          neighbor.state = NodeState.WillVisit;
+          openList.push(neighbor);
+        } else {
+          // The neighbor can be reached with smaller cost.
+          // Since its "f" value has been updated, we have to
+          // update its position in the open list.
+          openList.updateItem(neighbor);
         }
       }
     }
-
-    // No path found.
-    return [];
   }
+
+  // No path found.
+  return [];
 }
 
 export class Grid {
@@ -164,8 +149,8 @@ export class Grid {
           weight,
           parent: undefined,
           f: 0,
-          g: 0,
-          h: 0,
+          costToVisit: 0,
+          distanceToEnd: 0,
           state: NodeState.NotVisited,
         };
       }
@@ -220,8 +205,8 @@ export class Grid {
       for (const node of row) {
         node.parent = undefined;
         node.f = 0;
-        node.g = 0;
-        node.h = 0;
+        node.costToVisit = 0;
+        node.distanceToEnd = 0;
         node.state = NodeState.NotVisited;
       }
     }
