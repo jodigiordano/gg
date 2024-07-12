@@ -174,10 +174,6 @@ export class Grid {
     return x >= 0 && x < this.width && y >= 0 && y < this.height;
   }
 
-  getWeightAt(x: number, y: number): number {
-    return this.nodes[x]![y]!.weight;
-  }
-
   setWeightAt(x: number, y: number, weight: number): void {
     this.nodes[x]![y]!.weight = weight;
   }
