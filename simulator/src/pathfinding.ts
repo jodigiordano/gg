@@ -10,18 +10,24 @@ export interface FinderOptions {
   turnPenalty?: number;
 }
 
+enum NodeState {
+  NotVisited = 1,
+  WillVisit = 2,
+  Visited = 3,
+}
+
 interface Node {
+  // Invariant properties.
   x: number;
   y: number;
   weight: number;
 
-  // Properties set when finding a path between two nodes.
+  // Variant properties set when finding a path between two nodes.
   parent: Node | undefined;
   f: number;
   g: number;
   h: number;
-  opened: boolean;
-  closed: boolean;
+  state: NodeState;
 }
 
 export class PathFinder {
@@ -40,17 +46,17 @@ export class PathFinder {
     endY: number,
     grid: Grid,
   ): number[][] {
+    // Initialize the search.
     const startNode = grid.getNodeAt(startX, startY);
     const endNode = grid.getNodeAt(endX, endY);
 
     const openList = new Heap((nodeA: Node, nodeB: Node) => nodeA.f - nodeB.f);
 
-    // set the `g` and `f` value of the start node to be 0
     startNode.f = 0;
     startNode.g = 0;
 
-    // Start searching from the start node.
-    startNode.opened = true;
+    // Search start at the "start" node.
+    startNode.state = NodeState.WillVisit;
 
     openList.push(startNode);
 
@@ -58,7 +64,7 @@ export class PathFinder {
       // Pop the position of node which has the minimum "f" value.
       const node = openList.pop() as Node;
 
-      node.closed = true;
+      node.state = NodeState.Visited;
 
       // If reached the end position, construct the path and return it.
       if (node === endNode) {
@@ -78,7 +84,7 @@ export class PathFinder {
       const neighbors = grid.getNeighbors(node);
 
       for (const neighbor of neighbors) {
-        if (neighbor.closed) {
+        if (neighbor.state === NodeState.Visited) {
           continue;
         }
 
@@ -92,25 +98,24 @@ export class PathFinder {
 
         nextG *= neighbor.weight;
 
-        // If we're avoiding staircasing,
-        // add penalties if the direction will change.
+        // To avoid a "staircase" effect, add a "turn penalty" when the
+        // direction changes.
         const lastDirection =
           node.parent === undefined
             ? undefined
             : { x: node.x - node.parent.x, y: node.y - node.parent.y };
 
-        const turned =
-          lastDirection === undefined
-            ? 0
-            : lastDirection.x !== x - node.x || lastDirection.y !== y - node.y
-              ? 1
-              : 0;
+        const hasTurned =
+          lastDirection !== undefined &&
+          (lastDirection.x !== x - node.x || lastDirection.y !== y - node.y);
 
-        nextG += this.turnPenalty * turned;
+        if (hasTurned) {
+          nextG += this.turnPenalty;
+        }
 
         // Check if the neighbor has not been inspected yet, or
         // can be reached with smaller cost from the current node.
-        if (!neighbor.opened || nextG < neighbor.g) {
+        if (neighbor.state !== NodeState.WillVisit || nextG < neighbor.g) {
           neighbor.g = nextG;
 
           neighbor.h =
@@ -120,9 +125,9 @@ export class PathFinder {
           neighbor.f = neighbor.g + neighbor.h;
           neighbor.parent = node;
 
-          if (!neighbor.opened) {
+          if (neighbor.state !== NodeState.WillVisit) {
+            neighbor.state = NodeState.WillVisit;
             openList.push(neighbor);
-            neighbor.opened = true;
           } else {
             // The neighbor can be reached with smaller cost.
             // Since its "f" value has been updated, we have to
@@ -133,7 +138,7 @@ export class PathFinder {
       }
     }
 
-    // Fail to find the path.
+    // No path found.
     return [];
   }
 }
@@ -161,8 +166,7 @@ export class Grid {
           f: 0,
           g: 0,
           h: 0,
-          opened: false,
-          closed: false,
+          state: NodeState.NotVisited,
         };
       }
     }
@@ -218,8 +222,7 @@ export class Grid {
         node.f = 0;
         node.g = 0;
         node.h = 0;
-        node.opened = false;
-        node.closed = false;
+        node.state = NodeState.NotVisited;
       }
     }
   }
