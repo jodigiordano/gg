@@ -118,7 +118,7 @@ export function findPath(
           neighbor.state = NodeState.WillVisit;
           nodesToVisit.push(neighbor);
           nodesToVisit.sort((a, b) => b.priority - a.priority);
-        // Update an existing node previously visited.
+          // Update an existing node previously visited.
         } else {
           nodesToVisit.splice(nodesToVisit.indexOf(neighbor), 1);
           neighbor.state = NodeState.WillVisit;
