@@ -30,6 +30,7 @@ import {
   Sprite,
   Spritesheet,
   Text,
+  Point,
 } from "pixi.js";
 import { CanvasSimulator, CanvasFlowPlayer } from "./simulation.js";
 import { BlockSize } from "./consts.js";
@@ -346,10 +347,7 @@ const dragAndDrop = new Sprite(dragAndDropTexture);
 dragAndDrop.zIndex = 1;
 
 viewport.on("pointermove", (event: any) => {
-  const coordinates = viewport.toWorld(event.data.global);
-
-  state.x = Math.floor(coordinates.x / BlockSize) | 0;
-  state.y = Math.floor(coordinates.y / BlockSize) | 0;
+  updateStatePosition(event.data.global);
 
   if (
     state.operation.type === "moveSystem" ||
@@ -375,10 +373,7 @@ viewport.on("pointerdown", (event: any) => {
     return;
   }
 
-  const coordinates = viewport.toWorld(event.data.global);
-
-  state.x = Math.floor(coordinates.x / BlockSize) | 0;
-  state.y = Math.floor(coordinates.y / BlockSize) | 0;
+  updateStatePosition(event.data.global);
 
   if (state.operation.type === "toggleHideSystems") {
     state.operation.subsystem = canvasSimulator.systemSimulator.getSubsystemAt(
@@ -496,10 +491,7 @@ viewport.on("pointerup", (event: any) => {
     return;
   }
 
-  const coordinates = viewport.toWorld(event.data.global);
-
-  state.x = Math.floor(coordinates.x / BlockSize) | 0;
-  state.y = Math.floor(coordinates.y / BlockSize) | 0;
+  updateStatePosition(event.data.global);
 
   // Operation: Hide systems toggle.
   if (state.operation.type === "toggleHideSystems") {
@@ -679,16 +671,8 @@ viewport.on("pointerup", (event: any) => {
     if (state.operation.subsystem && state.operation.pickedUpAt) {
       // Apply operation.
 
-      // World coordinates, in block size.
-      const coordinates = viewport.toWorld(event.data.global);
-
-      // World coordinates, in spec size.
-      const x = Math.floor(coordinates.x / BlockSize) | 0;
-      const y = Math.floor(coordinates.y / BlockSize) | 0;
-
-      // Delta coordinates, in spec size.
-      const deltaX = x - state.operation.pickedUpAt.x;
-      const deltaY = y - state.operation.pickedUpAt.y;
+      const deltaX = state.x - state.operation.pickedUpAt.x;
+      const deltaY = state.y - state.operation.pickedUpAt.y;
 
       modifySpecification(() => {
         moveSystem(
@@ -867,6 +851,19 @@ function modifySpecification(modifier: () => void): void {
     // Rollback if the new configuration is invalid.
     loadSimulation(currentSpecification);
   }
+}
+
+/**
+ * Update the state position from the screen position.
+ *
+ * The screen position is first transformed to the world position.
+ * Then, this world position is transformed to the grid position.
+ */
+function updateStatePosition(screenPosition: Point): void {
+  const coordinates = viewport.toWorld(screenPosition);
+
+  state.x = Math.floor(coordinates.x / BlockSize) | 0;
+  state.y = Math.floor(coordinates.y / BlockSize) | 0;
 }
 
 // Simulation.
