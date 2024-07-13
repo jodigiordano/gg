@@ -14,6 +14,7 @@ import {
   moveSubsystemToParent,
   TitleCharsPerSquare,
   setSubsystemTitle,
+  SystemMinSize,
 } from "@gg/spec";
 import {
   Application,
@@ -90,12 +91,16 @@ interface State {
     | SetSystemParentOperation
     | ToggleHideSystemsOperation
     | AddLinkOperation;
+  x: number;
+  y: number;
 }
 
 const state: State = {
   changes: [],
   changeIndex: -1,
   operation: { type: "moveSystem", subsystem: null, pickedUpAt: null },
+  x: -999999,
+  y: -999999,
 };
 
 function pushChange(change: string) {
@@ -343,22 +348,25 @@ dragAndDrop.zIndex = 1;
 viewport.on("pointermove", (event: any) => {
   const coordinates = viewport.toWorld(event.data.global);
 
-  const x = Math.floor(coordinates.x / BlockSize) | 0;
-  const y = Math.floor(coordinates.y / BlockSize) | 0;
+  state.x = Math.floor(coordinates.x / BlockSize) | 0;
+  state.y = Math.floor(coordinates.y / BlockSize) | 0;
 
   if (
     state.operation.type === "moveSystem" ||
     state.operation.type === "setSystemParent"
   ) {
     if (state.operation.subsystem && state.operation.pickedUpAt) {
-      const deltaX = x - state.operation.pickedUpAt.x;
-      const deltaY = y - state.operation.pickedUpAt.y;
+      const deltaX = state.x - state.operation.pickedUpAt.x;
+      const deltaY = state.y - state.operation.pickedUpAt.y;
 
       dragAndDrop.x =
         (state.operation.subsystem.position.x + deltaX) * BlockSize;
       dragAndDrop.y =
         (state.operation.subsystem.position.y + deltaY) * BlockSize;
     }
+  } else if (state.operation.type === "addSystem") {
+    dragAndDrop.x = state.x * BlockSize;
+    dragAndDrop.y = state.y * BlockSize;
   }
 });
 
@@ -369,22 +377,22 @@ viewport.on("pointerdown", (event: any) => {
 
   const coordinates = viewport.toWorld(event.data.global);
 
-  const x = Math.floor(coordinates.x / BlockSize) | 0;
-  const y = Math.floor(coordinates.y / BlockSize) | 0;
+  state.x = Math.floor(coordinates.x / BlockSize) | 0;
+  state.y = Math.floor(coordinates.y / BlockSize) | 0;
 
   if (state.operation.type === "toggleHideSystems") {
     state.operation.subsystem = canvasSimulator.systemSimulator.getSubsystemAt(
-      x,
-      y,
+      state.x,
+      state.y,
     );
   } else if (state.operation.type === "removeSystemOrLink") {
-    const link = canvasSimulator.systemSimulator.getLinkAt(x, y);
+    const link = canvasSimulator.systemSimulator.getLinkAt(state.x, state.y);
 
     if (link) {
       state.operation.link = link;
     } else {
       state.operation.subsystem =
-        canvasSimulator.systemSimulator.getSubsystemAt(x, y);
+        canvasSimulator.systemSimulator.getSubsystemAt(state.x, state.y);
     }
   } else if (state.operation.type === "setSystemTitle") {
     // Happens when the user selects the subsystem B
@@ -409,11 +417,14 @@ viewport.on("pointerdown", (event: any) => {
     }
 
     state.operation.subsystem = canvasSimulator.systemSimulator.getSubsystemAt(
-      x,
-      y,
+      state.x,
+      state.y,
     );
   } else if (state.operation.type === "addLink") {
-    const subsystem = canvasSimulator.systemSimulator.getSubsystemAt(x, y);
+    const subsystem = canvasSimulator.systemSimulator.getSubsystemAt(
+      state.x,
+      state.y,
+    );
 
     if (!subsystem) {
       return;
@@ -437,7 +448,10 @@ viewport.on("pointerdown", (event: any) => {
   ) {
     // Operation: Move system.
     // Operation: Set system parent.
-    const subsystem = canvasSimulator.systemSimulator.getSubsystemAt(x, y);
+    const subsystem = canvasSimulator.systemSimulator.getSubsystemAt(
+      state.x,
+      state.y,
+    );
 
     if (!subsystem) {
       return;
@@ -446,15 +460,35 @@ viewport.on("pointerdown", (event: any) => {
     viewport.pause = true;
 
     state.operation.subsystem = subsystem;
-    state.operation.pickedUpAt = { x, y };
+    state.operation.pickedUpAt = { x: state.x, y: state.y };
 
     dragAndDrop.x = subsystem.position.x * BlockSize;
     dragAndDrop.y = subsystem.position.y * BlockSize;
     dragAndDrop.width = subsystem.size.width * BlockSize;
     dragAndDrop.height = subsystem.size.height * BlockSize;
 
+    // @ts-ignore
     dragAndDropContainer.addChild(dragAndDrop);
+  } else if (state.operation.type === "addSystem") {
+    // This code is only necessary on mobile.
+    //
+    // On mobile, there is no mouse pointer being drag around
+    // when adding a system. Therefore, the position of the overlay
+    // is only updated on "pointerdown". Here we update the position
+    // of the overlay so it appears under the pointer for this event.
+    dragAndDrop.x = state.x * BlockSize;
+    dragAndDrop.y = state.y * BlockSize;
   }
+});
+
+// The user cursor enters the canvas.
+viewport.on("pointerenter", () => {
+  dragAndDropContainer.visible = true;
+});
+
+// The user cursor leaves the canvas.
+viewport.on("pointerleave", () => {
+  dragAndDropContainer.visible = false;
 });
 
 viewport.on("pointerup", (event: any) => {
@@ -464,8 +498,8 @@ viewport.on("pointerup", (event: any) => {
 
   const coordinates = viewport.toWorld(event.data.global);
 
-  const x = Math.floor(coordinates.x / BlockSize) | 0;
-  const y = Math.floor(coordinates.y / BlockSize) | 0;
+  state.x = Math.floor(coordinates.x / BlockSize) | 0;
+  state.y = Math.floor(coordinates.y / BlockSize) | 0;
 
   // Operation: Hide systems toggle.
   if (state.operation.type === "toggleHideSystems") {
@@ -488,11 +522,11 @@ viewport.on("pointerup", (event: any) => {
   } else if (state.operation.type === "addSystem") {
     // Apply operation.
     const system =
-      canvasSimulator.systemSimulator.getSubsystemAt(x, y) ??
+      canvasSimulator.systemSimulator.getSubsystemAt(state.x, state.y) ??
       canvasSimulator.system;
 
     modifySpecification(() => {
-      addSubsystem(system, x, y, '');
+      addSubsystem(system, state.x, state.y, "");
     });
 
     // Reset operation.
@@ -556,6 +590,7 @@ viewport.on("pointerup", (event: any) => {
         setSystemTitleMask.width = subsystem.titleSize.width * BlockSize;
         setSystemTitleMask.height = subsystem.titleSize.height * BlockSize;
 
+        // @ts-ignore
         setSystemTitleContainer.addChild(setSystemTitleMask);
 
         const title = subsystem.title.replace(/\\n/g, "\n");
@@ -564,6 +599,7 @@ viewport.on("pointerup", (event: any) => {
         setSystemTitleEditor.x = titleX;
         setSystemTitleEditor.y = titleY;
 
+        // @ts-ignore
         setSystemTitleContainer.addChild(setSystemTitleEditor);
 
         const titleLastLineLength = title.split("\n").at(-1)!.length;
@@ -578,6 +614,7 @@ viewport.on("pointerup", (event: any) => {
         setSystemTitleCursor.y =
           setSystemTitleEditor.y + setSystemTitleEditor.height - BlockSize;
 
+        // @ts-ignore
         setSystemTitleContainer.addChild(setSystemTitleCursor);
 
         state.operation.editing = true;
@@ -589,7 +626,7 @@ viewport.on("pointerup", (event: any) => {
       const { subsystem } = state.operation;
 
       const parent =
-        canvasSimulator.systemSimulator.getSubsystemAt(x, y) ??
+        canvasSimulator.systemSimulator.getSubsystemAt(state.x, state.y) ??
         canvasSimulator.system;
 
       if (
@@ -597,8 +634,8 @@ viewport.on("pointerup", (event: any) => {
         parent.canonicalId !== subsystem.parent?.canonicalId
       ) {
         const positionInParent = {
-          x: x - parent.position.x,
-          y: y - parent.position.y,
+          x: state.x - parent.position.x,
+          y: state.y - parent.position.y,
         };
 
         modifySpecification(() => {
@@ -862,6 +899,7 @@ function loadSimulation(yaml: string): boolean {
   for (const objectToRender of canvasSimulator.getObjectsToRender(
     spritesheet,
   )) {
+    // @ts-ignore
     canvasSimulatorContainer.addChild(objectToRender);
   }
 
@@ -869,6 +907,7 @@ function loadSimulation(yaml: string): boolean {
     canvasFlowPlayer = canvasSimulator.createFlowPlayer(app, 0);
 
     for (const objectToRender of canvasFlowPlayer.getObjectsToRender()) {
+      // @ts-ignore
       canvasSimulatorContainer.addChild(objectToRender);
     }
   }
@@ -1096,6 +1135,14 @@ function setupOperationSystemAdd() {
   teardownAnyOperation();
 
   state.operation = { type: "addSystem" };
+
+  dragAndDrop.x = state.x * BlockSize;
+  dragAndDrop.y = state.y * BlockSize;
+  dragAndDrop.width = SystemMinSize.width * BlockSize;
+  dragAndDrop.height = SystemMinSize.height * BlockSize;
+
+  // @ts-ignore
+  dragAndDropContainer.addChild(dragAndDrop);
 
   operationSystemAdd.classList.add("selected");
 }
