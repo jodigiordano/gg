@@ -76,7 +76,6 @@ interface SetSystemParentOperation {
 interface AddLinkOperation {
   type: "addLink";
   a: RuntimeSubsystem | null;
-  b: RuntimeSubsystem | null;
 }
 
 // State.
@@ -350,18 +349,17 @@ viewport.on("pointermove", (event: any) => {
   updateStatePosition(event.data.global);
 
   if (
-    state.operation.type === "moveSystem" ||
-    state.operation.type === "setSystemParent"
+    (state.operation.type === "moveSystem" ||
+      state.operation.type === "setSystemParent") &&
+    state.operation.subsystem &&
+    state.operation.pickedUpAt
   ) {
-    if (state.operation.subsystem && state.operation.pickedUpAt) {
-      const deltaX = state.x - state.operation.pickedUpAt.x;
-      const deltaY = state.y - state.operation.pickedUpAt.y;
+    const deltaX = state.x - state.operation.pickedUpAt.x;
+    const deltaY = state.y - state.operation.pickedUpAt.y;
 
-      dragAndDrop.x =
-        (state.operation.subsystem.position.x + deltaX) * BlockSize;
-      dragAndDrop.y =
-        (state.operation.subsystem.position.y + deltaY) * BlockSize;
-    }
+    dragAndDrop.x = (state.operation.subsystem.position.x + deltaX) * BlockSize;
+
+    dragAndDrop.y = (state.operation.subsystem.position.y + deltaY) * BlockSize;
   } else if (state.operation.type === "addSystem") {
     dragAndDrop.x = state.x * BlockSize;
     dragAndDrop.y = state.y * BlockSize;
@@ -425,18 +423,9 @@ viewport.on("pointerdown", (event: any) => {
       return;
     }
 
-    if (
-      state.operation.a?.canonicalId === subsystem.canonicalId ||
-      state.operation.b?.canonicalId === subsystem.canonicalId
-    ) {
-      return;
-    }
+    viewport.pause = true;
 
-    if (state.operation.a) {
-      state.operation.b = subsystem;
-    } else {
-      state.operation.a = subsystem;
-    }
+    state.operation.a = subsystem;
   } else if (
     state.operation.type === "moveSystem" ||
     state.operation.type === "setSystemParent"
@@ -651,18 +640,24 @@ viewport.on("pointerup", (event: any) => {
       };
     }
   } else if (state.operation.type === "addLink") {
-    if (state.operation.a && state.operation.b) {
+    if (state.operation.a) {
       // Apply operation.
-      modifySpecification(() => {
-        addLink(
-          canvasSimulator!.system,
-          (state.operation as AddLinkOperation).a!.canonicalId,
-          (state.operation as AddLinkOperation).b!.canonicalId,
-        );
-      });
+      const { a } = state.operation;
+      const b = canvasSimulator.systemSimulator.getSubsystemAt(
+        state.x,
+        state.y,
+      );
+
+      if (b && b.canonicalId !== a.canonicalId) {
+        modifySpecification(() => {
+          addLink(canvasSimulator!.system, a.canonicalId, b.canonicalId);
+        });
+      }
 
       // Reset operation.
-      state.operation = { type: "addLink", a: null, b: null };
+      viewport.pause = false;
+
+      state.operation = { type: "addLink", a: null };
     }
   }
 
@@ -1173,7 +1168,7 @@ const operationLinkAdd = document.getElementById("operation-link-add")!;
 function setupOperationLinkAdd() {
   teardownAnyOperation();
 
-  state.operation = { type: "addLink", a: null, b: null };
+  state.operation = { type: "addLink", a: null };
 
   operationLinkAdd.classList.add("selected");
 }
