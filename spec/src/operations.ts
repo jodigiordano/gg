@@ -16,10 +16,12 @@ export function addSubsystem(
   parent: RuntimeSystem | RuntimeSubsystem,
   x: number,
   y: number,
+  title: string,
 ): void {
   const newSpecSystem = {
     id: (Math.random() + 1).toString(36).substring(7),
     position: { x, y },
+    title,
   };
 
   parent.specification.systems ??= [];

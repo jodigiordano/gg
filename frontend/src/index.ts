@@ -492,7 +492,7 @@ viewport.on("pointerup", (event: any) => {
       canvasSimulator.system;
 
     modifySpecification(() => {
-      addSubsystem(system, x, y);
+      addSubsystem(system, x, y, '');
     });
 
     // Reset operation.

@@ -90,7 +90,7 @@ export function computeSystemSize(
             : linksCount;
 
     system.size = {
-      width: Math.max(titleWidth, linksWidth),
+      width: Math.max(titleWidth, linksWidth, 5),
       height: titleHeight,
     };
 
