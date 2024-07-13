@@ -292,6 +292,7 @@ const setSystemTitleContainer = new Container();
 
 setSystemTitleContainer.sortableChildren = true;
 setSystemTitleContainer.zIndex = 100;
+setSystemTitleContainer.visible = false;
 
 viewport.addChild(setSystemTitleContainer);
 
@@ -307,6 +308,9 @@ const setSystemTitleTexture = app.renderer.generateTexture(
 const setSystemTitleMask = new Sprite(setSystemTitleTexture);
 setSystemTitleMask.zIndex = 1;
 
+// @ts-ignore
+setSystemTitleContainer.addChild(setSystemTitleMask);
+
 const setSystemTitleEditor = new Text("", {
   fontFamily: "Ibm",
   fontSize: BlockSize,
@@ -316,6 +320,9 @@ const setSystemTitleEditor = new Text("", {
 setSystemTitleEditor.style.fill = "0xffffff";
 setSystemTitleEditor.resolution = 2;
 setSystemTitleEditor.zIndex = 2;
+
+// @ts-ignore
+setSystemTitleContainer.addChild(setSystemTitleEditor);
 
 const setSystemTitleCursor = new Text("▋", {
   fontFamily: "Ibm",
@@ -327,11 +334,15 @@ setSystemTitleCursor.style.fill = "0xffffff";
 setSystemTitleCursor.resolution = 2;
 setSystemTitleCursor.zIndex = 3;
 
+// @ts-ignore
+setSystemTitleContainer.addChild(setSystemTitleCursor);
+
 // Drag & drop
 const dragAndDropContainer = new Container();
 
 dragAndDropContainer.sortableChildren = true;
 dragAndDropContainer.zIndex = 100;
+dragAndDropContainer.visible = false;
 
 viewport.addChild(dragAndDropContainer);
 
@@ -344,6 +355,9 @@ const dragAndDropTexture = app.renderer.generateTexture(dragAndDropGraphic);
 
 const dragAndDrop = new Sprite(dragAndDropTexture);
 dragAndDrop.zIndex = 1;
+
+// @ts-ignore
+dragAndDropContainer.addChild(dragAndDrop);
 
 viewport.on("pointermove", (event: any) => {
   updateStatePosition(event.data.global);
@@ -358,7 +372,6 @@ viewport.on("pointermove", (event: any) => {
     const deltaY = state.y - state.operation.pickedUpAt.y;
 
     dragAndDrop.x = (state.operation.subsystem.position.x + deltaX) * BlockSize;
-
     dragAndDrop.y = (state.operation.subsystem.position.y + deltaY) * BlockSize;
   } else if (state.operation.type === "addSystem") {
     dragAndDrop.x = state.x * BlockSize;
@@ -400,7 +413,7 @@ viewport.on("pointerdown", (event: any) => {
       });
 
       // Reset operation.
-      setSystemTitleContainer.removeChildren();
+      setSystemTitleContainer.visible = false;
 
       state.operation = {
         type: "setSystemTitle",
@@ -451,8 +464,7 @@ viewport.on("pointerdown", (event: any) => {
     dragAndDrop.width = subsystem.size.width * BlockSize;
     dragAndDrop.height = subsystem.size.height * BlockSize;
 
-    // @ts-ignore
-    dragAndDropContainer.addChild(dragAndDrop);
+    dragAndDropContainer.visible = true;
   } else if (state.operation.type === "addSystem") {
     // This code is only necessary on mobile.
     //
@@ -467,12 +479,12 @@ viewport.on("pointerdown", (event: any) => {
 
 // The user cursor enters the canvas.
 viewport.on("pointerenter", () => {
-  dragAndDropContainer.visible = true;
+  dragAndDrop.visible = true;
 });
 
 // The user cursor leaves the canvas.
 viewport.on("pointerleave", () => {
-  dragAndDropContainer.visible = false;
+  dragAndDrop.visible = false;
 });
 
 viewport.on("pointerup", (event: any) => {
@@ -553,7 +565,7 @@ viewport.on("pointerup", (event: any) => {
         });
 
         // Reset operation.
-        setSystemTitleContainer.removeChildren();
+        setSystemTitleContainer.visible = false;
 
         state.operation = {
           type: "setSystemTitle",
@@ -571,17 +583,11 @@ viewport.on("pointerup", (event: any) => {
         setSystemTitleMask.width = subsystem.titleSize.width * BlockSize;
         setSystemTitleMask.height = subsystem.titleSize.height * BlockSize;
 
-        // @ts-ignore
-        setSystemTitleContainer.addChild(setSystemTitleMask);
-
         const title = subsystem.title.replace(/\\n/g, "\n");
 
         setSystemTitleEditor.text = title;
         setSystemTitleEditor.x = titleX;
         setSystemTitleEditor.y = titleY;
-
-        // @ts-ignore
-        setSystemTitleContainer.addChild(setSystemTitleEditor);
 
         const titleLastLineLength = title.split("\n").at(-1)!.length;
 
@@ -595,8 +601,7 @@ viewport.on("pointerup", (event: any) => {
         setSystemTitleCursor.y =
           setSystemTitleEditor.y + setSystemTitleEditor.height - BlockSize;
 
-        // @ts-ignore
-        setSystemTitleContainer.addChild(setSystemTitleCursor);
+        setSystemTitleContainer.visible = true;
 
         state.operation.editing = true;
       }
@@ -629,8 +634,7 @@ viewport.on("pointerup", (event: any) => {
       }
 
       // Reset operation.
-      dragAndDropContainer.removeChildren();
-
+      dragAndDropContainer.visible = false;
       viewport.pause = false;
 
       state.operation = {
@@ -678,8 +682,7 @@ viewport.on("pointerup", (event: any) => {
       });
 
       // Reset operation.
-      dragAndDropContainer.removeChildren();
-
+      dragAndDropContainer.visible = false;
       viewport.pause = false;
 
       state.operation = {
@@ -778,7 +781,7 @@ window.addEventListener("keydown", event => {
 
     // Reset operation.
     if (finishOperation) {
-      setSystemTitleContainer.removeChildren();
+      setSystemTitleContainer.visible = false;
 
       state.operation = {
         type: "setSystemTitle",
@@ -811,8 +814,8 @@ window.addEventListener("keydown", event => {
  */
 function teardownAnyOperation(): void {
   // TODO: hmmm...
-  setSystemTitleContainer.removeChildren();
-  dragAndDropContainer.removeChildren();
+  setSystemTitleContainer.visible = false;
+  dragAndDropContainer.visible = false;
 
   state.operation = { type: "moveSystem", subsystem: null, pickedUpAt: null };
   viewport.pause = false;
@@ -1133,8 +1136,7 @@ function setupOperationSystemAdd() {
   dragAndDrop.width = SystemMinSize.width * BlockSize;
   dragAndDrop.height = SystemMinSize.height * BlockSize;
 
-  // @ts-ignore
-  dragAndDropContainer.addChild(dragAndDrop);
+  dragAndDropContainer.visible = true;
 
   operationSystemAdd.classList.add("selected");
 }
