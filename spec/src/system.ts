@@ -3,6 +3,7 @@ import {
   TitlePadding,
   TitleCharsPerSquare,
   PaddingWhiteBox,
+  SystemMinSize,
 } from "./consts.js";
 import { Subsystem } from "./specification.js";
 
@@ -90,8 +91,8 @@ export function computeSystemSize(
             : linksCount;
 
     system.size = {
-      width: Math.max(titleWidth, linksWidth, 5),
-      height: titleHeight,
+      width: Math.max(titleWidth, linksWidth, SystemMinSize.width),
+      height: Math.max(titleHeight, SystemMinSize.height),
     };
 
     return;
