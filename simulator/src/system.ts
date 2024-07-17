@@ -626,7 +626,11 @@ export class SystemSimulator {
 
       for (let x = gridSS.x1; x <= gridSS.x2; x++) {
         for (let y = gridSS.y1; y <= gridSS.y2; y++) {
-          finderGrid.setWeightAt(x, y, 1);
+          if (blackbox) {
+            finderGrid.setWeightAt(x, y, Infinity);
+          } else {
+            finderGrid.setWeightAt(x, y, 1);
+          }
 
           // The sub-system is inside a blackbox.
           if (gridSS.hidden) {
@@ -733,18 +737,44 @@ export class SystemSimulator {
       const subsystemA = this.gridSystems[link.a]!;
       const subsystemB = this.gridSystems[link.b]!;
 
-      // TODO: set walkable for some whiteboxes.
+      // Allowed systems to be traversed by the path from A to B. Part I.
       //
-      // For a link of A <-> B, we permit the route to walk
-      // in A.parent[.parent] and B.parent[.parent]
-      // but not in A.systems and B.systems.
+      // The path from A to B may need to traverse whiteboxes.
+      // Here we say that only certain whiteboxes can be traversed.
       //
-      // TODO:
+      // For example, for the path A.X to B,
+      // we don't want the path to go through A.Y.
       //
-      // 1. By default, set unwalkable for all whiteboxes and blackboxes.
-      // 2. Make a copy of finderGrid.
-      // 3. Set walkable for whitelisted whiteboxes.
+      // To deny traversing systems, we momentarily close their ports.
+      //
+      const allowedSystems: string[] = [link.a, link.b];
 
+      let parent: RuntimeSystem | RuntimeSubsystem | undefined =
+        link.systemA.parent;
+
+      while (parent?.canonicalId) {
+        allowedSystems.push(parent.canonicalId);
+
+        parent = parent.parent;
+      }
+
+      parent = link.systemB.parent;
+
+      while (parent?.canonicalId) {
+        allowedSystems.push(parent.canonicalId);
+
+        parent = parent.parent;
+      }
+
+      for (const gridSS of Object.values(this.gridSystems)) {
+        if (!allowedSystems.includes(gridSS.canonicalId)) {
+          for (const port of gridSS.ports) {
+            finderGrid.setWeightAt(port.x, port.y, Infinity);
+          }
+        }
+      }
+
+      // Find available ports.
       const subsystemAPorts = subsystemA.ports.filter(
         port =>
           this.grid[port.x]?.[port.y]?.at(-1)?.type ===
@@ -923,6 +953,18 @@ export class SystemSimulator {
           }
 
           break;
+        }
+      }
+
+      // Allowed systems to be traversed by the path from A to B. Part II.
+      //
+      // After a path from A to B is found (or not), we re-open the closed
+      // ports of denied systems.
+      for (const gridSS of Object.values(this.gridSystems)) {
+        if (!allowedSystems.includes(gridSS.canonicalId)) {
+          for (const port of gridSS.ports) {
+            finderGrid.setWeightAt(port.x, port.y, 1);
+          }
         }
       }
     }
