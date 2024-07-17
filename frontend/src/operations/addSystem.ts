@@ -72,7 +72,7 @@ const operation: Operation = {
     }
 
     modifySpecification(() => {
-      addSubsystem(parent, x!, y!, "");
+      addSubsystem(parent, x, y, "");
     });
 
     viewport.pause = false;

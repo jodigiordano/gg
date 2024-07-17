@@ -11,6 +11,7 @@ import { viewport } from "../viewport.js";
 
 const selectVisual = new SystemSelector();
 const moveVisual = new SystemSelector();
+const parentVisual = new SystemSelector();
 
 let subsystem: RuntimeSubsystem | null = null;
 let pickedUpAt: RuntimePosition | null = null;
@@ -25,8 +26,18 @@ function onPointerMove(state: State) {
       x: state.x - pickedUpAt.x,
       y: state.y - pickedUpAt.y,
     });
+
+    const parent = state.simulator.getSubsystemAt(state.x, state.y);
+
+    if (parent) {
+      parentVisual.setPosition(parent, { x: 0, y: 0 });
+      parentVisual.visible = true;
+    } else {
+      parentVisual.visible = false;
+    }
   } else {
     moveVisual.visible = false;
+    parentVisual.visible = false;
 
     const subsystem = state.simulator.getSubsystemAt(state.x, state.y);
 
@@ -44,6 +55,7 @@ const operation: Operation = {
   setup: () => {
     viewport.addChild(selectVisual);
     viewport.addChild(moveVisual);
+    viewport.addChild(parentVisual);
   },
   onBegin: state => {
     subsystem = null;
@@ -54,12 +66,14 @@ const operation: Operation = {
   onEnd: () => {
     selectVisual.visible = false;
     moveVisual.visible = false;
+    parentVisual.visible = false;
 
     viewport.pause = false;
   },
   onMute: () => {
     selectVisual.visible = false;
     moveVisual.visible = false;
+    parentVisual.visible = false;
   },
   onUnmute: onPointerMove,
   onPointerUp: state => {
@@ -74,13 +88,21 @@ const operation: Operation = {
       parent.canonicalId !== subsystem.canonicalId &&
       parent.canonicalId !== subsystem.parent?.canonicalId
     ) {
-      const positionInParent = {
-        x: state.x - parent.position.x,
-        y: state.y - parent.position.y,
-      };
+      let x: number;
+      let y: number;
+
+      if (parent.canonicalId) {
+        const offset = state.simulator.getParentOffset(parent);
+
+        x = Math.max(0, state.x - parent.position.x - offset.x);
+        y = Math.max(0, state.y - parent.position.y - offset.y);
+      } else {
+        x = state.x;
+        y = state.y;
+      }
 
       modifySpecification(() => {
-        moveSubsystemToParent(subsystem!, parent!, positionInParent);
+        moveSubsystemToParent(subsystem!, parent, x, y);
 
         if (parent.canonicalId) {
           parent.specification.hideSystems = false;

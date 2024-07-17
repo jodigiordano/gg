@@ -160,7 +160,8 @@ export function removeLink(system: RuntimeSystem, link: RuntimeLink): void {
 export function moveSubsystemToParent(
   subsystem: RuntimeSubsystem,
   parent: RuntimeSystem | RuntimeSubsystem,
-  position: RuntimePosition,
+  x: number,
+  y: number,
 ): void {
   subsystem.parent!.specification.systems?.splice(subsystem.index, 1);
 
@@ -170,8 +171,8 @@ export function moveSubsystemToParent(
   // TODO: move links.
   // TODO: move flows.
 
-  subsystem.specification.position.x = position.x;
-  subsystem.specification.position.y = position.y;
+  subsystem.specification.position.x = x;
+  subsystem.specification.position.y = y;
 
   parent.systems.push(subsystem);
 
@@ -179,7 +180,7 @@ export function moveSubsystemToParent(
 
   initSystem(
     subsystem,
-    rootSystem,
+    parent,
     subsystem.specification,
     parent.systems.length - 1,
     parent.depth + 1,
@@ -401,7 +402,7 @@ export function moveSystem(
         );
       }
     }
-  } while (displacedThisIteration.length && iterations < 1000);
+  } while (displacedThisIteration.length && iterations < 200);
 
   console.debug("iterations to resolve collisions", iterations);
 
