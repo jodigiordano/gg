@@ -23,7 +23,6 @@ export function addSubsystem(
     position: { x, y },
     title,
   };
-
   parent.specification.systems ??= [];
   parent.specification.systems.push(newSpecSystem);
 
@@ -35,7 +34,7 @@ export function addSubsystem(
 
   initSystem(
     newRuntimeSystem,
-    rootSystem,
+    parent,
     newSpecSystem,
     parent.systems.length - 1,
     parent.depth + 1,
@@ -163,8 +162,6 @@ export function moveSubsystemToParent(
   parent: RuntimeSystem | RuntimeSubsystem,
   position: RuntimePosition,
 ): void {
-  console.debug("moving", subsystem.canonicalId, "into", parent.canonicalId);
-
   subsystem.parent!.specification.systems?.splice(subsystem.index, 1);
 
   parent.specification.systems ??= [];
@@ -200,8 +197,6 @@ export function moveSystem(
   deltaX: number,
   deltaY: number,
 ): void {
-  console.debug("moving", system.canonicalId);
-
   // Move the ss.
   const ssPosition = system.specification.position;
 

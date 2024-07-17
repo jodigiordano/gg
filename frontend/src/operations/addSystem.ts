@@ -5,15 +5,25 @@ import { modifySpecification } from "../simulation.js";
 import Operation from "../operation.js";
 import { viewport } from "../viewport.js";
 
-const selectVisual = new SystemSelector();
+const placeholderVisual = new SystemSelector();
+const parentVisual = new SystemSelector();
 
-function setSelectorPosition(state: State): void {
-  selectVisual.setPositionRect(
+function onPointerMove(state: State): void {
+  placeholderVisual.setPositionRect(
     state.x,
     state.y,
     state.x + SystemMinSize.width - 1,
     state.y + SystemMinSize.height - 1,
   );
+
+  const parent = state.simulator.getSubsystemAt(state.x, state.y);
+
+  if (parent) {
+    parentVisual.setPosition(parent, { x: 0, y: 0 });
+    parentVisual.visible = true;
+  } else {
+    parentVisual.visible = false;
+  }
 }
 
 let pointerIsDown = false;
@@ -21,34 +31,54 @@ let pointerIsDown = false;
 const operation: Operation = {
   id: "operation-system-add",
   setup: () => {
-    viewport.addChild(selectVisual);
+    viewport.addChild(placeholderVisual);
+    viewport.addChild(parentVisual);
   },
   onBegin: state => {
-    selectVisual.visible = true;
+    placeholderVisual.visible = true;
 
     pointerIsDown = false;
 
-    setSelectorPosition(state);
+    onPointerMove(state);
   },
   onEnd: () => {
-    selectVisual.visible = false;
+    placeholderVisual.visible = false;
+    parentVisual.visible = false;
   },
   onMute: () => {
-    selectVisual.visible = false;
+    placeholderVisual.visible = false;
+    parentVisual.visible = false;
   },
-  onUnmute: () => {
-    selectVisual.visible = true;
+  onUnmute: state => {
+    placeholderVisual.visible = true;
+
+    onPointerMove(state);
   },
   onPointerUp: state => {
-    const subsystem =
+    const parent =
       state.simulator.getSubsystemAt(state.x, state.y) ?? state.system;
 
+    let x: number;
+    let y: number;
+
+    if (parent.canonicalId) {
+      const offset = state.simulator.getParentOffset(parent);
+
+      x = Math.max(0, state.x - parent.position.x - offset.x);
+      y = Math.max(0, state.y - parent.position.y - offset.y);
+    } else {
+      x = state.x;
+      y = state.y;
+    }
+
     modifySpecification(() => {
-      addSubsystem(subsystem, state.x, state.y, "");
+      addSubsystem(parent, x!, y!, "");
     });
 
     viewport.pause = false;
     pointerIsDown = false;
+
+    onPointerMove(state);
   },
   // This code is only necessary on mobile.
   //
@@ -58,14 +88,15 @@ const operation: Operation = {
   // so it appears under the pointer for this event.
   onPointerDown: state => {
     pointerIsDown = true;
-    setSelectorPosition(state);
+
+    onPointerMove(state);
   },
   onPointerMove: state => {
     if (pointerIsDown) {
       viewport.pause = true;
     }
 
-    setSelectorPosition(state);
+    onPointerMove(state);
   },
 };
 

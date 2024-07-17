@@ -7,6 +7,7 @@ import {
   RuntimeLink,
   TitleCharsPerSquare,
   SystemMargin,
+  RuntimePosition,
 } from "@gg/spec";
 
 export enum SimulatorObjectType {
@@ -295,6 +296,31 @@ export class SystemSimulator {
     return this.routes[fromSystemId]?.[toSystemId];
   }
 
+  // Child systems in a parent system are offset
+  // by padding (X, Y) and a title (Y).
+  //
+  // For example, in the example below, the subsystems Foo and Bar are
+  // offset by { x: 1, y: 2 }
+  //
+  //+--------------------------+
+  //| +----------------------+ | <- padding of [1, 1]
+  //| | Title <- takes y: 1  | |
+  //| | +-----+    +-----+   | |
+  //| | | Foo |====| Bar |   | |
+  //| | +-----+    +-----+   | |
+  //| +----------------------+ |
+  //+--------------------------+
+  getParentOffset(subsystem: RuntimeSubsystem): RuntimePosition {
+    return {
+      x: PaddingWhiteBox,
+      y:
+        PaddingWhiteBox +
+        subsystem.titlePosition.y +
+        subsystem.titleSize.height -
+        1,
+    };
+  }
+
   private initializeSystems(system: RuntimeSystem | RuntimeSubsystem): void {
     // Recursive traversal.
     for (const ss of system.systems) {
@@ -363,11 +389,10 @@ export class SystemSimulator {
       ssGridSystem.worldY = gridSystem.worldY + ss.position.y;
 
       if (system.canonicalId) {
-        ssGridSystem.worldX += PaddingWhiteBox;
+        const offset = this.getParentOffset(system);
 
-        ssGridSystem.worldY += PaddingWhiteBox;
-        ssGridSystem.worldY +=
-          system.titlePosition.y + system.titleSize.height - 1;
+        ssGridSystem.worldX += offset.x;
+        ssGridSystem.worldY += offset.y;
       }
 
       // Recursive traversal.
