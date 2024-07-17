@@ -626,10 +626,10 @@ export class SystemSimulator {
 
       for (let x = gridSS.x1; x <= gridSS.x2; x++) {
         for (let y = gridSS.y1; y <= gridSS.y2; y++) {
-          if (blackbox) {
-            finderGrid.setWeightAt(x, y, Infinity);
-          } else {
+          if (ss.systems.length) {
             finderGrid.setWeightAt(x, y, 1);
+          } else {
+            finderGrid.setWeightAt(x, y, Infinity);
           }
 
           // The sub-system is inside a blackbox.
