@@ -9,13 +9,13 @@ import example2 from "./assets/complex.yml?raw";
 import { state, resetState, pushChange } from "./state.js";
 import { redrawGrid, setGridVisible } from "./grid.js";
 import Operation from "./operation.js";
-import addSystemOperation from "./operations/addSystem.js";
-import setSystemTitleOperation from "./operations/setSystemTitle.js";
-import moveSystemOperation from "./operations/moveSystem.js";
-import setSystemParentOperation from "./operations/setSystemParent.js";
-import addLinkOperation from "./operations/addLink.js";
+import addSystemOperation from "./operations/systemAdd.js";
+import setSystemTitleOperation from "./operations/systemSetTitle.js";
+import moveSystemOperation from "./operations/systemMove.js";
+import setSystemParentOperation from "./operations/systemSetParent.js";
+import addLinkOperation from "./operations/linkAdd.js";
 import eraseOperation from "./operations/erase.js";
-import setSystemHideSystemsOperation from "./operations/toggleHideSystems.js";
+import setSystemHideSystemsOperation from "./operations/systemToggleSystems.js";
 import {
   getYamlEditorValue,
   isYamlEditorOpen,

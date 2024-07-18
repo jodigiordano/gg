@@ -4,7 +4,7 @@ import { RuntimeSystem, loadYaml } from "@gg/spec";
 import { SystemSimulator } from "@gg/simulator";
 import { CanvasFlowPlayer } from "./simulation.js";
 import Operation from "./operation.js";
-import MoveSystemOperation from "./operations/moveSystem.js";
+import MoveSystemOperation from "./operations/systemMove.js";
 
 export interface State {
   changes: string[];
