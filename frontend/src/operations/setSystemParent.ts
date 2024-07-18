@@ -2,6 +2,7 @@ import {
   RuntimeSubsystem,
   RuntimePosition,
   moveSubsystemToParent,
+  moveSystem,
 } from "@gg/spec";
 import SystemSelector from "../systemSelector.js";
 import { modifySpecification } from "../simulation.js";
@@ -27,9 +28,18 @@ function onPointerMove(state: State) {
       y: state.y - pickedUpAt.y,
     });
 
-    const parent = state.simulator.getSubsystemAt(state.x, state.y);
+    let parent = state.simulator.getSubsystemAt(state.x, state.y);
 
-    if (parent) {
+    if (
+      // User moves the ss over itself.
+      (parent?.canonicalId && parent.canonicalId === subsystem.canonicalId) ||
+      // User moves the ss inside a child ss.
+      parent?.canonicalId?.startsWith(`${subsystem.canonicalId}.`)
+    ) {
+      parent = subsystem.parent as RuntimeSubsystem;
+    }
+
+    if (parent?.canonicalId) {
       parentVisual.setPosition(parent, { x: 0, y: 0 });
       parentVisual.visible = true;
     } else {
@@ -77,38 +87,48 @@ const operation: Operation = {
   },
   onUnmute: onPointerMove,
   onPointerUp: state => {
-    if (!subsystem) {
+    if (!subsystem || !pickedUpAt) {
       return;
     }
 
     const parent =
       state.simulator.getSubsystemAt(state.x, state.y) ?? state.system;
 
-    if (
-      parent.canonicalId !== subsystem.canonicalId &&
-      parent.canonicalId !== subsystem.parent?.canonicalId
-    ) {
-      let x: number;
-      let y: number;
-
-      if (parent.canonicalId) {
-        const offset = state.simulator.getParentOffset(parent);
-
-        x = Math.max(0, state.x - parent.position.x - offset.x);
-        y = Math.max(0, state.y - parent.position.y - offset.y);
+    modifySpecification(() => {
+      if (
+        // User moves the ss over itself.
+        subsystem!.canonicalId === parent.canonicalId ||
+        // User moves the ss inside the same parent.
+        subsystem!.parent!.canonicalId === parent.canonicalId ||
+        // User moves the ss inside a child ss.
+        parent.canonicalId?.startsWith(`${subsystem!.canonicalId}.`)
+      ) {
+        moveSystem(
+          subsystem!,
+          state.x - pickedUpAt!.x,
+          state.y - pickedUpAt!.y,
+        );
       } else {
-        x = state.x;
-        y = state.y;
-      }
+        let x: number;
+        let y: number;
 
-      modifySpecification(() => {
+        if (parent.canonicalId) {
+          const offset = state.simulator.getParentOffset(parent);
+
+          x = Math.max(0, state.x - parent.position.x - offset.x);
+          y = Math.max(0, state.y - parent.position.y - offset.y);
+        } else {
+          x = state.x + (subsystem!.position.x - pickedUpAt!.x);
+          y = state.y + (subsystem!.position.y - pickedUpAt!.y);
+        }
+
         moveSubsystemToParent(subsystem!, parent, x, y);
 
         if (parent.canonicalId) {
           parent.specification.hideSystems = false;
         }
-      });
-    }
+      }
+    });
 
     // Reset operation.
     viewport.pause = false;

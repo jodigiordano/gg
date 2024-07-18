@@ -1,9 +1,4 @@
-import {
-  RuntimeSystem,
-  RuntimeSubsystem,
-  RuntimeLink,
-  RuntimePosition,
-} from "./runtime.js";
+import { RuntimeSystem, RuntimeSubsystem, RuntimeLink } from "./runtime.js";
 import { SystemMargin } from "./consts.js";
 import { Link, FlowStep } from "./specification.js";
 import { computeSystemSize, getRootSystem, initSystem } from "./system.js";
@@ -163,20 +158,75 @@ export function moveSubsystemToParent(
   x: number,
   y: number,
 ): void {
+  // Remove subsystem from previous parent.
   subsystem.parent!.specification.systems?.splice(subsystem.index, 1);
+  subsystem.parent!.systems.splice(subsystem.index, 1);
+
+  // Add subsystem to new parent.
+  const parentWasBlackbox = parent.systems.length === 0;
 
   parent.specification.systems ??= [];
   parent.specification.systems!.push(subsystem.specification);
-
-  // TODO: move links.
-  // TODO: move flows.
 
   subsystem.specification.position.x = x;
   subsystem.specification.position.y = y;
 
   parent.systems.push(subsystem);
 
+  // Find the root system.
   const rootSystem = getRootSystem(subsystem);
+
+  // Move links of the subsystem.
+  const links = rootSystem.specification.links ?? [];
+
+  for (const link of links) {
+    if (link.a === subsystem.canonicalId) {
+      link.a = [parent.canonicalId, subsystem.id].filter(x => x).join(".");
+    } else if (link.b === subsystem.canonicalId) {
+      link.b = [parent.canonicalId, subsystem.id].filter(x => x).join(".");
+    }
+  }
+
+  // Move links of the parent.
+  if (parentWasBlackbox) {
+    for (const link of links) {
+      if (link.a === parent.canonicalId) {
+        link.a = [parent.canonicalId, subsystem.id].filter(x => x).join(".");
+      } else if (link.b === parent.canonicalId) {
+        link.b = [parent.canonicalId, subsystem.id].filter(x => x).join(".");
+      }
+    }
+  }
+
+  // Remove self-referenced links.
+  // Happens when there is a link between the new parent and the subsystem.
+  for (let i = links.length - 1; i >= 0; i--) {
+    const link = links[i]!;
+
+    if (link.a === link.b) {
+      links.splice(i, 1);
+    }
+  }
+
+  // Remove duplicated links.
+  // Happens when both the new parent and the subsystem have
+  // a link with another subsystem.
+  for (let i = links.length - 1; i >= 0; i--) {
+    const link = links[i]!;
+
+    for (let j = links.length - 1; j >= 0; j--) {
+      const other = links[j]!;
+
+      if (
+        i !== j &&
+        [other.a, other.b].sort().join("") === [link.a, link.b].sort().join("")
+      ) {
+        links.splice(i, 1);
+      }
+    }
+  }
+
+  // TODO: move flows.
 
   initSystem(
     subsystem,
@@ -185,10 +235,6 @@ export function moveSubsystemToParent(
     parent.systems.length - 1,
     parent.depth + 1,
   );
-
-  if (parent.canonicalId) {
-    computeSystemSize(parent, rootSystem.links);
-  }
 
   moveSystem(subsystem, 0, 0);
 }
@@ -209,8 +255,7 @@ export function moveSystem(
     y: ssPosition.y + system.size.height / 2,
   };
 
-  // Retrieve sibling subsystems and
-  // sort them by distance of ss, nearest first.
+  // Retrieve sibling subsystems.
   const subsystems = system.parent?.systems ?? [];
 
   // Resolve collisions.
@@ -382,8 +427,6 @@ export function moveSystem(
           displacementY,
         );
 
-        // TODO: quick test. Instead of a radial displacement, try a
-        // horizontal / vertical displacement.
         if (
           Math.abs(centerToCenterUnitVectorX) >=
           Math.abs(centerToCenterUnitVectorY)
