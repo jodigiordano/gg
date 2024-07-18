@@ -34,13 +34,13 @@
           },
           "from": {
             "type": "string",
-            "pattern": "^[a-z0-9_-]+(\\.[a-z0-9_-]+)*$",
-            "description": "Side where the data originates from. Format: subsystemId[.subsystemId]*"
+            "pattern": "^[a-z0-9_-]+$",
+            "description": "Side where the data originates from."
           },
           "to": {
             "type": "string",
-            "pattern": "^[a-z0-9_-]+(\\.[a-z0-9_-]+)*$",
-            "description": "Side where the data goes to. Format: subsystemId[.subsystemId]*"
+            "pattern": "^[a-z0-9_-]+$",
+            "description": "Side where the data goes to."
           },
           "data": {
             "type": "string",

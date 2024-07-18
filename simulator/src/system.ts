@@ -92,7 +92,7 @@ export interface SimulatorBoundaries {
 }
 
 interface GridSystem {
-  canonicalId: string;
+  id: string;
 
   /* Left position in a 2D grid. Always >= 0. */
   x1: number;
@@ -328,13 +328,13 @@ export class SystemSimulator {
     }
 
     // Root system.
-    if (!system.canonicalId) {
+    if (!system.id) {
       return;
     }
 
     // Initialize system.
     const gridSystem: GridSystem = {
-      canonicalId: system.canonicalId,
+      id: system.id,
       x1: -1,
       x2: -1,
       y1: -1,
@@ -353,7 +353,7 @@ export class SystemSimulator {
       hidden: false,
     };
 
-    this.gridSystems[system.canonicalId] = gridSystem;
+    this.gridSystems[system.id] = gridSystem;
   }
 
   private computeSystemVisibility(
@@ -366,11 +366,11 @@ export class SystemSimulator {
     }
 
     // Root system.
-    if (!system.canonicalId) {
+    if (!system.id) {
       return;
     }
 
-    const gridSystem = this.gridSystems[system.canonicalId]!;
+    const gridSystem = this.gridSystems[system.id]!;
 
     gridSystem.hidden = hidden;
   }
@@ -378,17 +378,17 @@ export class SystemSimulator {
   private computeSystemWorldPositions(
     system: RuntimeSystem | RuntimeSubsystem,
   ): void {
-    const gridSystem = system.canonicalId
-      ? this.gridSystems[system.canonicalId]!
+    const gridSystem = system.id
+      ? this.gridSystems[system.id]!
       : { worldX: 0, worldY: 0 };
 
     for (const ss of system.systems) {
-      const ssGridSystem = this.gridSystems[ss.canonicalId]!;
+      const ssGridSystem = this.gridSystems[ss.id]!;
 
       ssGridSystem.worldX = gridSystem.worldX + ss.position.x;
       ssGridSystem.worldY = gridSystem.worldY + ss.position.y;
 
-      if (system.canonicalId) {
+      if (system.id) {
         const offset = this.getParentOffset(system);
 
         ssGridSystem.worldX += offset.x;
@@ -416,11 +416,11 @@ export class SystemSimulator {
     }
 
     // Root system.
-    if (!system.canonicalId) {
+    if (!system.id) {
       return;
     }
 
-    const gridSystem = this.gridSystems[system.canonicalId]!;
+    const gridSystem = this.gridSystems[system.id]!;
 
     gridSystem.width = system.size.width;
     gridSystem.height = system.size.height;
@@ -428,7 +428,7 @@ export class SystemSimulator {
 
   private computeSystemPorts(system: RuntimeSystem | RuntimeSubsystem): void {
     for (const ss of system.systems) {
-      const gridSystem = this.gridSystems[ss.canonicalId]!;
+      const gridSystem = this.gridSystems[ss.id]!;
 
       gridSystem.ports = ss.ports.map(port => ({
         x: gridSystem.x1 + port.x,
@@ -447,11 +447,11 @@ export class SystemSimulator {
     }
 
     // Root system.
-    if (!system.canonicalId) {
+    if (!system.id) {
       return;
     }
 
-    const gridSystem = this.gridSystems[system.canonicalId]!;
+    const gridSystem = this.gridSystems[system.id]!;
 
     gridSystem.title = {
       x: gridSystem.x1 + system.titlePosition.x,
@@ -517,7 +517,7 @@ export class SystemSimulator {
     finderGrid: PathFinderGrid,
   ): void {
     for (const ss of system.systems) {
-      const gridSS = this.gridSystems[ss.canonicalId]!;
+      const gridSS = this.gridSystems[ss.id]!;
 
       // Draw margins.
       const simulatorSystemMargin: SimulatorSystemMargin = Object.freeze({
@@ -752,22 +752,22 @@ export class SystemSimulator {
       let parent: RuntimeSystem | RuntimeSubsystem | undefined =
         link.systemA.parent;
 
-      while (parent?.canonicalId) {
-        allowedSystems.push(parent.canonicalId);
+      while (parent?.id) {
+        allowedSystems.push(parent.id);
 
         parent = parent.parent;
       }
 
       parent = link.systemB.parent;
 
-      while (parent?.canonicalId) {
-        allowedSystems.push(parent.canonicalId);
+      while (parent?.id) {
+        allowedSystems.push(parent.id);
 
         parent = parent.parent;
       }
 
       for (const gridSS of Object.values(this.gridSystems)) {
-        if (!allowedSystems.includes(gridSS.canonicalId)) {
+        if (!allowedSystems.includes(gridSS.id)) {
           for (const port of gridSS.ports) {
             finderGrid.setWeightAt(port.x, port.y, Infinity);
           }
@@ -961,7 +961,7 @@ export class SystemSimulator {
       // After a path from A to B is found (or not), we re-open the closed
       // ports of denied systems.
       for (const gridSS of Object.values(this.gridSystems)) {
-        if (!allowedSystems.includes(gridSS.canonicalId)) {
+        if (!allowedSystems.includes(gridSS.id)) {
           for (const port of gridSS.ports) {
             finderGrid.setWeightAt(port.x, port.y, 1);
           }
@@ -975,7 +975,7 @@ export class SystemSimulator {
   ): void {
     // Recursive traversal.
     for (const ss of system.systems) {
-      const gridSS = this.gridSystems[ss.canonicalId]!;
+      const gridSS = this.gridSystems[ss.id]!;
 
       // Synchronize grid object with runtime system.
       // TODO: is it really how we want to tackle this?

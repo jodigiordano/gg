@@ -17,6 +17,10 @@ const parentVisual = new SystemSelector();
 let subsystem: RuntimeSubsystem | null = null;
 let pickedUpAt: RuntimePosition | null = null;
 
+function isChildOf(a: RuntimeSubsystem, bId: string): boolean {
+  return a.systems.some(ss => ss.id === bId || isChildOf(ss, bId));
+}
+
 function onPointerMove(state: State) {
   if (subsystem && pickedUpAt) {
     selectVisual.visible = true;
@@ -32,14 +36,14 @@ function onPointerMove(state: State) {
 
     if (
       // User moves the ss over itself.
-      (parent?.canonicalId && parent.canonicalId === subsystem.canonicalId) ||
+      (parent?.id && parent.id === subsystem.id) ||
       // User moves the ss inside a child ss.
-      parent?.canonicalId?.startsWith(`${subsystem.canonicalId}.`)
+      (parent?.id && isChildOf(subsystem, parent.id))
     ) {
       parent = subsystem.parent as RuntimeSubsystem;
     }
 
-    if (parent?.canonicalId) {
+    if (parent?.id) {
       parentVisual.setPosition(parent, { x: 0, y: 0 });
       parentVisual.visible = true;
     } else {
@@ -97,11 +101,11 @@ const operation: Operation = {
     modifySpecification(() => {
       if (
         // User moves the ss over itself.
-        subsystem!.canonicalId === parent.canonicalId ||
+        subsystem!.id === parent.id ||
         // User moves the ss inside the same parent.
-        subsystem!.parent!.canonicalId === parent.canonicalId ||
+        subsystem!.parent!.id === parent.id ||
         // User moves the ss inside a child ss.
-        parent.canonicalId?.startsWith(`${subsystem!.canonicalId}.`)
+        (parent.id && isChildOf(subsystem!, parent.id))
       ) {
         moveSystem(
           subsystem!,
@@ -112,7 +116,7 @@ const operation: Operation = {
         let x: number;
         let y: number;
 
-        if (parent.canonicalId) {
+        if (parent.id) {
           const offset = state.simulator.getParentOffset(parent);
 
           x = Math.max(0, state.x - parent.position.x - offset.x);
@@ -124,7 +128,7 @@ const operation: Operation = {
 
         moveSubsystemToParent(subsystem!, parent, x, y);
 
-        if (parent.canonicalId) {
+        if (parent.id) {
           parent.specification.hideSystems = false;
         }
       }

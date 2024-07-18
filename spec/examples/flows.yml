@@ -51,27 +51,27 @@ systems:
           x: 25
           y: 0
 links:
-  - a: frontend.api-service
-    b: backend.server.expressjs
-  - a: frontend.react-app
-    b: frontend.redux-store
-  - a: frontend.react-app
-    b: frontend.api-service
-  - a: backend.server.expressjs
-    b: backend.server.handler
-  - a: backend.server.handler
-    b: backend.database
+  - a: api-service
+    b: expressjs
+  - a: react-app
+    b: redux-store
+  - a: react-app
+    b: api-service
+  - a: expressjs
+    b: handler
+  - a: handler
+    b: database
 flows:
   - steps:
-      - from: frontend.react-app
-        to: backend.server.handler
+      - from: react-app
+        to: handler
         data: send request
         keyframe: 0
-      - from: backend.server.handler
-        to: backend.database
+      - from: handler
+        to: database
         data: store request
         keyframe: 1
-      - from: backend.server.handler
-        to: frontend.react-app
+      - from: handler
+        to: react-app
         data: send response
         keyframe: 1

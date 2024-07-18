@@ -33,7 +33,7 @@ export function validate(
 
   const systemOverlapErrors = validateSystemOverlaps(runtime);
   const whiteBoxBoundaryErrors = validateWhiteboxBoundaries(runtime);
-  const systemErrors = validateSystems(runtime);
+  const systemErrors = validateSystems(runtime, []);
   const linkErrors = validateLinks(runtime);
   const flowErrors = validateFlows(runtime);
 
@@ -76,7 +76,7 @@ function validateSystemOverlaps(
       ) {
         errors.push({
           path: getSubsystemPath(subsystemA),
-          message: `${subsystemA.canonicalId} overlaps with ${subsystemB.canonicalId}`,
+          message: `${subsystemA.id} overlaps with ${subsystemB.id}`,
         });
       }
     }
@@ -97,13 +97,10 @@ function validateWhiteboxBoundaries(
 
   for (const subsystem of system.systems) {
     // i.e. in a whitebox.
-    if (
-      system.canonicalId &&
-      (subsystem.position.x < 0 || subsystem.position.y < 0)
-    ) {
+    if (system.id && (subsystem.position.x < 0 || subsystem.position.y < 0)) {
       errors.push({
         path: getSubsystemPath(subsystem),
-        message: `${subsystem.canonicalId} is out of bounds of ${system.canonicalId}`,
+        message: `${subsystem.id} is out of bounds of ${system.id}`,
       });
     }
 
@@ -116,24 +113,23 @@ function validateWhiteboxBoundaries(
 
 function validateSystems(
   system: RuntimeSystem | RuntimeSubsystem,
+  foundIds: string[],
 ): ValidationError[] {
   const errors: ValidationError[] = [];
 
   for (const subsystem of system.systems) {
     // Duplicate id.
-    if (
-      system.systems.some(
-        other => other.id === subsystem.id && other.index !== subsystem.index,
-      )
-    ) {
+    if (foundIds.includes(subsystem.id)) {
       errors.push({
         path: getSubsystemPath(subsystem),
         message: "duplicate id",
       });
+    } else {
+      foundIds.push(subsystem.id);
     }
 
     // Validate recursively.
-    errors.push(...validateSystems(subsystem));
+    errors.push(...validateSystems(subsystem, foundIds));
   }
 
   return errors;
@@ -146,11 +142,7 @@ function validateLinks(
 
   for (const link of system.links) {
     // A <> A
-    if (
-      link.a === link.b ||
-      link.a.startsWith(link.b) ||
-      link.b.startsWith(link.a)
-    ) {
+    if (link.a === link.b) {
       errors.push({
         path: getLinkPath(link),
         message: "self-reference",

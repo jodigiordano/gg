@@ -54,12 +54,12 @@ describe("links", () => {
         ],
         links: [
           {
-            a: "foo.bar",
-            b: "foo.spam",
+            a: "bar",
+            b: "spam",
           },
           {
-            a: "foo.spam",
-            b: "foo.bar",
+            a: "spam",
+            b: "bar",
           },
         ],
       };
@@ -89,18 +89,18 @@ describe("links", () => {
             systems: [{ id: "bar", position: { x: 0, y: 0 } }],
           },
           {
-            id: "bar",
-            position: { x: 10, y: 0 },
+            id: "spam",
+            position: { x: 20, y: 0 },
           },
         ],
         links: [
           {
-            a: "foo.bar",
-            b: "bar",
+            a: "bar",
+            b: "spam",
           },
           {
-            a: "bar",
-            b: "foo.bar",
+            a: "spam",
+            b: "bar",
           },
         ],
       };
@@ -130,19 +130,19 @@ describe("links", () => {
             systems: [{ id: "bar", position: { x: 0, y: 0 } }],
           },
           {
-            id: "bar",
-            position: { x: 10, y: 0 },
-            systems: [{ id: "spam", position: { x: 0, y: 0 } }],
+            id: "spam",
+            position: { x: 20, y: 0 },
+            systems: [{ id: "baz", position: { x: 0, y: 0 } }],
           },
         ],
         links: [
           {
-            a: "foo.bar",
-            b: "bar.spam",
+            a: "bar",
+            b: "baz",
           },
           {
-            a: "bar.spam",
-            b: "foo.bar",
+            a: "baz",
+            b: "bar",
           },
         ],
       };
@@ -207,58 +207,6 @@ describe("links", () => {
       ]);
     });
 
-    it("missing A.Y", () => {
-      const system: System = {
-        specificationVersion: "1.0.0",
-        title: "test",
-        systems: [
-          { id: "foo", position: { x: 0, y: 0 } },
-          { id: "bar", position: { x: 10, y: 0 } },
-        ],
-        links: [
-          {
-            a: "foo.bar",
-            b: "bar",
-          },
-        ],
-      };
-
-      const { errors } = load(system);
-
-      assert.deepEqual(errors, [
-        {
-          message: "missing",
-          path: "/links/0/a",
-        },
-      ]);
-    });
-
-    it("missing B.Y", () => {
-      const system: System = {
-        specificationVersion: "1.0.0",
-        title: "test",
-        systems: [
-          { id: "foo", position: { x: 0, y: 0 } },
-          { id: "bar", position: { x: 10, y: 0 } },
-        ],
-        links: [
-          {
-            a: "bar",
-            b: "foo.bar",
-          },
-        ],
-      };
-
-      const { errors } = load(system);
-
-      assert.deepEqual(errors, [
-        {
-          message: "missing",
-          path: "/links/0/b",
-        },
-      ]);
-    });
-
     it("inaccurate A", () => {
       const system: System = {
         specificationVersion: "1.0.0",
@@ -269,12 +217,12 @@ describe("links", () => {
             position: { x: 0, y: 0 },
             systems: [{ id: "bar", position: { x: 0, y: 0 } }],
           },
-          { id: "bar", position: { x: 10, y: 0 } },
+          { id: "spam", position: { x: 20, y: 0 } },
         ],
         links: [
           {
             a: "foo",
-            b: "bar",
+            b: "spam",
           },
         ],
       };
@@ -360,8 +308,8 @@ describe("links", () => {
         ],
         links: [
           {
-            a: "foo.bar",
-            b: "foo",
+            a: "bar",
+            b: "bar",
           },
         ],
       };
@@ -372,10 +320,6 @@ describe("links", () => {
         {
           message: "self-reference",
           path: "/links/0",
-        },
-        {
-          message: "inaccurate",
-          path: "/links/0/b",
         },
       ]);
     });
@@ -396,8 +340,8 @@ describe("links", () => {
         ],
         links: [
           {
-            a: "foo.bar",
-            b: "foo.spam",
+            a: "bar",
+            b: "spam",
           },
         ],
       };
@@ -429,8 +373,8 @@ describe("links", () => {
         ],
         links: [
           {
-            a: "foo.bar.spam",
-            b: "foo.bar.baz",
+            a: "spam",
+            b: "baz",
           },
         ],
       };

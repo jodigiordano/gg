@@ -16,13 +16,13 @@
     },
     "a": {
       "type": "string",
-      "pattern": "^[a-z0-9_-]+(\\.[a-z0-9_-]+)*$",
-      "description": "Side A of the link. Format: subsystemId[.subsystemId]*"
+      "pattern": "^[a-z0-9_-]+$",
+      "description": "Side A of the link."
     },
     "b": {
       "type": "string",
-      "pattern": "^[a-z0-9_-]+(\\.[a-z0-9_-]+)*$",
-      "description": "Side B of the link. Format: subsystemId[.subsystemId]*"
+      "pattern": "^[a-z0-9_-]+$",
+      "description": "Side B of the link."
     }
   }
 }

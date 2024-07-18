@@ -82,7 +82,7 @@ describe("flows", () => {
             steps: [
               {
                 from: "foo",
-                to: "bar.spam",
+                to: "spam",
                 keyframe: 0,
               },
             ],
@@ -110,9 +110,9 @@ describe("flows", () => {
             position: { x: 0, y: 0 },
             systems: [{ id: "bar", position: { x: 0, y: 0 } }],
           },
-          { id: "bar", position: { x: 10, y: 0 } },
+          { id: "spam", position: { x: 20, y: 0 } },
         ],
-        links: [{ a: "foo.bar", b: "bar" }],
+        links: [{ a: "bar", b: "spam" }],
         flows: [
           {
             steps: [
@@ -148,7 +148,7 @@ describe("flows", () => {
             systems: [{ id: "spam", position: { x: 0, y: 0 } }],
           },
         ],
-        links: [{ a: "foo", b: "bar.spam" }],
+        links: [{ a: "foo", b: "spam" }],
         flows: [
           {
             steps: [
@@ -210,15 +210,15 @@ describe("flows", () => {
         title: "test",
         systems: [
           {
-            id: "foo",
+            id: "a",
             position: { x: 0, y: 0 },
             systems: [
               {
-                id: "bar",
+                id: "a1",
                 position: { x: 0, y: 0 },
                 systems: [
                   {
-                    id: "spam",
+                    id: "a2",
                     position: { x: 0, y: 0 },
                   },
                 ],
@@ -226,15 +226,15 @@ describe("flows", () => {
             ],
           },
           {
-            id: "bar",
+            id: "b",
             position: { x: 20, y: 0 },
             systems: [
               {
-                id: "spam",
+                id: "b1",
                 position: { x: 0, y: 0 },
               },
               {
-                id: "baz",
+                id: "b2",
                 position: { x: 10, y: 0 },
               },
             ],
@@ -242,16 +242,16 @@ describe("flows", () => {
         ],
         links: [
           {
-            a: "foo.bar.spam",
-            b: "bar.spam",
+            a: "a2",
+            b: "b1",
           },
         ],
         flows: [
           {
             steps: [
               {
-                from: "foo.bar.spam",
-                to: "bar.baz",
+                from: "a2",
+                to: "b2",
                 keyframe: 0,
               },
             ],

@@ -33,24 +33,24 @@ systems:
       y: 20
 links:
   - a: frontend
-    b: backend.server
+    b: server
   - a: frontend
     b: whatever
   - a: datadog
-    b: backend.server
-  - a: backend.server
-    b: backend.database
+    b: server
+  - a: server
+    b: database
 flows:
   - steps:
       - from: frontend
-        to: backend.server
+        to: server
         data: form data
         keyframe: 0
-      - from: backend.server
+      - from: server
         to: datadog
         data: log
         keyframe: 1
-      - from: backend.server
-        to: backend.database
+      - from: server
+        to: database
         data: user
         keyframe: 1

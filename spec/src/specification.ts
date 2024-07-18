@@ -32,7 +32,7 @@ export interface System {
  */
 export interface Subsystem {
   /**
-   * The id of the sub-system. Must be unique across the parent system.
+   * The id of the sub-system. Must be unique across the entire system.
    */
   id: string;
   /**
@@ -78,11 +78,11 @@ export interface Link {
    */
   description?: string;
   /**
-   * Side A of the link. Format: subsystemId[.subsystemId]*
+   * Side A of the link.
    */
   a: string;
   /**
-   * Side B of the link. Format: subsystemId[.subsystemId]*
+   * Side B of the link.
    */
   b: string;
 }
@@ -113,11 +113,11 @@ export interface FlowStep {
    */
   keyframe: number;
   /**
-   * Side where the data originates from. Format: subsystemId[.subsystemId]*
+   * Side where the data originates from.
    */
   from: string;
   /**
-   * Side where the data goes to. Format: subsystemId[.subsystemId]*
+   * Side where the data goes to.
    */
   to: string;
   /**
@@ -163,15 +163,13 @@ const schemas = [
             },
             from: {
               type: "string",
-              pattern: "^[a-z0-9_-]+(\\.[a-z0-9_-]+)*$",
-              description:
-                "Side where the data originates from. Format: subsystemId[.subsystemId]*",
+              pattern: "^[a-z0-9_-]+$",
+              description: "Side where the data originates from.",
             },
             to: {
               type: "string",
-              pattern: "^[a-z0-9_-]+(\\.[a-z0-9_-]+)*$",
-              description:
-                "Side where the data goes to. Format: subsystemId[.subsystemId]*",
+              pattern: "^[a-z0-9_-]+$",
+              description: "Side where the data goes to.",
             },
             data: {
               type: "string",
@@ -200,13 +198,13 @@ const schemas = [
       },
       a: {
         type: "string",
-        pattern: "^[a-z0-9_-]+(\\.[a-z0-9_-]+)*$",
-        description: "Side A of the link. Format: subsystemId[.subsystemId]*",
+        pattern: "^[a-z0-9_-]+$",
+        description: "Side A of the link.",
       },
       b: {
         type: "string",
-        pattern: "^[a-z0-9_-]+(\\.[a-z0-9_-]+)*$",
-        description: "Side B of the link. Format: subsystemId[.subsystemId]*",
+        pattern: "^[a-z0-9_-]+$",
+        description: "Side B of the link.",
       },
     },
   },
@@ -223,7 +221,7 @@ const schemas = [
         pattern: "^[a-z0-9_-]+$",
         maxLength: 32,
         description:
-          "The id of the sub-system. Must be unique across the parent system.",
+          "The id of the sub-system. Must be unique across the entire system.",
       },
       title: {
         type: "string",

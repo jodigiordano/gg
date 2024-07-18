@@ -43,10 +43,6 @@ describe("systems", () => {
       assert.deepEqual(errors, [
         {
           message: "duplicate id",
-          path: "/systems/0",
-        },
-        {
-          message: "duplicate id",
           path: "/systems/1",
         },
       ]);
@@ -77,10 +73,6 @@ describe("systems", () => {
       const { errors } = load(system);
 
       assert.deepEqual(errors, [
-        {
-          message: "duplicate id",
-          path: "/systems/0/systems/0",
-        },
         {
           message: "duplicate id",
           path: "/systems/0/systems/1",
@@ -288,7 +280,7 @@ describe("systems", () => {
 
       assert.deepEqual(errors, [
         {
-          message: "foo.bar overlaps with foo.spam",
+          message: "bar overlaps with spam",
           path: "/systems/0/systems/0",
         },
       ]);
@@ -319,7 +311,7 @@ describe("systems", () => {
 
       assert.deepEqual(errors, [
         {
-          message: "foo.bar is out of bounds of foo",
+          message: "bar is out of bounds of foo",
           path: "/systems/0/systems/0",
         },
       ]);
@@ -342,7 +334,7 @@ describe("systems", () => {
       const { system: runtime } = load(system);
 
       assert.deepEqual(runtime.systems.at(0)?.size, {
-        width: 4,
+        width: 5,
         height: 3,
       });
     });
@@ -367,7 +359,7 @@ describe("systems", () => {
       };
 
       assert.deepEqual(load(system).system.systems.at(0)?.size, {
-        width: 3,
+        width: 5,
         height: 3,
       });
 
@@ -377,7 +369,7 @@ describe("systems", () => {
       system.links!.push({ a: "a", b: "4" });
 
       assert.deepEqual(load(system).system.systems.at(0)?.size, {
-        width: 3,
+        width: 5,
         height: 3,
       });
 
@@ -462,7 +454,7 @@ describe("systems", () => {
       const { system: runtime } = load(system);
 
       assert.deepEqual(runtime.systems.at(0)?.size, {
-        width: 22,
+        width: 23,
         height: 23,
       });
     });
@@ -489,7 +481,7 @@ describe("systems", () => {
         { x: 3, y: -1 },
         { x: 3, y: 3 },
         { x: -1, y: 1 },
-        { x: 4, y: 1 },
+        { x: 5, y: 1 },
       ]);
     });
   });

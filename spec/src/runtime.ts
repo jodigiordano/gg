@@ -21,7 +21,6 @@ export interface RuntimeLink extends Link {
 
 export interface RuntimeSubsystem extends Subsystem {
   specification: Subsystem;
-  canonicalId: string;
   title: string;
   titlePosition: RuntimePosition;
   titleSize: RuntimeSize;
@@ -38,7 +37,7 @@ export interface RuntimeSubsystem extends Subsystem {
 
 export interface RuntimeSystem extends System {
   specification: System;
-  canonicalId: undefined;
+  id: undefined;
   titlePosition: RuntimePosition;
   titleSize: RuntimeSize;
   size: RuntimeSize;

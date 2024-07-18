@@ -18,10 +18,12 @@ export function addSubsystem(
     position: { x, y },
     title,
   };
+
+  // Add subsystem to new parent.
+  const parentWasBlackbox = parent.systems.length === 0;
+
   parent.specification.systems ??= [];
   parent.specification.systems.push(newSpecSystem);
-
-  const rootSystem = getRootSystem(parent as RuntimeSubsystem);
 
   const newRuntimeSystem = structuredClone(newSpecSystem) as RuntimeSubsystem;
 
@@ -34,6 +36,19 @@ export function addSubsystem(
     parent.systems.length - 1,
     parent.depth + 1,
   );
+
+  const rootSystem = getRootSystem(parent as RuntimeSubsystem);
+
+  // Move links of the parent.
+  if (parentWasBlackbox) {
+    for (const link of rootSystem.specification.links ?? []) {
+      if (link.a === parent.id) {
+        link.a = newRuntimeSystem.id;
+      } else if (link.b === parent.id) {
+        link.b = newRuntimeSystem.id;
+      }
+    }
+  }
 
   computeSystemSize(newRuntimeSystem, rootSystem.links);
   moveSystem(newRuntimeSystem, 0, 0);
@@ -55,10 +70,7 @@ export function removeSubsystem(subsystem: RuntimeSubsystem): void {
   while (linkReadIndex < rootSystem.links.length) {
     const link = rootSystem.specification.links![linkReadIndex]!;
 
-    if (
-      !link.a.startsWith(subsystem.canonicalId) &&
-      !link.b.startsWith(subsystem.canonicalId)
-    ) {
+    if (link.a !== subsystem.id && link.b !== subsystem.id) {
       rootSystem.specification.links![linkWriteIndex] = link;
 
       linkWriteIndex++;
@@ -84,8 +96,7 @@ export function removeSubsystem(subsystem: RuntimeSubsystem): void {
     if (
       !flow.steps.some(
         (step: FlowStep) =>
-          step.from.startsWith(subsystem.canonicalId) ||
-          step.to.startsWith(subsystem.canonicalId),
+          step.from === subsystem.id || step.to === subsystem.id,
       )
     ) {
       rootSystem.specification.flows![flowWriteIndex] = flow;
@@ -128,14 +139,10 @@ export function setSubsystemTitle(
  * Add a link in the given system.
  * The resulting system is not validated and may be invalid.
  */
-export function addLink(
-  system: RuntimeSystem,
-  aCanonicalId: string,
-  bCanonicalId: string,
-): Link {
+export function addLink(system: RuntimeSystem, aId: string, bId: string): Link {
   const newLink = {
-    a: aCanonicalId,
-    b: bCanonicalId,
+    a: aId,
+    b: bId,
   };
 
   system.specification.links ??= [];
@@ -179,21 +186,24 @@ export function moveSubsystemToParent(
   // Move links of the subsystem.
   const links = rootSystem.specification.links ?? [];
 
+  // TODO: size calculation uses runtime links.
+  // TODO Either use spec links instead or modify both spec & runtime links here.
+
   for (const link of links) {
-    if (link.a === subsystem.canonicalId) {
-      link.a = [parent.canonicalId, subsystem.id].filter(x => x).join(".");
-    } else if (link.b === subsystem.canonicalId) {
-      link.b = [parent.canonicalId, subsystem.id].filter(x => x).join(".");
+    if (link.a === subsystem.id) {
+      link.a = subsystem.id;
+    } else if (link.b === subsystem.id) {
+      link.b = subsystem.id;
     }
   }
 
   // Move links of the parent.
   if (parentWasBlackbox) {
     for (const link of links) {
-      if (link.a === parent.canonicalId) {
-        link.a = [parent.canonicalId, subsystem.id].filter(x => x).join(".");
-      } else if (link.b === parent.canonicalId) {
-        link.b = [parent.canonicalId, subsystem.id].filter(x => x).join(".");
+      if (link.a === parent.id) {
+        link.a = subsystem.id;
+      } else if (link.b === parent.id) {
+        link.b = subsystem.id;
       }
     }
   }
@@ -272,9 +282,9 @@ export function moveSystem(
       for (const ssBCandidate of subsystems) {
         if (
           displacedThisIteration.includes(
-            [ssACandidate.canonicalId, ssBCandidate.canonicalId].join("."),
+            [ssACandidate.id, ssBCandidate.id].join("."),
           ) ||
-          ssACandidate.canonicalId === ssBCandidate.canonicalId
+          ssACandidate.id === ssBCandidate.id
         ) {
           continue;
         }
@@ -294,18 +304,10 @@ export function moveSystem(
         let ssA: RuntimeSubsystem;
         let ssB: RuntimeSubsystem;
 
-        if (
-          displacers[ssACandidate.canonicalId]?.includes(
-            ssBCandidate.canonicalId,
-          )
-        ) {
+        if (displacers[ssACandidate.id]?.includes(ssBCandidate.id)) {
           ssA = ssACandidate;
           ssB = ssBCandidate;
-        } else if (
-          displacers[ssBCandidate.canonicalId]?.includes(
-            ssACandidate.canonicalId,
-          )
-        ) {
+        } else if (displacers[ssBCandidate.id]?.includes(ssACandidate.id)) {
           ssA = ssBCandidate;
           ssB = ssACandidate;
         } else {
@@ -335,19 +337,16 @@ export function moveSystem(
 
           // Subsystem displacing.
           ssA =
-            ssACandidate.canonicalId === system.canonicalId ||
+            ssACandidate.id === system.id ||
             ssACandidateDistance < ssBCandidateDistance
               ? ssACandidate
               : ssBCandidate;
 
           // Subsystem being displaced.
-          ssB =
-            ssA.canonicalId === ssACandidate.canonicalId
-              ? ssBCandidate
-              : ssACandidate;
+          ssB = ssA.id === ssACandidate.id ? ssBCandidate : ssACandidate;
 
-          displacers[ssA.canonicalId] ??= [];
-          displacers[ssA.canonicalId]!.push(ssB.canonicalId);
+          displacers[ssA.id] ??= [];
+          displacers[ssA.id]!.push(ssB.id);
         }
 
         const aPositionX1 = ssA.specification.position.x - SystemMargin;
@@ -414,15 +413,15 @@ export function moveSystem(
             : Math.floor(centerToCenterUnitVectorY) | 0;
 
         console.debug(
-          ssA.canonicalId,
+          ssA.id,
           "collides",
           overlapX,
           overlapY,
           "with",
-          ssB.canonicalId,
+          ssB.id,
           " => ",
           "move",
-          ssB.canonicalId,
+          ssB.id,
           displacementX,
           displacementY,
         );
@@ -436,13 +435,9 @@ export function moveSystem(
           ssB.specification.position.y += displacementY;
         }
 
-        displacedThisIteration.push(
-          [ssA.canonicalId, ssB.canonicalId].join("."),
-        );
+        displacedThisIteration.push([ssA.id, ssB.id].join("."));
 
-        displacedThisIteration.push(
-          [ssB.canonicalId, ssA.canonicalId].join("."),
-        );
+        displacedThisIteration.push([ssB.id, ssA.id].join("."));
       }
     }
   } while (displacedThisIteration.length && iterations < 200);
@@ -478,10 +473,10 @@ export function moveSystem(
       let displacementY = ssPosition.y < 0 ? Math.abs(ssPosition.y) : 0;
 
       console.debug(
-        system.canonicalId,
+        system.id,
         "out of bounds",
         " => displacing",
-        parent.canonicalId,
+        parent.id,
         displacementX,
         displacementY,
       );
@@ -497,7 +492,7 @@ export function moveSystem(
       // Sibling systems need to stay at their relative position while the
       // parent system is being moved.
       for (const siblingSystem of subsystems) {
-        if (siblingSystem.canonicalId !== system.canonicalId) {
+        if (siblingSystem.id !== system.id) {
           const siblingPosition = siblingSystem.specification.position;
 
           siblingPosition.x += displacementX;
@@ -536,7 +531,7 @@ export function moveSystem(
   // When a subsystem is part of a parent subsystem,
   // it may make that parent subsystem grows and potentially displaces
   // other subsystems.
-  if (system.parent && system.parent.canonicalId) {
+  if (system.parent && system.parent.id) {
     const rootSystem = getRootSystem(system);
 
     const sizeBefore = structuredClone(system.parent.size);

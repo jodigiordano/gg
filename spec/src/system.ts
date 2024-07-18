@@ -49,9 +49,6 @@ export function initSystem(
   // Initialize ports.
   system.ports = [];
 
-  // Build its canonical id.
-  system.canonicalId = [parent.canonicalId, system.id].filter(x => x).join(".");
-
   // Set the depth.
   system.depth = depth;
 }
@@ -66,6 +63,25 @@ export function getRootSystem(system: RuntimeSubsystem): RuntimeSystem {
   return rootSystem;
 }
 
+export function getSubsystemById(
+  system: RuntimeSystem | RuntimeSubsystem,
+  id: string,
+): RuntimeSubsystem | null {
+  for (const ss of system.systems) {
+    if (ss.id === id) {
+      return ss;
+    }
+
+    const foundInChildren = getSubsystemById(ss, id);
+
+    if (foundInChildren) {
+      return foundInChildren;
+    }
+  }
+
+  return null;
+}
+
 export function computeSystemSize(
   system: RuntimeSubsystem,
   links: RuntimeLink[],
@@ -76,9 +92,7 @@ export function computeSystemSize(
     const titleHeight = system.titleSize.height + 2 * TitlePadding;
 
     const linksCount = links.filter(
-      link =>
-        link.a.startsWith(system.canonicalId) ||
-        link.b.startsWith(system.canonicalId),
+      link => link.a === system.id || link.b === system.id,
     ).length;
 
     const linksWidth =

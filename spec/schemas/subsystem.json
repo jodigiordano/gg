@@ -10,7 +10,7 @@
       "type": "string",
       "pattern": "^[a-z0-9_-]+$",
       "maxLength": 32,
-      "description": "The id of the sub-system. Must be unique across the parent system."
+      "description": "The id of the sub-system. Must be unique across the entire system."
     },
     "title": {
       "type": "string",

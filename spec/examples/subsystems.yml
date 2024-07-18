@@ -40,11 +40,11 @@ systems:
           x: 10
           y: 0
 links:
-  - a: frontend.api-service
-    b: backend.server
-  - a: frontend.react-app
-    b: frontend.redux-store
-  - a: frontend.react-app
-    b: frontend.api-service
-  - a: backend.server
-    b: backend.database
+  - a: api-service
+    b: server
+  - a: react-app
+    b: redux-store
+  - a: react-app
+    b: api-service
+  - a: server
+    b: database

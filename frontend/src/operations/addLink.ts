@@ -81,9 +81,9 @@ const operation: Operation = {
     // Apply operation.
     const b = state.simulator.getSubsystemAt(state.x, state.y);
 
-    if (b && b.canonicalId !== a.canonicalId && !b.systems.length) {
+    if (b && b.id !== a.id && !b.systems.length) {
       modifySpecification(() => {
-        addLink(state.system, a!.canonicalId, b!.canonicalId);
+        addLink(state.system, a!.id, b!.id);
       });
     }
 

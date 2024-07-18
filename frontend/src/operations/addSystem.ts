@@ -61,7 +61,7 @@ const operation: Operation = {
     let x: number;
     let y: number;
 
-    if (parent.canonicalId) {
+    if (parent.id) {
       const offset = state.simulator.getParentOffset(parent);
 
       x = Math.max(0, state.x - parent.position.x - offset.x);

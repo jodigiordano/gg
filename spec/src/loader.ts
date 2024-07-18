@@ -2,7 +2,12 @@ import { load as parseYaml } from "js-yaml";
 import { RuntimeSystem, RuntimeSubsystem, RuntimeLink } from "./runtime.js";
 import { System } from "./specification.js";
 import { validate, ValidationError } from "./validations.js";
-import { computeSystemPorts, computeSystemSize, initSystem } from "./system.js";
+import {
+  computeSystemPorts,
+  computeSystemSize,
+  getSubsystemById,
+  initSystem,
+} from "./system.js";
 
 export function load(system: System): {
   system: RuntimeSystem;
@@ -69,26 +74,10 @@ function enhanceLinks(system: RuntimeSystem): void {
     link.index = index;
 
     // Set system A.
-    let systemA: RuntimeSubsystem | RuntimeSystem | undefined = system;
-
-    for (const subsystemId of link.a.split(".")) {
-      if (systemA) {
-        systemA = systemA.systems.find(ss => ss.id === subsystemId);
-      }
-    }
-
-    link.systemA = systemA as unknown as RuntimeSubsystem;
+    link.systemA = getSubsystemById(system, link.a)!;
 
     // Set system B.
-    let systemB: RuntimeSubsystem | RuntimeSystem | undefined = system;
-
-    for (const subsystemId of link.b.split(".")) {
-      if (systemB) {
-        systemB = systemB.systems.find(ss => ss.id === subsystemId);
-      }
-    }
-
-    link.systemB = systemB as unknown as RuntimeSubsystem;
+    link.systemB = getSubsystemById(system, link.b)!;
   }
 }
 
@@ -120,30 +109,10 @@ function enhanceFlows(system: RuntimeSystem): void {
       step.keyframe = keyframes.indexOf(step.keyframe);
 
       // Set systemFrom.
-      let systemFrom: RuntimeSystem | RuntimeSubsystem | undefined = system;
-
-      for (const subsystemId of step.from.split(".")) {
-        systemFrom = systemFrom.systems.find(ss => ss.id === subsystemId);
-
-        if (!systemFrom) {
-          break;
-        }
-      }
-
-      step.systemFrom = systemFrom as RuntimeSubsystem;
+      step.systemFrom = getSubsystemById(system, step.from)!;
 
       // Set systemTo.
-      let systemTo: RuntimeSystem | RuntimeSubsystem | undefined = system;
-
-      for (const subsystemId of step.to.split(".")) {
-        systemTo = systemTo.systems.find(ss => ss.id === subsystemId);
-
-        if (!systemTo) {
-          break;
-        }
-      }
-
-      step.systemTo = systemTo as RuntimeSubsystem;
+      step.systemTo = getSubsystemById(system, step.to)!;
 
       // Set links.
       step.links ??= [];
@@ -266,7 +235,7 @@ function computeSizes(
   }
 
   // Root system.
-  if (!system.canonicalId) {
+  if (!system.id) {
     return;
   }
 
