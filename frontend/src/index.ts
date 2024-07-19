@@ -59,24 +59,27 @@ viewport.on("pointerup", (event: any) => {
 
 // Move the grid when the viewport is moved.
 viewport.on("moved", () => {
-  redrawGrid()
+  redrawGrid();
   tick();
 });
 
 // Resize the container when the window is resized.
-window.addEventListener("resize", () => {
-  const canvasContainer = document.getElementById("canvas") as HTMLDivElement;
+window.addEventListener(
+  "resize",
+  debounce(() => {
+    const canvasContainer = document.getElementById("canvas") as HTMLDivElement;
 
-  app.renderer.resize(
-    canvasContainer.clientWidth,
-    canvasContainer.clientHeight,
-  );
+    app.renderer.resize(
+      canvasContainer.clientWidth,
+      canvasContainer.clientHeight,
+    );
 
-  viewport.resize(canvasContainer.clientWidth, canvasContainer.clientHeight);
+    viewport.resize(canvasContainer.clientWidth, canvasContainer.clientHeight);
 
-  redrawGrid();
-  tick();
-});
+    redrawGrid();
+    tick();
+  }, 30),
+);
 
 window.addEventListener("click", () => {
   if (state.operation.onClick) {
@@ -194,7 +197,7 @@ document
 
 document
   .getElementById("operation-file-load")
-  ?.addEventListener("click", function() {
+  ?.addEventListener("click", function () {
     loadFile();
     tick();
   });
@@ -298,7 +301,7 @@ document
 
 document
   .getElementById("operation-camera-fit")
-  ?.addEventListener("click", function() {
+  ?.addEventListener("click", function () {
     fitSimulation();
 
     tick();
@@ -452,4 +455,15 @@ function loadFile(): void {
 
 function tick() {
   app.ticker.update();
+}
+
+function debounce(callback: () => void, waitMs: number) {
+  let timeoutId: number | undefined = undefined;
+
+  return () => {
+    window.clearTimeout(timeoutId);
+    timeoutId = window.setTimeout(() => {
+      callback();
+    }, waitMs);
+  };
 }
