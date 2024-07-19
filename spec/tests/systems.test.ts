@@ -354,6 +354,11 @@ describe("systems", () => {
           { id: "7", position: { x: 70, y: 0 } },
           { id: "8", position: { x: 80, y: 0 } },
           { id: "9", position: { x: 90, y: 0 } },
+          { id: "10", position: { x: 100, y: 0 } },
+          { id: "11", position: { x: 110, y: 0 } },
+          { id: "12", position: { x: 120, y: 0 } },
+          { id: "13", position: { x: 130, y: 0 } },
+          { id: "14", position: { x: 130, y: 0 } },
         ],
         links: [],
       };
@@ -367,34 +372,34 @@ describe("systems", () => {
       system.links!.push({ a: "a", b: "2" });
       system.links!.push({ a: "a", b: "3" });
       system.links!.push({ a: "a", b: "4" });
-
-      assert.deepEqual(load(system).system.systems.at(0)?.size, {
-        width: 5,
-        height: 3,
-      });
-
       system.links!.push({ a: "a", b: "5" });
-
-      assert.deepEqual(load(system).system.systems.at(0)?.size, {
-        width: 5,
-        height: 3,
-      });
-
       system.links!.push({ a: "a", b: "6" });
+      system.links!.push({ a: "a", b: "7" });
+      system.links!.push({ a: "a", b: "8" });
+      system.links!.push({ a: "a", b: "9" });
+      system.links!.push({ a: "a", b: "10" });
+      system.links!.push({ a: "a", b: "11" });
 
       assert.deepEqual(load(system).system.systems.at(0)?.size, {
         width: 5,
         height: 3,
       });
 
-      system.links!.push({ a: "a", b: "7" });
+      system.links!.push({ a: "a", b: "12" });
 
       assert.deepEqual(load(system).system.systems.at(0)?.size, {
-        width: 7,
+        width: 6,
         height: 3,
       });
 
-      system.links!.push({ a: "a", b: "8" });
+      system.links!.push({ a: "a", b: "13" });
+
+      assert.deepEqual(load(system).system.systems.at(0)?.size, {
+        width: 6,
+        height: 3,
+      });
+
+      system.links!.push({ a: "a", b: "14" });
 
       assert.deepEqual(load(system).system.systems.at(0)?.size, {
         width: 7,
