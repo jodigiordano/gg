@@ -879,8 +879,19 @@ export class SystemSimulator {
 
               // There is no before.
             } else if (i === 0) {
-              xBefore = portA.x;
-              yBefore = portA.y;
+              if (portA.x < subsystemA.x1) {
+                xBefore = portA.x + 1;
+                yBefore = portA.y;
+              } else if (portA.x > subsystemA.x2) {
+                xBefore = portA.x - 1;
+                yBefore = portA.y;
+              } else if (portA.y < subsystemA.y1) {
+                xBefore = portA.x;
+                yBefore = portA.y + 1;
+              } else {
+                xBefore = portA.x;
+                yBefore = portA.y - 1;
+              }
 
               xAfter = route[i + 1]![0]!;
               yAfter = route[i + 1]![1]!;
@@ -890,8 +901,19 @@ export class SystemSimulator {
               xBefore = route[i - 1]![0]!;
               yBefore = route[i - 1]![1]!;
 
-              xAfter = portB.x;
-              yAfter = portB.y;
+              if (portB.x < subsystemB.x1) {
+                xAfter = portB.x + 1;
+                yAfter = portB.y;
+              } else if (portB.x > subsystemB.x2) {
+                xAfter = portB.x - 1;
+                yAfter = portB.y;
+              } else if (portB.y < subsystemB.y1) {
+                xAfter = portB.x;
+                yAfter = portB.y + 1;
+              } else {
+                xAfter = portB.x;
+                yAfter = portB.y - 1;
+              }
 
               // There is a before / after.
             } else {
