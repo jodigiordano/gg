@@ -95,14 +95,7 @@ export function computeSystemSize(
       link => link.a === system.id || link.b === system.id,
     ).length;
 
-    const linksWidth =
-      linksCount === 0
-        ? 0
-        : linksCount < 5
-          ? 3
-          : linksCount % 2 === 0
-            ? linksCount - 1
-            : linksCount;
+    const linksWidth = Math.floor(linksCount / 2);
 
     system.size = {
       width: Math.max(titleWidth, linksWidth, SystemMinSize.width),
@@ -147,12 +140,12 @@ export function computeSystemSize(
 }
 
 export function computeSystemPorts(system: RuntimeSubsystem): void {
-  for (let x = 1; x < system.size.width; x += 2) {
+  for (let x = 1; x < system.size.width; x++) {
     system.ports.push({ x, y: -1 });
     system.ports.push({ x, y: system.size.height });
   }
 
-  for (let y = 1; y < system.size.height; y += 2) {
+  for (let y = 1; y < system.size.height; y++) {
     system.ports.push({ x: -1, y });
     system.ports.push({ x: system.size.width, y });
   }
