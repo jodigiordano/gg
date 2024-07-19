@@ -30,30 +30,38 @@ import {
 viewport.on("pointermove", (event: any) => {
   updateStatePosition(event.data.global);
   state.operation.onPointerMove(state);
+  tick();
 });
 
 viewport.on("pointerdown", (event: any) => {
   updateStatePosition(event.data.global);
   state.operation.onPointerDown(state);
+  tick();
 });
 
 // The user cursor enters the canvas.
 viewport.on("pointerenter", () => {
   state.operation.onUnmute(state);
+  tick();
 });
 
 // The user cursor leaves the canvas.
 viewport.on("pointerleave", () => {
   state.operation.onMute(state);
+  tick();
 });
 
 viewport.on("pointerup", (event: any) => {
   updateStatePosition(event.data.global);
   state.operation.onPointerUp(state);
+  tick();
 });
 
 // Move the grid when the viewport is moved.
-viewport.on("moved", () => redrawGrid());
+viewport.on("moved", () => {
+  redrawGrid()
+  tick();
+});
 
 // Resize the container when the window is resized.
 window.addEventListener("resize", () => {
@@ -67,11 +75,13 @@ window.addEventListener("resize", () => {
   viewport.resize(canvasContainer.clientWidth, canvasContainer.clientHeight);
 
   redrawGrid();
+  tick();
 });
 
 window.addEventListener("click", () => {
   if (state.operation.onClick) {
     state.operation.onClick(state);
+    tick();
   }
 });
 
@@ -87,6 +97,7 @@ window.addEventListener("keydown", event => {
   }
 
   if (handled) {
+    tick();
     return;
   }
 
@@ -106,6 +117,8 @@ window.addEventListener("keydown", event => {
   } else if (event.key === "e") {
     switchOperation(setSystemHideSystemsOperation);
   }
+
+  tick();
 });
 
 app.ticker.add<void>(() => {
@@ -134,6 +147,7 @@ document
       state.operation.onEnd(state);
       pushChange(value);
       loadSimulation(value);
+      tick();
     }
   });
 
@@ -175,11 +189,15 @@ document
     viewport.fit(true, width, height);
 
     redrawGrid();
+    tick();
   });
 
 document
   .getElementById("operation-file-load")
-  ?.addEventListener("click", loadFile);
+  ?.addEventListener("click", function() {
+    loadFile();
+    tick();
+  });
 
 document
   .getElementById("operation-file-save")
@@ -199,6 +217,7 @@ document
     resetState();
     pushChange(example1);
     fitSimulation();
+    tick();
   });
 
 document
@@ -209,6 +228,7 @@ document
     resetState();
     pushChange(example2);
     fitSimulation();
+    tick();
   });
 
 document
@@ -253,6 +273,7 @@ document
       state.operation.onEnd(state);
       setYamlEditorValue(value);
       loadSimulation(value);
+      tick();
     }
   });
 
@@ -269,6 +290,7 @@ document
       state.operation.onEnd(state);
       setYamlEditorValue(value);
       loadSimulation(value);
+      tick();
     }
   });
 
@@ -276,7 +298,11 @@ document
 
 document
   .getElementById("operation-camera-fit")
-  ?.addEventListener("click", fitSimulation);
+  ?.addEventListener("click", function() {
+    fitSimulation();
+
+    tick();
+  });
 
 // Operation: CameraZoomIn
 
@@ -286,6 +312,7 @@ document
     viewport.zoomPercent(0.25, true);
 
     redrawGrid();
+    tick();
   });
 
 // Operation: CameraZoomOut
@@ -296,6 +323,7 @@ document
     viewport.zoomPercent(-0.25, true);
 
     redrawGrid();
+    tick();
   });
 
 // Initialize toolbox
@@ -339,6 +367,8 @@ for (const button of singleChoiceButtons) {
 
     state.operation.onBegin(state);
     state.operation.onMute(state);
+
+    tick();
   });
 }
 
@@ -361,6 +391,9 @@ initializeDropdowns();
 
 // Load saved file.
 loadFile();
+
+// Initial update / draw.
+tick();
 
 //
 // Utility functions
@@ -415,4 +448,8 @@ function loadFile(): void {
     pushChange(value);
     fitSimulation();
   }
+}
+
+function tick() {
+  app.ticker.update();
 }

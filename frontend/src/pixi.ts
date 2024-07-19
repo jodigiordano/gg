@@ -33,5 +33,7 @@ export const app = new Application({
 app.stage.eventMode = "static";
 app.stage.interactiveChildren = true;
 
+app.ticker.stop();
+
 // Add PixiJS to the DOM.
 canvasContainer.replaceChildren(app.view as unknown as Node);
