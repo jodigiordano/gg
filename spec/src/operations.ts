@@ -63,26 +63,34 @@ export function removeSubsystem(subsystem: RuntimeSubsystem): void {
 
   const rootSystem = getRootSystem(subsystem);
 
-  // Remove links.
-  let linkReadIndex = 0;
-  let linkWriteIndex = 0;
+  // Remove all links of the system and its subsystems.
+  const subsystems = [subsystem];
 
-  while (linkReadIndex < rootSystem.links.length) {
-    const link = rootSystem.specification.links![linkReadIndex]!;
+  while (subsystems.length) {
+    const ss = subsystems.pop()!;
 
-    if (link.a !== subsystem.id && link.b !== subsystem.id) {
-      rootSystem.specification.links![linkWriteIndex] = link;
+    subsystems.push(...ss.systems);
 
-      linkWriteIndex++;
+    let linkReadIndex = 0;
+    let linkWriteIndex = 0;
+
+    while (linkReadIndex < rootSystem.links.length) {
+      const link = rootSystem.specification.links![linkReadIndex]!;
+
+      if (link.a !== ss.id && link.b !== ss.id) {
+        rootSystem.specification.links![linkWriteIndex] = link;
+
+        linkWriteIndex++;
+      }
+
+      linkReadIndex++;
     }
 
-    linkReadIndex++;
-  }
+    rootSystem.links.length = linkWriteIndex;
 
-  rootSystem.links.length = linkWriteIndex;
-
-  if (rootSystem.specification.links) {
-    rootSystem.specification.links.length = linkWriteIndex;
+    if (rootSystem.specification.links) {
+      rootSystem.specification.links.length = linkWriteIndex;
+    }
   }
 
   // Remove flows.
