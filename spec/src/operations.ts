@@ -1,6 +1,6 @@
 import { RuntimeSystem, RuntimeSubsystem, RuntimeLink } from "./runtime.js";
 import { SystemMargin } from "./consts.js";
-import { Link, FlowStep } from "./specification.js";
+import { Link, FlowStep, Subsystem } from "./specification.js";
 import { computeSystemSize, getRootSystem, initSystem } from "./system.js";
 
 /*
@@ -13,7 +13,7 @@ export function addSubsystem(
   y: number,
   title: string,
 ): void {
-  const newSpecSystem = {
+  const newSpecSystem: Subsystem = {
     id: (Math.random() + 1).toString(36).substring(7),
     position: { x, y },
     title,
@@ -148,7 +148,7 @@ export function setSubsystemTitle(
  * The resulting system is not validated and may be invalid.
  */
 export function addLink(system: RuntimeSystem, aId: string, bId: string): Link {
-  const newLink = {
+  const newLink: Link = {
     a: aId,
     b: bId,
   };
@@ -257,6 +257,10 @@ export function moveSubsystemToParent(
   moveSystem(subsystem, 0, 0);
 }
 
+/*
+ * Move a system.
+ * The resulting system is not validated and may be invalid.
+ */
 export function moveSystem(
   system: RuntimeSubsystem,
   deltaX: number,
