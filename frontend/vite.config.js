@@ -1,4 +1,5 @@
 import checker from "vite-plugin-checker";
+import browserslistToEsbuild from "browserslist-to-esbuild";
 import fs from "node:fs";
 
 function base64Loader() {
@@ -32,7 +33,7 @@ export default {
   build: {
     outDir: "../dist",
     emptyOutDir: true,
-    target: "es2022",
+    target: browserslistToEsbuild(),
     sourcemap: true,
     assetsInlineLimit: 1024 * 1024, // 1MB.
   },
