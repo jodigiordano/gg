@@ -52,6 +52,7 @@ export interface RuntimeSystem extends System {
 
 export interface RuntimeFlowStep extends FlowStep {
   specification: FlowStep;
+  index: number;
   systemFrom: RuntimeSubsystem;
   systemTo: RuntimeSubsystem;
   links: RuntimeLink[];

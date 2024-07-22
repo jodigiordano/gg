@@ -99,11 +99,14 @@ function enhanceFlows(system: RuntimeSystem): void {
       uniqueKeyframes.add(step.keyframe);
     }
 
-    const keyframes = Array.from(uniqueKeyframes).sort();
+    const keyframes = Array.from(uniqueKeyframes).sort((a, b) => a - b);
 
     for (const [index, step] of flow.steps.entries()) {
       // Set the specification.
       step.specification = flow.specification.steps.at(index)!;
+
+      // Set array position.
+      step.index = index;
 
       // Set normalized keyframe.
       step.keyframe = keyframes.indexOf(step.keyframe);
