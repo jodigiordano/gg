@@ -313,6 +313,16 @@ export class FlowPlayer {
     });
   }
 
+  hide(): void {
+    for (const sprite of this.sprites) {
+      sprite.visible = false;
+    }
+  }
+
+  show(): void {
+    this.update(0, state.flowPlayMode);
+  }
+
   getObjectsToRender(): Sprite[] {
     return this.sprites;
   }

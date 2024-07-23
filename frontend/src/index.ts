@@ -254,11 +254,12 @@ document
     app.stop();
 
     setGridVisible(false);
+    state.flowPlayer?.hide();
 
     viewport.backgroundColor = "0xffffff";
 
     // @ts-ignore
-    const dataUri = await app.renderer.extract.image(viewport, "test");
+    const dataUri = await app.renderer.extract.image(viewport);
 
     const link = document.createElement("a");
 
@@ -267,6 +268,7 @@ document
     link.click();
 
     setGridVisible(true);
+    state.flowPlayer?.show();
 
     app.start();
   });
