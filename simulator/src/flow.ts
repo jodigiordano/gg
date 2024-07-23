@@ -6,38 +6,37 @@ export interface FlowSimulatorTickOptions {
   keyframeProgress: number;
 }
 
-// TODO: doesn't need to be an instanciable class.
+export function getFlowTick(
+  systemSimulator: SystemSimulator,
+  flow: RuntimeFlow,
+  keyframe: number,
+  keyframeProgress: number,
+): number[][] {
+  return flow.steps.map(step => {
+    if (step.keyframe !== keyframe) {
+      return [];
+    }
 
-export class FlowSimulator {
-  private systemSimulator: SystemSimulator;
-  private flow: RuntimeFlow;
+    const route = systemSimulator.getRoute(step.from, step.to);
 
-  constructor(systemSimulator: SystemSimulator, flow: RuntimeFlow) {
-    this.systemSimulator = systemSimulator;
-    this.flow = flow;
-  }
+    if (!route) {
+      return [];
+    }
 
-  tick(options: FlowSimulatorTickOptions): number[][] {
-    return this.flow.steps.map(step => {
-      if (step.keyframe > options.keyframe) {
-        return [];
-      }
+    if (step.keyframe < keyframe) {
+      return route.at(-1) ?? [];
+    }
 
-      const route = this.systemSimulator.getRoute(step.from, step.to);
+    let routeIndex = (route.length - 1) * keyframeProgress;
 
-      if (!route) {
-        return [];
-      }
+    // TODO: support a "precise" option to obtain positions between 2 tiles.
 
-      if (step.keyframe < options.keyframe) {
-        return route.at(-1) ?? [];
-      }
+    if (keyframeProgress < 0.5) {
+      routeIndex = Math.floor(routeIndex);
+    } else {
+      routeIndex = Math.ceil(routeIndex);
+    }
 
-      const routeIndex = (route.length - 1) * options.keyframeProgress;
-
-      // TODO: support a "precise" option to obtain positions between 2 tiles.
-
-      return route[Math.floor(routeIndex)] ?? [];
-    });
-  }
+    return route[routeIndex] ?? [];
+  });
 }
