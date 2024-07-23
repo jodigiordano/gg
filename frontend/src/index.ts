@@ -264,7 +264,12 @@ document
     const link = document.createElement("a");
 
     link.setAttribute("href", dataUri.src);
-    link.setAttribute("download", "gg.png");
+
+    link.setAttribute(
+      "download",
+      `gg.${new Date().toJSON().replaceAll(":", ".")}.png`,
+    );
+
     link.click();
 
     setGridVisible(true);
