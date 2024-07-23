@@ -137,20 +137,44 @@ document
     }
   });
 
+//
+// Help operations
+//
+
+const guide = document.getElementById("guide") as HTMLDialogElement;
+
+document
+  .getElementById("operation-help-guide")
+  ?.addEventListener("click", function () {
+    state.operation.onMute(state);
+
+    guide.inert = true;
+    guide.showModal();
+    guide.inert = false;
+  });
+
+const about = document.getElementById("about") as HTMLDialogElement;
+
 document
   .getElementById("operation-help-about")
   ?.addEventListener("click", function () {
-    const dialog = document.getElementById("about") as HTMLDialogElement;
+    state.operation.onMute(state);
 
-    dialog.showModal();
+    about.inert = true;
+    about.showModal();
+    about.inert = false;
   });
+
+const privacy = document.getElementById("privacy") as HTMLDialogElement;
 
 document
   .getElementById("operation-help-privacy")
   ?.addEventListener("click", function () {
-    const dialog = document.getElementById("privacy") as HTMLDialogElement;
+    state.operation.onMute(state);
 
-    dialog.showModal();
+    privacy.inert = true;
+    privacy.showModal();
+    privacy.inert = false;
   });
 
 //

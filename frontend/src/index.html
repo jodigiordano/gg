@@ -359,6 +359,35 @@
         }
       }
 
+      #guide {
+        max-width: 80%;
+        max-height: 80%;
+
+        .content {
+          table {
+            margin: 1em;
+
+            tr {
+              height: 2em;
+            }
+
+            td,
+            th {
+              vertical-align: middle;
+            }
+
+            td:first-child {
+              text-align: center;
+              width: 4em;
+            }
+
+            caption {
+              font-weight: bold;
+              height: 2em;
+            }
+          }
+        }
+      }
     </style>
   </head>
   <body>
@@ -385,6 +414,7 @@
       <div class="dropdown">
         <button>Help</button>
         <ul class="content closed">
+          <li id="operation-help-guide">guide</li>
           <li id="operation-help-about">about</li>
           <li id="operation-help-privacy">privacy</li>
         </ul>
@@ -504,6 +534,143 @@
           <button id="operation-yaml-editor-apply-changes">
             apply changes
           </button>
+          <button>close</button>
+        </form>
+      </div>
+    </dialog>
+    <dialog id="guide">
+      <div class="content">
+        <h1>Guide</h1>
+        <p>
+          In gg, you <b>add systems</b> (<img src="./assets/icon-system.svg" />)
+          to the canvas and then
+          <br />
+          you <b>create links</b> (<img src="./assets/icon-link.svg" />) between
+          them.
+        </p>
+        <p>
+          You can then <b>make data flow</b> between your systems (<img
+            src="./assets/icon-flow-data.svg"
+          />) !
+        </p>
+        <table>
+          <caption>
+            General operations
+          </caption>
+          <tbody>
+            <tr>
+              <td><img src="./assets/icon-undo.svg" /></td>
+              <td>Undo an operation.</td>
+            </tr>
+            <tr>
+              <td><img src="./assets/icon-redo.svg" /></td>
+              <td>Redo an operation.</td>
+            </tr>
+            <tr>
+              <td><img src="./assets/icon-zoom-fit.svg" /></td>
+              <td>Fit the camera to show all the content of the canvas.</td>
+            </tr>
+            <tr>
+              <td><img src="./assets/icon-zoom-in.svg" /></td>
+              <td>Zoom in the canvas.</td>
+            </tr>
+            <tr>
+              <td><img src="./assets/icon-zoom-out.svg" /></td>
+              <td>Zoom out of the canvas.</td>
+            </tr>
+            <tr>
+              <td><img src="./assets/icon-eraser.svg" /></td>
+              <td>Remove a system or a link from the canvas.</td>
+            </tr>
+          </tbody>
+        </table>
+        <table>
+          <caption>
+            Operations on systems
+          </caption>
+          <tbody>
+            <tr>
+              <td><img src="./assets/icon-move.svg" /></td>
+              <td>Move a system in the canvas.</td>
+            </tr>
+            <tr>
+              <td><img src="./assets/icon-system.svg" /></td>
+              <td>Add a system to the canvas.</td>
+            </tr>
+            <tr>
+              <td><img src="./assets/icon-text.svg" /></td>
+              <td>Add or modify the title of a system.</td>
+            </tr>
+            <tr>
+              <td><img src="./assets/icon-parent.svg" /></td>
+              <td>Move a system inside or outside another system.</td>
+            </tr>
+            <tr>
+              <td><img src="./assets/icon-hide.svg" /></td>
+              <td>Hide or show the content of a system.</td>
+            </tr>
+          </tbody>
+        </table>
+        <table>
+          <caption>
+            Operations on links
+          </caption>
+          <tbody>
+            <tr>
+              <td><img src="./assets/icon-link.svg" /></td>
+              <td>
+                Add a link between two systems.
+                <br />
+                Hold your pointer on the first system then drag your pointer to
+                the second system to create the link.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <table>
+          <caption>
+            Operations on flows
+          </caption>
+          <tbody>
+            <tr>
+              <td><img src="./assets/icon-flow-data.svg" /></td>
+              <td>
+                Make data flow between two systems.
+                <br />
+                Click once on a link to make data flow from A to B.
+                <br />
+                Click twice on a link to make data flow from B to A.
+                <br />
+                Click 3 times on a link to stop the data flow.
+              </td>
+            </tr>
+            <tr>
+              <td><img src="./assets/icon-flow-play.svg" /></td>
+              <td>Play the flow animation in a continuous loop.</td>
+            </tr>
+            <tr>
+              <td><img src="./assets/icon-flow-pause.svg" /></td>
+              <td>Pause the flow animation.</td>
+            </tr>
+            <tr>
+              <td><img src="./assets/icon-flow-repeat-one.svg" /></td>
+              <td>Play the current keyframe of the flow animation.</td>
+            </tr>
+            <tr>
+              <td><img src="./assets/icon-flow-repeat-all.svg" /></td>
+              <td>Play all the keyframes of the flow animation.</td>
+            </tr>
+            <tr>
+              <td><img src="./assets/icon-flow-previous.svg" /></td>
+              <td>Go to the previous keyframe of the flow.</td>
+            </tr>
+            <tr>
+              <td><img src="./assets/icon-flow-next.svg" /></td>
+              <td>Go to the next keyframe of the flow.</td>
+            </tr>
+          </tbody>
+        </table>
+        <form method="dialog">
           <button>close</button>
         </form>
       </div>
