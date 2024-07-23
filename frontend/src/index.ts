@@ -81,26 +81,8 @@ window.addEventListener(
   }, 30),
 );
 
-window.addEventListener("click", () => {
-  if (state.operation.onClick) {
-    state.operation.onClick(state);
-    tick();
-  }
-});
-
 window.addEventListener("keydown", event => {
   if (isYamlEditorOpen()) {
-    return;
-  }
-
-  let handled = false;
-
-  if (state.operation.onKeyDown) {
-    handled = state.operation.onKeyDown(state, event);
-  }
-
-  if (handled) {
-    tick();
     return;
   }
 
@@ -124,14 +106,8 @@ window.addEventListener("keydown", event => {
   tick();
 });
 
-app.ticker.add<void>(() => {
-  if (state.operation.onTick) {
-    state.operation.onTick(state);
-  }
-});
-
 //
-// Operations performed manually by the user.
+// YAML editor operations
 //
 
 document
@@ -169,6 +145,10 @@ document
 
     dialog.showModal();
   });
+
+//
+// File operations
+//
 
 document
   .getElementById("operation-file-new")
@@ -260,10 +240,8 @@ document
   });
 
 //
-// Toolbox
+// Undo / Redo operations.
 //
-
-// Operation: Undo
 
 document
   .getElementById("operation-undo")
@@ -280,8 +258,6 @@ document
     }
   });
 
-// Operation: Redo
-
 document
   .getElementById("operation-redo")
   ?.addEventListener("click", function () {
@@ -297,7 +273,9 @@ document
     }
   });
 
-// Operation: CameraFit
+//
+// Camera operations.
+//
 
 document
   .getElementById("operation-camera-fit")
@@ -306,8 +284,6 @@ document
 
     tick();
   });
-
-// Operation: CameraZoomIn
 
 document
   .getElementById("operation-camera-zoom-in")
@@ -318,8 +294,6 @@ document
     tick();
   });
 
-// Operation: CameraZoomOut
-
 document
   .getElementById("operation-camera-zoom-out")
   ?.addEventListener("click", function () {
@@ -328,6 +302,10 @@ document
     redrawGrid();
     tick();
   });
+
+//
+// Toolbox
+//
 
 // Initialize toolbox
 addSystemOperation.setup(state);

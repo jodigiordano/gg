@@ -334,13 +334,21 @@
         }
       }
 
-      #operation-system-set-title-input {
-        width: 0;
-        height: 0;
-        padding: 0;
-        margin: 0;
-        border: 0;
+      #input-system-set-title-dialog {
+        width: 40%;
+        height: 40%;
+
+        .content {
+          height: 100%;
+
+          textarea {
+            flex: 1;
+            resize: none;
+            font-size: 2em;
+          }
+        }
       }
+
     </style>
   </head>
   <body>
@@ -429,16 +437,15 @@
       </div>
       <div id="canvas">Loading...</div>
     </div>
-    <input type="text" id="operation-system-set-title-input" />
     <dialog id="yaml-editor">
       <div class="content">
         <h1>YAML Editor</h1>
         <textarea autocomplete="off"></textarea>
         <form method="dialog">
-          <button>close</button>
           <button id="operation-yaml-editor-apply-changes">
             apply changes
           </button>
+          <button>close</button>
         </form>
       </div>
     </dialog>
@@ -489,6 +496,16 @@
         </p>
         <form method="dialog">
           <button>close</button>
+        </form>
+      </div>
+    </dialog>
+    <dialog id="input-system-set-title-dialog">
+      <div class="content">
+        <h1></h1>
+        <textarea autocomplete="off"></textarea>
+        <form method="dialog">
+          <button id="operation-system-set-title-apply">apply</button>
+          <button>cancel</button>
         </form>
       </div>
     </dialog>
