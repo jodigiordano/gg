@@ -44,13 +44,24 @@ export function addSubsystem(
 
   const rootSystem = getRootSystem(parent as RuntimeSubsystem);
 
-  // Move links of the parent.
   if (parentWasBlackbox) {
+    // Move links of the parent.
     for (const link of rootSystem.specification.links ?? []) {
       if (link.a === parent.id) {
         link.a = newRuntimeSystem.id;
       } else if (link.b === parent.id) {
         link.b = newRuntimeSystem.id;
+      }
+    }
+
+    // Move flows of the parent.
+    for (const flow of rootSystem.specification.flows ?? []) {
+      for (const step of flow.steps) {
+        if (step.from === parent.id) {
+          step.from = newRuntimeSystem.id;
+        } else if (step.to === parent.id) {
+          step.to = newRuntimeSystem.id;
+        }
       }
     }
   }
@@ -98,32 +109,24 @@ export function removeSubsystem(subsystem: RuntimeSubsystem): void {
     }
   }
 
-  // Remove flows.
-  // TODO: instead of removing the entire flow, try to remove steps.
-  let flowReadIndex = 0;
-  let flowWriteIndex = 0;
+  // Remove flow steps.
+  for (const flow of rootSystem.specification.flows ?? []) {
+    let stepReadIndex = 0;
+    let stepWriteIndex = 0;
 
-  while (flowReadIndex < rootSystem.flows.length) {
-    const flow = rootSystem.specification.flows![flowReadIndex]!;
+    while (stepReadIndex < flow.steps.length) {
+      const step = flow.steps[stepReadIndex]!;
 
-    if (
-      !flow.steps.some(
-        (step: FlowStep) =>
-          step.from === subsystem.id || step.to === subsystem.id,
-      )
-    ) {
-      rootSystem.specification.flows![flowWriteIndex] = flow;
+      if (step.from !== subsystem.id && step.to !== subsystem.id) {
+        flow.steps[stepWriteIndex] = step;
 
-      flowWriteIndex++;
+        stepWriteIndex++;
+      }
+
+      stepReadIndex++;
     }
 
-    flowReadIndex++;
-  }
-
-  rootSystem.flows.length = flowWriteIndex;
-
-  if (rootSystem.specification.flows) {
-    rootSystem.specification.flows.length = flowWriteIndex;
+    flow.steps.length = stepWriteIndex;
   }
 }
 
@@ -168,8 +171,32 @@ export function addLink(system: RuntimeSystem, aId: string, bId: string): Link {
  * Remove a link in the given system.
  * The resulting system is not validated and may be invalid.
  */
-export function removeLink(system: RuntimeSystem, link: RuntimeLink): void {
-  system.specification.links!.splice(link.index, 1);
+export function removeLink(rootSystem: RuntimeSystem, link: RuntimeLink): void {
+  rootSystem.specification.links!.splice(link.index, 1);
+
+  // Remove flow steps.
+  for (const flow of rootSystem.specification.flows ?? []) {
+    let stepReadIndex = 0;
+    let stepWriteIndex = 0;
+
+    while (stepReadIndex < flow.steps.length) {
+      const step = flow.steps[stepReadIndex]!;
+
+      const goThroughLink =
+        (step.from === link.a && step.to === link.b) ||
+        (step.from === link.b && step.to === link.a);
+
+      if (!goThroughLink) {
+        flow.steps[stepWriteIndex] = step;
+
+        stepWriteIndex++;
+      }
+
+      stepReadIndex++;
+    }
+
+    flow.steps.length = stepWriteIndex;
+  }
 }
 
 export function moveSubsystemToParent(
@@ -201,14 +228,6 @@ export function moveSubsystemToParent(
 
   // TODO: size calculation uses runtime links.
   // TODO Either use spec links instead or modify both spec & runtime links here.
-
-  for (const link of links) {
-    if (link.a === subsystem.id) {
-      link.a = subsystem.id;
-    } else if (link.b === subsystem.id) {
-      link.b = subsystem.id;
-    }
-  }
 
   // Move links of the parent.
   if (parentWasBlackbox) {
@@ -249,7 +268,32 @@ export function moveSubsystemToParent(
     }
   }
 
-  // TODO: move flows.
+  // Move flows of the subsystem.
+  const flows = rootSystem.specification.flows ?? [];
+
+  if (parentWasBlackbox) {
+    for (const flow of flows) {
+      for (const step of flow.steps) {
+        if (step.from === parent.id) {
+          step.from = subsystem.id;
+        } else if (step.to === parent.id) {
+          step.to = subsystem.id;
+        }
+      }
+    }
+  }
+
+  // Remove self-referenced steps.
+  // Happens when there is a step between the new parent and the subsystem.
+  for (const flow of flows) {
+    for (let i = flow.steps.length - 1; i >= 0; i--) {
+      const step = flow.steps[i]!;
+
+      if (step.from === step.to) {
+        flow.steps.splice(i, 1);
+      }
+    }
+  }
 
   initSystem(
     subsystem,
