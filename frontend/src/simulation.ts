@@ -276,6 +276,10 @@ export function setFlowKeyframe(keyframe: number): void {
   currentKeyframe.innerHTML = state.flowKeyframe.toString();
 }
 
+export function tickFlowPlayer(): void {
+  state.flowPlayer?.update(1, state.flowPlayMode);
+}
+
 export class FlowPlayer {
   private simulator: SystemSimulator;
   private maxKeyframes: number;

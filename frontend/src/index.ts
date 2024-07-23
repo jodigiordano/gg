@@ -5,6 +5,7 @@ import {
   getVisibleBoundaries,
   loadSimulation,
   setFlowKeyframe,
+  tickFlowPlayer,
 } from "./simulation.js";
 import { BlockSize } from "./consts.js";
 import { initializeDropdowns } from "./dropdown.js";
@@ -382,6 +383,7 @@ document
 
     if (value) {
       loadSimulation(value);
+      tickFlowPlayer();
       tick();
     }
   });
@@ -395,6 +397,7 @@ document
 
     if (value) {
       loadSimulation(value);
+      tickFlowPlayer();
       tick();
     }
   });
