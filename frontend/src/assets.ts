@@ -164,6 +164,10 @@ export const spritesheet = new Spritesheet(Assets.get("spritesheet"), {
     systemSelectorCenterCenter: {
       frame: { x: 8, y: 96 + 8, w: 8, h: 8 },
     },
+
+    data: {
+      frame: { x: 32, y: 0, w: 8, h: 8 },
+    },
   },
   meta: {
     image: "spritesheet.png",

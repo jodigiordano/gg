@@ -91,25 +91,13 @@ function enhanceFlows(system: RuntimeSystem): void {
     // Set array position.
     flow.index = index;
 
-    // Normalize keyframes.
-    // TODO: put in "normalizedKeyframe" so errors are reported on "keyframe".
-    const uniqueKeyframes = new Set<number>();
-
-    for (const step of flow.steps) {
-      uniqueKeyframes.add(step.keyframe);
-    }
-
-    const keyframes = Array.from(uniqueKeyframes).sort((a, b) => a - b);
-
+    // Set steps.
     for (const [index, step] of flow.steps.entries()) {
       // Set the specification.
       step.specification = flow.specification.steps.at(index)!;
 
       // Set array position.
       step.index = index;
-
-      // Set normalized keyframe.
-      step.keyframe = keyframes.indexOf(step.keyframe);
 
       // Set systemFrom.
       step.systemFrom = getSubsystemById(system, step.from)!;

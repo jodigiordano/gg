@@ -1,7 +1,11 @@
 import { Point } from "pixi.js";
 import { app } from "./pixi.js";
 import { viewport } from "./viewport.js";
-import { getVisibleBoundaries, loadSimulation } from "./simulation.js";
+import {
+  getVisibleBoundaries,
+  loadSimulation,
+  setFlowKeyframe,
+} from "./simulation.js";
 import { BlockSize } from "./consts.js";
 import { initializeDropdowns } from "./dropdown.js";
 import example1 from "./assets/basic.yml?raw";
@@ -16,6 +20,7 @@ import setSystemParentOperation from "./operations/systemSetParent.js";
 import addLinkOperation from "./operations/linkAdd.js";
 import eraseOperation from "./operations/erase.js";
 import setSystemHideSystemsOperation from "./operations/systemToggleSystems.js";
+import transferDataOperation from "./operations/flowTransferData.js";
 import {
   getYamlEditorValue,
   isYamlEditorOpen,
@@ -101,6 +106,8 @@ window.addEventListener("keydown", event => {
     switchOperation(eraseOperation);
   } else if (event.key === "e") {
     switchOperation(setSystemHideSystemsOperation);
+  } else if (event.key === "r") {
+    switchOperation(transferDataOperation);
   }
 
   tick();
@@ -304,6 +311,71 @@ document
   });
 
 //
+// Flow operations
+//
+
+const flowPlay = document.getElementById("operation-flow-play")!;
+const flowPause = document.getElementById("operation-flow-pause")!;
+const flowRepeatOne = document.getElementById("operation-flow-repeat-one")!;
+const flowRepeatAll = document.getElementById("operation-flow-repeat-all")!;
+
+flowPlay.addEventListener("click", function () {
+  state.flowPlay = false;
+  app.ticker.stop();
+
+  flowPlay.classList.add("hidden");
+  flowPause.classList.remove("hidden");
+});
+
+flowPause.addEventListener("click", function () {
+  state.flowPlay = true;
+  app.ticker.start();
+
+  flowPlay.classList.remove("hidden");
+  flowPause.classList.add("hidden");
+});
+
+flowRepeatOne.addEventListener("click", function () {
+  state.flowPlayMode = "all";
+
+  flowRepeatOne.classList.add("hidden");
+  flowRepeatAll.classList.remove("hidden");
+});
+
+flowRepeatAll.addEventListener("click", function () {
+  state.flowPlayMode = "one";
+
+  flowRepeatOne.classList.remove("hidden");
+  flowRepeatAll.classList.add("hidden");
+});
+
+document
+  .getElementById("operation-flow-previous-keyframe")
+  ?.addEventListener("click", function () {
+    setFlowKeyframe(state.flowKeyframe - 1);
+
+    const value = getYamlEditorValue();
+
+    if (value) {
+      loadSimulation(value);
+      tick();
+    }
+  });
+
+document
+  .getElementById("operation-flow-next-keyframe")
+  ?.addEventListener("click", function () {
+    setFlowKeyframe(state.flowKeyframe + 1);
+
+    const value = getYamlEditorValue();
+
+    if (value) {
+      loadSimulation(value);
+      tick();
+    }
+  });
+
+//
 // Toolbox
 //
 
@@ -315,6 +387,7 @@ setSystemParentOperation.setup(state);
 addLinkOperation.setup(state);
 eraseOperation.setup(state);
 setSystemHideSystemsOperation.setup(state);
+transferDataOperation.setup(state);
 
 const singleChoiceButtons = document.querySelectorAll(
   "#toolbox .single-choice button",
@@ -344,6 +417,8 @@ for (const button of singleChoiceButtons) {
       state.operation = setSystemTitleOperation;
     } else if (button.id === "operation-system-hide-systems") {
       state.operation = setSystemHideSystemsOperation;
+    } else if (button.id === "operation-flow-data-transfer") {
+      state.operation = transferDataOperation;
     }
 
     state.operation.onBegin(state);
@@ -369,6 +444,9 @@ function switchOperation(operation: Operation): void {
 
 // Initialize dropdowns.
 initializeDropdowns();
+
+// Initialize flows.
+setFlowKeyframe(state.flowKeyframe);
 
 // Load saved file.
 loadFile();

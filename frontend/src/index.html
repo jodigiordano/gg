@@ -285,12 +285,22 @@
               background: #aaa;
             }
 
+            &.hidden {
+              display: none;
+            }
+
             .keyboard {
               position: absolute;
               right: 1px;
               bottom: 0;
               color: #888;
             }
+          }
+
+          div {
+            display: flex;
+            justify-content: center;
+            align-items: center;
           }
         }
 
@@ -382,6 +392,15 @@
     </div>
     <div id="content">
       <div id="toolbox">
+        <div class="operations">
+          <button id="operation-undo" title="Undo">
+            <img src="./assets/icon-undo.svg" />
+          </button>
+          <button id="operation-redo" title="Redo">
+            <img src="./assets/icon-redo.svg" />
+          </button>
+        </div>
+        <div class="separator"></div>
         <div class="operations single-choice">
           <button id="operation-system-move" title="Move" class="selected">
             <img src="./assets/icon-move.svg" />
@@ -411,15 +430,55 @@
             <img src="./assets/icon-hide.svg" />
             <div class="keyboard">e</div>
           </button>
+          <button id="operation-flow-data-transfer" title="Transfer data">
+            <img src="./assets/icon-flow-data.svg" />
+            <div class="keyboard">r</div>
+          </button>
         </div>
         <div class="separator"></div>
         <div class="operations">
-          <button id="operation-undo" title="Undo">
-            <img src="./assets/icon-undo.svg" />
+          <button
+            id="operation-flow-play"
+            class="selected hidden"
+            title="Play the flow animation"
+          >
+            <img src="./assets/icon-flow-play.svg" />
           </button>
-          <button id="operation-redo" title="Redo">
-            <img src="./assets/icon-redo.svg" />
+          <button
+            id="operation-flow-pause"
+            class="selected"
+            title="Pause the flow animation"
+          >
+            <img src="./assets/icon-flow-pause.svg" />
           </button>
+          <button
+            id="operation-flow-repeat-one"
+            class="selected hidden"
+            title="Repeat current keyframe"
+          >
+            <img src="./assets/icon-flow-repeat-one.svg" />
+          </button>
+          <button
+            id="operation-flow-repeat-all"
+            class="selected"
+            title="Repeat all keyframes"
+          >
+            <img src="./assets/icon-flow-repeat-all.svg" />
+          </button>
+          <div id="information-flow-keyframe" title="Current keyframe"></div>
+          <div></div>
+          <button
+            id="operation-flow-previous-keyframe"
+            title="Previous keyframe"
+          >
+            <img src="./assets/icon-flow-previous.svg" />
+          </button>
+          <button id="operation-flow-next-keyframe" title="Next keyframe">
+            <img src="./assets/icon-flow-next.svg" />
+          </button>
+        </div>
+        <div class="separator"></div>
+        <div class="operations">
           <button id="operation-camera-fit" title="Fit to screen">
             <img src="./assets/icon-zoom-fit.svg" />
           </button>

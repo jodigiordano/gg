@@ -27,16 +27,24 @@ export function getFlowTick(
       return route.at(-1) ?? [];
     }
 
-    let routeIndex = (route.length - 1) * keyframeProgress;
+    const routeIndexRaw = (route.length - 1) * keyframeProgress;
+    const routeIndex = Math.floor(routeIndexRaw);
 
-    // TODO: support a "precise" option to obtain positions between 2 tiles.
-
-    if (keyframeProgress < 0.5) {
-      routeIndex = Math.floor(routeIndex);
-    } else {
-      routeIndex = Math.ceil(routeIndex);
+    if (routeIndex >= route.length) {
+      return [];
     }
 
-    return route[routeIndex] ?? [];
+    const routeIndexRemaining = routeIndexRaw - routeIndex;
+
+    const position = route[routeIndex]!;
+    const routeAfter = route[routeIndex + 1]!;
+
+    const deltaX = routeAfter[0]! - position[0]!;
+    const deltaY = routeAfter[1]! - position[1]!;
+
+    return [
+      position[0]! + deltaX * routeIndexRemaining,
+      position[1]! + deltaY * routeIndexRemaining,
+    ];
   });
 }

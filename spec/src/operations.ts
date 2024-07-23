@@ -1,4 +1,9 @@
-import { RuntimeSystem, RuntimeSubsystem, RuntimeLink } from "./runtime.js";
+import {
+  RuntimeSystem,
+  RuntimeSubsystem,
+  RuntimeLink,
+  RuntimeFlowStep,
+} from "./runtime.js";
 import { SystemMargin } from "./consts.js";
 import { Link, FlowStep, Subsystem } from "./specification.js";
 import { computeSystemSize, getRootSystem, initSystem } from "./system.js";
@@ -559,4 +564,48 @@ export function moveSystem(
       moveSystem(system.parent, 0, 0);
     }
   }
+}
+
+/*
+ * Remove a flow step from the system.
+ * The resulting system is not validated and may be invalid.
+ */
+export function removeFlowStep(
+  system: RuntimeSystem,
+  step: RuntimeFlowStep,
+): void {
+  system.specification.flows ??= [
+    {
+      steps: [],
+    },
+  ];
+
+  system.specification.flows?.at(0)?.steps?.splice(step.index, 1);
+}
+
+/*
+ * Add a flow step in the system.
+ * The resulting system is not validated and may be invalid.
+ */
+export function addFlowStep(
+  system: RuntimeSystem,
+  keyframe: number,
+  from: string,
+  to: string,
+) {
+  const newStep: FlowStep = {
+    keyframe,
+    from,
+    to,
+  };
+
+  system.specification.flows ??= [
+    {
+      steps: [],
+    },
+  ];
+
+  system.specification.flows[0]!.steps.push(structuredClone(newStep));
+
+  return newStep;
 }

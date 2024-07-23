@@ -2,7 +2,7 @@
 import { Viewport } from "pixi-viewport";
 import { RuntimeSystem, loadYaml } from "@gg/spec";
 import { SystemSimulator } from "@gg/simulator";
-import { CanvasFlowPlayer } from "./simulation.js";
+import { FlowPlayer } from "./simulation.js";
 import Operation from "./operation.js";
 import MoveSystemOperation from "./operations/systemMove.js";
 
@@ -14,7 +14,10 @@ export interface State {
   y: number;
   system: RuntimeSystem;
   simulator: SystemSimulator;
-  canvasFlowPlayer: CanvasFlowPlayer | null;
+  flowPlayer: FlowPlayer | null;
+  flowKeyframe: number;
+  flowPlay: boolean;
+  flowPlayMode: "one" | "all";
 }
 
 const defaultSystem = loadYaml('specificationVersion: 1.0.0\ntitle: ""').system;
@@ -29,7 +32,10 @@ export const state: State = {
   y: -999999,
   system: defaultSystem,
   simulator: new SystemSimulator(defaultSystem),
-  canvasFlowPlayer: null,
+  flowPlayer: null,
+  flowKeyframe: 0,
+  flowPlay: false,
+  flowPlayMode: "all",
 };
 
 defaultOperation.onBegin(state);

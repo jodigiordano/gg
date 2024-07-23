@@ -2,23 +2,15 @@ import { dump as saveYaml } from "js-yaml";
 import { RuntimeFlow, loadYaml } from "@gg/spec";
 import {
   SystemSimulator,
-  FlowSimulator,
   SimulatorObjectType,
   SimulatorSystemTitle,
   SimulatorSubsystem,
   SimulatorLinkDirectionType,
   SimulatorLink,
   SimulatorSystemDirectionType,
+  getFlowTick,
 } from "@gg/simulator";
-import {
-  Application,
-  Sprite,
-  Graphics,
-  RenderTexture,
-  Text,
-  SCALE_MODES,
-  Container,
-} from "pixi.js";
+import { Sprite, Text, SCALE_MODES, Container } from "pixi.js";
 import { spritesheet } from "./assets.js";
 import { BlockSize } from "./consts.js";
 import { app } from "./pixi.js";
@@ -30,8 +22,8 @@ const container = new Container();
 viewport.addChild(container);
 
 app.ticker.add<void>(deltaTime => {
-  if (state.canvasFlowPlayer) {
-    state.canvasFlowPlayer.update(deltaTime);
+  if (state.flowPlay && state.flowPlayer) {
+    state.flowPlayer.update(deltaTime, state.flowPlayMode);
   }
 });
 
@@ -39,6 +31,9 @@ app.ticker.add<void>(deltaTime => {
 const yamlEditor = document.querySelector(
   "#yaml-editor textarea",
 ) as HTMLTextAreaElement;
+
+// TODO: hmmm...
+const currentKeyframe = document.getElementById("information-flow-keyframe")!;
 
 export function loadSimulation(yaml: string): boolean {
   let result: ReturnType<typeof loadYaml>;
@@ -70,12 +65,16 @@ export function loadSimulation(yaml: string): boolean {
   }
 
   if (state.system.flows.length) {
-    state.canvasFlowPlayer = createFlowPlayer(app, 0);
+    state.flowPlayer = createFlowPlayer(0);
 
-    for (const objectToRender of state.canvasFlowPlayer.getObjectsToRender()) {
+    for (const objectToRender of state.flowPlayer.getObjectsToRender()) {
       // @ts-ignore
       container.addChild(objectToRender);
     }
+  }
+
+  if (state.flowPlay && state.flowPlayer) {
+    app.ticker.start();
   }
 
   return true;
@@ -264,72 +263,94 @@ export function modifySpecification(modifier: () => void): void {
   }
 }
 
-export function createFlowPlayer(
-  app: Application,
-  flowIndex: number,
-): CanvasFlowPlayer {
-  const dataGraphic = new Graphics()
-    .beginFill(0x00ff00)
-    .drawRect(0, 0, BlockSize, BlockSize)
-    .endFill();
-
-  const dataTexture = app.renderer.generateTexture(dataGraphic);
-
-  return new CanvasFlowPlayer(
+export function createFlowPlayer(flowIndex: number): FlowPlayer {
+  return new FlowPlayer(
     state.simulator,
     state.system.flows.find(flow => flow.index === flowIndex)!,
-    dataTexture,
+    state.flowKeyframe,
   );
 }
 
-export class CanvasFlowPlayer {
+export function setFlowKeyframe(keyframe: number): void {
+  state.flowKeyframe = Math.max(0, keyframe);
+  currentKeyframe.innerHTML = state.flowKeyframe.toString();
+}
+
+export class FlowPlayer {
   private simulator: SystemSimulator;
-  private flowSimulator: FlowSimulator;
   private maxKeyframes: number;
   private currentKeyframe: number;
   private currentKeyframeProgress: number;
   private sprites: Sprite[];
+  private flow: RuntimeFlow;
 
   constructor(
     simulator: SystemSimulator,
     flow: RuntimeFlow,
-    dataTexture: RenderTexture,
+    currentKeyframe: number,
   ) {
     this.simulator = simulator;
-    this.flowSimulator = new FlowSimulator(simulator, flow);
+    this.flow = flow;
 
-    this.currentKeyframe = 0;
+    this.currentKeyframe = currentKeyframe;
     this.currentKeyframeProgress = 0;
 
-    this.maxKeyframes = Math.max(...flow.steps.map(step => step.keyframe)) + 1;
+    this.maxKeyframes =
+      Math.max(0, ...flow.steps.map(step => step.keyframe)) + 1;
 
-    this.sprites = flow.steps.map(() => new Sprite(dataTexture));
+    this.sprites = flow.steps.map(() => {
+      const sprite = new Sprite(spritesheet.textures.data);
+
+      sprite.width = BlockSize;
+      sprite.height = BlockSize;
+      sprite.visible = false;
+
+      return sprite;
+    });
   }
 
   getObjectsToRender(): Sprite[] {
     return this.sprites;
   }
 
-  update(deltaTime: number): void {
+  update(deltaTime: number, mode: "one" | "all"): void {
     this.currentKeyframeProgress += 0.01 * deltaTime;
 
-    if (this.currentKeyframeProgress > 1) {
-      this.currentKeyframeProgress %= 1;
-      this.currentKeyframe += 1;
+    if (this.currentKeyframeProgress >= 1) {
+      this.currentKeyframeProgress -= 1;
+
+      if (mode === "all") {
+        this.currentKeyframe += 1;
+        this.currentKeyframe %= this.maxKeyframes;
+
+        setFlowKeyframe(this.currentKeyframe);
+      }
     }
 
-    this.currentKeyframe %= this.maxKeyframes;
-
-    const data = this.flowSimulator.tick({
-      keyframe: this.currentKeyframe,
-      keyframeProgress: this.currentKeyframeProgress,
-    });
+    const data = getFlowTick(
+      this.simulator,
+      this.flow,
+      this.currentKeyframe,
+      // easeInOutQuart
+      this.currentKeyframeProgress < 0.5
+        ? 8 *
+            this.currentKeyframeProgress *
+            this.currentKeyframeProgress *
+            this.currentKeyframeProgress *
+            this.currentKeyframeProgress
+        : 1 - Math.pow(-2 * this.currentKeyframeProgress + 2, 4) / 2,
+    );
 
     const boundaries = this.simulator.getBoundaries();
 
     for (let i = 0; i < data.length; i++) {
-      this.sprites[i].x = (data[i][0] - boundaries.translateX) * BlockSize;
-      this.sprites[i].y = (data[i][1] - boundaries.translateY) * BlockSize;
+      if (data[i].length) {
+        this.sprites[i].x = (data[i][0] - boundaries.translateX) * BlockSize;
+        this.sprites[i].y = (data[i][1] - boundaries.translateY) * BlockSize;
+        this.sprites[i].visible = true;
+      } else {
+        this.sprites[i].visible = false;
+      }
     }
   }
 }
