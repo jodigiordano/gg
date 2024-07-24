@@ -182,6 +182,19 @@
         font-weight: bold;
       }
 
+      /* Page-wide styles for dialogs */
+      dialog {
+        .content {
+          display: flex;
+          flex-direction: column;
+          gap: 1em;
+
+          h1 {
+            font-weight: bold;
+          }
+        }
+      }
+
       /* Page-wide styles for buttons */
       button {
         font-family: JetBrains Mono;
@@ -318,16 +331,6 @@
         overflow: auto;
       }
 
-      dialog {
-        .content {
-          display: flex;
-          flex-direction: column;
-          gap: 1em;
-
-          h1 {
-            font-weight: bold;
-          }
-        }
       }
 
       /* Modal showing the YAML of the chart */
@@ -345,6 +348,7 @@
         }
       }
 
+      /* Modal to edit the title of a system */
       #input-system-set-title-dialog {
         width: 40%;
         height: 40%;
@@ -360,6 +364,7 @@
         }
       }
 
+      /* Modal to show the guide */
       #guide {
         max-width: 80%;
         max-height: 80%;
