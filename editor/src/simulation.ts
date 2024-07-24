@@ -1,6 +1,7 @@
 import { dump as saveYaml } from "js-yaml";
-import { RuntimeFlow, loadYaml } from "@gg/spec";
 import {
+  RuntimeFlow,
+  loadYaml,
   SystemSimulator,
   SimulatorObjectType,
   SimulatorSystemTitle,
@@ -9,7 +10,7 @@ import {
   SimulatorLink,
   SimulatorSystemDirectionType,
   getFlowTick,
-} from "@gg/simulator";
+} from "@gg/core";
 import { Sprite, Text, SCALE_MODES, Container } from "pixi.js";
 import { spritesheet } from "./assets.js";
 import { BlockSize } from "./consts.js";

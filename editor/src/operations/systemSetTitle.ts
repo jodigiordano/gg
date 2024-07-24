@@ -1,4 +1,4 @@
-import { RuntimeSubsystem, setSubsystemTitle } from "@gg/spec";
+import { RuntimeSubsystem, setSubsystemTitle } from "@gg/core";
 import Operation from "../operation.js";
 import SystemSelector from "../systemSelector.js";
 import { modifySpecification } from "../simulation.js";

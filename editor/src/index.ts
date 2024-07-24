@@ -437,7 +437,7 @@ document
   ?.addEventListener("click", function () {
     let value: string | undefined = flowStepSetTitleEditor.value.trim();
 
-    if (value === '') {
+    if (value === "") {
       value = undefined;
     }
 

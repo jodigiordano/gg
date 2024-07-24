@@ -1,5 +1,5 @@
 import { Graphics } from "pixi.js";
-import { addLink, RuntimeSubsystem } from "@gg/spec";
+import { addLink, RuntimeSubsystem } from "@gg/core";
 import SystemSelector from "../systemSelector.js";
 import { modifySpecification } from "../simulation.js";
 import Operation from "../operation.js";

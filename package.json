@@ -7,14 +7,13 @@
     "compile": "npm run compile --workspaces",
     "lint": "npm run lint --workspaces",
     "maintenance": "npm update --workspaces",
-    "dev": "concurrently --kill-others --names spec,simulator,frontend \"(cd spec && npm run dev)\" \"(cd simulator && npm run dev)\" \"(cd frontend && npm run dev)\""
+    "dev": "concurrently --kill-others --names core,editor \"(cd core && npm run dev)\" \"(cd editor && npm run dev)\""
   },
   "devDependencies": {
     "concurrently": "8.x"
   },
   "workspaces": [
-    "spec",
-    "simulator",
-    "frontend"
+    "core",
+    "editor"
   ]
 }

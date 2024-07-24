@@ -1,14 +1,15 @@
 import { Grid as PathFinderGrid, findPath } from "./pathfinding.js";
-
 import {
-  PaddingWhiteBox,
   RuntimeSystem,
   RuntimeSubsystem,
   RuntimeLink,
+  RuntimePosition,
+} from "./runtime.js";
+import {
+  PaddingWhiteBox,
   TitleCharsPerSquare,
   SystemMargin,
-  RuntimePosition,
-} from "@gg/spec";
+} from "./consts.js";
 
 export enum SimulatorObjectType {
   System = 1,

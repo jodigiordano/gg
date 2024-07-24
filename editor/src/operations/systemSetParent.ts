@@ -3,7 +3,7 @@ import {
   RuntimePosition,
   moveSubsystemToParent,
   moveSystem,
-} from "@gg/spec";
+} from "@gg/core";
 import SystemSelector from "../systemSelector.js";
 import { modifySpecification } from "../simulation.js";
 import Operation from "../operation.js";

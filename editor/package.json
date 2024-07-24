@@ -1,5 +1,5 @@
 {
-  "name": "@gg/frontend",
+  "name": "@gg/editor",
   "version": "0.1.0",
   "type": "module",
   "license": "See ../LICENSE.md",
@@ -24,8 +24,7 @@
     "vite-plugin-checker": "0.6.x"
   },
   "dependencies": {
-    "@gg/simulator": "0.x",
-    "@gg/spec": "0.x",
+    "@gg/core": "0.x",
     "pako": "2.x",
     "pixi-viewport": "5.0.1",
     "pixi.js": "7.x"

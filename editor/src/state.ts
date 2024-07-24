@@ -1,7 +1,6 @@
 // @ts-ignore
 import { Viewport } from "pixi-viewport";
-import { RuntimeSystem, loadYaml } from "@gg/spec";
-import { SystemSimulator } from "@gg/simulator";
+import { RuntimeSystem, loadYaml, SystemSimulator } from "@gg/core";
 import { FlowPlayer } from "./simulation.js";
 import Operation from "./operation.js";
 import MoveSystemOperation from "./operations/systemMove.js";
