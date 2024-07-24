@@ -33,6 +33,7 @@ jobs:
         uses: actions/configure-pages@v5
       - name: Compile
         run: |
+          npm ci
           cd editor
           npm run compile
       - name: Upload artifact
