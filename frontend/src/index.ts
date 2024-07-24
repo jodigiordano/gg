@@ -27,6 +27,7 @@ import {
   openYamlEditor,
   setYamlEditorValue,
 } from "./yamlEditor.js";
+import { load, save } from "./persistence.js";
 
 //
 // Events
@@ -132,6 +133,7 @@ document
     if (value) {
       state.operation.onEnd(state);
       pushChange(value);
+      save(value);
       loadSimulation(value);
       tick();
     }
@@ -188,10 +190,11 @@ document
       "\n",
     );
 
+    resetState();
     setYamlEditorValue(value);
     loadSimulation(value);
-    resetState();
     pushChange(value);
+    save(value);
 
     const canvasContainer = document.getElementById("canvas") as HTMLDivElement;
 
@@ -207,29 +210,13 @@ document
   });
 
 document
-  .getElementById("operation-file-load")
-  ?.addEventListener("click", function () {
-    loadFile();
-    tick();
-  });
-
-document
-  .getElementById("operation-file-save")
-  ?.addEventListener("click", function () {
-    const value = getYamlEditorValue();
-
-    if (value) {
-      window.localStorage.setItem("file", value);
-    }
-  });
-
-document
   .getElementById("operation-examples-load-1")
   ?.addEventListener("click", function () {
+    resetState();
     setYamlEditorValue(example1);
     loadSimulation(example1);
-    resetState();
     pushChange(example1);
+    save(example1);
     fitSimulation();
     tick();
   });
@@ -237,10 +224,11 @@ document
 document
   .getElementById("operation-examples-load-2")
   ?.addEventListener("click", function () {
+    resetState();
     setYamlEditorValue(example2);
     loadSimulation(example2);
-    resetState();
     pushChange(example2);
+    save(example2);
     fitSimulation();
     tick();
   });
@@ -383,7 +371,6 @@ flowRepeatAll.addEventListener("click", function () {
 document
   .getElementById("operation-flow-previous-keyframe")
   ?.addEventListener("click", function () {
-
     const value = getYamlEditorValue();
 
     if (value) {
@@ -479,8 +466,17 @@ function switchOperation(operation: Operation): void {
 // Initialize dropdowns.
 initializeDropdowns();
 
-// Load saved file.
-loadFile();
+// Load saved data.
+const loaded = load();
+
+if (loaded) {
+  resetState();
+  setYamlEditorValue(loaded);
+  loadSimulation(loaded);
+  pushChange(loaded);
+  save(loaded);
+  fitSimulation();
+}
 
 // Initial update / draw.
 tick();
@@ -526,18 +522,6 @@ function fitSimulation() {
   }
 
   redrawGrid();
-}
-
-function loadFile(): void {
-  const value = window.localStorage.getItem("file");
-
-  if (value) {
-    setYamlEditorValue(value);
-    loadSimulation(value);
-    resetState();
-    pushChange(value);
-    fitSimulation();
-  }
 }
 
 function tick() {

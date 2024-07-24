@@ -16,6 +16,8 @@ import { BlockSize } from "./consts.js";
 import { app } from "./pixi.js";
 import { viewport } from "./viewport.js";
 import { state, pushChange } from "./state.js";
+import { save } from "./persistence.js";
+import { setYamlEditorValue } from "./yamlEditor.js";
 
 const container = new Container();
 
@@ -28,12 +30,13 @@ app.ticker.add<void>(deltaTime => {
 });
 
 // TODO: hmmm...
-const yamlEditor = document.querySelector(
-  "#yaml-editor textarea",
-) as HTMLTextAreaElement;
-
-// TODO: hmmm...
 const currentKeyframe = document.getElementById("information-flow-keyframe")!;
+function onKeyframeChanged(keyframe: number): void {
+  // Set number.
+  state.flowKeyframe = Math.max(0, keyframe);
+  currentKeyframe.innerHTML = state.flowKeyframe.toString();
+
+}
 
 export function loadSimulation(yaml: string): boolean {
   let result: ReturnType<typeof loadYaml>;
@@ -71,9 +74,9 @@ export function loadSimulation(yaml: string): boolean {
       // @ts-ignore
       container.addChild(objectToRender);
     }
-
-    setFlowKeyframe(state.flowKeyframe);
   }
+
+  onKeyframeChanged(state.flowKeyframe);
 
   if (state.flowPlay && state.flowPlayer) {
     app.ticker.start();
@@ -256,9 +259,8 @@ export function modifySpecification(modifier: () => void): void {
 
   if (loadSimulation(newSpecification)) {
     pushChange(newSpecification);
-
-    // TODO: hmmm...
-    yamlEditor.value = newSpecification;
+    save(newSpecification);
+    setYamlEditorValue(newSpecification);
   } else {
     // Rollback if the new configuration is invalid.
     loadSimulation(currentSpecification);
@@ -271,11 +273,6 @@ export function createFlowPlayer(flowIndex: number): FlowPlayer {
     state.system.flows.find(flow => flow.index === flowIndex)!,
     state.flowKeyframe,
   );
-}
-
-function setFlowKeyframe(keyframe: number): void {
-  state.flowKeyframe = Math.max(0, keyframe);
-  currentKeyframe.innerHTML = state.flowKeyframe.toString();
 }
 
 export function tickFlowPlayer(): void {
@@ -339,7 +336,7 @@ export class FlowPlayer {
         this.currentKeyframe += 1;
         this.currentKeyframe %= this.maxKeyframes;
 
-        setFlowKeyframe(this.currentKeyframe);
+        onKeyframeChanged(this.currentKeyframe);
       }
     }
 

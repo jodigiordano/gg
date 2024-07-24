@@ -56,4 +56,6 @@ export function resetState(): void {
 
   state.operation.onEnd(state);
   defaultOperation.onBegin(state);
+
+  state.flowKeyframe = 0;
 }
