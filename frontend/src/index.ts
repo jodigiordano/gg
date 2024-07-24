@@ -4,7 +4,6 @@ import { viewport } from "./viewport.js";
 import {
   getVisibleBoundaries,
   loadSimulation,
-  setFlowKeyframe,
   tickFlowPlayer,
 } from "./simulation.js";
 import { BlockSize } from "./consts.js";
@@ -384,11 +383,12 @@ flowRepeatAll.addEventListener("click", function () {
 document
   .getElementById("operation-flow-previous-keyframe")
   ?.addEventListener("click", function () {
-    setFlowKeyframe(state.flowKeyframe - 1);
 
     const value = getYamlEditorValue();
 
     if (value) {
+      state.flowKeyframe -= 1;
+
       loadSimulation(value);
       tickFlowPlayer();
       tick();
@@ -398,11 +398,11 @@ document
 document
   .getElementById("operation-flow-next-keyframe")
   ?.addEventListener("click", function () {
-    setFlowKeyframe(state.flowKeyframe + 1);
-
     const value = getYamlEditorValue();
 
     if (value) {
+      state.flowKeyframe += 1;
+
       loadSimulation(value);
       tickFlowPlayer();
       tick();
@@ -478,9 +478,6 @@ function switchOperation(operation: Operation): void {
 
 // Initialize dropdowns.
 initializeDropdowns();
-
-// Initialize flows.
-setFlowKeyframe(state.flowKeyframe);
 
 // Load saved file.
 loadFile();

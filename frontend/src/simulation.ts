@@ -71,6 +71,8 @@ export function loadSimulation(yaml: string): boolean {
       // @ts-ignore
       container.addChild(objectToRender);
     }
+
+    setFlowKeyframe(state.flowKeyframe);
   }
 
   if (state.flowPlay && state.flowPlayer) {
@@ -271,7 +273,7 @@ export function createFlowPlayer(flowIndex: number): FlowPlayer {
   );
 }
 
-export function setFlowKeyframe(keyframe: number): void {
+function setFlowKeyframe(keyframe: number): void {
   state.flowKeyframe = Math.max(0, keyframe);
   currentKeyframe.innerHTML = state.flowKeyframe.toString();
 }
