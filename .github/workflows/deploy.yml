@@ -34,8 +34,7 @@ jobs:
       - name: Compile
         run: |
           npm ci
-          cd editor
-          npm run compile
+          npm run compile --workspace editor
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
