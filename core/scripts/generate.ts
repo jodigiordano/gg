@@ -1,8 +1,14 @@
 import { compileFromFile } from "json-schema-to-typescript";
 import { FileInfo } from "@apidevtools/json-schema-ref-parser";
-import fs from "fs";
+import fs from "node:fs";
+import { dirname } from "node:path";
+import { fileURLToPath } from "node:url";
 
-const schemasDirectory = [import.meta.dirname ?? '.', "..", "schemas"].join("/");
+const schemasDirectory = [
+  dirname(fileURLToPath(import.meta.url)),
+  "..",
+  "schemas",
+].join("/");
 
 async function generateTypes() {
   const compiled = await compileFromFile(`${schemasDirectory}/system.json`, {
