@@ -24,6 +24,7 @@ grid = new TilingSprite(gridTexture, viewport.worldWidth, viewport.worldHeight);
 
 grid.x = viewport.left;
 grid.y = viewport.top;
+grid.zIndex = -1;
 
 viewport.addChild(grid);
 

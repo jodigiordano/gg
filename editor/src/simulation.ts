@@ -22,6 +22,8 @@ import { setYamlEditorValue } from "./yamlEditor.js";
 
 const container = new Container();
 
+container.zIndex = 0;
+
 viewport.addChild(container);
 
 app.ticker.add<void>(deltaTime => {
