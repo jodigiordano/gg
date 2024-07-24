@@ -9,8 +9,6 @@ import {
 } from "./simulation.js";
 import { BlockSize } from "./consts.js";
 import { initializeDropdowns } from "./dropdown.js";
-import example1 from "./assets/basic.yml?raw";
-import example2 from "./assets/complex.yml?raw";
 import { state, resetState, pushChange } from "./state.js";
 import { redrawGrid, setGridVisible } from "./grid.js";
 import Operation from "./operation.js";
@@ -207,30 +205,6 @@ document
     viewport.fit(true, width, height);
 
     redrawGrid();
-    tick();
-  });
-
-document
-  .getElementById("operation-examples-load-1")
-  ?.addEventListener("click", function () {
-    resetState();
-    setYamlEditorValue(example1);
-    loadSimulation(example1);
-    pushChange(example1);
-    save(example1);
-    fitSimulation();
-    tick();
-  });
-
-document
-  .getElementById("operation-examples-load-2")
-  ?.addEventListener("click", function () {
-    resetState();
-    setYamlEditorValue(example2);
-    loadSimulation(example2);
-    pushChange(example2);
-    save(example2);
-    fitSimulation();
     tick();
   });
 
