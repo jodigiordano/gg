@@ -331,6 +331,23 @@
         overflow: auto;
       }
 
+      /* Display the title of the current keyframe, if any. */
+      #information-flow-step-title {
+        position: absolute;
+        top: 0.5em;
+        width: 40%;
+        text-align: center;
+        padding: 0.5em;
+        background: #eee;
+        left: 0;
+        right: 0;
+        margin-left: auto;
+        margin-right: auto;
+        min-height: 1em;
+
+        &.hidden {
+          display: none;
+        }
       }
 
       /* Modal showing the YAML of the chart */
@@ -424,6 +441,11 @@
       </div>
     </div>
     <div id="content">
+      <div
+        id="information-flow-step-title"
+        title="Title of the current keyframe"
+        class="hidden"
+      ></div>
       <div id="toolbox">
         <div class="operations">
           <button id="operation-undo" title="Undo">
@@ -499,7 +521,12 @@
             <img src="./assets/icon-flow-repeat-all.svg" />
           </button>
           <div id="information-flow-keyframe" title="Current keyframe"></div>
-          <div></div>
+          <button
+            id="operation-flow-edit-step-title"
+            title="Add or edit the title of the current keyframe"
+          >
+            <img src="./assets/icon-flow-step-title.svg" />
+          </button>
           <button
             id="operation-flow-previous-keyframe"
             title="Previous keyframe"
@@ -664,6 +691,10 @@
               <td>Play all the keyframes of the flow animation.</td>
             </tr>
             <tr>
+              <td><img src="./assets/icon-flow-step-title.svg" /></td>
+              <td>Add or edit the title of the current keyframe.</td>
+            </tr>
+            <tr>
               <td><img src="./assets/icon-flow-previous.svg" /></td>
               <td>Go to the previous keyframe of the flow.</td>
             </tr>
@@ -734,6 +765,16 @@
         <textarea autocomplete="off"></textarea>
         <form method="dialog">
           <button id="operation-system-set-title-apply">apply</button>
+          <button>cancel</button>
+        </form>
+      </div>
+    </dialog>
+    <dialog id="input-flow-step-set-title-dialog">
+      <div class="content">
+        <h1></h1>
+        <input></input>
+        <form method="dialog">
+          <button id="operation-flow-step-set-title-apply">apply</button>
           <button>cancel</button>
         </form>
       </div>

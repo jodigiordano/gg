@@ -4,6 +4,7 @@ import { viewport } from "./viewport.js";
 import {
   getVisibleBoundaries,
   loadSimulation,
+  modifySpecification,
   tickFlowPlayer,
 } from "./simulation.js";
 import { BlockSize } from "./consts.js";
@@ -394,6 +395,63 @@ document
       tickFlowPlayer();
       tick();
     }
+  });
+
+const flowStepSetTitleDialog = document.getElementById(
+  "input-flow-step-set-title-dialog",
+) as HTMLDialogElement;
+
+flowStepSetTitleDialog.addEventListener("keydown", event => {
+  event.stopPropagation();
+});
+
+const flowStepSetTitleTitle = flowStepSetTitleDialog.querySelector(
+  "h1",
+) as HTMLElement;
+
+const flowStepSetTitleEditor = flowStepSetTitleDialog.querySelector(
+  "input",
+) as HTMLInputElement;
+
+document
+  .getElementById("operation-flow-edit-step-title")
+  ?.addEventListener("click", function () {
+    state.operation.onMute(state);
+
+    flowStepSetTitleTitle.innerHTML = `Set title for keyframe ${state.flowKeyframe}`;
+
+    const steps =
+      state.system.flows
+        .at(0)
+        ?.steps?.filter(step => step.keyframe === state.flowKeyframe) ?? [];
+
+    const title = steps.find(step => step.description)?.description ?? "";
+
+    flowStepSetTitleEditor.value = title;
+
+    flowStepSetTitleDialog.showModal();
+  });
+
+document
+  .getElementById("operation-flow-step-set-title-apply")
+  ?.addEventListener("click", function () {
+    let value: string | undefined = flowStepSetTitleEditor.value.trim();
+
+    if (value === '') {
+      value = undefined;
+    }
+
+    // Apply operation.
+    modifySpecification(() => {
+      const steps =
+        state.system.flows
+          .at(0)
+          ?.steps?.filter(step => step.keyframe === state.flowKeyframe) ?? [];
+
+      for (const step of steps) {
+        step.specification.description = value;
+      }
+    });
   });
 
 //

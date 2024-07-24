@@ -31,11 +31,29 @@ app.ticker.add<void>(deltaTime => {
 
 // TODO: hmmm...
 const currentKeyframe = document.getElementById("information-flow-keyframe")!;
+const currentKeyframeTitle = document.getElementById(
+  "information-flow-step-title",
+)!;
+
 function onKeyframeChanged(keyframe: number): void {
   // Set number.
   state.flowKeyframe = Math.max(0, keyframe);
   currentKeyframe.innerHTML = state.flowKeyframe.toString();
 
+  // Set title.
+  if (state.system.flows.at(0)?.steps.some(step => step.description)) {
+    const steps =
+      state.system.flows
+        .at(0)
+        ?.steps?.filter(step => step.keyframe === state.flowKeyframe) ?? [];
+
+    const title = steps.find(step => step.description)?.description ?? "";
+
+    currentKeyframeTitle.innerHTML = title;
+    currentKeyframeTitle.classList.remove("hidden");
+  } else {
+    currentKeyframeTitle.classList.add("hidden");
+  }
 }
 
 export function loadSimulation(yaml: string): boolean {
