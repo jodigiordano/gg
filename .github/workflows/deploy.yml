@@ -1,11 +1,9 @@
 name: Deploy
 
-on: push
-
-# on:
-#   push:
-#     branches: ["main"]
-#   workflow_dispatch:
+on:
+  workflow_dispatch:
+  push:
+    branches: ["main"]
 
 # Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages.
 permissions:
