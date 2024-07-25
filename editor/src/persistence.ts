@@ -46,6 +46,20 @@ export function save(value: string): void {
   );
 }
 
+export function removeUrlParam(param: string): void {
+  const urlParams = getUrlParams();
+
+  delete urlParams[param];
+
+  window.history.replaceState(
+    null,
+    "",
+    `${document.location.pathname}#${Object.entries(urlParams)
+      .map(kvp => kvp.join("="))
+      .join("&")}`,
+  );
+}
+
 export function getUrlParams(): Record<string, string> {
   return Object.fromEntries(
     window.location.hash

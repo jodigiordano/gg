@@ -26,7 +26,7 @@ import {
   openYamlEditor,
   setYamlEditorValue,
 } from "./yamlEditor.js";
-import { getUrlParams, load, save } from "./persistence.js";
+import { getUrlParams, load, removeUrlParam, save } from "./persistence.js";
 
 //
 // Events
@@ -204,6 +204,7 @@ document
     setYamlEditorValue(value);
     loadSimulation(value);
     pushChange(value);
+    removeUrlParam("autoplay");
     save(value);
 
     const canvasContainer = document.getElementById("canvas") as HTMLDivElement;
