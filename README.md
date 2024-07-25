@@ -1,1 +1,3 @@
 # gg charts
+
+![](./screenshot.gif)
