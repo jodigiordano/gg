@@ -4,12 +4,13 @@ import pako from "pako";
 export function load(): string | null {
   let value: string | null = null;
 
-  if (window.location.hash.startsWith("#file=")) {
+  const urlParams = getUrlParams();
+
+  if (urlParams.file) {
     try {
-      const valueFromUrl = window.location.hash.substring("#file=".length);
       value = new TextDecoder().decode(
         pako.inflate(
-          Uint8Array.from(window.atob(valueFromUrl), c => c.codePointAt(0)!),
+          Uint8Array.from(window.atob(urlParams.file), c => c.codePointAt(0)!),
         ),
       );
     } catch (err) {
@@ -32,9 +33,24 @@ export function save(value: string): void {
     String.fromCodePoint(...pako.deflate(new TextEncoder().encode(value))),
   );
 
+  const urlParams = getUrlParams();
+
+  urlParams.file = encodedValue;
+
   window.history.replaceState(
     null,
     "",
-    `${document.location.pathname}#file=${encodedValue}`,
+    `${document.location.pathname}#${Object.entries(urlParams)
+      .map(kvp => kvp.join("="))
+      .join("&")}`,
+  );
+}
+
+export function getUrlParams(): Record<string, string> {
+  return Object.fromEntries(
+    window.location.hash
+      .substring(1)
+      .split("&")
+      .map(entry => entry.split("=")),
   );
 }

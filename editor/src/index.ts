@@ -26,7 +26,7 @@ import {
   openYamlEditor,
   setYamlEditorValue,
 } from "./yamlEditor.js";
-import { load, save } from "./persistence.js";
+import { getUrlParams, load, save } from "./persistence.js";
 
 //
 // Events
@@ -113,8 +113,16 @@ window.addEventListener("keydown", event => {
   tick();
 });
 
-// Load when the user modifes the URL manually.
-window.addEventListener("hashchange", loadSaveData);
+// Fired when the user modifes the URL manually.
+window.addEventListener("hashchange", () => {
+  const urlParams = getUrlParams();
+
+  state.flowPlay = urlParams.autoplay
+    ? urlParams.autoplay === "true"
+    : state.flowPlay;
+
+  loadSaveData();
+});
 
 //
 // YAML editor operations

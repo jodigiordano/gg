@@ -4,6 +4,7 @@ import { RuntimeSystem, loadYaml, SystemSimulator } from "@gg/core";
 import { FlowPlayer } from "./simulation.js";
 import Operation from "./operation.js";
 import MoveSystemOperation from "./operations/systemMove.js";
+import { getUrlParams } from "./persistence.js";
 
 export interface State {
   changes: string[];
@@ -23,6 +24,8 @@ const defaultSystem = loadYaml('specificationVersion: 1.0.0\ntitle: ""').system;
 
 const defaultOperation = MoveSystemOperation;
 
+const urlParams = getUrlParams();
+
 export const state: State = {
   changes: [],
   changeIndex: -1,
@@ -33,7 +36,7 @@ export const state: State = {
   simulator: new SystemSimulator(defaultSystem),
   flowPlayer: null,
   flowKeyframe: 0,
-  flowPlay: false,
+  flowPlay: urlParams.autoplay ? urlParams.autoplay === "true" : false,
   flowPlayMode: "all",
 };
 
