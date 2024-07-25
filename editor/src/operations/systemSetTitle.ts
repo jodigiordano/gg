@@ -5,6 +5,7 @@ import { modifySpecification } from "../simulation.js";
 import { State } from "../state.js";
 import { viewport } from "../viewport.js";
 import { app } from "../pixi.js";
+import { state } from "../state.js";
 
 const dialog = document.getElementById(
   "input-system-set-title-dialog",
@@ -27,7 +28,11 @@ document
       });
 
       // Reset operation.
+      dialog.close();
+
       subsystem = null;
+
+      onPointerMove(state);
 
       // TODO: hmmm...
       app.ticker.update();
@@ -64,9 +69,7 @@ const operation: Operation = {
   setup: () => {
     viewport.addChild(selectVisual);
   },
-  onBegin: state => {
-    onPointerMove(state);
-  },
+  onBegin: onPointerMove,
   onEnd() {
     selectVisual.visible = false;
   },
