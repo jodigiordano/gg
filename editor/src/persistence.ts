@@ -32,5 +32,9 @@ export function save(value: string): void {
     String.fromCodePoint(...pako.deflate(new TextEncoder().encode(value))),
   );
 
-  window.location.hash = `file=${encodedValue}`;
+  window.history.replaceState(
+    null,
+    "",
+    `${document.location.pathname}#file=${encodedValue}`,
+  );
 }

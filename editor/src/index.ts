@@ -113,6 +113,9 @@ window.addEventListener("keydown", event => {
   tick();
 });
 
+// Load when the user modifes the URL manually.
+window.addEventListener("hashchange", loadSaveData);
+
 //
 // YAML editor operations
 //
@@ -499,16 +502,7 @@ function switchOperation(operation: Operation): void {
 initializeDropdowns();
 
 // Load saved data.
-const loaded = load();
-
-if (loaded) {
-  resetState();
-  setYamlEditorValue(loaded);
-  loadSimulation(loaded);
-  pushChange(loaded);
-  save(loaded);
-  fitSimulation();
-}
+loadSaveData();
 
 // Initial update / draw.
 tick();
@@ -516,6 +510,20 @@ tick();
 //
 // Utility functions
 //
+
+function loadSaveData(): void {
+  const loaded = load();
+
+  if (loaded) {
+    resetState();
+    setYamlEditorValue(loaded);
+    loadSimulation(loaded);
+    pushChange(loaded);
+    save(loaded);
+    fitSimulation();
+    tick();
+  }
+}
 
 /**
  * Update the state position from the screen position.
