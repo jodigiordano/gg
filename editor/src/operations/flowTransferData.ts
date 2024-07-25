@@ -72,10 +72,9 @@ const operation: Operation = {
 
       const step = steps.find(
         s =>
-          (s.keyframe === state.flowKeyframe &&
-            s.from === link.a &&
-            s.to === link.b) ||
-          (s.from === link.b && s.to === link.a),
+          s.keyframe === state.flowKeyframe &&
+          ((s.from === link.a && s.to === link.b) ||
+            (s.from === link.b && s.to === link.a)),
       );
 
       if (step && step.from === link.a) {
