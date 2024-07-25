@@ -267,6 +267,7 @@ document
       state.operation.onEnd(state);
       setYamlEditorValue(value);
       loadSimulation(value);
+      save(value);
       tick();
     }
   });
@@ -282,6 +283,7 @@ document
       state.operation.onEnd(state);
       setYamlEditorValue(value);
       loadSimulation(value);
+      save(value);
       tick();
     }
   });
