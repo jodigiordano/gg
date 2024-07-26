@@ -44,6 +44,8 @@ const operation: Operation = {
   onEnd: () => {
     placeholderVisual.visible = false;
     parentVisual.visible = false;
+
+    viewport.pause = false;
   },
   onMute: () => {
     placeholderVisual.visible = false;

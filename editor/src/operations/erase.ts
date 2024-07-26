@@ -72,6 +72,8 @@ const operation: Operation = {
     selectSystemVisual.visible = false;
     selectLinkVisual1.visible = false;
     selectLinkVisual2.visible = false;
+
+    viewport.pause = false;
   },
   onMute: () => {
     selectSystemVisual.visible = false;

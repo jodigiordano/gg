@@ -27,6 +27,8 @@ const operation: Operation = {
   onBegin: onPointerMove,
   onEnd: () => {
     selectVisual.visible = false;
+
+    viewport.pause = false;
   },
   onMute: () => {
     selectVisual.visible = false;

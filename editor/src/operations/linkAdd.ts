@@ -66,6 +66,8 @@ const operation: Operation = {
     selectAVisual.visible = false;
     selectBVisual.visible = false;
     linkingLine.visible = false;
+
+    viewport.pause = false;
   },
   onMute: () => {
     selectAVisual.visible = false;

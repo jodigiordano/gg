@@ -53,6 +53,8 @@ const operation: Operation = {
   onEnd: () => {
     selectLinkVisual1.visible = false;
     selectLinkVisual2.visible = false;
+
+    viewport.pause = false;
   },
   onMute: () => {
     selectLinkVisual1.visible = false;
