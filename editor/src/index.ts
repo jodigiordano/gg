@@ -115,6 +115,8 @@ window.addEventListener("keydown", event => {
 
 // Fired when the user modifes the URL manually.
 window.addEventListener("hashchange", () => {
+  resetState();
+
   const urlParams = getUrlParams();
 
   state.flowPlay = urlParams.autoplay
@@ -526,7 +528,6 @@ function loadSaveData(): void {
   const loaded = load();
 
   if (loaded) {
-    resetState();
     setYamlEditorValue(loaded);
     loadSimulation(loaded);
     pushChange(loaded);
