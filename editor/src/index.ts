@@ -26,7 +26,7 @@ import {
   openYamlEditor,
   setYamlEditorValue,
 } from "./yamlEditor.js";
-import { getUrlParams, load, removeUrlParam, save } from "./persistence.js";
+import { getUrlParams, setUrlParams, load, save } from "./persistence.js";
 
 //
 // Events
@@ -206,7 +206,12 @@ document
     setYamlEditorValue(value);
     loadSimulation(value);
     pushChange(value);
-    removeUrlParam("autoplay");
+
+    const urlParams = getUrlParams();
+
+    urlParams.autoplay = "false";
+
+    setUrlParams(urlParams);
     save(value);
 
     const canvasContainer = document.getElementById("canvas") as HTMLDivElement;
@@ -328,6 +333,11 @@ const flowPlay = document.getElementById("operation-flow-play")!;
 const flowPause = document.getElementById("operation-flow-pause")!;
 const flowRepeatOne = document.getElementById("operation-flow-repeat-one")!;
 const flowRepeatAll = document.getElementById("operation-flow-repeat-all")!;
+
+if (getUrlParams().autoplay === "true") {
+  flowPlay.classList.remove("hidden");
+  flowPause.classList.add("hidden");
+}
 
 flowPlay.addEventListener("click", function () {
   state.flowPlay = false;

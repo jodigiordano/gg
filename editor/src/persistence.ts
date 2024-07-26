@@ -37,6 +37,15 @@ export function save(value: string): void {
 
   urlParams.file = encodedValue;
 
+  setUrlParams(urlParams);
+}
+
+export interface UrlParams {
+  file?: string;
+  autoplay?: string;
+}
+
+export function setUrlParams(urlParams: UrlParams): void {
   window.history.replaceState(
     null,
     "",
@@ -46,21 +55,7 @@ export function save(value: string): void {
   );
 }
 
-export function removeUrlParam(param: string): void {
-  const urlParams = getUrlParams();
-
-  delete urlParams[param];
-
-  window.history.replaceState(
-    null,
-    "",
-    `${document.location.pathname}#${Object.entries(urlParams)
-      .map(kvp => kvp.join("="))
-      .join("&")}`,
-  );
-}
-
-export function getUrlParams(): Record<string, string> {
+export function getUrlParams(): { file?: string; autoplay?: string } {
   return Object.fromEntries(
     window.location.hash
       .substring(1)
