@@ -1,6 +1,6 @@
 # `gg`
 
-Visit **[gg](https://gg-charts.com)** to craft dynamic graphs with a simple and intuitive UI (*).
+Visit **https://gg-charts.com** to simulate your software architecture with a simple and intuitive UI (*).
 
 ![preview](./screenshot.gif)
 
