@@ -1,12 +1,15 @@
 # `gg`
 
-Visit **https://gg-charts.com** to simulate your software architecture with a simple and intuitive UI (*).
+> [!IMPORTANT]
+> This tool is still a POC so expect rough edges. 😅
+
+**https://gg-charts.com** is a light **software architecture simulator** for documentation and presentation purposes.
+
+It aims to help you define any kind of software architecture and produce step-by-step presentations of various usage scenarios.
 
 ![preview](./screenshot.gif)
 
 ([edit me](https://gg-charts.com/#autoplay=true&file=eJyVUjFygzAQ7P2K61yFARzGCY9Ik5lUNAIOUCwkguQAfn2wwEgiJhPTwOm0e+zeygYzWtCMKCr4B7ZyfMUQeL7n7xRVDGN4ww7kIBXWu+kl4x3AE9A8huiiLtFYATRC0itHrCuAPoZDNH/vh/14VRcz5x6gLPcLzVF+ixPd4nkObJ7At4nygZOaZlC2pKlkwpUA7BtGKPc8b+EnVcfVJv2LTR869A1pCWPIEo49ZucrUi6snyS8VP8T77KWqGAQ5xYUkjrhgoOqECSpcRxYYsLTAc6S8tLW4Iepz9jWuPDVGXd0PEJs2DBxAVg7vD4TeZt3UT+f/OafZwRWqcf4y8E8iePInSd8nqHbFc3xfZ4JBWESF0lffnvONhUF2wZmom4Y9lAw0Y1LFwXkRJEdo/w0h5PY2UythOmWlbfUpONO6+bLndbt53XLBCw1udAdo3HdMZ6vOyZY6U2GVjpJG61srPWdcCjaMTr2OopW1LYB2jrhKHChwQrqXJywRuLDUDtdD0KNfS40XEHtexPSmPg30o3+I0jbkb+RhxXSvjchp139AEVpcxI=))
-
-(*) This is still a POC so we will get there...
 
 ## Examples
 
