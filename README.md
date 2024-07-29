@@ -3,9 +3,11 @@
 > [!IMPORTANT]
 > This tool is still a POC so expect rough edges. 😅
 
-**https://gg-charts.com** is a light **software architecture simulator** for documentation and presentation purposes.
+`gg` is a light **software architecture simulator** for documentation and presentation purposes.
 
 It aims to help you define any kind of software architecture and produce step-by-step presentations of various usage scenarios.
+
+Visit **https://gg-charts.com** to start building!
 
 ![preview](./screenshot.gif)
 
