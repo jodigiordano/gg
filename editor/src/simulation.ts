@@ -38,6 +38,8 @@ const currentKeyframeTitle = document.getElementById(
   "information-flow-step-title",
 )!;
 
+const domParser = new DOMParser();
+
 function onKeyframeChanged(keyframe: number): void {
   // Set number.
   state.flowKeyframe = Math.max(0, keyframe);
@@ -52,7 +54,10 @@ function onKeyframeChanged(keyframe: number): void {
 
     const title = steps.find(step => step.description)?.description ?? "";
 
-    currentKeyframeTitle.innerHTML = title;
+    currentKeyframeTitle.innerHTML =
+      domParser.parseFromString(title, "text/html").body.textContent ??
+      "";
+
     currentKeyframeTitle.classList.remove("hidden");
   } else {
     currentKeyframeTitle.classList.add("hidden");
