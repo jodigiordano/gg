@@ -340,16 +340,16 @@ if (getUrlParams().autoplay === "true") {
 }
 
 flowPlay.addEventListener("click", function () {
-  state.flowPlay = false;
-  app.ticker.stop();
+  state.flowPlay = true;
+  app.ticker.start();
 
   flowPlay.classList.add("hidden");
   flowPause.classList.remove("hidden");
 });
 
 flowPause.addEventListener("click", function () {
-  state.flowPlay = true;
-  app.ticker.start();
+  state.flowPlay = false;
+  app.ticker.stop();
 
   flowPlay.classList.remove("hidden");
   flowPause.classList.add("hidden");
