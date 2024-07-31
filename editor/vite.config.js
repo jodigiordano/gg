@@ -36,5 +36,11 @@ export default {
     target: browserslistToEsbuild(),
     sourcemap: true,
     assetsInlineLimit: 1024 * 1024, // 1MB.
+    rollupOptions: {
+      input: {
+        editor: "./src/index.html",
+        viewer: "./src/viewer.html",
+      },
+    },
   },
 };

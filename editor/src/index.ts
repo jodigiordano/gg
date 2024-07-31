@@ -262,6 +262,16 @@ document
   });
 
 //
+// View operations
+//
+
+document
+  .getElementById("operation-goto-viewer")
+  ?.addEventListener("click", function () {
+    window.location.replace(`/viewer.html${window.location.hash}`);
+  });
+
+//
 // Undo / Redo operations.
 //
 

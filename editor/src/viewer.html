@@ -1,0 +1,339 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=0.75, minimum-scale=0.75, maximum-scale=0.75"
+    />
+    <link rel="icon" type="image/png" href="assets/favicon.ico" />
+    <title>charts</title>
+    <style>
+      /* http://meyerweb.com/eric/tools/css/reset/
+         v5.0.2 | 20191019
+         License: none (public domain)
+      */
+
+      html,
+      body,
+      div,
+      span,
+      applet,
+      object,
+      iframe,
+      h1,
+      h2,
+      h3,
+      h4,
+      h5,
+      h6,
+      p,
+      blockquote,
+      pre,
+      a,
+      abbr,
+      acronym,
+      address,
+      big,
+      cite,
+      code,
+      del,
+      dfn,
+      em,
+      img,
+      ins,
+      kbd,
+      q,
+      s,
+      samp,
+      small,
+      strike,
+      strong,
+      sub,
+      sup,
+      tt,
+      var,
+      b,
+      u,
+      i,
+      center,
+      dl,
+      dt,
+      dd,
+      ol,
+      ul,
+      li,
+      fieldset,
+      form,
+      label,
+      legend,
+      table,
+      caption,
+      tbody,
+      tfoot,
+      thead,
+      tr,
+      th,
+      td,
+      article,
+      aside,
+      canvas,
+      details,
+      embed,
+      figure,
+      figcaption,
+      footer,
+      header,
+      hgroup,
+      main,
+      menu,
+      nav,
+      output,
+      ruby,
+      section,
+      summary,
+      time,
+      mark,
+      audio,
+      video {
+        margin: 0;
+        padding: 0;
+        border: 0;
+        font-size: 100%;
+        font: inherit;
+        vertical-align: baseline;
+      }
+
+      /* HTML5 display-role reset for older browsers */
+      article,
+      aside,
+      details,
+      figcaption,
+      figure,
+      footer,
+      header,
+      hgroup,
+      main,
+      menu,
+      nav,
+      section {
+        display: block;
+      }
+
+      /* HTML5 hidden-attribute fix for newer browsers */
+      *[hidden] {
+        display: none;
+      }
+
+      body {
+        line-height: 1;
+      }
+
+      menu,
+      ol,
+      ul {
+        list-style: none;
+      }
+
+      blockquote,
+      q {
+        quotes: none;
+      }
+
+      blockquote:before,
+      blockquote:after,
+      q:before,
+      q:after {
+        content: "";
+        content: none;
+      }
+
+      table {
+        border-collapse: collapse;
+        border-spacing: 0;
+      }
+    </style>
+    <style>
+      /* Load font */
+      @font-face {
+        font-family: JetBrains Mono;
+        font-style: normal;
+        font-weight: 400;
+        src: url("assets/jetbrains.woff2") format("woff2");
+      }
+
+      /* Page-wide styles */
+      body {
+        background: #dfdfdf;
+        position: fixed;
+        overflow: hidden;
+        width: 100%;
+        height: 100vh;
+
+        font-family: JetBrains Mono;
+
+        display: flex;
+        flex-direction: column;
+        gap: 0.2em;
+      }
+
+      b {
+        font-weight: bold;
+      }
+
+      /* Page-wide styles for dialogs */
+      dialog {
+        .content {
+          display: flex;
+          flex-direction: column;
+          gap: 1em;
+
+          h1 {
+            font-weight: bold;
+          }
+        }
+      }
+
+      /* Page-wide styles for buttons */
+      button {
+        font-family: JetBrains Mono;
+
+        /* Show a pointer icon over buttons */
+        cursor: pointer;
+
+        /* Remove 300ms delay on mobile */
+        touch-action: none;
+      }
+
+      #toolbox {
+        margin: 0.2em 0.2em 0 0.2em;
+
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1em;
+
+        .operations {
+          display: flex;
+          flex-direction: row;
+          align-items: center;
+          flex-wrap: nowrap;
+          text-wrap: nowrap;
+          gap: 0.2em;
+
+          &.left {
+            justify-content: left;
+          }
+
+          &.center {
+            justify-content: center;
+          }
+
+          &.right {
+            justify-content: right;
+          }
+
+          button {
+            position: relative;
+
+            &.hidden {
+              display: none;
+            }
+
+            .keyboard {
+              position: absolute;
+              right: 1px;
+              bottom: 0;
+              color: #888;
+            }
+          }
+        }
+      }
+
+      #information-flow-progression-current {
+        width: 2em;
+      }
+
+      #information-flow-step-title {
+        min-height: 1.2em;
+        border: 1px solid #888;
+        background: #eee;
+        padding: 0.3em;
+        margin: 0 0.2em 0 0.2em;
+
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: center;
+        flex-wrap: nowrap;
+        text-wrap: nowrap;
+
+        &.hidden {
+          display: none;
+        }
+      }
+
+      #canvas {
+        width: 100%;
+        flex-grow: 1;
+        max-height: 100%;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="toolbox">
+      <div class="operations left">
+        <button id="operation-goto-editor" title="Go to editor">
+          <img src="./assets/icon-edit.svg" />
+        </button>
+      </div>
+      <div class="operations center">
+        <button id="operation-flow-rewind" title="Rewind the flow animation">
+          <img src="./assets/icon-flow-rewind.svg" />
+        </button>
+        <button id="operation-flow-play" title="Play the flow animation">
+          <img src="./assets/icon-flow-play.svg" />
+        </button>
+        <button
+          id="operation-flow-pause"
+          class="hidden"
+          title="Pause the flow animation"
+        >
+          <img src="./assets/icon-flow-pause.svg" />
+        </button>
+        <button id="operation-flow-previous-keyframe" title="Previous keyframe">
+          <img src="./assets/icon-flow-previous.svg" />
+        </button>
+        <button id="operation-flow-next-keyframe" title="Next keyframe">
+          <img src="./assets/icon-flow-next.svg" />
+        </button>
+        <div id="information-flow-progression" title="Progression of the flow">
+          <input
+            id="information-flow-progression-current"
+            type="text"
+            inputmode="numeric"
+            value="0"
+          />
+          /
+          <span id="information-flow-progression-total">0</span>
+        </div>
+      </div>
+      <div class="operations right">
+        <button id="operation-camera-fit" title="Fit to screen">
+          <img src="./assets/icon-zoom-fit.svg" />
+        </button>
+        <button id="operation-camera-zoom-in" title="Zoom in">
+          <img src="./assets/icon-zoom-in.svg" />
+        </button>
+        <button id="operation-camera-zoom-out" title="Zoom out">
+          <img src="./assets/icon-zoom-out.svg" />
+        </button>
+      </div>
+    </div>
+    <div
+      id="information-flow-step-title"
+      title="Title of the current keyframe"
+    ></div>
+    <div id="canvas">Loading...</div>
+    <script type="module" src="/viewer.ts"></script>
+  </body>
+</html>
