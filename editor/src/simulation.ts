@@ -29,40 +29,10 @@ viewport.addChild(container);
 app.ticker.add<void>(deltaTime => {
   if (state.flowPlay && state.flowPlayer) {
     state.flowPlayer.update(deltaTime, state.flowPlayMode);
+    state.flowPlayer.draw();
+    state.flowKeyframe = Math.max(0, state.flowPlayer.getKeyframe());
   }
 });
-
-// TODO: hmmm...
-const currentKeyframe = document.getElementById("information-flow-keyframe")!;
-const currentKeyframeTitle = document.getElementById(
-  "information-flow-step-title",
-)!;
-
-const domParser = new DOMParser();
-
-function onKeyframeChanged(keyframe: number): void {
-  // Set number.
-  state.flowKeyframe = Math.max(0, keyframe);
-  currentKeyframe.innerHTML = state.flowKeyframe.toString();
-
-  // Set title.
-  if (state.system.flows.at(0)?.steps.some(step => step.description)) {
-    const steps =
-      state.system.flows
-        .at(0)
-        ?.steps?.filter(step => step.keyframe === state.flowKeyframe) ?? [];
-
-    const title = steps.find(step => step.description)?.description ?? "";
-
-    currentKeyframeTitle.innerHTML =
-      domParser.parseFromString(title, "text/html").body.textContent ??
-      "";
-
-    currentKeyframeTitle.classList.remove("hidden");
-  } else {
-    currentKeyframeTitle.classList.add("hidden");
-  }
-}
 
 export function loadSimulation(yaml: string): boolean {
   let result: ReturnType<typeof loadYaml>;
@@ -102,8 +72,6 @@ export function loadSimulation(yaml: string): boolean {
     }
   }
 
-  onKeyframeChanged(state.flowKeyframe);
-
   if (state.flowPlay && state.flowPlayer) {
     app.ticker.start();
   }
@@ -111,15 +79,33 @@ export function loadSimulation(yaml: string): boolean {
   return true;
 }
 
-export function getVisibleBoundaries() {
-  const visibleBoundaries = state.simulator.getVisibleWorldBoundaries();
+export function fitSimulation() {
+  const boundaries = state.simulator.getVisibleWorldBoundaries();
 
-  return {
-    left: visibleBoundaries.left * BlockSize,
-    right: visibleBoundaries.right * BlockSize,
-    top: visibleBoundaries.top * BlockSize,
-    bottom: visibleBoundaries.bottom * BlockSize,
-  };
+  const boundaryLeft = boundaries.left * BlockSize;
+  const boundaryRight = boundaries.right * BlockSize;
+  const boundaryTop = boundaries.top * BlockSize;
+  const boundaryBottom = boundaries.bottom * BlockSize;
+
+  const left = boundaryLeft - BlockSize; /* margin */
+  const top = boundaryTop - BlockSize; /* margin */
+
+  const width =
+    boundaryRight - boundaryLeft + BlockSize + BlockSize * 2; /* margin */
+
+  const height =
+    boundaryBottom - boundaryTop + BlockSize + BlockSize * 2; /* margin */
+
+  // The operation is executed twice because of a weird issue that I don't
+  // understand yet. Somehow, because we are using "viewport.clamp", the first
+  // tuple ["viewport.moveCenter", "viewport.fit"] below doesn't quite do its
+  // job and part of the simulation is slightly out of the viewport.
+  //
+  // This code feels like slapping the side of the CRT.
+  for (let i = 0; i < 2; i++) {
+    viewport.moveCenter(left + width / 2, top + height / 2);
+    viewport.fit(true, width, height);
+  }
 }
 
 export function getObjectsToRender(): (Sprite | Text)[] {
@@ -293,16 +279,20 @@ export function modifySpecification(modifier: () => void): void {
   }
 }
 
+export function getKeyframesCount(): number {
+  return Math.max(
+    0,
+    new Set(state.system.flows.at(0)?.steps?.map(step => step.keyframe) ?? [])
+      .size - 1,
+  );
+}
+
 export function createFlowPlayer(flowIndex: number): FlowPlayer {
   return new FlowPlayer(
     state.simulator,
     state.system.flows.find(flow => flow.index === flowIndex)!,
     state.flowKeyframe,
   );
-}
-
-export function tickFlowPlayer(): void {
-  state.flowPlayer?.update(1, state.flowPlayMode);
 }
 
 export class FlowPlayer {
@@ -344,12 +334,21 @@ export class FlowPlayer {
     }
   }
 
-  show(): void {
-    this.update(0, state.flowPlayMode);
-  }
-
   getObjectsToRender(): Sprite[] {
     return this.sprites;
+  }
+
+  setKeyframe(keyframe: number): void {
+    this.currentKeyframe = keyframe;
+    this.currentKeyframeProgress = 0;
+  }
+
+  getKeyframe(): number {
+    return this.currentKeyframe;
+  }
+
+  getKeyframeProgress(): number {
+    return this.currentKeyframeProgress;
   }
 
   update(deltaTime: number, mode: "one" | "all"): void {
@@ -361,11 +360,11 @@ export class FlowPlayer {
       if (mode === "all") {
         this.currentKeyframe += 1;
         this.currentKeyframe %= this.maxKeyframes;
-
-        onKeyframeChanged(this.currentKeyframe);
       }
     }
+  }
 
+  draw(): void {
     const data = getFlowTick(
       this.simulator,
       this.flow,

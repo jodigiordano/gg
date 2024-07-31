@@ -3,7 +3,7 @@ const yamlEditorDialog = document.getElementById(
   "yaml-editor",
 ) as HTMLDialogElement;
 
-const yamlEditor = yamlEditorDialog.querySelector(
+const yamlEditor = yamlEditorDialog?.querySelector(
   "textarea",
 ) as HTMLTextAreaElement;
 

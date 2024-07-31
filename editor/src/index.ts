@@ -2,10 +2,10 @@ import { Point } from "pixi.js";
 import { app, tick } from "./pixi.js";
 import { viewport } from "./viewport.js";
 import {
-  getVisibleBoundaries,
   loadSimulation,
+  fitSimulation,
   modifySpecification,
-  tickFlowPlayer,
+  getKeyframesCount,
 } from "./simulation.js";
 import { BlockSize, debounce, sanitizeHtml } from "./helpers.js";
 import { initializeDropdowns } from "./dropdown.js";
@@ -147,6 +147,7 @@ document
       pushChange(value);
       save(value);
       loadSimulation(value);
+      updateFlowProgression();
       tick();
     }
   });
@@ -205,6 +206,7 @@ document
     resetState();
     setYamlEditorValue(value);
     loadSimulation(value);
+    updateFlowProgression();
     pushChange(value);
 
     const urlParams = getUrlParams();
@@ -254,7 +256,7 @@ document
     link.click();
 
     setGridVisible(true);
-    state.flowPlayer?.show();
+    state.flowPlayer?.draw();
 
     app.start();
   });
@@ -274,6 +276,7 @@ document
       state.operation.onEnd(state);
       setYamlEditorValue(value);
       loadSimulation(value);
+      updateFlowProgression();
       save(value);
       tick();
     }
@@ -290,6 +293,7 @@ document
       state.operation.onEnd(state);
       setYamlEditorValue(value);
       loadSimulation(value);
+      updateFlowProgression();
       save(value);
       tick();
     }
@@ -303,7 +307,7 @@ document
   .getElementById("operation-camera-fit")
   ?.addEventListener("click", function () {
     fitSimulation();
-
+    redrawGrid();
     tick();
   });
 
@@ -375,11 +379,21 @@ document
     const value = getYamlEditorValue();
 
     if (value) {
-      state.flowKeyframe -= 1;
+      if (state.flowPlayer && state.flowPlayer.getKeyframeProgress() === 0) {
+        if (state.flowKeyframe === 0) {
+          state.flowKeyframe = getKeyframesCount();
+        } else {
+          state.flowKeyframe = Math.max(0, state.flowKeyframe - 1);
+        }
+      }
 
-      loadSimulation(value);
-      tickFlowPlayer();
-      tick();
+      updateFlowProgression();
+
+      if (state.flowPlayer) {
+        state.flowPlayer.setKeyframe(state.flowKeyframe);
+        state.flowPlayer.draw();
+        tick();
+      }
     }
   });
 
@@ -391,9 +405,13 @@ document
     if (value) {
       state.flowKeyframe += 1;
 
-      loadSimulation(value);
-      tickFlowPlayer();
-      tick();
+      updateFlowProgression();
+
+      if (state.flowPlayer) {
+        state.flowPlayer.setKeyframe(state.flowKeyframe);
+        state.flowPlayer.draw();
+        tick();
+      }
     }
   });
 
@@ -453,6 +471,39 @@ document
       }
     });
   });
+
+const currentKeyframe = document.getElementById("information-flow-keyframe")!;
+
+const currentKeyframeTitle = document.getElementById(
+  "information-flow-step-title",
+)!;
+
+app.ticker.add<void>(() => {
+  if (state.flowPlay && state.flowPlayer) {
+    updateFlowProgression();
+  }
+});
+
+function updateFlowProgression(): void {
+  // Set number.
+  currentKeyframe.innerHTML = state.flowKeyframe.toString();
+
+  // Set title.
+  if (state.system.flows.at(0)?.steps.some(step => step.description)) {
+    const steps =
+      state.system.flows
+        .at(0)
+        ?.steps?.filter(step => step.keyframe === state.flowKeyframe) ?? [];
+
+    const title = steps.find(step => step.description)?.description ?? "";
+
+    currentKeyframeTitle.innerHTML = sanitizeHtml(title);
+
+    currentKeyframeTitle.classList.remove("hidden");
+  } else {
+    currentKeyframeTitle.classList.add("hidden");
+  }
+}
 
 //
 // Toolbox
@@ -540,9 +591,12 @@ function loadSaveData(): void {
   if (loaded) {
     setYamlEditorValue(loaded);
     loadSimulation(loaded);
+    updateFlowProgression();
     pushChange(loaded);
     save(loaded);
     fitSimulation();
+    redrawGrid();
+    state.flowPlayer?.draw();
     tick();
   }
 }
@@ -558,30 +612,4 @@ function updateStatePosition(screenPosition: Point): void {
 
   state.x = Math.floor(coordinates.x / BlockSize) | 0;
   state.y = Math.floor(coordinates.y / BlockSize) | 0;
-}
-
-function fitSimulation() {
-  const boundaries = getVisibleBoundaries();
-
-  const left = boundaries.left - BlockSize; /* margin */
-  const top = boundaries.top - BlockSize; /* margin */
-
-  const width =
-    boundaries.right - boundaries.left + BlockSize + BlockSize * 2; /* margin */
-
-  const height =
-    boundaries.bottom - boundaries.top + BlockSize + BlockSize * 2; /* margin */
-
-  // The operation is executed twice because of a weird issue that I don't
-  // understand yet. Somehow, because we are using "viewport.clamp", the first
-  // tuple ["viewport.moveCenter", "viewport.fit"] below doesn't quite do its
-  // job and part of the simulation is slightly out of the viewport.
-  //
-  // This code feels like slapping the side of the CRT.
-  for (let i = 0; i < 2; i++) {
-    viewport.moveCenter(left + width / 2, top + height / 2);
-    viewport.fit(true, width, height);
-  }
-
-  redrawGrid();
 }

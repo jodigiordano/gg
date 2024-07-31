@@ -1,4 +1,4 @@
-import { modifySpecification, tickFlowPlayer } from "../simulation.js";
+import { modifySpecification } from "../simulation.js";
 import SystemSelector from "../systemSelector.js";
 import { State } from "../state.js";
 import Operation from "../operation.js";
@@ -93,7 +93,7 @@ const operation: Operation = {
       }
     });
 
-    tickFlowPlayer();
+    state.flowPlayer?.draw();
     onPointerMove(state);
   },
   onPointerDown: () => {},
