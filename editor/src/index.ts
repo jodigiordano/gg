@@ -1,5 +1,5 @@
 import { Point } from "pixi.js";
-import { app } from "./pixi.js";
+import { app, tick } from "./pixi.js";
 import { viewport } from "./viewport.js";
 import {
   getVisibleBoundaries,
@@ -584,8 +584,4 @@ function fitSimulation() {
   }
 
   redrawGrid();
-}
-
-function tick() {
-  app.ticker.update();
 }

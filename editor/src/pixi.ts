@@ -35,5 +35,9 @@ app.stage.interactiveChildren = true;
 
 app.ticker.stop();
 
+export function tick() {
+  app.ticker.update();
+}
+
 // Add PixiJS to the DOM.
 canvasContainer.replaceChildren(app.view as unknown as Node);
