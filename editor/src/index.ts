@@ -7,7 +7,7 @@ import {
   modifySpecification,
   tickFlowPlayer,
 } from "./simulation.js";
-import { BlockSize } from "./consts.js";
+import { BlockSize, debounce, sanitizeHtml } from "./helpers.js";
 import { initializeDropdowns } from "./dropdown.js";
 import { state, resetState, pushChange } from "./state.js";
 import { redrawGrid, setGridVisible } from "./grid.js";
@@ -588,15 +588,4 @@ function fitSimulation() {
 
 function tick() {
   app.ticker.update();
-}
-
-function debounce(callback: () => void, waitMs: number) {
-  let timeoutId: number | undefined = undefined;
-
-  return () => {
-    window.clearTimeout(timeoutId);
-    timeoutId = window.setTimeout(() => {
-      callback();
-    }, waitMs);
-  };
 }

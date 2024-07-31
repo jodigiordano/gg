@@ -13,7 +13,7 @@ import {
 } from "@gg/core";
 import { Sprite, Text, SCALE_MODES, Container } from "pixi.js";
 import { spritesheet } from "./assets.js";
-import { BlockSize } from "./consts.js";
+import { BlockSize } from "./helpers.js";
 import { app } from "./pixi.js";
 import { viewport } from "./viewport.js";
 import { state, pushChange } from "./state.js";

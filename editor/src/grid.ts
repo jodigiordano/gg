@@ -1,6 +1,6 @@
 import { Graphics, SCALE_MODES, TilingSprite } from "pixi.js";
 // @ts-ignore
-import { BlockSize } from "./consts.js";
+import { BlockSize } from "./helpers.js";
 import { app } from "./pixi.js";
 import { viewport } from "./viewport.js";
 

@@ -1,6 +1,6 @@
 import { Container, Sprite } from "pixi.js";
 import { spritesheet } from "./assets.js";
-import { BlockSize } from "./consts.js";
+import { BlockSize } from "./helpers.js";
 import { RuntimePosition, RuntimeSubsystem } from "@gg/core";
 
 export default class SystemSelector extends Container {

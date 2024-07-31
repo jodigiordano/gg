@@ -5,7 +5,7 @@ import { modifySpecification } from "../simulation.js";
 import Operation from "../operation.js";
 import { State } from "../state.js";
 import { viewport } from "../viewport.js";
-import { BlockSize } from "../consts.js";
+import { BlockSize } from "../helpers.js";
 
 const selectAVisual = new SystemSelector();
 const selectBVisual = new SystemSelector();
