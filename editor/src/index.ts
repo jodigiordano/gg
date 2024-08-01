@@ -32,15 +32,34 @@ import { getUrlParams, setUrlParams, load, save } from "./persistence.js";
 // Events
 //
 
+// The user moves the cursor in the canvas.
 viewport.on("pointermove", (event: any) => {
   updateStatePosition(event.data.global);
   state.operation.onPointerMove(state);
   tick();
 });
 
+// The user press the pointer in the canvas.
 viewport.on("pointerdown", (event: any) => {
+  // Only consider left mouse button.
+  if (event.pointerType === "mouse" && event.button !== 0) {
+    return;
+  }
+
   updateStatePosition(event.data.global);
   state.operation.onPointerDown(state);
+  tick();
+});
+
+// The user release the pointer in the canvas.
+viewport.on("pointerup", (event: any) => {
+  // Only consider left mouse button.
+  if (event.pointerType === "mouse" && event.button !== 0) {
+    return;
+  }
+
+  updateStatePosition(event.data.global);
+  state.operation.onPointerUp(state);
   tick();
 });
 
@@ -53,12 +72,6 @@ viewport.on("pointerenter", () => {
 // The user cursor leaves the canvas.
 viewport.on("pointerleave", () => {
   state.operation.onMute(state);
-  tick();
-});
-
-viewport.on("pointerup", (event: any) => {
-  updateStatePosition(event.data.global);
-  state.operation.onPointerUp(state);
   tick();
 });
 
