@@ -102,6 +102,7 @@ window.addEventListener(
 window.addEventListener("keydown", event => {
   if (
     isYamlEditorOpen() ||
+    options.open ||
     guide.open ||
     about.open ||
     privacy.open
@@ -137,9 +138,8 @@ window.addEventListener("hashchange", () => {
 
   const urlParams = getUrlParams();
 
-  state.flowPlay = urlParams.autoplay
-    ? urlParams.autoplay === "true"
-    : state.flowPlay;
+  state.flowPlay = urlParams.autoplay;
+  state.flowSpeed = urlParams.speed;
 
   loadSaveData();
 });
@@ -229,7 +229,8 @@ document
 
     const urlParams = getUrlParams();
 
-    urlParams.autoplay = "false";
+    urlParams.autoplay = false;
+    urlParams.speed = 1;
 
     setUrlParams(urlParams);
     save(value);
@@ -288,6 +289,47 @@ document
   ?.addEventListener("click", function () {
     window.location.replace(`/viewer.html${window.location.hash}`);
   });
+
+const options = document.getElementById("options") as HTMLDialogElement;
+
+document
+  .getElementById("operation-options-open")
+  ?.addEventListener("click", function () {
+    options.inert = true;
+    options.showModal();
+    options.inert = false;
+  });
+
+const autoplay = document.getElementById("option-autoplay") as HTMLInputElement;
+
+autoplay.checked = state.flowPlay;
+
+autoplay.addEventListener("change", event => {
+  const urlParams = getUrlParams();
+
+  // @ts-ignore
+  urlParams.autoplay = event.currentTarget!.checked.toString();
+
+  setUrlParams(urlParams);
+});
+
+const speed = document.getElementById("option-speed") as HTMLInputElement;
+
+speed.value = state.flowSpeed.toString();
+
+speed.addEventListener("change", event => {
+  // @ts-ignore
+  state.flowSpeed = event.currentTarget!.value;
+
+  const urlParams = getUrlParams();
+
+  // @ts-ignore
+  const value = Number(event.currentTarget!.value);
+
+  urlParams.speed = !isNaN(value) ? Math.max(0.1, Math.min(5, value)) : 1;
+
+  setUrlParams(urlParams);
+});
 
 //
 // Undo / Redo operations.

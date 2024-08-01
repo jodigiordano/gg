@@ -18,6 +18,7 @@ export interface State {
   flowKeyframe: number;
   flowPlay: boolean;
   flowPlayMode: "one" | "all";
+  flowSpeed: number;
 }
 
 const defaultSystem = loadYaml('specificationVersion: 1.0.0\ntitle: ""').system;
@@ -36,8 +37,9 @@ export const state: State = {
   simulator: new SystemSimulator(defaultSystem),
   flowPlayer: null,
   flowKeyframe: 0,
-  flowPlay: urlParams.autoplay ? urlParams.autoplay === "true" : false,
+  flowPlay: urlParams.autoplay,
   flowPlayMode: "all",
+  flowSpeed: urlParams.speed,
 };
 
 defaultOperation.onBegin(state);

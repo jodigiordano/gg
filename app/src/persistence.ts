@@ -42,24 +42,43 @@ export function save(value: string): void {
 
 export interface UrlParams {
   file?: string;
-  autoplay?: string;
+  autoplay: boolean;
+  speed: number;
 }
 
 export function setUrlParams(urlParams: UrlParams): void {
+  const params: Record<string, unknown> = { ...urlParams };
+
+  if (!params.autoplay) {
+    delete params.autoplay;
+  }
+
+  if (params.speed === 1) {
+    delete params.speed;
+  }
+
   window.history.replaceState(
     null,
     "",
-    `${document.location.pathname}#${Object.entries(urlParams)
+    `${document.location.pathname}#${Object.entries(params)
       .map(kvp => kvp.join("="))
       .join("&")}`,
   );
 }
 
-export function getUrlParams(): { file?: string; autoplay?: string } {
-  return Object.fromEntries(
+export function getUrlParams(): UrlParams {
+  const urlParams = Object.fromEntries(
     window.location.hash
       .substring(1)
       .split("&")
       .map(entry => entry.split("=")),
   );
+
+  urlParams.autoplay = urlParams.autoplay === "true";
+
+  const speed = Number(urlParams.speed);
+
+  urlParams.speed = !isNaN(speed) ? Math.max(0.1, Math.min(5, speed)) : 1;
+
+  return urlParams;
 }

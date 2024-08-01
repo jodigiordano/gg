@@ -446,6 +446,7 @@
         <ul class="content closed">
           <li id="operation-goto-viewer">presentation mode</li>
           <li id="operation-yaml-editor-open">yaml editor</li>
+          <li id="operation-options-open">options</li>
         </ul>
       </div>
       <div class="dropdown">
@@ -794,6 +795,36 @@
         <form method="dialog">
           <button id="operation-flow-step-set-title-apply">apply</button>
           <button>cancel</button>
+        </form>
+      </div>
+    </dialog>
+    <dialog id="options">
+      <div class="content">
+        <h1>Options</h1>
+        <p>
+          <label
+            for="option-autoplay"
+            title="Start playing the flow animation when opening the editor or presentation mode"
+          >
+            Autoplay</label
+          >
+          <input type="checkbox" id="option-autoplay" value="true" />
+        </p>
+        <p>
+          <label for="option-speed" title="Speed of the flow animation">
+            Playback speed</label
+          >
+          <input
+            id="option-speed"
+            type="number"
+            value="1"
+            step="0.5"
+            min="0.5"
+            max="10"
+          />
+        </p>
+        <form method="dialog">
+          <button>close</button>
         </form>
       </div>
     </dialog>

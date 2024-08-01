@@ -28,7 +28,7 @@ viewport.addChild(container);
 
 app.ticker.add<void>(deltaTime => {
   if (state.flowPlay && state.flowPlayer) {
-    state.flowPlayer.update(deltaTime, state.flowPlayMode);
+    state.flowPlayer.update(deltaTime, state.flowPlayMode, state.flowSpeed);
     state.flowPlayer.draw();
     state.flowKeyframe = Math.max(0, state.flowPlayer.getKeyframe());
   }
@@ -351,8 +351,8 @@ export class FlowPlayer {
     return this.currentKeyframeProgress;
   }
 
-  update(deltaTime: number, mode: "one" | "all"): void {
-    this.currentKeyframeProgress += 0.01 * deltaTime;
+  update(deltaTime: number, mode: "one" | "all", speed: number): void {
+    this.currentKeyframeProgress += (speed / 100) * deltaTime;
 
     if (this.currentKeyframeProgress >= 1) {
       this.currentKeyframeProgress -= 1;
