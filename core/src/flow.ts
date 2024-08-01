@@ -34,10 +34,13 @@ export function getFlowTick(
       return [];
     }
 
-    const routeIndexRemaining = routeIndexRaw - routeIndex;
+    const position = route[routeIndex];
 
-    const position = route[routeIndex]!;
-    const positionAfter = route[routeIndex + 1]!;
+    if (!position) {
+      return [];
+    }
+
+    const positionAfter = route[routeIndex + 1];
 
     if (!positionAfter) {
       return position;
@@ -45,6 +48,8 @@ export function getFlowTick(
 
     const deltaX = positionAfter[0]! - position[0]!;
     const deltaY = positionAfter[1]! - position[1]!;
+
+    const routeIndexRemaining = routeIndexRaw - routeIndex;
 
     return [
       position[0]! + deltaX * routeIndexRemaining,
