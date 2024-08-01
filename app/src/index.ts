@@ -366,9 +366,9 @@ const flowPause = document.getElementById("operation-flow-pause")!;
 const flowRepeatOne = document.getElementById("operation-flow-repeat-one")!;
 const flowRepeatAll = document.getElementById("operation-flow-repeat-all")!;
 
-if (getUrlParams().autoplay === "true") {
-  flowPlay.classList.remove("hidden");
-  flowPause.classList.add("hidden");
+if (state.flowPlay) {
+  flowPlay.classList.add("hidden");
+  flowPause.classList.remove("hidden");
 }
 
 flowPlay.addEventListener("click", function () {

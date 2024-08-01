@@ -6,7 +6,7 @@ import {
   loadSimulation,
   getKeyframesCount,
 } from "./simulation.js";
-import { getUrlParams, load } from "./persistence.js";
+import { load } from "./persistence.js";
 import { debounce, sanitizeHtml } from "./helpers.js";
 
 // Update the simulation when the viewport is moved.
@@ -250,9 +250,9 @@ if (loaded) {
   loadSimulation(loaded);
 
   // Initialize the toolbox.
-  if (getUrlParams().autoplay === "true") {
-    flowPlay.classList.remove("hidden");
-    flowPause.classList.add("hidden");
+  if (state.flowPlay) {
+    flowPlay.classList.add("hidden");
+    flowPause.classList.remove("hidden");
   }
 
   flowProgressionTotal.innerHTML = getKeyframesCount().toString();
