@@ -100,7 +100,12 @@ window.addEventListener(
 );
 
 window.addEventListener("keydown", event => {
-  if (isYamlEditorOpen()) {
+  if (
+    isYamlEditorOpen() ||
+    guide.open ||
+    about.open ||
+    privacy.open
+  ) {
     return;
   }
 
