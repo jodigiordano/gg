@@ -763,6 +763,13 @@ function isModalOpen(): boolean {
 function updateStatePosition(screenPosition: Point): void {
   const coordinates = viewport.toWorld(screenPosition);
 
-  state.x = (coordinates.x / BlockSize) | 0;
-  state.y = (coordinates.y / BlockSize) | 0;
+  state.x =
+    coordinates.x >= 0
+      ? Math.floor(coordinates.x / BlockSize)
+      : -Math.ceil(Math.abs(coordinates.x / BlockSize));
+
+  state.y =
+    coordinates.y >= 0
+      ? Math.floor(coordinates.y / BlockSize)
+      : -Math.ceil(Math.abs(coordinates.y / BlockSize));
 }
