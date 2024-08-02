@@ -46,6 +46,7 @@ const flowNextKeyframe = document.getElementById(
 )!;
 
 function playFlow(): void {
+  state.flowPlayMode = "repeatAll";
   state.flowPlay = true;
   app.ticker.start();
 
@@ -62,33 +63,53 @@ function pauseFlow(): void {
 }
 
 function goToNextKeyframe(): void {
-  if (state.flowKeyframe === getKeyframesCount()) {
-    state.flowKeyframe = 0;
+  const keyframe = state.flowKeyframe | 0;
+  const keyframeProgress = state.flowKeyframe - keyframe;
+
+  if (keyframeProgress > 0) {
+    state.flowKeyframe = keyframe + 1.99999;
   } else {
-    state.flowKeyframe = Math.min(getKeyframesCount(), state.flowKeyframe + 1);
+    state.flowKeyframe = keyframe + 0.99999;
+  }
+
+  if (state.flowKeyframe > getKeyframesCount() + 1) {
+    state.flowKeyframe = 0.99999;
   }
 
   updateFlowProgression();
 
+  playFlow();
+
+  state.flowPlayMode = "playOne";
+
   if (state.flowPlayer) {
-    state.flowPlayer.setKeyframe(state.flowKeyframe);
+    state.flowPlayer.setTargetKeyframe(state.flowKeyframe);
+    state.flowPlayer.setKeyframe(state.flowKeyframe | 0);
     state.flowPlayer.draw();
-    tick();
+    app.ticker.start();
   }
 }
 
 function goToPreviousKeyframe(): void {
-  if (state.flowPlayer && state.flowPlayer.getKeyframeProgress() === 0) {
-    if (state.flowKeyframe === 0) {
+  const keyframe = state.flowKeyframe | 0;
+  const keyframeProgress = state.flowKeyframe - keyframe;
+
+  if (keyframeProgress === 0) {
+    if (keyframe === 0) {
       state.flowKeyframe = getKeyframesCount();
     } else {
-      state.flowKeyframe = Math.max(0, state.flowKeyframe - 1);
+      state.flowKeyframe = Math.max(0, keyframe - 1);
     }
+  } else {
+    state.flowKeyframe = keyframe;
   }
 
   updateFlowProgression();
 
+  state.flowPlayMode = "playOne";
+
   if (state.flowPlayer) {
+    state.flowPlayer.setTargetKeyframe(state.flowKeyframe);
     state.flowPlayer.setKeyframe(state.flowKeyframe);
     state.flowPlayer.draw();
     tick();
@@ -97,9 +118,11 @@ function goToPreviousKeyframe(): void {
 
 function rewindFlow(): void {
   state.flowKeyframe = 0;
+
   updateFlowProgression();
 
   if (state.flowPlayer) {
+    state.flowPlayer.setTargetKeyframe(state.flowKeyframe);
     state.flowPlayer.setKeyframe(state.flowKeyframe);
     state.flowPlayer.draw();
     tick();
@@ -134,6 +157,13 @@ flowNextKeyframe.addEventListener("click", () => {
 app.ticker.add<void>(() => {
   if (state.flowPlayer) {
     updateFlowProgression();
+
+    if (
+      state.flowPlayMode === "playOne" &&
+      state.flowPlayer.getKeyframe() === state.flowPlayer.getTargetKeyframe()
+    ) {
+      pauseFlow();
+    }
   }
 });
 
@@ -199,20 +229,22 @@ flowProgressionCurrent.addEventListener("change", function (event) {
   updateFlowProgression();
 
   if (state.flowPlayer) {
-    state.flowPlayer.setKeyframe(state.flowKeyframe);
+    state.flowPlayer.setTargetKeyframe(state.flowKeyframe);
     state.flowPlayer.draw();
     tick();
   }
 });
 
 function updateFlowProgression(): void {
-  flowProgressionCurrent.value = state.flowKeyframe.toString();
+  const keyframe = state.flowKeyframe | 0;
+
+  flowProgressionCurrent.value = keyframe.toString();
 
   // Set title.
   const steps =
     state.system.flows
       .at(0)
-      ?.steps?.filter(step => step.keyframe === state.flowKeyframe) ?? [];
+      ?.steps?.filter(step => step.keyframe === keyframe) ?? [];
 
   const title = steps.find(step => step.description)?.description ?? "";
 
@@ -264,5 +296,7 @@ if (loaded) {
   updateFlowProgression();
 
   // Render the simulation.
+  state.flowPlayer?.draw();
+
   resizeCanvas();
 }

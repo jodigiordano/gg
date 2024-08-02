@@ -17,7 +17,7 @@ export interface State {
   flowPlayer: FlowPlayer | null;
   flowKeyframe: number;
   flowPlay: boolean;
-  flowPlayMode: "one" | "all";
+  flowPlayMode: "playOne" | "repeatAll" | "repeatOne";
   flowSpeed: number;
 }
 
@@ -38,7 +38,7 @@ export const state: State = {
   flowPlayer: null,
   flowKeyframe: 0,
   flowPlay: urlParams.autoplay,
-  flowPlayMode: "all",
+  flowPlayMode: "repeatAll",
   flowSpeed: urlParams.speed,
 };
 

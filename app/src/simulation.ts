@@ -298,21 +298,21 @@ export function createFlowPlayer(flowIndex: number): FlowPlayer {
 export class FlowPlayer {
   private simulator: SystemSimulator;
   private maxKeyframes: number;
+  private targetKeyframe: number;
   private currentKeyframe: number;
-  private currentKeyframeProgress: number;
   private sprites: Sprite[];
   private flow: RuntimeFlow;
 
   constructor(
     simulator: SystemSimulator,
     flow: RuntimeFlow,
-    currentKeyframe: number,
+    targetKeyframe: number,
   ) {
     this.simulator = simulator;
     this.flow = flow;
 
-    this.currentKeyframe = currentKeyframe;
-    this.currentKeyframeProgress = 0;
+    this.targetKeyframe = targetKeyframe;
+    this.currentKeyframe = targetKeyframe;
 
     this.maxKeyframes =
       Math.max(0, ...flow.steps.map(step => step.keyframe)) + 1;
@@ -338,45 +338,62 @@ export class FlowPlayer {
     return this.sprites;
   }
 
-  setKeyframe(keyframe: number): void {
-    this.currentKeyframe = keyframe;
-    this.currentKeyframeProgress = 0;
+  getTargetKeyframe(): number {
+    return this.targetKeyframe;
+  }
+
+  setTargetKeyframe(keyframe: number): void {
+    this.targetKeyframe = keyframe;
   }
 
   getKeyframe(): number {
     return this.currentKeyframe;
   }
 
-  getKeyframeProgress(): number {
-    return this.currentKeyframeProgress;
+  setKeyframe(keyframe: number): void {
+    this.currentKeyframe = keyframe;
   }
 
-  update(deltaTime: number, mode: "one" | "all", speed: number): void {
-    this.currentKeyframeProgress += (speed / 100) * deltaTime;
+  update(
+    deltaTime: number,
+    mode: typeof state.flowPlayMode,
+    speed: number,
+  ): void {
+    const beforeTickKeyframe = this.currentKeyframe | 0;
 
-    if (this.currentKeyframeProgress >= 1) {
-      this.currentKeyframeProgress -= 1;
+    this.currentKeyframe += (speed / 100) * deltaTime;
 
-      if (mode === "all") {
-        this.currentKeyframe += 1;
-        this.currentKeyframe %= this.maxKeyframes;
-      }
+    if (
+      mode === "repeatOne" &&
+      (this.currentKeyframe | 0) != beforeTickKeyframe
+    ) {
+      this.currentKeyframe -= 1;
+    } else if (mode === "repeatAll") {
+      this.currentKeyframe %= this.maxKeyframes;
+    } else if (
+      mode === "playOne" &&
+      this.currentKeyframe > this.targetKeyframe
+    ) {
+      this.currentKeyframe = this.targetKeyframe;
     }
   }
 
   draw(): void {
+    const keyframe = this.currentKeyframe | 0;
+    const keyframeProgress = this.currentKeyframe - keyframe;
+
     const data = getFlowTick(
       this.simulator,
       this.flow,
-      this.currentKeyframe,
+      keyframe,
       // easeInOutQuart
-      this.currentKeyframeProgress < 0.5
+      keyframeProgress < 0.5
         ? 8 *
-            this.currentKeyframeProgress *
-            this.currentKeyframeProgress *
-            this.currentKeyframeProgress *
-            this.currentKeyframeProgress
-        : 1 - Math.pow(-2 * this.currentKeyframeProgress + 2, 4) / 2,
+            keyframeProgress *
+            keyframeProgress *
+            keyframeProgress *
+            keyframeProgress
+        : 1 - Math.pow(-2 * keyframeProgress + 2, 4) / 2,
     );
 
     const boundaries = this.simulator.getBoundaries();

@@ -72,9 +72,11 @@ const operation: Operation = {
     modifySpecification(() => {
       const steps = state.system.flows.at(0)?.steps ?? [];
 
+      const keyframe = state.flowKeyframe | 0;
+
       const step = steps.find(
         s =>
-          s.keyframe === state.flowKeyframe &&
+          s.keyframe === keyframe &&
           ((s.from === link.a && s.to === link.b) ||
             (s.from === link.b && s.to === link.a)),
       );
@@ -89,7 +91,7 @@ const operation: Operation = {
       } else if (step) {
         removeFlowStep(state.system, step);
       } else {
-        addFlowStep(state.system, state.flowKeyframe, link.a, link.b);
+        addFlowStep(state.system, keyframe, link.a, link.b);
       }
     });
 

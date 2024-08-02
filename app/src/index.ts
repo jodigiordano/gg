@@ -105,7 +105,8 @@ window.addEventListener("keydown", event => {
     options.open ||
     guide.open ||
     about.open ||
-    privacy.open
+    privacy.open ||
+    flowStepSetTitleDialog.open
   ) {
     return;
   }
@@ -430,14 +431,14 @@ flowPause.addEventListener("click", function () {
 });
 
 flowRepeatOne.addEventListener("click", function () {
-  state.flowPlayMode = "all";
+  state.flowPlayMode = "repeatAll";
 
   flowRepeatOne.classList.add("hidden");
   flowRepeatAll.classList.remove("hidden");
 });
 
 flowRepeatAll.addEventListener("click", function () {
-  state.flowPlayMode = "one";
+  state.flowPlayMode = "repeatOne";
 
   flowRepeatOne.classList.remove("hidden");
   flowRepeatAll.classList.add("hidden");
@@ -446,42 +447,41 @@ flowRepeatAll.addEventListener("click", function () {
 document
   .getElementById("operation-flow-previous-keyframe")
   ?.addEventListener("click", function () {
-    const value = getYamlEditorValue();
+    const keyframe = state.flowKeyframe | 0;
+    const keyframeProgress = state.flowKeyframe - keyframe;
 
-    if (value) {
-      if (state.flowPlayer && state.flowPlayer.getKeyframeProgress() === 0) {
-        if (state.flowKeyframe === 0) {
-          state.flowKeyframe = getKeyframesCount();
-        } else {
-          state.flowKeyframe = Math.max(0, state.flowKeyframe - 1);
-        }
+    if (keyframeProgress === 0) {
+      if (keyframe === 0) {
+        state.flowKeyframe = getKeyframesCount();
+      } else {
+        state.flowKeyframe = Math.max(0, keyframe - 1);
       }
+    } else {
+      state.flowKeyframe = keyframe;
+    }
 
-      updateFlowProgression();
+    updateFlowProgression();
 
-      if (state.flowPlayer) {
-        state.flowPlayer.setKeyframe(state.flowKeyframe);
-        state.flowPlayer.draw();
-        tick();
-      }
+    if (state.flowPlayer) {
+      state.flowPlayer.setTargetKeyframe(state.flowKeyframe);
+      state.flowPlayer.setKeyframe(state.flowKeyframe);
+      state.flowPlayer.draw();
+      tick();
     }
   });
 
 document
   .getElementById("operation-flow-next-keyframe")
   ?.addEventListener("click", function () {
-    const value = getYamlEditorValue();
+    state.flowKeyframe = (state.flowKeyframe | 0) + 1;
 
-    if (value) {
-      state.flowKeyframe += 1;
+    updateFlowProgression();
 
-      updateFlowProgression();
-
-      if (state.flowPlayer) {
-        state.flowPlayer.setKeyframe(state.flowKeyframe);
-        state.flowPlayer.draw();
-        tick();
-      }
+    if (state.flowPlayer) {
+      state.flowPlayer.setTargetKeyframe(state.flowKeyframe);
+      state.flowPlayer.setKeyframe(state.flowKeyframe);
+      state.flowPlayer.draw();
+      tick();
     }
   });
 
@@ -506,12 +506,14 @@ document
   ?.addEventListener("click", function () {
     state.operation.onMute(state);
 
-    flowStepSetTitleTitle.innerHTML = `Set title for keyframe ${state.flowKeyframe}`;
+    const keyframe = state.flowKeyframe | 0;
+
+    flowStepSetTitleTitle.innerHTML = `Set title for keyframe ${keyframe}`;
 
     const steps =
       state.system.flows
         .at(0)
-        ?.steps?.filter(step => step.keyframe === state.flowKeyframe) ?? [];
+        ?.steps?.filter(step => step.keyframe === keyframe) ?? [];
 
     const title = steps.find(step => step.description)?.description ?? "";
 
@@ -529,17 +531,21 @@ document
       value = undefined;
     }
 
+    const keyframe = state.flowKeyframe | 0;
+
     // Apply operation.
     modifySpecification(() => {
       const steps =
         state.system.flows
           .at(0)
-          ?.steps?.filter(step => step.keyframe === state.flowKeyframe) ?? [];
+          ?.steps?.filter(step => step.keyframe === keyframe) ?? [];
 
       for (const step of steps) {
         step.specification.description = value;
       }
     });
+
+    updateFlowProgression();
   });
 
 const currentKeyframe = document.getElementById("information-flow-keyframe")!;
@@ -555,15 +561,17 @@ app.ticker.add<void>(() => {
 });
 
 function updateFlowProgression(): void {
+  const keyframe = state.flowKeyframe | 0;
+
   // Set number.
-  currentKeyframe.innerHTML = state.flowKeyframe.toString();
+  currentKeyframe.innerHTML = keyframe.toString();
 
   // Set title.
   if (state.system.flows.at(0)?.steps.some(step => step.description)) {
     const steps =
       state.system.flows
         .at(0)
-        ?.steps?.filter(step => step.keyframe === state.flowKeyframe) ?? [];
+        ?.steps?.filter(step => step.keyframe === keyframe) ?? [];
 
     const title = steps.find(step => step.description)?.description ?? "";
 
@@ -680,6 +688,6 @@ function loadSaveData(): void {
 function updateStatePosition(screenPosition: Point): void {
   const coordinates = viewport.toWorld(screenPosition);
 
-  state.x = Math.floor(coordinates.x / BlockSize) | 0;
-  state.y = Math.floor(coordinates.y / BlockSize) | 0;
+  state.x = (coordinates.x / BlockSize) | 0;
+  state.y = (coordinates.y / BlockSize) | 0;
 }
