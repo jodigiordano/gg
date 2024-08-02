@@ -27,10 +27,13 @@ container.zIndex = 0;
 viewport.addChild(container);
 
 app.ticker.add<void>(deltaTime => {
-  if (state.flowPlay && state.flowPlayer) {
-    state.flowPlayer.update(deltaTime, state.flowPlayMode, state.flowSpeed);
+  if (state.flowPlayer) {
+    if (state.flowPlay) {
+      state.flowPlayer.update(deltaTime, state.flowPlayMode, state.flowSpeed);
+      state.flowKeyframe = Math.max(0, state.flowPlayer.getKeyframe());
+    }
+
     state.flowPlayer.draw();
-    state.flowKeyframe = Math.max(0, state.flowPlayer.getKeyframe());
   }
 });
 
