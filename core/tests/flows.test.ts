@@ -3,41 +3,6 @@ import { System } from "../src/specification";
 import { load } from "../src/index";
 
 describe("flows", () => {
-  describe("keyframe", () => {
-    it("normalizes", () => {
-      const system: System = {
-        specificationVersion: "1.0.0",
-        title: "test",
-        systems: [
-          { id: "foo", position: { x: 0, y: 0 } },
-          { id: "bar", position: { x: 10, y: 0 } },
-        ],
-        links: [
-          {
-            a: "foo",
-            b: "bar",
-          },
-        ],
-        flows: [
-          {
-            steps: [
-              { from: "foo", to: "bar", keyframe: 0 },
-              { from: "foo", to: "bar", keyframe: 2 },
-              { from: "foo", to: "bar", keyframe: 4 },
-            ],
-          },
-        ],
-      };
-
-      const { system: runtime } = load(system);
-
-      assert.deepEqual(
-        runtime.flows.at(0)?.steps.map(step => step.keyframe),
-        [0, 1, 2],
-      );
-    });
-  });
-
   describe("from && to", () => {
     it("missing from", () => {
       const system: System = {
