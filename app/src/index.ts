@@ -34,6 +34,10 @@ import { getUrlParams, setUrlParams, load, save } from "./persistence.js";
 
 // The user moves the cursor in the canvas.
 viewport.on("pointermove", (event: any) => {
+  if (isModalOpen()) {
+    return;
+  }
+
   updateStatePosition(event.data.global);
   state.operation.onPointerMove(state);
   tick();
@@ -41,6 +45,10 @@ viewport.on("pointermove", (event: any) => {
 
 // The user press the pointer in the canvas.
 viewport.on("pointerdown", (event: any) => {
+  if (isModalOpen()) {
+    return;
+  }
+
   // Only consider left mouse button.
   if (event.pointerType === "mouse" && event.button !== 0) {
     return;
@@ -53,6 +61,10 @@ viewport.on("pointerdown", (event: any) => {
 
 // The user release the pointer in the canvas.
 viewport.on("pointerup", (event: any) => {
+  if (isModalOpen()) {
+    return;
+  }
+
   // Only consider left mouse button.
   if (event.pointerType === "mouse" && event.button !== 0) {
     return;
@@ -65,12 +77,20 @@ viewport.on("pointerup", (event: any) => {
 
 // The user cursor enters the canvas.
 viewport.on("pointerenter", () => {
+  if (isModalOpen()) {
+    return;
+  }
+
   state.operation.onUnmute(state);
   tick();
 });
 
 // The user cursor leaves the canvas.
 viewport.on("pointerleave", () => {
+  if (isModalOpen()) {
+    return;
+  }
+
   state.operation.onMute(state);
   tick();
 });
@@ -100,14 +120,7 @@ window.addEventListener(
 );
 
 window.addEventListener("keydown", event => {
-  if (
-    isYamlEditorOpen() ||
-    options.open ||
-    guide.open ||
-    about.open ||
-    privacy.open ||
-    flowStepSetTitleDialog.open
-  ) {
+  if (isModalOpen()) {
     return;
   }
 
@@ -728,6 +741,17 @@ function loadSaveData(): void {
     state.flowPlayer?.draw();
     tick();
   }
+}
+
+function isModalOpen(): boolean {
+  return (
+    isYamlEditorOpen() ||
+    options.open ||
+    guide.open ||
+    about.open ||
+    privacy.open ||
+    flowStepSetTitleDialog.open
+  );
 }
 
 /**
