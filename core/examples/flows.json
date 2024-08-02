@@ -1,0 +1,131 @@
+{
+  "specificationVersion": "1.0.0",
+  "title": "sub-systems",
+  "description": "Example demonstrating sub-systems",
+  "systems": [
+    {
+      "id": "frontend",
+      "description": "Web-based client",
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "systems": [
+        {
+          "id": "react-app",
+          "description": "The React application",
+          "position": {
+            "x": 0,
+            "y": 0
+          }
+        },
+        {
+          "id": "redux-store",
+          "description": "The Redux store",
+          "position": {
+            "x": 10,
+            "y": 0
+          }
+        },
+        {
+          "id": "api-service",
+          "description": "Service to speak to the backend API",
+          "position": {
+            "x": 22,
+            "y": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "backend",
+      "description": "Backend of the frontend",
+      "position": {
+        "x": 40,
+        "y": 0
+      },
+      "systems": [
+        {
+          "id": "server",
+          "description": "RESTful HTTP API of the backend",
+          "position": {
+            "x": 0,
+            "y": 0
+          },
+          "systems": [
+            {
+              "id": "expressjs",
+              "description": "ExpressJS http server",
+              "position": {
+                "x": 0,
+                "y": 0
+              }
+            },
+            {
+              "id": "handler",
+              "description": "Controller handling the HTTP request",
+              "position": {
+                "x": 10,
+                "y": 0
+              }
+            }
+          ]
+        },
+        {
+          "id": "database",
+          "description": "Database of the backend",
+          "position": {
+            "x": 25,
+            "y": 0
+          }
+        }
+      ]
+    }
+  ],
+  "links": [
+    {
+      "a": "api-service",
+      "b": "expressjs"
+    },
+    {
+      "a": "react-app",
+      "b": "redux-store"
+    },
+    {
+      "a": "react-app",
+      "b": "api-service"
+    },
+    {
+      "a": "expressjs",
+      "b": "handler"
+    },
+    {
+      "a": "handler",
+      "b": "database"
+    }
+  ],
+  "flows": [
+    {
+      "steps": [
+        {
+          "from": "react-app",
+          "to": "handler",
+          "data": "send request",
+          "keyframe": 0
+        },
+        {
+          "from": "handler",
+          "to": "database",
+          "data": "store request",
+          "keyframe": 1
+        },
+        {
+          "from": "handler",
+          "to": "react-app",
+          "data": "send response",
+          "keyframe": 1
+        }
+      ]
+    }
+  ]
+}

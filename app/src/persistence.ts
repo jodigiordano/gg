@@ -1,5 +1,6 @@
 // @ts-ignore
 import pako from "pako";
+import { load as parseYaml } from "js-yaml";
 
 export function load(): string | null {
   let value: string | null = null;
@@ -21,6 +22,13 @@ export function load(): string | null {
     }
   } else {
     value = window.localStorage.getItem("file");
+  }
+
+  // YAML is not supported anymore in the core but links may have been
+  // produced with YAML configurations. I will eventually remove "js-yaml"
+  // from the app but for now, let's not break existing links.
+  if (value?.startsWith("apiSpecification")) {
+    value = JSON.stringify(parseYaml(value));
   }
 
   return value;

@@ -1,0 +1,40 @@
+{
+  "specificationVersion": "1.0.0",
+  "title": "Simple example",
+  "systems": [
+    {
+      "id": "frontend",
+      "description": "Web-based client",
+      "position": {
+        "x": 0,
+        "y": 0
+      }
+    },
+    {
+      "id": "backend",
+      "description": "Backend of the frontend",
+      "position": {
+        "x": 10,
+        "y": 0
+      }
+    },
+    {
+      "id": "database",
+      "description": "Database of the backend",
+      "position": {
+        "x": 20,
+        "y": 0
+      }
+    }
+  ],
+  "links": [
+    {
+      "a": "frontend",
+      "b": "backend"
+    },
+    {
+      "a": "backend",
+      "b": "database"
+    }
+  ]
+}

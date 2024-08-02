@@ -1,7 +1,6 @@
-import { dump as saveYaml } from "js-yaml";
 import {
   RuntimeFlow,
-  loadYaml,
+  loadJSON,
   SystemSimulator,
   SimulatorObjectType,
   SimulatorSystemTitle,
@@ -18,7 +17,7 @@ import { app } from "./pixi.js";
 import { viewport } from "./viewport.js";
 import { state, pushChange } from "./state.js";
 import { save } from "./persistence.js";
-import { setYamlEditorValue } from "./yamlEditor.js";
+import { setJsonEditorValue } from "./jsonEditor.js";
 
 const container = new Container();
 
@@ -37,11 +36,11 @@ app.ticker.add<void>(deltaTime => {
   }
 });
 
-export function loadSimulation(yaml: string): boolean {
-  let result: ReturnType<typeof loadYaml>;
+export function loadSimulation(json: string): boolean {
+  let result: ReturnType<typeof loadJSON>;
 
   try {
-    result = loadYaml(yaml);
+    result = loadJSON(json);
   } catch (error) {
     console.warn((error as Error).message);
 
@@ -264,18 +263,22 @@ export function getObjectsToRender(): (Sprite | Text)[] {
  */
 export function modifySpecification(modifier: () => void): void {
   // Make a copy of the specification.
-  const currentSpecification = saveYaml(state.system.specification);
+  const currentSpecification = JSON.stringify(
+    state.system.specification,
+    null,
+    2,
+  );
 
   // Call a function that modifies the specification.
   modifier();
 
   // Try to apply the new configuration.
-  const newSpecification = saveYaml(state.system.specification);
+  const newSpecification = JSON.stringify(state.system.specification, null, 2);
 
   if (loadSimulation(newSpecification)) {
     pushChange(newSpecification);
     save(newSpecification);
-    setYamlEditorValue(newSpecification);
+    setJsonEditorValue(newSpecification);
   } else {
     // Rollback if the new configuration is invalid.
     loadSimulation(currentSpecification);
