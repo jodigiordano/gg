@@ -303,7 +303,9 @@ if (loaded) {
 
   flowProgressionTotal.innerHTML = getKeyframesCount().toString();
 
-  if (!state.system.flows.at(0)?.steps.some(step => step.description)) {
+  if (state.system.flows.at(0)?.steps.some(step => step.description)) {
+    flowProgressionTitle.classList.remove("hidden");
+  } else {
     flowProgressionTitle.classList.add("hidden");
   }
 
