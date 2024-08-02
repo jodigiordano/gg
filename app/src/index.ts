@@ -138,6 +138,16 @@ window.addEventListener("keydown", event => {
     goToPreviousKeyframe();
   } else if (event.key === "ArrowRight" || event.key === "ArrowUp") {
     goToNextKeyframe();
+  } else if (event.key === "[") {
+    undo();
+  } else if (event.key === "]") {
+    redo();
+  } else if (event.key === "=") {
+    cameraFit();
+  } else if (event.key === "+") {
+    cameraZoomIn();
+  } else if (event.key === "-") {
+    cameraZoomOut();
   }
 
   tick();
@@ -346,69 +356,75 @@ speed.addEventListener("change", event => {
 // Undo / Redo operations.
 //
 
-document
-  .getElementById("operation-undo")
-  ?.addEventListener("click", function () {
-    if (state.changeIndex > 0) {
-      state.changeIndex -= 1;
+function undo(): void {
+  if (state.changeIndex > 0) {
+    state.changeIndex -= 1;
 
-      const value = state.changes[state.changeIndex];
+    const value = state.changes[state.changeIndex];
 
-      state.operation.onEnd(state);
-      setYamlEditorValue(value);
-      loadSimulation(value);
-      updateFlowProgression();
-      save(value);
-      tick();
-    }
-  });
+    state.operation.onEnd(state);
+    setYamlEditorValue(value);
+    loadSimulation(value);
+    updateFlowProgression();
+    save(value);
+    tick();
+  }
+}
 
-document
-  .getElementById("operation-redo")
-  ?.addEventListener("click", function () {
-    if (state.changeIndex < state.changes.length - 1) {
-      state.changeIndex += 1;
+function redo(): void {
+  if (state.changeIndex < state.changes.length - 1) {
+    state.changeIndex += 1;
 
-      const value = state.changes[state.changeIndex];
+    const value = state.changes[state.changeIndex];
 
-      state.operation.onEnd(state);
-      setYamlEditorValue(value);
-      loadSimulation(value);
-      updateFlowProgression();
-      save(value);
-      tick();
-    }
-  });
+    state.operation.onEnd(state);
+    setYamlEditorValue(value);
+    loadSimulation(value);
+    updateFlowProgression();
+    save(value);
+    tick();
+  }
+}
+
+document.getElementById("operation-undo")?.addEventListener("click", undo);
+
+document.getElementById("operation-redo")?.addEventListener("click", redo);
 
 //
 // Camera operations.
 //
 
+function cameraFit(): void {
+  fitSimulation();
+  redrawGrid();
+  tick();
+}
+
+function cameraZoomIn(): void {
+  viewport.zoomPercent(0.25, true);
+
+  redrawGrid();
+  tick();
+}
+
+function cameraZoomOut(): void {
+  viewport.zoomPercent(-0.25, true);
+
+  redrawGrid();
+  tick();
+}
+
 document
   .getElementById("operation-camera-fit")
-  ?.addEventListener("click", function () {
-    fitSimulation();
-    redrawGrid();
-    tick();
-  });
+  ?.addEventListener("click", cameraFit);
 
 document
   .getElementById("operation-camera-zoom-in")
-  ?.addEventListener("click", function () {
-    viewport.zoomPercent(0.25, true);
-
-    redrawGrid();
-    tick();
-  });
+  ?.addEventListener("click", cameraZoomIn);
 
 document
   .getElementById("operation-camera-zoom-out")
-  ?.addEventListener("click", function () {
-    viewport.zoomPercent(-0.25, true);
-
-    redrawGrid();
-    tick();
-  });
+  ?.addEventListener("click", cameraZoomOut);
 
 //
 // Flow operations

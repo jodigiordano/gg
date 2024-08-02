@@ -26,6 +26,12 @@ window.addEventListener("keydown", event => {
     goToPreviousKeyframe();
   } else if (event.key === "ArrowRight" || event.key === "ArrowUp") {
     goToNextKeyframe();
+  } else if (event.key === "=") {
+    cameraFit();
+  } else if (event.key === "+") {
+    cameraZoomIn();
+  } else if (event.key === "-") {
+    cameraZoomOut();
   }
 });
 
@@ -171,26 +177,34 @@ app.ticker.add<void>(() => {
 // Camera operations.
 //
 
+function cameraFit(): void {
+  fitSimulation();
+  tick();
+}
+
+function cameraZoomIn(): void {
+  viewport.zoomPercent(0.25, true);
+
+  tick();
+}
+
+function cameraZoomOut(): void {
+  viewport.zoomPercent(-0.25, true);
+
+  tick();
+}
+
 document
   .getElementById("operation-camera-fit")
-  ?.addEventListener("click", function () {
-    fitSimulation();
-    tick();
-  });
+  ?.addEventListener("click", cameraFit);
 
 document
   .getElementById("operation-camera-zoom-in")
-  ?.addEventListener("click", function () {
-    viewport.zoomPercent(0.25, true);
-    tick();
-  });
+  ?.addEventListener("click", cameraZoomIn);
 
 document
   .getElementById("operation-camera-zoom-out")
-  ?.addEventListener("click", function () {
-    viewport.zoomPercent(-0.25, true);
-    tick();
-  });
+  ?.addEventListener("click", cameraZoomOut);
 
 //
 // Other operations.
