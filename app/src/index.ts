@@ -128,6 +128,16 @@ window.addEventListener("keydown", event => {
     switchOperation(setSystemHideSystemsOperation);
   } else if (event.key === "r") {
     switchOperation(transferDataOperation);
+  } else if (event.key === " ") {
+    if (state.flowPlay) {
+      pauseFlow();
+    } else {
+      playFlow();
+    }
+  } else if (event.key === "ArrowLeft" || event.key === "ArrowDown") {
+    goToPreviousKeyframe();
+  } else if (event.key === "ArrowRight" || event.key === "ArrowUp") {
+    goToNextKeyframe();
   }
 
   tick();
@@ -409,25 +419,91 @@ const flowPause = document.getElementById("operation-flow-pause")!;
 const flowRepeatOne = document.getElementById("operation-flow-repeat-one")!;
 const flowRepeatAll = document.getElementById("operation-flow-repeat-all")!;
 
-if (state.flowPlay) {
-  flowPlay.classList.add("hidden");
-  flowPause.classList.remove("hidden");
-}
+const flowPreviousKeyframe = document.getElementById(
+  "operation-flow-previous-keyframe",
+)!;
 
-flowPlay.addEventListener("click", function () {
+const flowNextKeyframe = document.getElementById(
+  "operation-flow-next-keyframe",
+)!;
+
+function playFlow(): void {
   state.flowPlay = true;
   app.ticker.start();
 
   flowPlay.classList.add("hidden");
   flowPause.classList.remove("hidden");
-});
+}
 
-flowPause.addEventListener("click", function () {
+function pauseFlow(): void {
   state.flowPlay = false;
   app.ticker.stop();
 
   flowPlay.classList.remove("hidden");
   flowPause.classList.add("hidden");
+}
+
+function goToPreviousKeyframe(): void {
+  const keyframe = state.flowKeyframe | 0;
+  const keyframeProgress = state.flowKeyframe - keyframe;
+
+  if (keyframeProgress === 0) {
+    if (keyframe === 0) {
+      state.flowKeyframe = getKeyframesCount();
+    } else {
+      state.flowKeyframe = Math.max(0, keyframe - 1);
+    }
+  } else {
+    state.flowKeyframe = keyframe;
+  }
+
+  updateFlowProgression();
+
+  if (state.flowPlayer) {
+    state.flowPlayer.setTargetKeyframe(state.flowKeyframe);
+    state.flowPlayer.setKeyframe(state.flowKeyframe);
+    state.flowPlayer.draw();
+    tick();
+  }
+}
+
+function goToNextKeyframe(): void {
+  state.flowKeyframe = (state.flowKeyframe | 0) + 1;
+
+  updateFlowProgression();
+
+  if (state.flowPlayer) {
+    state.flowPlayer.setTargetKeyframe(state.flowKeyframe);
+    state.flowPlayer.setKeyframe(state.flowKeyframe);
+    state.flowPlayer.draw();
+    tick();
+  }
+}
+
+// Initialization.
+if (state.flowPlay) {
+  flowPlay.classList.add("hidden");
+  flowPause.classList.remove("hidden");
+}
+
+flowPlay.addEventListener("click", () => {
+  playFlow();
+  flowPlay.blur();
+});
+
+flowPause.addEventListener("click", () => {
+  pauseFlow();
+  flowPause.blur();
+});
+
+flowPreviousKeyframe.addEventListener("click", () => {
+  goToPreviousKeyframe();
+  flowPreviousKeyframe.blur();
+});
+
+flowNextKeyframe.addEventListener("click", () => {
+  goToNextKeyframe();
+  flowNextKeyframe.blur();
 });
 
 flowRepeatOne.addEventListener("click", function () {
@@ -443,47 +519,6 @@ flowRepeatAll.addEventListener("click", function () {
   flowRepeatOne.classList.remove("hidden");
   flowRepeatAll.classList.add("hidden");
 });
-
-document
-  .getElementById("operation-flow-previous-keyframe")
-  ?.addEventListener("click", function () {
-    const keyframe = state.flowKeyframe | 0;
-    const keyframeProgress = state.flowKeyframe - keyframe;
-
-    if (keyframeProgress === 0) {
-      if (keyframe === 0) {
-        state.flowKeyframe = getKeyframesCount();
-      } else {
-        state.flowKeyframe = Math.max(0, keyframe - 1);
-      }
-    } else {
-      state.flowKeyframe = keyframe;
-    }
-
-    updateFlowProgression();
-
-    if (state.flowPlayer) {
-      state.flowPlayer.setTargetKeyframe(state.flowKeyframe);
-      state.flowPlayer.setKeyframe(state.flowKeyframe);
-      state.flowPlayer.draw();
-      tick();
-    }
-  });
-
-document
-  .getElementById("operation-flow-next-keyframe")
-  ?.addEventListener("click", function () {
-    state.flowKeyframe = (state.flowKeyframe | 0) + 1;
-
-    updateFlowProgression();
-
-    if (state.flowPlayer) {
-      state.flowPlayer.setTargetKeyframe(state.flowKeyframe);
-      state.flowPlayer.setKeyframe(state.flowKeyframe);
-      state.flowPlayer.draw();
-      tick();
-    }
-  });
 
 const flowStepSetTitleDialog = document.getElementById(
   "input-flow-step-set-title-dialog",
