@@ -29,7 +29,6 @@
     "typescript": "5.x"
   },
   "dependencies": {
-    "ajv": "8.x",
-    "js-yaml": "4.x"
+    "ajv": "8.x"
   }
 }

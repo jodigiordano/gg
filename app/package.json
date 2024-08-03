@@ -25,6 +25,7 @@
   },
   "dependencies": {
     "@gg/core": "0.x",
+    "js-yaml": "4.x",
     "pako": "2.x",
     "pixi-viewport": "5.0.1",
     "pixi.js": "7.x"

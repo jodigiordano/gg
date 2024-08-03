@@ -1,6 +1,6 @@
 // @ts-ignore
 import { Viewport } from "pixi-viewport";
-import { RuntimeSystem, loadYaml, SystemSimulator } from "@gg/core";
+import { RuntimeSystem, load, SystemSimulator } from "@gg/core";
 import { FlowPlayer } from "./simulation.js";
 import Operation from "./operation.js";
 import MoveSystemOperation from "./operations/systemMove.js";
@@ -21,7 +21,7 @@ export interface State {
   flowSpeed: number;
 }
 
-const defaultSystem = loadYaml('specificationVersion: 1.0.0\ntitle: ""').system;
+const defaultSystem = load({ specificationVersion: "1.0.0", title: "" }).system;
 
 const defaultOperation = MoveSystemOperation;
 

@@ -351,8 +351,8 @@
         }
       }
 
-      /* Modal showing the YAML of the chart */
-      #yaml-editor {
+      /* Modal showing the JSON of the chart */
+      #json-editor {
         width: 80%;
         height: 80%;
 
@@ -445,7 +445,7 @@
         <button>View</button>
         <ul class="content closed">
           <li id="operation-goto-viewer">presentation mode</li>
-          <li id="operation-yaml-editor-open">yaml editor</li>
+          <li id="operation-json-editor-open">json editor</li>
           <li id="operation-options-open">options</li>
         </ul>
       </div>
@@ -578,12 +578,12 @@
       </div>
       <div id="canvas">Loading...</div>
     </div>
-    <dialog id="yaml-editor">
+    <dialog id="json-editor">
       <div class="content">
-        <h1>YAML Editor</h1>
+        <h1>JSON Editor</h1>
         <textarea autocomplete="off"></textarea>
         <form method="dialog">
-          <button id="operation-yaml-editor-apply-changes">
+          <button id="operation-json-editor-apply-changes">
             apply changes
           </button>
           <button>close</button>

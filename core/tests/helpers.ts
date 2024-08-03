@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import { dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { loadYaml } from "../src/index";
+import { loadJSON } from "../src/index";
 
 export function loadExample(name: string) {
   const examplesDirectory = [
@@ -11,7 +11,7 @@ export function loadExample(name: string) {
     "examples",
   ].join("/");
 
-  return loadYaml(
-    readFileSync([examplesDirectory, `${name}.yml`].join("/"), "utf8"),
+  return loadJSON(
+    readFileSync([examplesDirectory, `${name}.json`].join("/"), "utf8"),
   );
 }

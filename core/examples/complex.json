@@ -1,0 +1,97 @@
+{
+  "specificationVersion": "1.0.0",
+  "title": "complex",
+  "description": "Tool to build beautiful software system designs",
+  "systems": [
+    {
+      "id": "frontend",
+      "description": "Web-based client",
+      "position": {
+        "x": 0,
+        "y": 0
+      }
+    },
+    {
+      "id": "backend",
+      "description": "Backend of the frontend",
+      "position": {
+        "x": 17,
+        "y": 7
+      },
+      "systems": [
+        {
+          "id": "server",
+          "description": "RESTful HTTP API of the backend",
+          "position": {
+            "x": 0,
+            "y": 0
+          }
+        },
+        {
+          "id": "database",
+          "description": "Database of the backend",
+          "position": {
+            "x": 10,
+            "y": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "whatever",
+      "position": {
+        "x": 9,
+        "y": 15
+      }
+    },
+    {
+      "id": "datadog",
+      "position": {
+        "x": 20,
+        "y": 20
+      }
+    }
+  ],
+  "links": [
+    {
+      "a": "frontend",
+      "b": "server"
+    },
+    {
+      "a": "frontend",
+      "b": "whatever"
+    },
+    {
+      "a": "datadog",
+      "b": "server"
+    },
+    {
+      "a": "server",
+      "b": "database"
+    }
+  ],
+  "flows": [
+    {
+      "steps": [
+        {
+          "from": "frontend",
+          "to": "server",
+          "data": "form data",
+          "keyframe": 0
+        },
+        {
+          "from": "server",
+          "to": "datadog",
+          "data": "log",
+          "keyframe": 1
+        },
+        {
+          "from": "server",
+          "to": "database",
+          "data": "user",
+          "keyframe": 1
+        }
+      ]
+    }
+  ]
+}

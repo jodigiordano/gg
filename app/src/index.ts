@@ -21,11 +21,11 @@ import eraseOperation from "./operations/erase.js";
 import setSystemHideSystemsOperation from "./operations/systemToggleSystems.js";
 import transferDataOperation from "./operations/flowTransferData.js";
 import {
-  getYamlEditorValue,
-  isYamlEditorOpen,
-  openYamlEditor,
-  setYamlEditorValue,
-} from "./yamlEditor.js";
+  getJsonEditorValue,
+  isJsonEditorOpen,
+  openJsonEditor,
+  setJsonEditorValue,
+} from "./jsonEditor.js";
 import { getUrlParams, setUrlParams, load, save } from "./persistence.js";
 
 //
@@ -179,20 +179,20 @@ window.addEventListener("hashchange", () => {
 });
 
 //
-// YAML editor operations
+// JSON editor operations
 //
 
 document
-  .getElementById("operation-yaml-editor-open")
+  .getElementById("operation-json-editor-open")
   ?.addEventListener("click", function () {
     state.operation.onEnd(state);
-    openYamlEditor();
+    openJsonEditor();
   });
 
 document
-  .getElementById("operation-yaml-editor-apply-changes")
+  .getElementById("operation-json-editor-apply-changes")
   ?.addEventListener("click", function () {
-    const value = getYamlEditorValue();
+    const value = getJsonEditorValue();
 
     if (value) {
       state.operation.onEnd(state);
@@ -251,12 +251,17 @@ document
 document
   .getElementById("operation-file-new")
   ?.addEventListener("click", function () {
-    const value = ["specificationVersion: 1.0.0", "title: New system"].join(
-      "\n",
+    const value = JSON.stringify(
+      {
+        specificationVersion: "1.0.0",
+        title: "New system",
+      },
+      null,
+      2,
     );
 
     resetState();
-    setYamlEditorValue(value);
+    setJsonEditorValue(value);
     loadSimulation(value);
     updateFlowProgression();
     pushChange(value);
@@ -376,7 +381,7 @@ function undo(): void {
     const value = state.changes[state.changeIndex];
 
     state.operation.onEnd(state);
-    setYamlEditorValue(value);
+    setJsonEditorValue(value);
     loadSimulation(value);
     updateFlowProgression();
     save(value);
@@ -391,7 +396,7 @@ function redo(): void {
     const value = state.changes[state.changeIndex];
 
     state.operation.onEnd(state);
-    setYamlEditorValue(value);
+    setJsonEditorValue(value);
     loadSimulation(value);
     updateFlowProgression();
     save(value);
@@ -731,7 +736,7 @@ function loadSaveData(): void {
   const loaded = load();
 
   if (loaded) {
-    setYamlEditorValue(loaded);
+    setJsonEditorValue(loaded);
     loadSimulation(loaded);
     updateFlowProgression();
     pushChange(loaded);
@@ -745,7 +750,7 @@ function loadSaveData(): void {
 
 function isModalOpen(): boolean {
   return (
-    isYamlEditorOpen() ||
+    isJsonEditorOpen() ||
     options.open ||
     guide.open ||
     about.open ||

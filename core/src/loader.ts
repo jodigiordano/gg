@@ -1,4 +1,3 @@
-import { load as parseYaml } from "js-yaml";
 import { RuntimeSystem, RuntimeSubsystem, RuntimeLink } from "./runtime.js";
 import { System } from "./specification.js";
 import { validate, ValidationError } from "./validations.js";
@@ -38,11 +37,11 @@ export function load(system: System): {
   return { system: runtime, errors };
 }
 
-export function loadYaml(yaml: string): {
+export function loadJSON(json: string): {
   system: RuntimeSystem;
   errors: ValidationError[];
 } {
-  return load(parseYaml(yaml) as System);
+  return load(JSON.parse(json) as System);
 }
 
 function enhanceSubsystems(
