@@ -27,7 +27,7 @@ export function load(): string | null {
   // YAML is not supported anymore in the core but links may have been
   // produced with YAML configurations. I will eventually remove "js-yaml"
   // from the app but for now, let's not break existing links.
-  if (value?.startsWith("apiSpecification")) {
+  if (value?.startsWith("specificationVersion")) {
     value = JSON.stringify(parseYaml(value));
   }
 
