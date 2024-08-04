@@ -1,6 +1,4 @@
 import {
-  RuntimeFlow,
-  loadJSON,
   SystemSimulator,
   SimulatorObjectType,
   SimulatorSystemTitle,
@@ -8,23 +6,111 @@ import {
   SimulatorLinkDirectionType,
   SimulatorLink,
   SimulatorSystemDirectionType,
-  getFlowTick,
 } from "@gg/core";
 import { Sprite, Text, SCALE_MODES, Container } from "pixi.js";
 import { spritesheet } from "./assets.js";
 import { BlockSize } from "./helpers.js";
-import { app } from "./pixi.js";
+import { app, tick } from "./pixi.js";
 import { viewport } from "./viewport.js";
 import { state, pushChange } from "./state.js";
 import { save } from "./persistence.js";
 import { setJsonEditorValue } from "./jsonEditor.js";
+import FlowPlayer from "./flowPlayer.js";
 
+//
+// Load the simulation.
+//
+
+// Loading the simulation is done asynchronously in a worker.
+// That worker may be loading multiple simulations at the same time,
+// and when one simulation is loaded, the caller of that one simulation needs
+// to be informed.
+//
+//   caller -> loadSimulation -> worker.postMessage(id, ...)
+//                               loadsInProgress[id] = callback
+//
+//   worker -> job done -> loadsInProgress[id].callback()
+const loadsInProgress: Record<number, (success: boolean) => void> = {};
+
+// Worker to load a new instance of the simulation.
+const simulatorLoader = new Worker(
+  new URL("./workers/simulatorLoader.ts", import.meta.url),
+  {
+    type: "module",
+  },
+);
+
+simulatorLoader.onmessage = event => {
+  if (event.data.success) {
+    // Set the new simulation in the state.
+    state.simulator = new SystemSimulator(event.data.simulator);
+
+    // Draw the new simulaton.
+    container.removeChildren();
+
+    for (const objectToRender of getObjectsToRender()) {
+      // @ts-ignore
+      container.addChild(objectToRender);
+    }
+
+    if (state.simulator.getSystem().flows.length) {
+      state.flowPlayer = new FlowPlayer(
+        state.simulator,
+        state.simulator.getSystem().flows[0]!,
+        state.flowKeyframe,
+      );
+
+      for (const objectToRender of state.flowPlayer.getObjectsToRender()) {
+        // @ts-ignore
+        container.addChild(objectToRender);
+      }
+    }
+
+    // Play the flow, if needed.
+    if (state.flowPlay && state.flowPlayer) {
+      app.ticker.start();
+    }
+
+    tick();
+  } else {
+    for (const error of event.data.errors) {
+      console.warn(error);
+    }
+  }
+
+  state.simulatorInstance = event.data.id;
+  loadsInProgress[event.data.id]?.(event.data.success);
+  delete loadsInProgress[event.data.id];
+};
+
+export async function loadSimulation(json: string): Promise<void> {
+  const id = state.simulatorNextInstance + 1;
+  state.simulatorNextInstance = id;
+  simulatorLoader.postMessage({ id, json });
+
+  return new Promise((resolve, reject) => {
+    loadsInProgress[id] = (success: boolean) => {
+      if (success) {
+        resolve();
+      } else {
+        reject();
+      }
+    };
+  });
+}
+
+//
+// Draw the simulation.
+//
+
+// Container to display simulation objects.
 const container = new Container();
 
 container.zIndex = 0;
 
 viewport.addChild(container);
 
+// Ticker to execute a step of the simulation.
 app.ticker.add<void>(deltaTime => {
   if (state.flowPlayer) {
     if (state.flowPlay) {
@@ -36,81 +122,7 @@ app.ticker.add<void>(deltaTime => {
   }
 });
 
-export function loadSimulation(json: string): boolean {
-  let result: ReturnType<typeof loadJSON>;
-
-  try {
-    result = loadJSON(json);
-  } catch (error) {
-    console.warn((error as Error).message);
-
-    return false;
-  }
-
-  if (result.errors.length) {
-    for (const error of result.errors) {
-      console.warn(error.path, error.message);
-    }
-
-    return false;
-  }
-
-  state.system = result.system;
-  state.simulator = new SystemSimulator(state.system);
-
-  container.removeChildren();
-
-  for (const objectToRender of getObjectsToRender()) {
-    // @ts-ignore
-    container.addChild(objectToRender);
-  }
-
-  if (state.system.flows.length) {
-    state.flowPlayer = createFlowPlayer(0);
-
-    for (const objectToRender of state.flowPlayer.getObjectsToRender()) {
-      // @ts-ignore
-      container.addChild(objectToRender);
-    }
-  }
-
-  if (state.flowPlay && state.flowPlayer) {
-    app.ticker.start();
-  }
-
-  return true;
-}
-
-export function fitSimulation() {
-  const boundaries = state.simulator.getVisibleWorldBoundaries();
-
-  const boundaryLeft = boundaries.left * BlockSize;
-  const boundaryRight = boundaries.right * BlockSize;
-  const boundaryTop = boundaries.top * BlockSize;
-  const boundaryBottom = boundaries.bottom * BlockSize;
-
-  const left = boundaryLeft - BlockSize; /* margin */
-  const top = boundaryTop - BlockSize; /* margin */
-
-  const width =
-    boundaryRight - boundaryLeft + BlockSize + BlockSize * 2; /* margin */
-
-  const height =
-    boundaryBottom - boundaryTop + BlockSize + BlockSize * 2; /* margin */
-
-  // The operation is executed twice because of a weird issue that I don't
-  // understand yet. Somehow, because we are using "viewport.clamp", the first
-  // tuple ["viewport.moveCenter", "viewport.fit"] below doesn't quite do its
-  // job and part of the simulation is slightly out of the viewport.
-  //
-  // This code feels like slapping the side of the CRT.
-  for (let i = 0; i < 2; i++) {
-    viewport.moveCenter(left + width / 2, top + height / 2);
-    viewport.fit(true, width, height);
-  }
-}
-
-export function getObjectsToRender(): (Sprite | Text)[] {
+function getObjectsToRender(): (Sprite | Text)[] {
   const toDraw: (Sprite | Text)[] = [];
   const layout = state.simulator.getLayout();
   const boundaries = state.simulator.getBoundaries();
@@ -258,160 +270,83 @@ export function getObjectsToRender(): (Sprite | Text)[] {
   return toDraw;
 }
 
-/**
- * Modifies the specification transactionally.
- */
-export function modifySpecification(modifier: () => void): void {
+//
+// Helpers
+//
+
+// Modifies the specification transactionally.
+export async function modifySpecification(modifier: () => void): Promise<void> {
+  const system = state.simulator.getSystem();
+
   // Make a copy of the specification.
-  const currentSpecification = JSON.stringify(
-    state.system.specification,
-    null,
-    2,
-  );
+  const currentSpecification = JSON.stringify(system.specification, null, 2);
 
   // Call a function that modifies the specification.
   modifier();
 
   // Try to apply the new configuration.
-  const newSpecification = JSON.stringify(state.system.specification, null, 2);
+  const newSpecification = JSON.stringify(system.specification, null, 2);
 
-  if (loadSimulation(newSpecification)) {
-    pushChange(newSpecification);
-    save(newSpecification);
-    setJsonEditorValue(newSpecification);
-  } else {
-    // Rollback if the new configuration is invalid.
-    loadSimulation(currentSpecification);
+  return new Promise(resolve => {
+    loadSimulation(newSpecification)
+      .then(() => {
+        pushChange(newSpecification);
+        save(newSpecification);
+        setJsonEditorValue(newSpecification);
+        resolve();
+      })
+      .catch(() => {
+        // Rollback if the new configuration is invalid.
+        loadSimulation(currentSpecification)
+          .then(() => {
+            resolve();
+          })
+          .catch(() => {
+            /* NOOP */
+          });
+      });
+  });
+}
+
+// Fit the simulation in the viewport.
+export function fitSimulation() {
+  const boundaries = state.simulator.getVisibleWorldBoundaries();
+
+  const boundaryLeft = boundaries.left * BlockSize;
+  const boundaryRight = boundaries.right * BlockSize;
+  const boundaryTop = boundaries.top * BlockSize;
+  const boundaryBottom = boundaries.bottom * BlockSize;
+
+  const left = boundaryLeft - BlockSize; /* margin */
+  const top = boundaryTop - BlockSize; /* margin */
+
+  const width =
+    boundaryRight - boundaryLeft + BlockSize + BlockSize * 2; /* margin */
+
+  const height =
+    boundaryBottom - boundaryTop + BlockSize + BlockSize * 2; /* margin */
+
+  // The operation is executed twice because of a weird issue that I don't
+  // understand yet. Somehow, because we are using "viewport.clamp", the first
+  // tuple ["viewport.moveCenter", "viewport.fit"] below doesn't quite do its
+  // job and part of the simulation is slightly out of the viewport.
+  //
+  // This code feels like slapping the side of the CRT.
+  for (let i = 0; i < 2; i++) {
+    viewport.moveCenter(left + width / 2, top + height / 2);
+    viewport.fit(true, width, height);
   }
 }
 
+// Get the number of keyframes in the flow.
 export function getKeyframesCount(): number {
   return Math.max(
     0,
-    new Set(state.system.flows.at(0)?.steps?.map(step => step.keyframe) ?? [])
-      .size - 1,
+    new Set(
+      state.simulator
+        .getSystem()
+        .flows.at(0)
+        ?.steps?.map(step => step.keyframe) ?? [],
+    ).size - 1,
   );
-}
-
-export function createFlowPlayer(flowIndex: number): FlowPlayer {
-  return new FlowPlayer(
-    state.simulator,
-    state.system.flows.find(flow => flow.index === flowIndex)!,
-    state.flowKeyframe,
-  );
-}
-
-export class FlowPlayer {
-  private simulator: SystemSimulator;
-  private maxKeyframes: number;
-  private targetKeyframe: number;
-  private currentKeyframe: number;
-  private sprites: Sprite[];
-  private flow: RuntimeFlow;
-
-  constructor(
-    simulator: SystemSimulator,
-    flow: RuntimeFlow,
-    targetKeyframe: number,
-  ) {
-    this.simulator = simulator;
-    this.flow = flow;
-
-    this.targetKeyframe = targetKeyframe;
-    this.currentKeyframe = targetKeyframe;
-
-    this.maxKeyframes =
-      Math.max(0, ...flow.steps.map(step => step.keyframe)) + 1;
-
-    this.sprites = flow.steps.map(() => {
-      const sprite = new Sprite(spritesheet.textures.data);
-
-      sprite.width = BlockSize;
-      sprite.height = BlockSize;
-      sprite.visible = false;
-
-      return sprite;
-    });
-  }
-
-  hide(): void {
-    for (const sprite of this.sprites) {
-      sprite.visible = false;
-    }
-  }
-
-  getObjectsToRender(): Sprite[] {
-    return this.sprites;
-  }
-
-  getTargetKeyframe(): number {
-    return this.targetKeyframe;
-  }
-
-  setTargetKeyframe(keyframe: number): void {
-    this.targetKeyframe = keyframe;
-  }
-
-  getKeyframe(): number {
-    return this.currentKeyframe;
-  }
-
-  setKeyframe(keyframe: number): void {
-    this.currentKeyframe = keyframe;
-  }
-
-  update(
-    deltaTime: number,
-    mode: typeof state.flowPlayMode,
-    speed: number,
-  ): void {
-    const beforeTickKeyframe = this.currentKeyframe | 0;
-
-    this.currentKeyframe += (speed / 100) * deltaTime;
-
-    if (
-      mode === "repeatOne" &&
-      (this.currentKeyframe | 0) != beforeTickKeyframe
-    ) {
-      this.currentKeyframe -= 1;
-    } else if (mode === "repeatAll") {
-      this.currentKeyframe %= this.maxKeyframes;
-    } else if (
-      mode === "playOne" &&
-      this.currentKeyframe > this.targetKeyframe
-    ) {
-      this.currentKeyframe = this.targetKeyframe;
-    }
-  }
-
-  draw(): void {
-    const keyframe = this.currentKeyframe | 0;
-    const keyframeProgress = this.currentKeyframe - keyframe;
-
-    const data = getFlowTick(
-      this.simulator,
-      this.flow,
-      keyframe,
-      // easeInOutQuart
-      keyframeProgress < 0.5
-        ? 8 *
-            keyframeProgress *
-            keyframeProgress *
-            keyframeProgress *
-            keyframeProgress
-        : 1 - Math.pow(-2 * keyframeProgress + 2, 4) / 2,
-    );
-
-    const boundaries = this.simulator.getBoundaries();
-
-    for (let i = 0; i < data.length; i++) {
-      if (data[i].length) {
-        this.sprites[i].x = (data[i][0] - boundaries.translateX) * BlockSize;
-        this.sprites[i].y = (data[i][1] - boundaries.translateY) * BlockSize;
-        this.sprites[i].visible = true;
-      } else {
-        this.sprites[i].visible = false;
-      }
-    }
-  }
 }

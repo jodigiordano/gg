@@ -256,8 +256,9 @@ function updateFlowProgression(): void {
 
   // Set title.
   const steps =
-    state.system.flows
-      .at(0)
+    state.simulator
+      .getSystem()
+      .flows.at(0)
       ?.steps?.filter(step => step.keyframe === keyframe) ?? [];
 
   const title = steps.find(step => step.description)?.description ?? "";
@@ -289,11 +290,11 @@ function resizeCanvas(): void {
 //
 
 // Load the save.
-const loaded = load();
+const json = load();
 
-if (loaded) {
+if (json) {
   // Start the simulation.
-  loadSimulation(loaded);
+  await loadSimulation(json);
 
   // Initialize the toolbox.
   if (state.flowPlay) {
@@ -303,7 +304,12 @@ if (loaded) {
 
   flowProgressionTotal.innerHTML = getKeyframesCount().toString();
 
-  if (state.system.flows.at(0)?.steps.some(step => step.description)) {
+  if (
+    state.simulator
+      .getSystem()
+      .flows.at(0)
+      ?.steps.some(step => step.description)
+  ) {
     flowProgressionTitle.classList.remove("hidden");
   } else {
     flowProgressionTitle.classList.add("hidden");
@@ -315,4 +321,7 @@ if (loaded) {
   state.flowPlayer?.draw();
 
   resizeCanvas();
+
+  // Remove the loading banner.
+  document.getElementById("save-data-is-loading")!.classList.add("hidden");
 }

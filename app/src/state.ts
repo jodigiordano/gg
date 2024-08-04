@@ -1,7 +1,7 @@
 // @ts-ignore
 import { Viewport } from "pixi-viewport";
-import { RuntimeSystem, load, SystemSimulator } from "@gg/core";
-import { FlowPlayer } from "./simulation.js";
+import { load, SystemSimulator } from "@gg/core";
+import FlowPlayer from "./flowPlayer.js";
 import Operation from "./operation.js";
 import MoveSystemOperation from "./operations/systemMove.js";
 import { getUrlParams } from "./persistence.js";
@@ -12,8 +12,9 @@ export interface State {
   operation: Operation;
   x: number;
   y: number;
-  system: RuntimeSystem;
   simulator: SystemSimulator;
+  simulatorInstance: number;
+  simulatorNextInstance: number;
   flowPlayer: FlowPlayer | null;
   flowKeyframe: number;
   flowPlay: boolean;
@@ -22,6 +23,10 @@ export interface State {
 }
 
 const defaultSystem = load({ specificationVersion: "1.0.0", title: "" }).system;
+
+const defaultSimulator = new SystemSimulator({ system: defaultSystem });
+
+defaultSimulator.compute();
 
 const defaultOperation = MoveSystemOperation;
 
@@ -33,8 +38,9 @@ export const state: State = {
   operation: defaultOperation,
   x: -999999,
   y: -999999,
-  system: defaultSystem,
-  simulator: new SystemSimulator(defaultSystem),
+  simulator: defaultSimulator,
+  simulatorInstance: 0,
+  simulatorNextInstance: 0,
   flowPlayer: null,
   flowKeyframe: 0,
   flowPlay: urlParams.autoplay,

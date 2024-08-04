@@ -34,7 +34,7 @@ import { getUrlParams, setUrlParams, load, save } from "./persistence.js";
 
 // The user moves the cursor in the canvas.
 viewport.on("pointermove", (event: any) => {
-  if (isModalOpen()) {
+  if (isModalOpen() || isInitialLoad()) {
     return;
   }
 
@@ -45,7 +45,7 @@ viewport.on("pointermove", (event: any) => {
 
 // The user press the pointer in the canvas.
 viewport.on("pointerdown", (event: any) => {
-  if (isModalOpen()) {
+  if (isModalOpen() || isInitialLoad()) {
     return;
   }
 
@@ -61,7 +61,7 @@ viewport.on("pointerdown", (event: any) => {
 
 // The user release the pointer in the canvas.
 viewport.on("pointerup", (event: any) => {
-  if (isModalOpen()) {
+  if (isModalOpen() || isInitialLoad()) {
     return;
   }
 
@@ -77,7 +77,7 @@ viewport.on("pointerup", (event: any) => {
 
 // The user cursor enters the canvas.
 viewport.on("pointerenter", () => {
-  if (isModalOpen()) {
+  if (isModalOpen() || isInitialLoad()) {
     return;
   }
 
@@ -87,7 +87,7 @@ viewport.on("pointerenter", () => {
 
 // The user cursor leaves the canvas.
 viewport.on("pointerleave", () => {
-  if (isModalOpen()) {
+  if (isModalOpen() || isInitialLoad()) {
     return;
   }
 
@@ -119,6 +119,7 @@ window.addEventListener(
   }, 30),
 );
 
+// The user press a key on the keyboard.
 window.addEventListener("keydown", event => {
   if (isModalOpen()) {
     return;
@@ -166,7 +167,7 @@ window.addEventListener("keydown", event => {
   tick();
 });
 
-// Fired when the user modifes the URL manually.
+// The user modifies the URL manually.
 window.addEventListener("hashchange", () => {
   resetState();
 
@@ -192,15 +193,21 @@ document
 document
   .getElementById("operation-json-editor-apply-changes")
   ?.addEventListener("click", function () {
-    const value = getJsonEditorValue();
+    const json = getJsonEditorValue();
 
-    if (value) {
+    if (json) {
       state.operation.onEnd(state);
-      pushChange(value);
-      save(value);
-      loadSimulation(value);
-      updateFlowProgression();
-      tick();
+      pushChange(json);
+      save(json);
+
+      loadSimulation(json)
+        .then(() => {
+          updateFlowProgression();
+          tick();
+        })
+        .catch(() => {
+          /* NOOP */
+        });
     }
   });
 
@@ -250,8 +257,8 @@ document
 
 document
   .getElementById("operation-file-new")
-  ?.addEventListener("click", function () {
-    const value = JSON.stringify(
+  ?.addEventListener("click", async function () {
+    const json = JSON.stringify(
       {
         specificationVersion: "1.0.0",
         title: "New system",
@@ -261,10 +268,12 @@ document
     );
 
     resetState();
-    setJsonEditorValue(value);
-    loadSimulation(value);
+    setJsonEditorValue(json);
+
+    await loadSimulation(json);
+
     updateFlowProgression();
-    pushChange(value);
+    pushChange(json);
 
     const urlParams = getUrlParams();
 
@@ -272,7 +281,7 @@ document
     urlParams.speed = 1;
 
     setUrlParams(urlParams);
-    save(value);
+    save(json);
 
     const canvasContainer = document.getElementById("canvas") as HTMLDivElement;
 
@@ -378,14 +387,20 @@ function undo(): void {
   if (state.changeIndex > 0) {
     state.changeIndex -= 1;
 
-    const value = state.changes[state.changeIndex];
+    const json = state.changes[state.changeIndex];
 
     state.operation.onEnd(state);
-    setJsonEditorValue(value);
-    loadSimulation(value);
-    updateFlowProgression();
-    save(value);
-    tick();
+    setJsonEditorValue(json);
+
+    loadSimulation(json)
+      .then(() => {
+        updateFlowProgression();
+        save(json);
+        tick();
+      })
+      .catch(() => {
+        /* NOOP */
+      });
   }
 }
 
@@ -393,19 +408,24 @@ function redo(): void {
   if (state.changeIndex < state.changes.length - 1) {
     state.changeIndex += 1;
 
-    const value = state.changes[state.changeIndex];
+    const json = state.changes[state.changeIndex];
 
     state.operation.onEnd(state);
-    setJsonEditorValue(value);
-    loadSimulation(value);
-    updateFlowProgression();
-    save(value);
-    tick();
+    setJsonEditorValue(json);
+
+    loadSimulation(json)
+      .then(() => {
+        updateFlowProgression();
+        save(json);
+        tick();
+      })
+      .catch(() => {
+        /* NOOP */
+      });
   }
 }
 
 document.getElementById("operation-undo")?.addEventListener("click", undo);
-
 document.getElementById("operation-redo")?.addEventListener("click", redo);
 
 //
@@ -580,8 +600,9 @@ document
     flowStepSetTitleTitle.innerHTML = `Set title for keyframe ${keyframe}`;
 
     const steps =
-      state.system.flows
-        .at(0)
+      state.simulator
+        .getSystem()
+        .flows.at(0)
         ?.steps?.filter(step => step.keyframe === keyframe) ?? [];
 
     const title = steps.find(step => step.description)?.description ?? "";
@@ -605,8 +626,9 @@ document
     // Apply operation.
     modifySpecification(() => {
       const steps =
-        state.system.flows
-          .at(0)
+        state.simulator
+          .getSystem()
+          .flows.at(0)
           ?.steps?.filter(step => step.keyframe === keyframe) ?? [];
 
       for (const step of steps) {
@@ -631,16 +653,16 @@ app.ticker.add<void>(() => {
 
 function updateFlowProgression(): void {
   const keyframe = state.flowKeyframe | 0;
+  const system = state.simulator.getSystem();
 
   // Set number.
   currentKeyframe.innerHTML = keyframe.toString();
 
   // Set title.
-  if (state.system.flows.at(0)?.steps.some(step => step.description)) {
+  if (system.flows.at(0)?.steps.some(step => step.description)) {
     const steps =
-      state.system.flows
-        .at(0)
-        ?.steps?.filter(step => step.keyframe === keyframe) ?? [];
+      system.flows.at(0)?.steps?.filter(step => step.keyframe === keyframe) ??
+      [];
 
     const title = steps.find(step => step.description)?.description ?? "";
 
@@ -725,26 +747,36 @@ initializeDropdowns();
 // Load saved data.
 loadSaveData();
 
-// Initial update / draw.
-tick();
-
 //
 // Utility functions
 //
 
 function loadSaveData(): void {
-  const loaded = load();
+  const json = load();
 
-  if (loaded) {
-    setJsonEditorValue(loaded);
-    loadSimulation(loaded);
-    updateFlowProgression();
-    pushChange(loaded);
-    save(loaded);
-    fitSimulation();
-    redrawGrid();
-    state.flowPlayer?.draw();
-    tick();
+  if (json) {
+    const saveDataIsLoading = document.getElementById("save-data-is-loading")!;
+
+    saveDataIsLoading.classList.remove("hidden");
+
+    setJsonEditorValue(json);
+
+    loadSimulation(json)
+      .then(() => {
+        updateFlowProgression();
+        pushChange(json);
+        save(json);
+        fitSimulation();
+        redrawGrid();
+        state.flowPlayer?.draw();
+        tick();
+      })
+      .catch(() => {
+        /* NOOP */
+      })
+      .finally(() => {
+        saveDataIsLoading.classList.add("hidden");
+      });
   }
 }
 
@@ -757,6 +789,10 @@ function isModalOpen(): boolean {
     privacy.open ||
     flowStepSetTitleDialog.open
   );
+}
+
+function isInitialLoad(): boolean {
+  return state.simulatorInstance === 0;
 }
 
 /**

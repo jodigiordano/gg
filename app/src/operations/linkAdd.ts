@@ -85,7 +85,7 @@ const operation: Operation = {
 
     if (b && b.id !== a.id && !b.systems.length) {
       modifySpecification(() => {
-        addLink(state.system, a!.id, b!.id);
+        addLink(state.simulator.getSystem(), a!.id, b!.id);
       });
     }
 

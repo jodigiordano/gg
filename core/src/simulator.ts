@@ -129,20 +129,32 @@ interface GridSystem {
 }
 
 export class SystemSimulator {
+  private system: RuntimeSystem;
   private routes: Record<string, Record<string, number[][]>>;
   private gridSystems: Record<string, GridSystem>;
   private grid: SimulatorObject[][][];
   private boundaries: SimulatorBoundaries;
 
-  constructor(system: RuntimeSystem) {
-    this.routes = {};
-    this.gridSystems = {};
+  constructor(options: {
+    system: RuntimeSystem;
+    routes?: Record<string, Record<string, number[][]>>;
+    gridSystems?: Record<string, GridSystem>;
+    grid?: SimulatorObject[][][];
+    boundaries?: SimulatorBoundaries;
+  }) {
+    this.system = options.system;
+    this.routes = options.routes ?? {};
+    this.gridSystems = options.gridSystems ?? {};
+    this.grid = options.grid ?? [];
+    this.boundaries = options.boundaries ?? this.computeBoundaries();
+  }
 
+  compute(): void {
     // Compute grid systems. Part I.
-    this.initializeSystems(system);
-    this.computeSystemVisibility(system, false);
-    this.computeSystemWorldPositions(system);
-    this.computeSystemSizes(system);
+    this.initializeSystems(this.system);
+    this.computeSystemVisibility(this.system, false);
+    this.computeSystemWorldPositions(this.system);
+    this.computeSystemSizes(this.system);
 
     // Compute boundaries.
     this.boundaries = this.computeBoundaries();
@@ -153,8 +165,8 @@ export class SystemSimulator {
 
     // Compute grid systems. Part III.
     // Requires positions.
-    this.computeSystemPorts(system);
-    this.computeSystemTitles(system);
+    this.computeSystemPorts(this.system);
+    this.computeSystemTitles(this.system);
 
     // Create grid.
     this.grid = new Array(this.boundaries.height);
@@ -171,10 +183,14 @@ export class SystemSimulator {
     );
 
     // Draw grid objects.
-    this.drawSubsystems(system, finderGrid);
-    this.drawLinks(system, finderGrid);
+    this.drawSubsystems(this.system, finderGrid);
+    this.drawLinks(this.system, finderGrid);
 
-    this.synchronizeRuntimeObjects(system);
+    this.synchronizeRuntimeObjects(this.system);
+  }
+
+  getSystem(): RuntimeSystem {
+    return this.system;
   }
 
   getLayout(): SimulatorObject[][][] {

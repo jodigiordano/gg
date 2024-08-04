@@ -429,6 +429,21 @@
           width: 1.5em;
         }
       }
+
+      /* Banner shown when the save data is loading */
+      #save-data-is-loading {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: #eee;
+        border: 1px solid #888;
+        padding: 1em;
+
+        &.hidden {
+          display: none;
+        }
+      }
     </style>
   </head>
   <body>
@@ -576,7 +591,8 @@
           <div></div>
         </div>
       </div>
-      <div id="canvas">Loading...</div>
+      <div id="canvas"></div>
+      <div id="save-data-is-loading">Loading...</div>
     </div>
     <dialog id="json-editor">
       <div class="content">

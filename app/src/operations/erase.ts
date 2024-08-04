@@ -86,7 +86,7 @@ const operation: Operation = {
 
     if (link) {
       modifySpecification(() => {
-        removeLink(state.system, link);
+        removeLink(state.simulator.getSystem(), link);
       });
     } else {
       const subsystem = state.simulator.getSubsystemAt(state.x, state.y);

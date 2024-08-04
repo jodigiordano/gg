@@ -70,7 +70,8 @@ const operation: Operation = {
     }
 
     modifySpecification(() => {
-      const steps = state.system.flows.at(0)?.steps ?? [];
+      const system = state.simulator.getSystem();
+      const steps = system.flows.at(0)?.steps ?? [];
 
       const keyframe = state.flowKeyframe | 0;
 
@@ -89,9 +90,9 @@ const operation: Operation = {
         specification.from = specification.to;
         specification.to = from;
       } else if (step) {
-        removeFlowStep(state.system, step);
+        removeFlowStep(system, step);
       } else {
-        addFlowStep(state.system, keyframe, link.a, link.b);
+        addFlowStep(system, keyframe, link.a, link.b);
       }
     });
 

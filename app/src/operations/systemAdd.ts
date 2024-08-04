@@ -58,7 +58,8 @@ const operation: Operation = {
   },
   onPointerUp: state => {
     const parent =
-      state.simulator.getSubsystemAt(state.x, state.y) ?? state.system;
+      state.simulator.getSubsystemAt(state.x, state.y) ??
+      state.simulator.getSystem();
 
     let x: number;
     let y: number;

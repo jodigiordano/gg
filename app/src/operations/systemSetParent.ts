@@ -96,7 +96,8 @@ const operation: Operation = {
     }
 
     const parent =
-      state.simulator.getSubsystemAt(state.x, state.y) ?? state.system;
+      state.simulator.getSubsystemAt(state.x, state.y) ??
+      state.simulator.getSystem();
 
     modifySpecification(() => {
       if (
