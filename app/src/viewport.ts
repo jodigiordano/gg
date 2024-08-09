@@ -27,12 +27,12 @@ export function pauseViewport(pause: boolean): void {
   paused = pause;
 }
 
-export async function fitViewport(
+export function fitViewport(
   centerX: number,
   centerY: number,
   width: number,
   height: number,
-): Promise<void> {
+): void {
   moveCenter(centerX, centerY);
 
   const center = getWorldCenter();
@@ -46,7 +46,7 @@ export async function fitViewport(
 
   moveCenter(center.x, center.y);
 
-  return setViewport(viewportX, viewportY, scale);
+  setViewport(viewportX, viewportY, scale);
 }
 
 export function moveViewport(x: number, y: number): void {

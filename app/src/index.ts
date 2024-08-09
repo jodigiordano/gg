@@ -3,7 +3,6 @@ import {
   stopTicker,
   startTicker,
   onTick,
-  initializeRenderer,
   screenshotCanvas,
 } from "./renderer/api.js";
 import {
@@ -731,31 +730,24 @@ function switchOperation(operation: Operation): void {
 // Initialize dropdowns.
 initializeDropdowns();
 
-// Initialize the renderer.
-initializeRenderer({ withGrid: true })
-  .then(() => {
-    // Initialize operations.
-    addSystemOperation.setup(state);
-    setSystemTitleOperation.setup(state);
-    moveSystemOperation.setup(state);
-    setSystemParentOperation.setup(state);
-    addLinkOperation.setup(state);
-    eraseOperation.setup(state);
-    setSystemHideSystemsOperation.setup(state);
-    transferDataOperation.setup(state);
+// Initialize operations.
+addSystemOperation.setup(state);
+setSystemTitleOperation.setup(state);
+moveSystemOperation.setup(state);
+setSystemParentOperation.setup(state);
+addLinkOperation.setup(state);
+eraseOperation.setup(state);
+setSystemHideSystemsOperation.setup(state);
+transferDataOperation.setup(state);
 
-    // Initialize drawing the simulation.
-    initializeDrawingSimulation();
+// Initialize drawing the simulation.
+initializeDrawingSimulation();
 
-    // Load saved data.
-    loadSaveData();
+// Load saved data.
+loadSaveData();
 
-    // Initialize default operation.
-    switchOperation(state.operation);
-  })
-  .catch(() => {
-    console.error("Could not initialize the canvas");
-  });
+// Initialize default operation.
+switchOperation(state.operation);
 
 //
 // Utility functions
@@ -809,7 +801,7 @@ function isModalOpen(): boolean {
 }
 
 function isInitialLoad(): boolean {
-  return !state.rendererInitialized || !state.simulatorInitialized;
+  return !state.simulatorInitialized;
 }
 
 /**

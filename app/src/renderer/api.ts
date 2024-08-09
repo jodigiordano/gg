@@ -1,4 +1,18 @@
-import { Ticker } from "pixi.js";
+import {
+  Application,
+  AbstractRenderer,
+  TilingSprite,
+  Container,
+  Spritesheet,
+  Ticker,
+} from "pixi.js";
+import { createGrid, redrawGrid } from "./grid.js";
+import { createSimulation, drawSimulation as drawVisualSimulation } from "./simulation.js";
+import { createFlow, drawFlow, drawFlowTick as drawVisualFlowTick } from "./flow.js";
+import SystemSelector from "./systemSelector.js";
+import SystemLinker from "./systemLinker.js";
+import { loadFonts, loadSpritesheet } from "./assets.js";
+import { Viewport } from "./viewport.js";
 import {
   SimulatorObject,
   SimulatorBoundaries,
@@ -6,12 +20,23 @@ import {
   RuntimeSubsystem,
   RuntimePosition,
 } from "@gg/core";
-import { state } from "../state.js";
-import WebWorker from "../worker.js";
 
 //
 // Initialize.
 //
+
+AbstractRenderer.defaultOptions.roundPixels = true;
+AbstractRenderer.defaultOptions.failIfMajorPerformanceCaveat = false;
+
+let app: Application;
+let viewport: Viewport;
+let grid: TilingSprite;
+let simulation: Container;
+let flow: Container;
+let spritesheet: Spritesheet;
+
+const systemSelectors: Record<string, SystemSelector> = {};
+const systemLinkers: Record<string, SystemLinker> = {};
 
 const rendererContainer = document.getElementById(
   "renderer",
@@ -19,99 +44,111 @@ const rendererContainer = document.getElementById(
 
 const canvasContainer = document.getElementById("canvas") as HTMLCanvasElement;
 
-// Set CSS style on the canvas so the device pixel ratio is properly applied.
-// (autoDensity in PixiJS)
-canvasContainer.style.width = `${rendererContainer.clientWidth}px`;
-canvasContainer.style.height = `${rendererContainer.clientHeight}px`;
-
 // Prevent opening right-click context menu.
 rendererContainer.addEventListener("contextmenu", event => {
   event.preventDefault();
   event.stopPropagation();
 });
 
-const worker = new WebWorker("renderer/worker.ts");
+// Initialize PixiJS app.
+app = new Application();
 
-export async function initializeRenderer(options: {
-  withGrid: boolean;
-}): Promise<void> {
-  return new Promise((resolve, reject) => {
-    worker.onCodeLoaded(() => {
-      const view = canvasContainer.transferControlToOffscreen();
+await app.init({
+  backgroundAlpha: 0,
+  width: rendererContainer.clientWidth,
+  height: rendererContainer.clientHeight,
+  resolution: window.devicePixelRatio,
+  canvas: canvasContainer,
+  autoDensity: true,
+  antialias: false,
+  autoStart: false,
+  sharedTicker: false,
+});
 
-      worker
-        .sendOperation(
-          {
-            operation: "initialize",
-            width: rendererContainer.clientWidth,
-            height: rendererContainer.clientHeight,
-            resolution: window.devicePixelRatio,
-            view,
-            grid: options.withGrid,
-          },
-          { transfer: [view], force: true },
-        )
-        .then(({ success }) => {
-          if (success) {
-            worker.setReady();
-            worker.sendDelayedOperations();
-            state.rendererInitialized = true;
-            resolve();
-          } else {
-            reject();
-          }
-        });
-    });
-  });
-}
+await loadFonts();
+
+spritesheet = await loadSpritesheet();
+
+app.stage.eventMode = "static";
+app.stage.interactiveChildren = true;
+
+app.ticker.stop();
+
+viewport = new Viewport(rendererContainer.clientWidth, rendererContainer.clientHeight);
+
+app.stage.addChild(viewport);
+
+// Initialize background grid layer.
+grid = createGrid(app);
+
+viewport.addChild(grid);
+
+redrawGrid(grid, viewport);
+
+// Initialize the simulation layer.
+simulation = createSimulation();
+
+viewport.addChild(simulation);
+
+// Initialize the flow layer.
+flow = createFlow();
+
+viewport.addChild(flow);
 
 //
 // Canvas operations
 //
 
-export async function resizeCanvas(): Promise<void> {
-  // Set CSS style on the canvas so the device pixel ratio is properly applied.
-  // (autoDensity in PixiJS)
-  canvasContainer.style.width = `${rendererContainer.clientWidth}px`;
-  canvasContainer.style.height = `${rendererContainer.clientHeight}px`;
+export function resizeCanvas(): void {
+  app.renderer.resize(rendererContainer.clientWidth, rendererContainer.clientHeight);
 
-  return new Promise(resolve => {
-    worker
-      .sendOperation({
-        operation: "resizeCanvas",
-        width: rendererContainer.clientWidth,
-        height: rendererContainer.clientHeight,
-      })
-      .then(() => resolve());
-  });
+  viewport.resize(rendererContainer.clientWidth, rendererContainer.clientHeight);
+
+  if (grid.visible) {
+    redrawGrid(grid, viewport);
+  }
+
+  app.ticker.update();
 }
 
 export async function screenshotCanvas(): Promise<Blob> {
-  return new Promise(resolve => {
-    worker
-      .sendOperation({
-        operation: "screenshotCanvas",
-      })
-      .then(data => {
-        resolve(data.imageData as Blob);
-      });
-  });
+  const gridWasVisible = grid.visible;
+  const flowWasVisible = flow.visible;
+
+  grid.visible = false;
+  flow.visible = false;
+
+  const texture = app.renderer.textureGenerator.generateTexture(viewport);
+  const canvas = app.renderer.texture.generateCanvas(texture);
+
+  texture.destroy();
+
+  // @ts-ignore
+  const imageData = await canvas.convertToBlob();
+
+  grid.visible = gridWasVisible;
+  flow.visible = flowWasVisible;
+
+  return imageData;
 }
 
 //
 // Viewport operations
 //
 
-export async function setViewport(
+export function setViewport(
   x: number,
   y: number,
   scale: number,
-): Promise<void> {
-  return new Promise(resolve => {
-    worker.sendOperation({ operation: "setViewport", x, y, scale }).then(() => {
-      resolve();
-    });
-  });
+): void {
+  viewport.scale.set(scale);
+  viewport.position.set(x, y);
+
+  if (grid.visible) {
+    redrawGrid(grid, viewport);
+  }
+
+  app.ticker.update();
 }
 
 //
@@ -124,12 +161,10 @@ ticker.stop();
 
 export function startTicker() {
   ticker.start();
-  worker.sendOperation({ operation: "startTicker" });
 }
 
 export function stopTicker() {
   ticker.stop();
-  worker.sendOperation({ operation: "stopTicker" });
 }
 
 export function onTick(callback: (t: Ticker) => void): void {
@@ -141,30 +176,30 @@ export function onTick(callback: (t: Ticker) => void): void {
 //
 
 export function setGridVisible(visible: boolean): void {
-  worker.sendOperation({ operation: "setGridVisible", visible });
+  grid.visible = visible;
+
+  app.ticker.update();
 }
 
 //
 // Simulation operations
 //
 
-export async function drawSimulation(
+export function drawSimulation(
   layout: SimulatorObject[][][],
   boundaries: SimulatorBoundaries,
-  flow: RuntimeFlow,
-): Promise<void> {
-  return new Promise(resolve => {
-    worker
-      .sendOperation({
-        operation: "drawSimulation",
-        layout,
-        boundaries,
-        flow,
-      })
-      .then(() => {
-        resolve();
-      });
-  });
+  flowData: RuntimeFlow,
+): void {
+  drawVisualSimulation(
+    simulation,
+    layout,
+    boundaries,
+    spritesheet,
+  );
+
+  drawFlow(flow, flowData, spritesheet);
+
+  app.ticker.update();
 }
 
 //
@@ -175,15 +210,15 @@ export function drawFlowTick(
   dataPositions: number[][],
   boundaries: SimulatorBoundaries,
 ): void {
-  worker.sendOperation({
-    operation: "drawFlowTick",
-    dataPositions,
-    boundaries,
-  });
+  drawVisualFlowTick(flow, dataPositions, boundaries);
+
+  app.ticker.update();
 }
 
 export function setFlowVisible(visible: boolean): void {
-  worker.sendOperation({ operation: "setFlowVisible", visible });
+  flow.visible = visible;
+
+  app.ticker.update();
 }
 
 //
@@ -193,13 +228,21 @@ export function setFlowVisible(visible: boolean): void {
 export function createSystemLinker(): string {
   const id = crypto.randomUUID();
 
-  worker.sendOperation({ operation: "createSystemLinker", id });
+  const linker = new SystemLinker();
+
+  systemLinkers[id] = linker;
+
+  viewport.addChild(linker);
 
   return id;
 }
 
 export function setSystemLinkerVisible(id: string, visible: boolean): void {
-  worker.sendOperation({ operation: "setSystemLinkerVisible", id, visible });
+  const linker = systemLinkers[id];
+
+  linker.visible = visible;
+
+  app.ticker.update();
 }
 
 export function setSystemLinkerPosition(
@@ -209,14 +252,16 @@ export function setSystemLinkerPosition(
   x2: number,
   y2: number,
 ): void {
-  worker.sendOperation({
-    operation: "setSystemLinkerPosition",
-    id,
+  const linker = systemLinkers[id];
+
+  linker.setPosition(
     x1,
     y1,
     x2,
     y2,
-  });
+  );
+
+  app.ticker.update();
 }
 
 //
@@ -226,13 +271,21 @@ export function setSystemLinkerPosition(
 export function createSystemSelector(): string {
   const id = crypto.randomUUID();
 
-  worker.sendOperation({ operation: "createSystemSelector", id });
+  const selector = new SystemSelector(spritesheet);
+
+  systemSelectors[id] = selector;
+
+  viewport.addChild(selector);
 
   return id;
 }
 
 export function setSystemSelectorVisible(id: string, visible: boolean): void {
-  worker.sendOperation({ operation: "setSystemSelectorVisible", id, visible });
+  const selector = systemSelectors[id];
+
+  selector.visible = visible;
+
+  app.ticker.update();
 }
 
 export function setSystemSelectorPosition(
@@ -255,12 +308,14 @@ export function setSystemSelectorPositionRect(
   x2: number,
   y2: number,
 ): void {
-  worker.sendOperation({
-    operation: "setSystemSelectorPosition",
-    id,
+  const selector = systemSelectors[id];
+
+  selector.setPosition(
     x1,
     y1,
     x2,
     y2,
-  });
+  );
+
+  app.ticker.update();
 }

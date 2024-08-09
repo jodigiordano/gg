@@ -39,15 +39,15 @@ export async function loadSimulation(json: string): Promise<void> {
             const boundaries = state.simulator.getBoundaries();
             const flow = state.simulator.getSystem().flows[0];
 
-            drawSimulation(layout, boundaries, flow).then(() => {
-              // Play the flow, if needed.
-              if (state.flowPlay && state.flowPlayer) {
-                startTicker();
-              }
+            drawSimulation(layout, boundaries, flow);
 
-              state.simulatorInitialized = true;
-              resolve();
-            });
+            // Play the flow, if needed.
+            if (state.flowPlay && state.flowPlayer) {
+              startTicker();
+            }
+
+            state.simulatorInitialized = true;
+            resolve();
           } else {
             for (const error of data.errors as string[]) {
               console.warn(error);

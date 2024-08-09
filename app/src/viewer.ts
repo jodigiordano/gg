@@ -3,7 +3,7 @@ import {
   stopTicker,
   startTicker,
   onTick,
-  initializeRenderer,
+  setGridVisible,
 } from "./renderer/api.js";
 import { state } from "./state.js";
 import {
@@ -295,12 +295,12 @@ function updateFlowProgression(): void {
 // Canvas
 //
 
-async function resizeCanvas(): Promise<void> {
-  await resizeRendererCanvas();
+function resizeCanvas(): void {
+  resizeRendererCanvas();
 
   const boundaries = getSimulationBoundaries();
 
-  await fitViewport(
+  fitViewport(
     boundaries.x,
     boundaries.y,
     boundaries.width,
@@ -316,7 +316,7 @@ async function resizeCanvas(): Promise<void> {
 const json = load();
 
 if (json) {
-  await initializeRenderer({ withGrid: false });
+  setGridVisible(false);
 
   // Start the simulation.
   await loadSimulation(json);
@@ -349,7 +349,7 @@ if (json) {
   // Render the flow.
   initializeDrawingSimulation();
 
-  await resizeCanvas();
+  resizeCanvas();
 
   // Remove the loading banner.
   document.getElementById("save-data-is-loading")!.classList.add("hidden");
