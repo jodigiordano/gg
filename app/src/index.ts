@@ -1,6 +1,6 @@
 import { Point } from "pixi.js";
 import { app, tick } from "./pixi.js";
-import { viewport } from "./viewport.js";
+import viewport from "./renderer/viewport.js";
 import {
   loadSimulation,
   fitSimulation,

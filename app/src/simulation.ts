@@ -11,7 +11,7 @@ import { Sprite, Text, SCALE_MODES, Container } from "pixi.js";
 import { spritesheet } from "./assets.js";
 import { BlockSize } from "./helpers.js";
 import { app, tick } from "./pixi.js";
-import { viewport } from "./viewport.js";
+import viewport from "./renderer/viewport.js";
 import { state, pushChange } from "./state.js";
 import { save } from "./persistence.js";
 import { setJsonEditorValue } from "./jsonEditor.js";

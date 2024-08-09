@@ -8,7 +8,7 @@ import SystemSelector from "../renderer/systemSelector.js";
 import { modifySpecification } from "../simulation.js";
 import Operation from "../operation.js";
 import { State } from "../state.js";
-import { viewport } from "../viewport.js";
+import viewport from "../renderer/viewport.js";
 
 const selectVisual = new SystemSelector();
 const moveVisual = new SystemSelector();

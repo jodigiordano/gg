@@ -4,7 +4,7 @@ import SystemLinker from "../renderer/systemLinker.js";
 import { modifySpecification } from "../simulation.js";
 import Operation from "../operation.js";
 import { State } from "../state.js";
-import { viewport } from "../viewport.js";
+import viewport from "../renderer/viewport.js";
 
 const selectAVisual = new SystemSelector();
 const selectBVisual = new SystemSelector();
