@@ -16,83 +16,67 @@ import { state, pushChange } from "../state.js";
 import { save } from "../persistence.js";
 import { setJsonEditorValue } from "../jsonEditor.js";
 import FlowPlayer from "./flowPlayer.js";
+import WebWorker from "../worker.js";
 
 //
 // Load the simulation.
 //
 
-// Loading the simulation is done asynchronously in a worker.
-// That worker may be loading multiple simulations at the same time,
-// and when one simulation is loaded, the caller of that one simulation needs
-// to be informed.
-//
-//   caller -> loadSimulation -> worker.postMessage(id, ...)
-//                               loadsInProgress[id] = callback
-//
-//   worker -> job done -> loadsInProgress[id].callback()
-const loadsInProgress: Record<number, (success: boolean) => void> = {};
-
-// Worker to load a new instance of the simulation.
-const simulatorLoader = new Worker(new URL("worker.ts", import.meta.url), {
-  type: "module",
-});
-
-simulatorLoader.onmessage = event => {
-  if (event.data.success) {
-    // Set the new simulation in the state.
-    state.simulator = new SystemSimulator(event.data.simulator);
-
-    // Draw the new simulaton.
-    container.removeChildren();
-
-    for (const objectToRender of getObjectsToRender()) {
-      // @ts-ignore
-      container.addChild(objectToRender);
-    }
-
-    if (state.simulator.getSystem().flows.length) {
-      state.flowPlayer = new FlowPlayer(
-        state.simulator,
-        state.simulator.getSystem().flows[0]!,
-        state.flowKeyframe,
-      );
-
-      for (const objectToRender of state.flowPlayer.getObjectsToRender()) {
-        // @ts-ignore
-        container.addChild(objectToRender);
-      }
-    }
-
-    // Play the flow, if needed.
-    if (state.flowPlay && state.flowPlayer) {
-      app.ticker.start();
-    }
-
-    tick();
-  } else {
-    for (const error of event.data.errors) {
-      console.warn(error);
-    }
-  }
-
-  state.simulatorInstance = event.data.id;
-  loadsInProgress[event.data.id]?.(event.data.success);
-  delete loadsInProgress[event.data.id];
-};
+const worker = new WebWorker("simulator/worker.ts");
 
 export async function loadSimulation(json: string): Promise<void> {
-  const id = state.simulatorNextInstance + 1;
-  state.simulatorNextInstance = id;
-  simulatorLoader.postMessage({ id, json });
-
   return new Promise((resolve, reject) => {
-    loadsInProgress[id] = (success: boolean) => {
-      if (success) {
-        resolve();
-      } else {
-        reject();
-      }
-    };
+    worker.onCodeLoaded(() => {
+      worker
+        .sendOperation({
+          operation: "initialize",
+          json,
+        })
+        .then(data => {
+          if (data.success) {
+            // Set the new simulation in the state.
+            state.simulator = new SystemSimulator(data.simulator as any);
+
+            // Draw the new simulaton.
+            container.removeChildren();
+
+            for (const objectToRender of getObjectsToRender()) {
+              // @ts-ignore
+              container.addChild(objectToRender);
+            }
+
+            if (state.simulator.getSystem().flows.length) {
+              state.flowPlayer = new FlowPlayer(
+                state.simulator,
+                state.simulator.getSystem().flows[0]!,
+                state.flowKeyframe,
+              );
+
+              for (const objectToRender of state.flowPlayer.getObjectsToRender()) {
+                // @ts-ignore
+                container.addChild(objectToRender);
+              }
+            }
+
+            // Play the flow, if needed.
+            if (state.flowPlay && state.flowPlayer) {
+              app.ticker.start();
+            }
+
+            tick();
+
+            state.simulatorInitialized = true;
+
+            resolve();
+          } else {
+            for (const error of data.errors as string[]) {
+              console.warn(error);
+            }
+
+            reject();
+          }
+        });
+    });
   });
 }
 
@@ -284,25 +268,16 @@ export async function modifySpecification(modifier: () => void): Promise<void> {
   // Try to apply the new configuration.
   const newSpecification = JSON.stringify(system.specification, null, 2);
 
-  return new Promise(resolve => {
-    loadSimulation(newSpecification)
-      .then(() => {
-        pushChange(newSpecification);
-        save(newSpecification);
-        setJsonEditorValue(newSpecification);
-        resolve();
-      })
-      .catch(() => {
-        // Rollback if the new configuration is invalid.
-        loadSimulation(currentSpecification)
-          .then(() => {
-            resolve();
-          })
-          .catch(() => {
-            /* NOOP */
-          });
-      });
-  });
+  try {
+    await loadSimulation(newSpecification);
+
+    pushChange(newSpecification);
+    save(newSpecification);
+    setJsonEditorValue(newSpecification);
+  } catch {
+    // Rollback if the new configuration is invalid.
+    await loadSimulation(currentSpecification);
+  }
 }
 
 // Fit the simulation in the viewport.

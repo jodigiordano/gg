@@ -789,7 +789,7 @@ function isModalOpen(): boolean {
 }
 
 function isInitialLoad(): boolean {
-  return state.simulatorInstance === 0;
+  return !state.simulatorInitialized;
 }
 
 /**

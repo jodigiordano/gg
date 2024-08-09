@@ -13,8 +13,7 @@ export interface State {
   x: number;
   y: number;
   simulator: SystemSimulator;
-  simulatorInstance: number;
-  simulatorNextInstance: number;
+  simulatorInitialized: boolean;
   flowPlayer: FlowPlayer | null;
   flowKeyframe: number;
   flowPlay: boolean;
@@ -39,8 +38,7 @@ export const state: State = {
   x: -999999,
   y: -999999,
   simulator: defaultSimulator,
-  simulatorInstance: 0,
-  simulatorNextInstance: 0,
+  simulatorInitialized: false,
   flowPlayer: null,
   flowKeyframe: 0,
   flowPlay: urlParams.autoplay,
