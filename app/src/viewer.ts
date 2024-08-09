@@ -135,30 +135,11 @@ function rewindFlow(): void {
   }
 }
 
-flowPlay.addEventListener("click", () => {
-  playFlow();
-  flowPlay.blur();
-});
-
-flowPause.addEventListener("click", () => {
-  pauseFlow();
-  flowPause.blur();
-});
-
-flowRewind.addEventListener("click", () => {
-  rewindFlow();
-  flowRewind.blur();
-});
-
-flowPreviousKeyframe.addEventListener("click", () => {
-  goToPreviousKeyframe();
-  flowPreviousKeyframe.blur();
-});
-
-flowNextKeyframe.addEventListener("click", () => {
-  goToNextKeyframe();
-  flowNextKeyframe.blur();
-});
+flowPlay.addEventListener("click", playFlow);
+flowPause.addEventListener("click", pauseFlow);
+flowRewind.addEventListener("click", rewindFlow);
+flowPreviousKeyframe.addEventListener("click", goToPreviousKeyframe);
+flowNextKeyframe.addEventListener("click", goToNextKeyframe);
 
 app.ticker.add<void>(() => {
   if (state.flowPlayer) {
@@ -283,6 +264,21 @@ function resizeCanvas(): void {
   fitSimulation();
 
   tick();
+}
+
+//
+// Toolbox
+//
+
+const toolboxButtons = document.querySelectorAll(
+  "#toolbox button",
+) as unknown as HTMLButtonElement[];
+
+for (const button of toolboxButtons) {
+  button.addEventListener("click", function () {
+    // Remove focus once clicked.
+    this.blur();
+  });
 }
 
 //

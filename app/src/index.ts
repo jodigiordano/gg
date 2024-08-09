@@ -540,25 +540,10 @@ if (state.flowPlay) {
   flowPause.classList.remove("hidden");
 }
 
-flowPlay.addEventListener("click", () => {
-  playFlow();
-  flowPlay.blur();
-});
-
-flowPause.addEventListener("click", () => {
-  pauseFlow();
-  flowPause.blur();
-});
-
-flowPreviousKeyframe.addEventListener("click", () => {
-  goToPreviousKeyframe();
-  flowPreviousKeyframe.blur();
-});
-
-flowNextKeyframe.addEventListener("click", () => {
-  goToNextKeyframe();
-  flowNextKeyframe.blur();
-});
+flowPlay.addEventListener("click", playFlow);
+flowPause.addEventListener("click", pauseFlow);
+flowPreviousKeyframe.addEventListener("click", goToPreviousKeyframe);
+flowNextKeyframe.addEventListener("click", goToNextKeyframe);
 
 flowRepeatOne.addEventListener("click", function () {
   state.flowPlayMode = "repeatAll";
@@ -678,7 +663,7 @@ function updateFlowProgression(): void {
 // Toolbox
 //
 
-// Initialize toolbox
+// Initialize operations.
 addSystemOperation.setup(state);
 setSystemTitleOperation.setup(state);
 moveSystemOperation.setup(state);
@@ -688,6 +673,7 @@ eraseOperation.setup(state);
 setSystemHideSystemsOperation.setup(state);
 transferDataOperation.setup(state);
 
+// Initialize buttons.
 const singleChoiceButtons = document.querySelectorAll(
   "#toolbox .single-choice button",
 );
@@ -724,6 +710,17 @@ for (const button of singleChoiceButtons) {
     state.operation.onMute(state);
 
     tick();
+  });
+}
+
+const toolboxButtons = document.querySelectorAll(
+  "#toolbox button",
+) as unknown as HTMLButtonElement[];
+
+for (const button of toolboxButtons) {
+  button.addEventListener("click", function () {
+    // Remove focus once clicked.
+    this.blur();
   });
 }
 

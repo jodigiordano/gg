@@ -10,6 +10,9 @@ export function initializeDropdowns() {
       } else {
         content.classList.add("closed");
       }
+
+      // Remove focus once clicked.
+      this.blur();
     });
   }
 
