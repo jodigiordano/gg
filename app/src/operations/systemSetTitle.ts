@@ -1,7 +1,7 @@
 import { RuntimeSubsystem, setSubsystemTitle } from "@gg/core";
 import Operation from "../operation.js";
 import SystemSelector from "../renderer/systemSelector.js";
-import { modifySpecification } from "../simulation.js";
+import { modifySpecification } from "../simulator/api.js";
 import { State } from "../state.js";
 import viewport from "../renderer/viewport.js";
 import { app } from "../renderer/pixi.js";

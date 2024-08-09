@@ -6,7 +6,7 @@ import {
   fitSimulation,
   modifySpecification,
   getKeyframesCount,
-} from "./simulation.js";
+} from "./simulator/api.js";
 import { BlockSize, debounce, sanitizeHtml } from "./helpers.js";
 import { initializeDropdowns } from "./dropdown.js";
 import { state, resetState, pushChange } from "./state.js";

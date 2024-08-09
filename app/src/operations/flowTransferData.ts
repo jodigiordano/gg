@@ -1,4 +1,4 @@
-import { modifySpecification } from "../simulation.js";
+import { modifySpecification } from "../simulator/api.js";
 import SystemSelector from "../renderer/systemSelector.js";
 import { State } from "../state.js";
 import Operation from "../operation.js";

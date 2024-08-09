@@ -5,7 +5,7 @@ import {
   fitSimulation,
   loadSimulation,
   getKeyframesCount,
-} from "./simulation.js";
+} from "./simulator/api.js";
 import { load } from "./persistence.js";
 import { debounce, sanitizeHtml } from "./helpers.js";
 

@@ -1,6 +1,6 @@
 import SystemSelector from "../renderer/systemSelector.js";
 import { State } from "../state.js";
-import { modifySpecification } from "../simulation.js";
+import { modifySpecification } from "../simulator/api.js";
 import Operation from "../operation.js";
 import viewport from "../renderer/viewport.js";
 

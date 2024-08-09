@@ -8,13 +8,13 @@ import {
   SimulatorSystemDirectionType,
 } from "@gg/core";
 import { Sprite, Text, SCALE_MODES, Container } from "pixi.js";
-import { spritesheet } from "./renderer/assets.js";
-import { BlockSize } from "./helpers.js";
-import { app, tick } from "./renderer/pixi.js";
-import viewport from "./renderer/viewport.js";
-import { state, pushChange } from "./state.js";
-import { save } from "./persistence.js";
-import { setJsonEditorValue } from "./jsonEditor.js";
+import { spritesheet } from "../renderer/assets.js";
+import { BlockSize } from "../helpers.js";
+import { app, tick } from "../renderer/pixi.js";
+import viewport from "../renderer/viewport.js";
+import { state, pushChange } from "../state.js";
+import { save } from "../persistence.js";
+import { setJsonEditorValue } from "../jsonEditor.js";
 import FlowPlayer from "./flowPlayer.js";
 
 //
@@ -33,12 +33,9 @@ import FlowPlayer from "./flowPlayer.js";
 const loadsInProgress: Record<number, (success: boolean) => void> = {};
 
 // Worker to load a new instance of the simulation.
-const simulatorLoader = new Worker(
-  new URL("./workers/simulatorLoader.ts", import.meta.url),
-  {
-    type: "module",
-  },
-);
+const simulatorLoader = new Worker(new URL("worker.ts", import.meta.url), {
+  type: "module",
+});
 
 simulatorLoader.onmessage = event => {
   if (event.data.success) {

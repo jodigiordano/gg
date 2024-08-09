@@ -1,5 +1,5 @@
 import { removeLink, removeSubsystem } from "@gg/core";
-import { modifySpecification } from "../simulation.js";
+import { modifySpecification } from "../simulator/api.js";
 import SystemSelector from "../renderer/systemSelector.js";
 import Operation from "../operation.js";
 import { State } from "../state.js";
