@@ -23,7 +23,9 @@ import WebWorker from "../worker.js";
 //
 
 // Necessary to initialize it this way so Vite generates a worker.js bundle.
-const nativeWorker = new Worker(new URL("worker.ts", import.meta.url));
+const nativeWorker = new Worker(new URL("worker.ts", import.meta.url), {
+  type: "module",
+});
 
 const worker = new WebWorker(nativeWorker);
 
