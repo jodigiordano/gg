@@ -68,7 +68,7 @@ export default class WebWorker {
     options?: StructuredSerializeOptions,
   ): Promise<WorkerOperation> {
     return new Promise(resolve => {
-      const id = crypto.randomUUID();
+      const id = Math.random().toString(16).slice(2);
 
       operation.operationId = id;
 
