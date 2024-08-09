@@ -400,17 +400,21 @@ function redo(): void {
   }
 }
 
-document.getElementById("operation-undo")?.addEventListener("click", function() {
-  undo();
+document
+  .getElementById("operation-undo")
+  ?.addEventListener("click", function () {
+    undo();
 
-  this.blur();
-});
+    this.blur();
+  });
 
-document.getElementById("operation-redo")?.addEventListener("click", function() {
-  redo();
+document
+  .getElementById("operation-redo")
+  ?.addEventListener("click", function () {
+    redo();
 
-  this.blur();
-});
+    this.blur();
+  });
 
 //
 // Camera operations.
@@ -432,7 +436,7 @@ function cameraZoomOut(): void {
 
 document
   .getElementById("operation-camera-fit")
-  ?.addEventListener("click", function() {
+  ?.addEventListener("click", function () {
     cameraFit();
 
     this.blur();
@@ -440,7 +444,7 @@ document
 
 document
   .getElementById("operation-camera-zoom-in")
-  ?.addEventListener("click", function() {
+  ?.addEventListener("click", function () {
     cameraZoomIn();
 
     this.blur();
@@ -448,7 +452,7 @@ document
 
 document
   .getElementById("operation-camera-zoom-out")
-  ?.addEventListener("click", function() {
+  ?.addEventListener("click", function () {
     cameraZoomOut();
 
     this.blur();
