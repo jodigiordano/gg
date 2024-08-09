@@ -1,5 +1,5 @@
 import { addSubsystem, SystemMinSize } from "@gg/core";
-import SystemSelector from "../systemSelector.js";
+import SystemSelector from "../renderer/systemSelector.js";
 import { State } from "../state.js";
 import { modifySpecification } from "../simulation.js";
 import Operation from "../operation.js";

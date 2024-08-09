@@ -1,5 +1,5 @@
 import { RuntimeSubsystem, RuntimePosition, moveSystem } from "@gg/core";
-import SystemSelector from "../systemSelector.js";
+import SystemSelector from "../renderer/systemSelector.js";
 import { modifySpecification } from "../simulation.js";
 import Operation from "../operation.js";
 import { State } from "../state.js";
