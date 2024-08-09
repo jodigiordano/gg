@@ -1,37 +1,41 @@
-import SystemSelector from "../systemSelector.js";
 import { State } from "../state.js";
-import { modifySpecification } from "../simulation.js";
+import { pauseViewport } from "../viewport.js";
+import { modifySpecification } from "../simulator/api.js";
 import Operation from "../operation.js";
-import { viewport } from "../viewport.js";
+import {
+  createSystemSelector,
+  setSystemSelectorPosition,
+  setSystemSelectorVisible,
+} from "../renderer/api.js";
 
-const selectVisual = new SystemSelector();
+let selectVisual: string;
 
 function onPointerMove(state: State): void {
   const subsystem = state.simulator.getSubsystemAt(state.x, state.y);
 
   if (subsystem && subsystem.systems.length) {
-    selectVisual.setPosition(subsystem, { x: 0, y: 0 });
-    selectVisual.visible = true;
-    viewport.pause = true;
+    setSystemSelectorPosition(selectVisual, subsystem, { x: 0, y: 0 });
+    setSystemSelectorVisible(selectVisual, true);
+    pauseViewport(true);
   } else {
-    selectVisual.visible = false;
-    viewport.pause = false;
+    setSystemSelectorVisible(selectVisual, false);
+    pauseViewport(false);
   }
 }
 
 const operation: Operation = {
   id: "operation-system-hide-systems",
   setup: () => {
-    viewport.addChild(selectVisual);
+    selectVisual = createSystemSelector();
   },
   onBegin: onPointerMove,
   onEnd: () => {
-    selectVisual.visible = false;
+    setSystemSelectorVisible(selectVisual, false);
 
-    viewport.pause = false;
+    pauseViewport(false);
   },
   onMute: () => {
-    selectVisual.visible = false;
+    setSystemSelectorVisible(selectVisual, false);
   },
   onUnmute: onPointerMove,
   onPointerUp: state => {
@@ -48,7 +52,7 @@ const operation: Operation = {
     }
 
     // Reset operation.
-    viewport.pause = false;
+    pauseViewport(false);
 
     onPointerMove(state);
   },

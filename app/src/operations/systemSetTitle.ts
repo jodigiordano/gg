@@ -1,11 +1,14 @@
 import { RuntimeSubsystem, setSubsystemTitle } from "@gg/core";
 import Operation from "../operation.js";
-import SystemSelector from "../systemSelector.js";
-import { modifySpecification } from "../simulation.js";
+import { modifySpecification } from "../simulator/api.js";
 import { State } from "../state.js";
-import { viewport } from "../viewport.js";
-import { app } from "../pixi.js";
 import { state } from "../state.js";
+import { pauseViewport } from "../viewport.js";
+import {
+  createSystemSelector,
+  setSystemSelectorPosition,
+  setSystemSelectorVisible,
+} from "../renderer/api.js";
 
 const dialog = document.getElementById(
   "input-system-set-title-dialog",
@@ -33,21 +36,18 @@ document
       subsystem = null;
 
       onPointerMove(state);
-
-      // TODO: hmmm...
-      app.ticker.update();
     }
   });
 
-const selectVisual = new SystemSelector();
+let selectVisual: string;
 
 let subsystem: RuntimeSubsystem | null = null;
 
 function onPointerMove(state: State) {
   if (dialog.open) {
-    selectVisual.setPosition(subsystem!, { x: 0, y: 0 });
-    selectVisual.visible = true;
-    viewport.pause = true;
+    setSystemSelectorPosition(selectVisual, subsystem!, { x: 0, y: 0 });
+    setSystemSelectorVisible(selectVisual, true);
+    pauseViewport(true);
 
     return;
   }
@@ -55,28 +55,28 @@ function onPointerMove(state: State) {
   const ss = state.simulator.getSubsystemAt(state.x, state.y);
 
   if (ss) {
-    selectVisual.setPosition(ss, { x: 0, y: 0 });
-    selectVisual.visible = true;
-    viewport.pause = true;
+    setSystemSelectorPosition(selectVisual, ss, { x: 0, y: 0 });
+    setSystemSelectorVisible(selectVisual, true);
+    pauseViewport(true);
   } else {
-    selectVisual.visible = false;
-    viewport.pause = false;
+    setSystemSelectorVisible(selectVisual, false);
+    pauseViewport(false);
   }
 }
 
 const operation: Operation = {
   id: "operation-system-set-title",
   setup: () => {
-    viewport.addChild(selectVisual);
+    selectVisual = createSystemSelector();
   },
   onBegin: onPointerMove,
   onEnd() {
-    selectVisual.visible = false;
+    setSystemSelectorVisible(selectVisual, false);
 
-    viewport.pause = false;
+    pauseViewport(false);
   },
   onMute: () => {
-    selectVisual.visible = false;
+    setSystemSelectorVisible(selectVisual, false);
   },
   onUnmute: onPointerMove,
   onPointerMove,

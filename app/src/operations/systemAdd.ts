@@ -1,15 +1,21 @@
 import { addSubsystem, SystemMinSize } from "@gg/core";
-import SystemSelector from "../systemSelector.js";
 import { State } from "../state.js";
-import { modifySpecification } from "../simulation.js";
+import { pauseViewport } from "../viewport.js";
+import { modifySpecification } from "../simulator/api.js";
 import Operation from "../operation.js";
-import { viewport } from "../viewport.js";
+import {
+  createSystemSelector,
+  setSystemSelectorPosition,
+  setSystemSelectorPositionRect,
+  setSystemSelectorVisible,
+} from "../renderer/api.js";
 
-const placeholderVisual = new SystemSelector();
-const parentVisual = new SystemSelector();
+let placeholderVisual: string;
+let parentVisual: string;
 
 function onPointerMove(state: State): void {
-  placeholderVisual.setPositionRect(
+  setSystemSelectorPositionRect(
+    placeholderVisual,
     state.x,
     state.y,
     state.x + SystemMinSize.width - 1,
@@ -19,10 +25,10 @@ function onPointerMove(state: State): void {
   const parent = state.simulator.getSubsystemAt(state.x, state.y);
 
   if (parent) {
-    parentVisual.setPosition(parent, { x: 0, y: 0 });
-    parentVisual.visible = true;
+    setSystemSelectorPosition(parentVisual, parent, { x: 0, y: 0 });
+    setSystemSelectorVisible(parentVisual, true);
   } else {
-    parentVisual.visible = false;
+    setSystemSelectorVisible(parentVisual, false);
   }
 }
 
@@ -31,28 +37,28 @@ let pointerIsDown = false;
 const operation: Operation = {
   id: "operation-system-add",
   setup: () => {
-    viewport.addChild(placeholderVisual);
-    viewport.addChild(parentVisual);
+    placeholderVisual = createSystemSelector();
+    parentVisual = createSystemSelector();
   },
   onBegin: state => {
-    placeholderVisual.visible = true;
+    setSystemSelectorVisible(placeholderVisual, true);
 
     pointerIsDown = false;
 
     onPointerMove(state);
   },
   onEnd: () => {
-    placeholderVisual.visible = false;
-    parentVisual.visible = false;
+    setSystemSelectorVisible(placeholderVisual, false);
+    setSystemSelectorVisible(parentVisual, false);
 
-    viewport.pause = false;
+    pauseViewport(false);
   },
   onMute: () => {
-    placeholderVisual.visible = false;
-    parentVisual.visible = false;
+    setSystemSelectorVisible(placeholderVisual, false);
+    setSystemSelectorVisible(parentVisual, false);
   },
   onUnmute: state => {
-    placeholderVisual.visible = true;
+    setSystemSelectorVisible(placeholderVisual, true);
 
     onPointerMove(state);
   },
@@ -78,7 +84,7 @@ const operation: Operation = {
       addSubsystem(parent, x, y, "");
     });
 
-    viewport.pause = false;
+    pauseViewport(false);
     pointerIsDown = false;
 
     onPointerMove(state);
@@ -96,7 +102,7 @@ const operation: Operation = {
   },
   onPointerMove: state => {
     if (pointerIsDown) {
-      viewport.pause = true;
+      pauseViewport(true);
     }
 
     onPointerMove(state);

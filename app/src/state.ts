@@ -1,7 +1,5 @@
-// @ts-ignore
-import { Viewport } from "pixi-viewport";
 import { load, SystemSimulator } from "@gg/core";
-import FlowPlayer from "./flowPlayer.js";
+import FlowPlayer from "./simulator/flowPlayer.js";
 import Operation from "./operation.js";
 import MoveSystemOperation from "./operations/systemMove.js";
 import { getUrlParams } from "./persistence.js";
@@ -12,9 +10,9 @@ export interface State {
   operation: Operation;
   x: number;
   y: number;
+  rendererInitialized: boolean;
+  simulatorInitialized: boolean;
   simulator: SystemSimulator;
-  simulatorInstance: number;
-  simulatorNextInstance: number;
   flowPlayer: FlowPlayer | null;
   flowKeyframe: number;
   flowPlay: boolean;
@@ -38,17 +36,15 @@ export const state: State = {
   operation: defaultOperation,
   x: -999999,
   y: -999999,
+  rendererInitialized: false,
+  simulatorInitialized: false,
   simulator: defaultSimulator,
-  simulatorInstance: 0,
-  simulatorNextInstance: 0,
   flowPlayer: null,
   flowKeyframe: 0,
   flowPlay: urlParams.autoplay,
   flowPlayMode: "repeatAll",
   flowSpeed: urlParams.speed,
 };
-
-defaultOperation.onBegin(state);
 
 export function pushChange(change: string) {
   // A same change cannot be pushed multiple times consecutively.

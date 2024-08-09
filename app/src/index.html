@@ -169,6 +169,10 @@
       }
 
       /* Page-wide styles */
+      html {
+        overscroll-behavior: none;
+      }
+
       body {
         background: #dfdfdf;
         position: fixed;
@@ -284,6 +288,7 @@
       #toolbox {
         padding: 0.5em;
         overflow-y: scroll;
+        overflow-x: hidden;
 
         .operations {
           display: grid;
@@ -325,10 +330,14 @@
       }
 
       /* Canvas on the right of the content */
-      #canvas {
+      #renderer {
         flex-shrink: 1;
         flex-grow: 1;
         overflow: hidden;
+
+        #canvas {
+          position: absolute;
+        }
       }
 
       /* Display the title of the current keyframe, if any. */
@@ -591,7 +600,9 @@
           <div></div>
         </div>
       </div>
-      <div id="canvas"></div>
+      <div id="renderer">
+        <canvas id="canvas"></canvas>
+      </div>
       <div id="save-data-is-loading">Loading...</div>
     </div>
     <dialog id="json-editor">

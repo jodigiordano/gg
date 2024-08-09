@@ -1,27 +1,33 @@
 import { removeLink, removeSubsystem } from "@gg/core";
-import { modifySpecification } from "../simulation.js";
-import SystemSelector from "../systemSelector.js";
+import { modifySpecification } from "../simulator/api.js";
 import Operation from "../operation.js";
 import { State } from "../state.js";
-import { viewport } from "../viewport.js";
+import { pauseViewport } from "../viewport.js";
+import {
+  createSystemSelector,
+  setSystemSelectorPosition,
+  setSystemSelectorPositionRect,
+  setSystemSelectorVisible,
+} from "../renderer/api.js";
 
-const selectSystemVisual = new SystemSelector();
-const selectLinkVisual1 = new SystemSelector();
-const selectLinkVisual2 = new SystemSelector();
+let selectSystemVisual: string;
+let selectLinkVisual1: string;
+let selectLinkVisual2: string;
 
 function onPointerMove(state: State) {
   const link = state.simulator.getLinkAt(state.x, state.y);
 
   if (link) {
-    selectSystemVisual.visible = false;
+    setSystemSelectorVisible(selectSystemVisual, false);
 
     const route = state.simulator.getRoute(link.a, link.b)!;
     const boundaries = state.simulator.getBoundaries();
 
     const [startX, startY] = route.at(0)!;
 
-    selectLinkVisual1.visible = true;
-    selectLinkVisual1.setPositionRect(
+    setSystemSelectorVisible(selectLinkVisual1, true);
+    setSystemSelectorPositionRect(
+      selectLinkVisual1,
       startX - boundaries.translateX,
       startY - boundaries.translateY,
       startX - boundaries.translateX,
@@ -30,32 +36,33 @@ function onPointerMove(state: State) {
 
     const [endX, endY] = route.at(-1)!;
 
-    selectLinkVisual2.visible = true;
-    selectLinkVisual2.setPositionRect(
+    setSystemSelectorVisible(selectLinkVisual2, true);
+    setSystemSelectorPositionRect(
+      selectLinkVisual2,
       endX - boundaries.translateX,
       endY - boundaries.translateY,
       endX - boundaries.translateX,
       endY - boundaries.translateY,
     );
 
-    viewport.pause = true;
+    pauseViewport(true);
   } else {
-    selectLinkVisual1.visible = false;
-    selectLinkVisual2.visible = false;
+    setSystemSelectorVisible(selectLinkVisual1, false);
+    setSystemSelectorVisible(selectLinkVisual2, false);
 
-    viewport.pause = false;
+    pauseViewport(false);
 
     const subsystem = state.simulator.getSubsystemAt(state.x, state.y);
 
     if (subsystem) {
-      selectSystemVisual.visible = true;
-      selectSystemVisual.setPosition(subsystem, { x: 0, y: 0 });
+      setSystemSelectorVisible(selectSystemVisual, true);
+      setSystemSelectorPosition(selectSystemVisual, subsystem, { x: 0, y: 0 });
 
-      viewport.pause = true;
+      pauseViewport(true);
     } else {
-      selectSystemVisual.visible = false;
+      setSystemSelectorVisible(selectSystemVisual, false);
 
-      viewport.pause = false;
+      pauseViewport(false);
     }
   }
 }
@@ -63,22 +70,22 @@ function onPointerMove(state: State) {
 const operation: Operation = {
   id: "operation-erase",
   setup: () => {
-    viewport.addChild(selectSystemVisual);
-    viewport.addChild(selectLinkVisual1);
-    viewport.addChild(selectLinkVisual2);
+    selectSystemVisual = createSystemSelector();
+    selectLinkVisual1 = createSystemSelector();
+    selectLinkVisual2 = createSystemSelector();
   },
   onBegin: onPointerMove,
   onEnd: () => {
-    selectSystemVisual.visible = false;
-    selectLinkVisual1.visible = false;
-    selectLinkVisual2.visible = false;
+    setSystemSelectorVisible(selectSystemVisual, false);
+    setSystemSelectorVisible(selectLinkVisual1, false);
+    setSystemSelectorVisible(selectLinkVisual2, false);
 
-    viewport.pause = false;
+    pauseViewport(false);
   },
   onMute: () => {
-    selectSystemVisual.visible = false;
-    selectLinkVisual1.visible = false;
-    selectLinkVisual2.visible = false;
+    setSystemSelectorVisible(selectSystemVisual, false);
+    setSystemSelectorVisible(selectLinkVisual1, false);
+    setSystemSelectorVisible(selectLinkVisual2, false);
   },
   onUnmute: onPointerMove,
   onPointerUp: state => {
@@ -87,6 +94,8 @@ const operation: Operation = {
     if (link) {
       modifySpecification(() => {
         removeLink(state.simulator.getSystem(), link);
+      }).then(() => {
+        onPointerMove(state);
       });
     } else {
       const subsystem = state.simulator.getSubsystemAt(state.x, state.y);
@@ -94,11 +103,11 @@ const operation: Operation = {
       if (subsystem) {
         modifySpecification(() => {
           removeSubsystem(subsystem);
+        }).then(() => {
+          onPointerMove(state);
         });
       }
     }
-
-    onPointerMove(state);
   },
   onPointerDown: () => {},
   onPointerMove,

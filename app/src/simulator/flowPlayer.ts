@@ -1,15 +1,12 @@
 import { RuntimeFlow, SystemSimulator, getFlowTick } from "@gg/core";
-import { Sprite } from "pixi.js";
-import { spritesheet } from "./assets.js";
-import { BlockSize } from "./helpers.js";
-import { state } from "./state.js";
+import { state } from "../state.js";
+import { drawFlowTick } from "../renderer/api.js";
 
 export default class FlowPlayer {
   private simulator: SystemSimulator;
   private maxKeyframes: number;
   private targetKeyframe: number;
   private currentKeyframe: number;
-  private sprites: Sprite[];
   private flow: RuntimeFlow;
 
   constructor(
@@ -25,26 +22,6 @@ export default class FlowPlayer {
 
     this.maxKeyframes =
       Math.max(0, ...flow.steps.map(step => step.keyframe)) + 1;
-
-    this.sprites = flow.steps.map(() => {
-      const sprite = new Sprite(spritesheet.textures.data);
-
-      sprite.width = BlockSize;
-      sprite.height = BlockSize;
-      sprite.visible = false;
-
-      return sprite;
-    });
-  }
-
-  hide(): void {
-    for (const sprite of this.sprites) {
-      sprite.visible = false;
-    }
-  }
-
-  getObjectsToRender(): Sprite[] {
-    return this.sprites;
   }
 
   getTargetKeyframe(): number {
@@ -107,14 +84,6 @@ export default class FlowPlayer {
 
     const boundaries = this.simulator.getBoundaries();
 
-    for (let i = 0; i < data.length; i++) {
-      if (data[i].length) {
-        this.sprites[i].x = (data[i][0] - boundaries.translateX) * BlockSize;
-        this.sprites[i].y = (data[i][1] - boundaries.translateY) * BlockSize;
-        this.sprites[i].visible = true;
-      } else {
-        this.sprites[i].visible = false;
-      }
-    }
+    drawFlowTick(data, boundaries);
   }
 }

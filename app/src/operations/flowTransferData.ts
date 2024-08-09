@@ -1,12 +1,16 @@
-import { modifySpecification } from "../simulation.js";
-import SystemSelector from "../systemSelector.js";
-import { State } from "../state.js";
-import Operation from "../operation.js";
-import { viewport } from "../viewport.js";
 import { addFlowStep, removeFlowStep } from "@gg/core";
+import { modifySpecification } from "../simulator/api.js";
+import { State } from "../state.js";
+import { pauseViewport } from "../viewport.js";
+import Operation from "../operation.js";
+import {
+  createSystemSelector,
+  setSystemSelectorPositionRect,
+  setSystemSelectorVisible,
+} from "../renderer/api.js";
 
-const selectLinkVisual1 = new SystemSelector();
-const selectLinkVisual2 = new SystemSelector();
+let selectLinkVisual1: string;
+let selectLinkVisual2: string;
 
 function onPointerMove(state: State): void {
   const link = state.simulator.getLinkAt(state.x, state.y);
@@ -17,8 +21,9 @@ function onPointerMove(state: State): void {
 
     const [startX, startY] = route.at(0)!;
 
-    selectLinkVisual1.visible = true;
-    selectLinkVisual1.setPositionRect(
+    setSystemSelectorVisible(selectLinkVisual1, true);
+    setSystemSelectorPositionRect(
+      selectLinkVisual1,
       startX - boundaries.translateX,
       startY - boundaries.translateY,
       startX - boundaries.translateX,
@@ -27,38 +32,39 @@ function onPointerMove(state: State): void {
 
     const [endX, endY] = route.at(-1)!;
 
-    selectLinkVisual2.visible = true;
-    selectLinkVisual2.setPositionRect(
+    setSystemSelectorVisible(selectLinkVisual2, true);
+    setSystemSelectorPositionRect(
+      selectLinkVisual2,
       endX - boundaries.translateX,
       endY - boundaries.translateY,
       endX - boundaries.translateX,
       endY - boundaries.translateY,
     );
 
-    viewport.pause = true;
+    pauseViewport(true);
   } else {
-    selectLinkVisual1.visible = false;
-    selectLinkVisual2.visible = false;
-    viewport.pause = false;
+    setSystemSelectorVisible(selectLinkVisual1, false);
+    setSystemSelectorVisible(selectLinkVisual2, false);
+    pauseViewport(false);
   }
 }
 
 const operation: Operation = {
   id: "operation-flow-data-transfer",
   setup: () => {
-    viewport.addChild(selectLinkVisual1);
-    viewport.addChild(selectLinkVisual2);
+    selectLinkVisual1 = createSystemSelector();
+    selectLinkVisual2 = createSystemSelector();
   },
   onBegin: onPointerMove,
   onEnd: () => {
-    selectLinkVisual1.visible = false;
-    selectLinkVisual2.visible = false;
+    setSystemSelectorVisible(selectLinkVisual1, false);
+    setSystemSelectorVisible(selectLinkVisual2, false);
 
-    viewport.pause = false;
+    pauseViewport(false);
   },
   onMute: () => {
-    selectLinkVisual1.visible = false;
-    selectLinkVisual2.visible = false;
+    setSystemSelectorVisible(selectLinkVisual1, false);
+    setSystemSelectorVisible(selectLinkVisual2, false);
   },
   onUnmute: onPointerMove,
   onPointerUp: state => {

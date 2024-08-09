@@ -1,16 +1,47 @@
-import { app, tick } from "./pixi.js";
-import { state } from "./state.js";
-import { viewport } from "./viewport.js";
 import {
-  fitSimulation,
+  resizeCanvas as resizeRendererCanvas,
+  stopTicker,
+  startTicker,
+  onTick,
+  initializeRenderer,
+} from "./renderer/api.js";
+import { state } from "./state.js";
+import {
   loadSimulation,
   getKeyframesCount,
-} from "./simulation.js";
+  getSimulationBoundaries,
+  initializeDrawingSimulation,
+} from "./simulator/api.js";
 import { load } from "./persistence.js";
 import { debounce, sanitizeHtml } from "./helpers.js";
+import {
+  fitViewport,
+  moveViewport,
+  startMovingViewport,
+  stopMovingViewport,
+  zoomViewport,
+} from "./viewport.js";
 
-// Update the simulation when the viewport is moved.
-viewport.on("moved", tick);
+const canvasContainer = document.getElementById("canvas") as HTMLCanvasElement;
+
+//
+// Events
+//
+
+// The user moves the cursor in the canvas.
+canvasContainer.addEventListener("pointermove", event => {
+  moveViewport(event.x, event.y);
+});
+
+// The user press the pointer in the canvas.
+canvasContainer.addEventListener("pointerdown", event => {
+  startMovingViewport(event.x, event.y);
+});
+
+// The user release the pointer in the canvas.
+canvasContainer.addEventListener("pointerup", () => {
+  stopMovingViewport();
+});
 
 // Resize the container when the window is resized.
 window.addEventListener("resize", debounce(resizeCanvas, 30));
@@ -54,7 +85,7 @@ const flowNextKeyframe = document.getElementById(
 function playFlow(): void {
   state.flowPlayMode = "repeatAll";
   state.flowPlay = true;
-  app.ticker.start();
+  startTicker();
 
   flowPlay.classList.add("hidden");
   flowPause.classList.remove("hidden");
@@ -62,7 +93,7 @@ function playFlow(): void {
 
 function pauseFlow(): void {
   state.flowPlay = false;
-  app.ticker.stop();
+  stopTicker();
 
   flowPlay.classList.remove("hidden");
   flowPause.classList.add("hidden");
@@ -92,7 +123,7 @@ function goToNextKeyframe(): void {
     state.flowPlayer.setTargetKeyframe(state.flowKeyframe);
     state.flowPlayer.setKeyframe(state.flowKeyframe | 0);
     state.flowPlayer.draw();
-    app.ticker.start();
+    startTicker();
   }
 }
 
@@ -118,7 +149,6 @@ function goToPreviousKeyframe(): void {
     state.flowPlayer.setTargetKeyframe(state.flowKeyframe);
     state.flowPlayer.setKeyframe(state.flowKeyframe);
     state.flowPlayer.draw();
-    tick();
   }
 }
 
@@ -131,7 +161,6 @@ function rewindFlow(): void {
     state.flowPlayer.setTargetKeyframe(state.flowKeyframe);
     state.flowPlayer.setKeyframe(state.flowKeyframe);
     state.flowPlayer.draw();
-    tick();
   }
 }
 
@@ -160,7 +189,7 @@ flowNextKeyframe.addEventListener("click", () => {
   flowNextKeyframe.blur();
 });
 
-app.ticker.add<void>(() => {
+onTick(() => {
   if (state.flowPlayer) {
     updateFlowProgression();
 
@@ -178,20 +207,17 @@ app.ticker.add<void>(() => {
 //
 
 function cameraFit(): void {
-  fitSimulation();
-  tick();
+  const boundaries = getSimulationBoundaries();
+
+  fitViewport(boundaries.x, boundaries.y, boundaries.width, boundaries.height);
 }
 
 function cameraZoomIn(): void {
-  viewport.zoomPercent(0.25, true);
-
-  tick();
+  zoomViewport(0.25);
 }
 
 function cameraZoomOut(): void {
-  viewport.zoomPercent(-0.25, true);
-
-  tick();
+  zoomViewport(-0.25);
 }
 
 document
@@ -245,7 +271,6 @@ flowProgressionCurrent.addEventListener("change", function (event) {
   if (state.flowPlayer) {
     state.flowPlayer.setTargetKeyframe(state.flowKeyframe);
     state.flowPlayer.draw();
-    tick();
   }
 });
 
@@ -270,19 +295,17 @@ function updateFlowProgression(): void {
 // Canvas
 //
 
-function resizeCanvas(): void {
-  const canvasContainer = document.getElementById("canvas") as HTMLDivElement;
+async function resizeCanvas(): Promise<void> {
+  await resizeRendererCanvas();
 
-  app.renderer.resize(
-    canvasContainer.clientWidth,
-    canvasContainer.clientHeight,
+  const boundaries = getSimulationBoundaries();
+
+  await fitViewport(
+    boundaries.x,
+    boundaries.y,
+    boundaries.width,
+    boundaries.height,
   );
-
-  viewport.resize(canvasContainer.clientWidth, canvasContainer.clientHeight);
-
-  fitSimulation();
-
-  tick();
 }
 
 //
@@ -293,6 +316,8 @@ function resizeCanvas(): void {
 const json = load();
 
 if (json) {
+  await initializeRenderer({ withGrid: false });
+
   // Start the simulation.
   await loadSimulation(json);
 
@@ -300,6 +325,7 @@ if (json) {
   if (state.flowPlay) {
     flowPlay.classList.add("hidden");
     flowPause.classList.remove("hidden");
+    startTicker();
   }
 
   flowProgressionTotal.innerHTML = getKeyframesCount().toString();
@@ -320,7 +346,10 @@ if (json) {
   // Render the simulation.
   state.flowPlayer?.draw();
 
-  resizeCanvas();
+  // Render the flow.
+  initializeDrawingSimulation();
+
+  await resizeCanvas();
 
   // Remove the loading banner.
   document.getElementById("save-data-is-loading")!.classList.add("hidden");

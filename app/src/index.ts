@@ -1,16 +1,22 @@
-import { Point } from "pixi.js";
-import { app, tick } from "./pixi.js";
-import { viewport } from "./viewport.js";
+import {
+  resizeCanvas,
+  stopTicker,
+  startTicker,
+  onTick,
+  initializeRenderer,
+  screenshotCanvas,
+} from "./renderer/api.js";
 import {
   loadSimulation,
-  fitSimulation,
   modifySpecification,
   getKeyframesCount,
-} from "./simulation.js";
+  initializeDrawingSimulation,
+  getSimulationBoundaries,
+} from "./simulator/api.js";
+import { fitViewport } from "./viewport.js";
 import { BlockSize, debounce, sanitizeHtml } from "./helpers.js";
 import { initializeDropdowns } from "./dropdown.js";
 import { state, resetState, pushChange } from "./state.js";
-import { redrawGrid, setGridVisible } from "./grid.js";
 import Operation from "./operation.js";
 import addSystemOperation from "./operations/systemAdd.js";
 import setSystemTitleOperation from "./operations/systemSetTitle.js";
@@ -27,24 +33,34 @@ import {
   setJsonEditorValue,
 } from "./jsonEditor.js";
 import { getUrlParams, setUrlParams, load, save } from "./persistence.js";
+import {
+  moveViewport,
+  startMovingViewport,
+  stopMovingViewport,
+  zoomViewport,
+  screenToWorld,
+} from "./viewport.js";
+
+const canvasContainer = document.getElementById("canvas") as HTMLCanvasElement;
 
 //
 // Events
 //
 
 // The user moves the cursor in the canvas.
-viewport.on("pointermove", (event: any) => {
+canvasContainer.addEventListener("pointermove", event => {
   if (isModalOpen() || isInitialLoad()) {
     return;
   }
 
-  updateStatePosition(event.data.global);
+  moveViewport(event.x, event.y);
+
+  updateStatePosition(event.x, event.y);
   state.operation.onPointerMove(state);
-  tick();
 });
 
 // The user press the pointer in the canvas.
-viewport.on("pointerdown", (event: any) => {
+canvasContainer.addEventListener("pointerdown", event => {
   if (isModalOpen() || isInitialLoad()) {
     return;
   }
@@ -54,13 +70,14 @@ viewport.on("pointerdown", (event: any) => {
     return;
   }
 
-  updateStatePosition(event.data.global);
+  startMovingViewport(event.x, event.y);
+
+  updateStatePosition(event.x, event.y);
   state.operation.onPointerDown(state);
-  tick();
 });
 
 // The user release the pointer in the canvas.
-viewport.on("pointerup", (event: any) => {
+canvasContainer.addEventListener("pointerup", event => {
   if (isModalOpen() || isInitialLoad()) {
     return;
   }
@@ -70,53 +87,38 @@ viewport.on("pointerup", (event: any) => {
     return;
   }
 
-  updateStatePosition(event.data.global);
+  stopMovingViewport();
+
+  updateStatePosition(event.x, event.y);
   state.operation.onPointerUp(state);
-  tick();
 });
 
 // The user cursor enters the canvas.
-viewport.on("pointerenter", () => {
+canvasContainer.addEventListener("pointerenter", () => {
   if (isModalOpen() || isInitialLoad()) {
     return;
   }
 
   state.operation.onUnmute(state);
-  tick();
 });
 
 // The user cursor leaves the canvas.
-viewport.on("pointerleave", () => {
+canvasContainer.addEventListener("pointerleave", () => {
   if (isModalOpen() || isInitialLoad()) {
     return;
   }
 
-  state.operation.onMute(state);
-  tick();
-});
+  stopMovingViewport();
 
-// Move the grid when the viewport is moved.
-viewport.on("moved", () => {
-  redrawGrid();
-  tick();
+  state.operation.onMute(state);
 });
 
 // Resize the container when the window is resized.
 window.addEventListener(
   "resize",
   debounce(() => {
-    const canvasContainer = document.getElementById("canvas") as HTMLDivElement;
-
-    app.renderer.resize(
-      canvasContainer.clientWidth,
-      canvasContainer.clientHeight,
-    );
-
-    viewport.resize(canvasContainer.clientWidth, canvasContainer.clientHeight);
-
-    redrawGrid();
-    tick();
-  }, 30),
+    resizeCanvas();
+  }, 10),
 );
 
 // The user press a key on the keyboard.
@@ -163,8 +165,6 @@ window.addEventListener("keydown", event => {
   } else if (event.key === "-") {
     cameraZoomOut();
   }
-
-  tick();
 });
 
 // The user modifies the URL manually.
@@ -203,7 +203,6 @@ document
       loadSimulation(json)
         .then(() => {
           updateFlowProgression();
-          tick();
         })
         .catch(() => {
           /* NOOP */
@@ -283,49 +282,27 @@ document
     setUrlParams(urlParams);
     save(json);
 
-    const canvasContainer = document.getElementById("canvas") as HTMLDivElement;
-
     const width = canvasContainer.offsetWidth * 1.5;
     const height = canvasContainer.offsetHeight * 1.5;
 
-    viewport.moveCenter(width / 2, height / 2);
-
-    viewport.fit(true, width, height);
-
-    redrawGrid();
-    tick();
+    fitViewport(width / 2, height / 2, width, height);
   });
 
 document
   .getElementById("operation-export-png")
-  ?.addEventListener("click", async function () {
-    state.operation.onEnd(state);
+  ?.addEventListener("click", () => {
+    screenshotCanvas().then(imageData => {
+      const link = document.createElement("a");
 
-    app.stop();
+      link.setAttribute("href", URL.createObjectURL(imageData));
 
-    setGridVisible(false);
-    state.flowPlayer?.hide();
+      link.setAttribute(
+        "download",
+        `gg.${new Date().toJSON().replaceAll(":", ".")}.png`,
+      );
 
-    viewport.backgroundColor = "0xffffff";
-
-    // @ts-ignore
-    const dataUri = await app.renderer.extract.image(viewport);
-
-    const link = document.createElement("a");
-
-    link.setAttribute("href", dataUri.src);
-
-    link.setAttribute(
-      "download",
-      `gg.${new Date().toJSON().replaceAll(":", ".")}.png`,
-    );
-
-    link.click();
-
-    setGridVisible(true);
-    state.flowPlayer?.draw();
-
-    app.start();
+      link.click();
+    });
   });
 
 //
@@ -396,7 +373,6 @@ function undo(): void {
       .then(() => {
         updateFlowProgression();
         save(json);
-        tick();
       })
       .catch(() => {
         /* NOOP */
@@ -417,7 +393,6 @@ function redo(): void {
       .then(() => {
         updateFlowProgression();
         save(json);
-        tick();
       })
       .catch(() => {
         /* NOOP */
@@ -433,23 +408,17 @@ document.getElementById("operation-redo")?.addEventListener("click", redo);
 //
 
 function cameraFit(): void {
-  fitSimulation();
-  redrawGrid();
-  tick();
+  const boundaries = getSimulationBoundaries();
+
+  fitViewport(boundaries.x, boundaries.y, boundaries.width, boundaries.height);
 }
 
 function cameraZoomIn(): void {
-  viewport.zoomPercent(0.25, true);
-
-  redrawGrid();
-  tick();
+  zoomViewport(0.25);
 }
 
 function cameraZoomOut(): void {
-  viewport.zoomPercent(-0.25, true);
-
-  redrawGrid();
-  tick();
+  zoomViewport(-0.25);
 }
 
 document
@@ -483,7 +452,7 @@ const flowNextKeyframe = document.getElementById(
 
 function playFlow(): void {
   state.flowPlay = true;
-  app.ticker.start();
+  startTicker();
 
   flowPlay.classList.add("hidden");
   flowPause.classList.remove("hidden");
@@ -491,7 +460,7 @@ function playFlow(): void {
 
 function pauseFlow(): void {
   state.flowPlay = false;
-  app.ticker.stop();
+  stopTicker();
 
   flowPlay.classList.remove("hidden");
   flowPause.classList.add("hidden");
@@ -517,7 +486,6 @@ function goToPreviousKeyframe(): void {
     state.flowPlayer.setTargetKeyframe(state.flowKeyframe);
     state.flowPlayer.setKeyframe(state.flowKeyframe);
     state.flowPlayer.draw();
-    tick();
   }
 }
 
@@ -530,7 +498,6 @@ function goToNextKeyframe(): void {
     state.flowPlayer.setTargetKeyframe(state.flowKeyframe);
     state.flowPlayer.setKeyframe(state.flowKeyframe);
     state.flowPlayer.draw();
-    tick();
   }
 }
 
@@ -645,7 +612,7 @@ const currentKeyframeTitle = document.getElementById(
   "information-flow-step-title",
 )!;
 
-app.ticker.add<void>(() => {
+onTick(() => {
   if (state.flowPlay && state.flowPlayer) {
     updateFlowProgression();
   }
@@ -679,15 +646,6 @@ function updateFlowProgression(): void {
 //
 
 // Initialize toolbox
-addSystemOperation.setup(state);
-setSystemTitleOperation.setup(state);
-moveSystemOperation.setup(state);
-setSystemParentOperation.setup(state);
-addLinkOperation.setup(state);
-eraseOperation.setup(state);
-setSystemHideSystemsOperation.setup(state);
-transferDataOperation.setup(state);
-
 const singleChoiceButtons = document.querySelectorAll(
   "#toolbox .single-choice button",
 );
@@ -722,8 +680,6 @@ for (const button of singleChoiceButtons) {
 
     state.operation.onBegin(state);
     state.operation.onMute(state);
-
-    tick();
   });
 }
 
@@ -744,8 +700,31 @@ function switchOperation(operation: Operation): void {
 // Initialize dropdowns.
 initializeDropdowns();
 
-// Load saved data.
-loadSaveData();
+// Initialize the renderer.
+initializeRenderer({ withGrid: true })
+  .then(() => {
+    // Initialize operations.
+    addSystemOperation.setup(state);
+    setSystemTitleOperation.setup(state);
+    moveSystemOperation.setup(state);
+    setSystemParentOperation.setup(state);
+    addLinkOperation.setup(state);
+    eraseOperation.setup(state);
+    setSystemHideSystemsOperation.setup(state);
+    transferDataOperation.setup(state);
+
+    // Initialize drawing the simulation.
+    initializeDrawingSimulation();
+
+    // Load saved data.
+    loadSaveData();
+
+    // Initialize default operation.
+    switchOperation(state.operation);
+  })
+  .catch(() => {
+    console.error("Could not initialize the canvas");
+  });
 
 //
 // Utility functions
@@ -766,10 +745,17 @@ function loadSaveData(): void {
         updateFlowProgression();
         pushChange(json);
         save(json);
-        fitSimulation();
-        redrawGrid();
+
+        const boundaries = getSimulationBoundaries();
+
+        fitViewport(
+          boundaries.x,
+          boundaries.y,
+          boundaries.width,
+          boundaries.height,
+        );
+
         state.flowPlayer?.draw();
-        tick();
       })
       .catch(() => {
         /* NOOP */
@@ -792,7 +778,7 @@ function isModalOpen(): boolean {
 }
 
 function isInitialLoad(): boolean {
-  return state.simulatorInstance === 0;
+  return !state.rendererInitialized || !state.simulatorInitialized;
 }
 
 /**
@@ -801,8 +787,8 @@ function isInitialLoad(): boolean {
  * The screen position is first transformed to the world position.
  * Then, this world position is transformed to the grid position.
  */
-function updateStatePosition(screenPosition: Point): void {
-  const coordinates = viewport.toWorld(screenPosition);
+function updateStatePosition(x: number, y: number): void {
+  const coordinates = screenToWorld(x, y);
 
   state.x =
     coordinates.x >= 0
