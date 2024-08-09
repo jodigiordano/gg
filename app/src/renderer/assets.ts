@@ -1,5 +1,5 @@
 import { Assets, Spritesheet } from "pixi.js";
-import fontData from "./assets/ibm.woff?base64";
+import fontData from "../assets/ibm.woff?base64";
 
 await Assets.load({
   name: "ibm",
@@ -9,7 +9,7 @@ await Assets.load({
   },
 });
 
-import spritesheetData from "./assets/spritesheet.png?base64";
+import spritesheetData from "../assets/spritesheet.png?base64";
 
 await Assets.load({
   name: "spritesheet",

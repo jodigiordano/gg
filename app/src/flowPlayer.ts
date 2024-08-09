@@ -1,6 +1,6 @@
 import { RuntimeFlow, SystemSimulator, getFlowTick } from "@gg/core";
 import { Sprite } from "pixi.js";
-import { spritesheet } from "./assets.js";
+import { spritesheet } from "./renderer/assets.js";
 import { BlockSize } from "./helpers.js";
 import { state } from "./state.js";
 

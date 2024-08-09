@@ -1,5 +1,5 @@
 import { Container, Sprite } from "pixi.js";
-import { spritesheet } from "../assets.js";
+import { spritesheet } from "./assets.js";
 import { BlockSize } from "../helpers.js";
 import { RuntimePosition, RuntimeSubsystem } from "@gg/core";
 

@@ -8,7 +8,7 @@ import {
   SimulatorSystemDirectionType,
 } from "@gg/core";
 import { Sprite, Text, SCALE_MODES, Container } from "pixi.js";
-import { spritesheet } from "./assets.js";
+import { spritesheet } from "./renderer/assets.js";
 import { BlockSize } from "./helpers.js";
 import { app, tick } from "./renderer/pixi.js";
 import viewport from "./renderer/viewport.js";
