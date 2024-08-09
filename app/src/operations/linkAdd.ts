@@ -1,15 +1,14 @@
-import { Graphics } from "pixi.js";
 import { addLink, RuntimeSubsystem } from "@gg/core";
 import SystemSelector from "../renderer/systemSelector.js";
+import SystemLinker from "../renderer/systemLinker.js";
 import { modifySpecification } from "../simulation.js";
 import Operation from "../operation.js";
 import { State } from "../state.js";
 import { viewport } from "../viewport.js";
-import { BlockSize } from "../helpers.js";
 
 const selectAVisual = new SystemSelector();
 const selectBVisual = new SystemSelector();
-const linkingLine = new Graphics();
+const linkingLine = new SystemLinker();
 
 let a: RuntimeSubsystem | null = null;
 
@@ -28,15 +27,12 @@ function onPointerMove(state: State) {
     }
 
     linkingLine.visible = true;
-    linkingLine.clear();
-    linkingLine.lineStyle(BlockSize / 4, 0xffffff);
-
-    linkingLine.moveTo(
-      (a.position.x + a.size.width / 2) * BlockSize,
-      (a.position.y + a.size.height / 2) * BlockSize,
+    linkingLine.setPosition(
+      a.position.x + a.size.width / 2,
+      a.position.y + a.size.height / 2,
+      state.x,
+      state.y,
     );
-
-    linkingLine.lineTo(state.x * BlockSize, state.y * BlockSize);
   } else {
     selectBVisual.visible = false;
     linkingLine.visible = false;
