@@ -23,13 +23,13 @@ export default class WebWorker {
   private codeLoaded: boolean;
   private worker: Worker;
 
-  constructor(workerEntryPoint: string) {
+  constructor(worker: Worker) {
     this.codeLoaded = false;
     this.delayedOperations = [];
     this.operationEndedCallbacks = {};
     this.codeLoadedCallbacks = [];
 
-    this.worker = new Worker(workerEntryPoint, { type: "module" });
+    this.worker = worker;
 
     this.worker.onmessage = event => {
       if (event.data.operation === "ready") {

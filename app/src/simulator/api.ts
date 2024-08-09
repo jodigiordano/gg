@@ -22,7 +22,10 @@ import WebWorker from "../worker.js";
 // Load the simulation.
 //
 
-const worker = new WebWorker("simulator/worker.ts");
+// Necessary to initialize it this way so Vite generates a worker.js bundle.
+const nativeWorker = new Worker(new URL("worker.ts", import.meta.url));
+
+const worker = new WebWorker(nativeWorker);
 
 export async function loadSimulation(json: string): Promise<void> {
   return new Promise((resolve, reject) => {
