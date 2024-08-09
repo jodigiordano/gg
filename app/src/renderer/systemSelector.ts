@@ -1,7 +1,5 @@
-import { Container, Sprite } from "pixi.js";
-import { spritesheet } from "./assets.js";
+import { Container, Sprite, Spritesheet } from "pixi.js";
 import { BlockSize } from "./helpers.js";
-import { RuntimePosition, RuntimeSubsystem } from "@gg/core";
 
 export default class SystemSelector extends Container {
   private topLeft: Sprite;
@@ -9,18 +7,27 @@ export default class SystemSelector extends Container {
   private bottomLeft: Sprite;
   private bottomRight: Sprite;
 
-  constructor() {
+  private x1: number;
+  private y1: number;
+  private x2: number;
+  private y2: number;
+
+  constructor(spritesheet: Spritesheet) {
     super();
 
     this.zIndex = 100;
     this.visible = false;
+
+    this.x1 = 0;
+    this.y1 = 0;
+    this.x2 = 0;
+    this.y2 = 0;
 
     this.topLeft = new Sprite(spritesheet.textures.systemSelectorTopLeft);
 
     this.topLeft.width = BlockSize;
     this.topLeft.height = BlockSize;
 
-    // @ts-ignore
     this.addChild(this.topLeft);
 
     this.topRight = new Sprite(spritesheet.textures.systemSelectorTopRight);
@@ -28,7 +35,6 @@ export default class SystemSelector extends Container {
     this.topRight.width = BlockSize;
     this.topRight.height = BlockSize;
 
-    // @ts-ignore
     this.addChild(this.topRight);
 
     this.bottomLeft = new Sprite(spritesheet.textures.systemSelectorBottomLeft);
@@ -36,7 +42,6 @@ export default class SystemSelector extends Container {
     this.bottomLeft.width = BlockSize;
     this.bottomLeft.height = BlockSize;
 
-    // @ts-ignore
     this.addChild(this.bottomLeft);
 
     this.bottomRight = new Sprite(
@@ -46,29 +51,15 @@ export default class SystemSelector extends Container {
     this.bottomRight.width = BlockSize;
     this.bottomRight.height = BlockSize;
 
-    // @ts-ignore
     this.addChild(this.bottomRight);
   }
 
-  setPosition(subsystem: RuntimeSubsystem, delta: RuntimePosition): void {
-    this.topLeft.x = (subsystem.position.x + delta.x) * BlockSize;
-    this.topLeft.y = (subsystem.position.y + delta.y) * BlockSize;
+  setPosition(x1: number, y1: number, x2: number, y2: number): void {
+    this.x1 = x1;
+    this.y1 = y1;
+    this.x2 = x2;
+    this.y2 = y2;
 
-    this.topRight.x =
-      (subsystem.position.x + delta.x + subsystem.size.width - 1) * BlockSize;
-    this.topRight.y = (subsystem.position.y + delta.y) * BlockSize;
-
-    this.bottomLeft.x = (subsystem.position.x + delta.x) * BlockSize;
-    this.bottomLeft.y =
-      (subsystem.position.y + delta.y + subsystem.size.height - 1) * BlockSize;
-
-    this.bottomRight.x =
-      (subsystem.position.x + delta.x + subsystem.size.width - 1) * BlockSize;
-    this.bottomRight.y =
-      (subsystem.position.y + delta.y + subsystem.size.height - 1) * BlockSize;
-  }
-
-  setPositionRect(x1: number, y1: number, x2: number, y2: number): void {
     this.topLeft.x = x1 * BlockSize;
     this.topLeft.y = y1 * BlockSize;
 
@@ -80,5 +71,9 @@ export default class SystemSelector extends Container {
 
     this.bottomRight.x = x2 * BlockSize;
     this.bottomRight.y = y2 * BlockSize;
+  }
+
+  same(x1: number, y1: number, x2: number, y2: number): boolean {
+    return x1 === this.x1 && y1 === this.y1 && x2 === this.x2 && y2 === this.y2;
   }
 }

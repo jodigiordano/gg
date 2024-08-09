@@ -163,6 +163,10 @@
       }
 
       /* Page-wide styles */
+      html {
+        overscroll-behavior: none;
+      }
+
       body {
         background: #dfdfdf;
         position: fixed;
@@ -272,11 +276,19 @@
         }
       }
 
-      #canvas {
-        width: 100%;
+      /* Canvas on the right of the content */
+      #renderer {
+        flex-shrink: 1;
         flex-grow: 1;
+
+        width: 100%;
         max-height: 100%;
+
         overflow: hidden;
+
+        #canvas {
+          position: absolute;
+        }
       }
 
       /* Banner shown when the save data is loading */
@@ -350,7 +362,9 @@
       title="Title of the current keyframe"
       class="hidden"
     ></div>
-    <div id="canvas"></div>
+    <div id="renderer">
+      <canvas id="canvas"></canvas>
+    </div>
     <div id="save-data-is-loading">Loading...</div>
     <script type="module" src="/viewer.ts"></script>
   </body>

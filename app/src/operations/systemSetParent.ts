@@ -4,15 +4,19 @@ import {
   moveSubsystemToParent,
   moveSystem,
 } from "@gg/core";
-import SystemSelector from "../systemSelector.js";
-import { modifySpecification } from "../simulation.js";
+import { modifySpecification } from "../simulator/api.js";
 import Operation from "../operation.js";
 import { State } from "../state.js";
-import { viewport } from "../viewport.js";
+import { pauseViewport } from "../viewport.js";
+import {
+  createSystemSelector,
+  setSystemSelectorPosition,
+  setSystemSelectorVisible,
+} from "../renderer/api.js";
 
-const selectVisual = new SystemSelector();
-const moveVisual = new SystemSelector();
-const parentVisual = new SystemSelector();
+let selectVisual: string;
+let moveVisual: string;
+let parentVisual: string;
 
 let subsystem: RuntimeSubsystem | null = null;
 let pickedUpAt: RuntimePosition | null = null;
@@ -23,11 +27,11 @@ function isChildOf(a: RuntimeSubsystem, bId: string): boolean {
 
 function onPointerMove(state: State) {
   if (subsystem && pickedUpAt) {
-    selectVisual.visible = true;
-    selectVisual.setPosition(subsystem, { x: 0, y: 0 });
+    setSystemSelectorVisible(selectVisual, true);
+    setSystemSelectorPosition(selectVisual, subsystem, { x: 0, y: 0 });
 
-    moveVisual.visible = true;
-    moveVisual.setPosition(subsystem, {
+    setSystemSelectorVisible(moveVisual, true);
+    setSystemSelectorPosition(moveVisual, subsystem, {
       x: state.x - pickedUpAt.x,
       y: state.y - pickedUpAt.y,
     });
@@ -44,22 +48,22 @@ function onPointerMove(state: State) {
     }
 
     if (parent?.id) {
-      parentVisual.setPosition(parent, { x: 0, y: 0 });
-      parentVisual.visible = true;
+      setSystemSelectorPosition(parentVisual, parent, { x: 0, y: 0 });
+      setSystemSelectorVisible(parentVisual, true);
     } else {
-      parentVisual.visible = false;
+      setSystemSelectorVisible(parentVisual, false);
     }
   } else {
-    moveVisual.visible = false;
-    parentVisual.visible = false;
+    setSystemSelectorVisible(moveVisual, false);
+    setSystemSelectorVisible(parentVisual, false);
 
     const subsystem = state.simulator.getSubsystemAt(state.x, state.y);
 
     if (subsystem) {
-      selectVisual.setPosition(subsystem, { x: 0, y: 0 });
-      selectVisual.visible = true;
+      setSystemSelectorPosition(selectVisual, subsystem, { x: 0, y: 0 });
+      setSystemSelectorVisible(selectVisual, true);
     } else {
-      selectVisual.visible = false;
+      setSystemSelectorVisible(selectVisual, false);
     }
   }
 }
@@ -67,9 +71,9 @@ function onPointerMove(state: State) {
 const operation: Operation = {
   id: "operation-system-set-parent",
   setup: () => {
-    viewport.addChild(selectVisual);
-    viewport.addChild(moveVisual);
-    viewport.addChild(parentVisual);
+    selectVisual = createSystemSelector();
+    moveVisual = createSystemSelector();
+    parentVisual = createSystemSelector();
   },
   onBegin: state => {
     subsystem = null;
@@ -78,16 +82,16 @@ const operation: Operation = {
     onPointerMove(state);
   },
   onEnd: () => {
-    selectVisual.visible = false;
-    moveVisual.visible = false;
-    parentVisual.visible = false;
+    setSystemSelectorVisible(selectVisual, false);
+    setSystemSelectorVisible(moveVisual, false);
+    setSystemSelectorVisible(parentVisual, false);
 
-    viewport.pause = false;
+    pauseViewport(false);
   },
   onMute: () => {
-    selectVisual.visible = false;
-    moveVisual.visible = false;
-    parentVisual.visible = false;
+    setSystemSelectorVisible(selectVisual, false);
+    setSystemSelectorVisible(moveVisual, false);
+    setSystemSelectorVisible(parentVisual, false);
   },
   onUnmute: onPointerMove,
   onPointerUp: state => {
@@ -136,7 +140,7 @@ const operation: Operation = {
     });
 
     // Reset operation.
-    viewport.pause = false;
+    pauseViewport(false);
 
     subsystem = null;
     pickedUpAt = null;
@@ -148,7 +152,7 @@ const operation: Operation = {
 
     if (!ss) {
       // Reset operation.
-      viewport.pause = false;
+      pauseViewport(false);
 
       subsystem = null;
       pickedUpAt = null;
@@ -158,7 +162,7 @@ const operation: Operation = {
       return;
     }
 
-    viewport.pause = true;
+    pauseViewport(true);
 
     subsystem = ss;
     pickedUpAt = { x: state.x, y: state.y };

@@ -1,131 +1,31 @@
+import { Sprite, Text, Container, Spritesheet } from "pixi.js";
 import {
-  SystemSimulator,
   SimulatorObjectType,
   SimulatorSystemTitle,
   SimulatorSubsystem,
   SimulatorLinkDirectionType,
   SimulatorLink,
   SimulatorSystemDirectionType,
+  SimulatorObject,
+  SimulatorBoundaries,
 } from "@gg/core";
-import { Sprite, Text, SCALE_MODES, Container } from "pixi.js";
-import { spritesheet } from "./assets.js";
 import { BlockSize } from "./helpers.js";
-import { app, tick } from "./pixi.js";
-import { viewport } from "./viewport.js";
-import { state, pushChange } from "./state.js";
-import { save } from "./persistence.js";
-import { setJsonEditorValue } from "./jsonEditor.js";
-import FlowPlayer from "./flowPlayer.js";
 
-//
-// Load the simulation.
-//
+export function createSimulation(): Container {
+  const container = new Container();
 
-// Loading the simulation is done asynchronously in a worker.
-// That worker may be loading multiple simulations at the same time,
-// and when one simulation is loaded, the caller of that one simulation needs
-// to be informed.
-//
-//   caller -> loadSimulation -> worker.postMessage(id, ...)
-//                               loadsInProgress[id] = callback
-//
-//   worker -> job done -> loadsInProgress[id].callback()
-const loadsInProgress: Record<number, (success: boolean) => void> = {};
+  container.zIndex = 0;
 
-// Worker to load a new instance of the simulation.
-const simulatorLoader = new Worker(
-  new URL("./workers/simulatorLoader.ts", import.meta.url),
-  {
-    type: "module",
-  },
-);
-
-simulatorLoader.onmessage = event => {
-  if (event.data.success) {
-    // Set the new simulation in the state.
-    state.simulator = new SystemSimulator(event.data.simulator);
-
-    // Draw the new simulaton.
-    container.removeChildren();
-
-    for (const objectToRender of getObjectsToRender()) {
-      // @ts-ignore
-      container.addChild(objectToRender);
-    }
-
-    if (state.simulator.getSystem().flows.length) {
-      state.flowPlayer = new FlowPlayer(
-        state.simulator,
-        state.simulator.getSystem().flows[0]!,
-        state.flowKeyframe,
-      );
-
-      for (const objectToRender of state.flowPlayer.getObjectsToRender()) {
-        // @ts-ignore
-        container.addChild(objectToRender);
-      }
-    }
-
-    // Play the flow, if needed.
-    if (state.flowPlay && state.flowPlayer) {
-      app.ticker.start();
-    }
-
-    tick();
-  } else {
-    for (const error of event.data.errors) {
-      console.warn(error);
-    }
-  }
-
-  state.simulatorInstance = event.data.id;
-  loadsInProgress[event.data.id]?.(event.data.success);
-  delete loadsInProgress[event.data.id];
-};
-
-export async function loadSimulation(json: string): Promise<void> {
-  const id = state.simulatorNextInstance + 1;
-  state.simulatorNextInstance = id;
-  simulatorLoader.postMessage({ id, json });
-
-  return new Promise((resolve, reject) => {
-    loadsInProgress[id] = (success: boolean) => {
-      if (success) {
-        resolve();
-      } else {
-        reject();
-      }
-    };
-  });
+  return container;
 }
 
-//
-// Draw the simulation.
-//
-
-// Container to display simulation objects.
-const container = new Container();
-
-container.zIndex = 0;
-
-viewport.addChild(container);
-
-// Ticker to execute a step of the simulation.
-app.ticker.add<void>(deltaTime => {
-  if (state.flowPlayer) {
-    if (state.flowPlay) {
-      state.flowPlayer.update(deltaTime, state.flowPlayMode, state.flowSpeed);
-      state.flowKeyframe = Math.max(0, state.flowPlayer.getKeyframe());
-    }
-
-    state.flowPlayer.draw();
-  }
-});
-
-function getObjectsToRender(): (Sprite | Text)[] {
-  const toDraw: (Sprite | Text)[] = [];
-  const layout = state.simulator.getLayout();
-  const boundaries = state.simulator.getBoundaries();
+export function drawSimulation(
+  container: Container,
+  layout: SimulatorObject[][][],
+  boundaries: SimulatorBoundaries,
+  spritesheet: Spritesheet,
+): void {
+  container.removeChildren();
 
   for (let i = 0; i < boundaries.width; i++) {
     for (let j = 0; j < boundaries.height; j++) {
@@ -213,7 +113,7 @@ function getObjectsToRender(): (Sprite | Text)[] {
             sprite.texture = systemCenterCenter;
           }
 
-          toDraw.push(sprite);
+          container.addChild(sprite);
         } else if (obj.type === SimulatorObjectType.Link) {
           const sprite = new Sprite();
 
@@ -245,13 +145,16 @@ function getObjectsToRender(): (Sprite | Text)[] {
             sprite.texture = spritesheet.textures.link;
           }
 
-          toDraw.push(sprite);
+          container.addChild(sprite);
         } else if (obj.type === SimulatorObjectType.SystemTitle) {
           const { blackbox } = obj as SimulatorSubsystem;
 
-          const title = new Text((obj as SimulatorSystemTitle).chars, {
-            fontFamily: "ibm",
-            fontSize: BlockSize,
+          const title = new Text({
+            text: (obj as SimulatorSystemTitle).chars,
+            style: {
+              fontFamily: "ibm",
+              fontSize: BlockSize,
+            },
           });
 
           title.x = (i - boundaries.translateX) * BlockSize;
@@ -259,94 +162,10 @@ function getObjectsToRender(): (Sprite | Text)[] {
 
           title.style.fill = blackbox ? "ffffff" : "000000";
           title.resolution = 2;
-          title.texture.baseTexture.scaleMode = SCALE_MODES.LINEAR;
 
-          toDraw.push(title);
+          container.addChild(title);
         }
       }
     }
   }
-
-  return toDraw;
-}
-
-//
-// Helpers
-//
-
-// Modifies the specification transactionally.
-export async function modifySpecification(modifier: () => void): Promise<void> {
-  const system = state.simulator.getSystem();
-
-  // Make a copy of the specification.
-  const currentSpecification = JSON.stringify(system.specification, null, 2);
-
-  // Call a function that modifies the specification.
-  modifier();
-
-  // Try to apply the new configuration.
-  const newSpecification = JSON.stringify(system.specification, null, 2);
-
-  return new Promise(resolve => {
-    loadSimulation(newSpecification)
-      .then(() => {
-        pushChange(newSpecification);
-        save(newSpecification);
-        setJsonEditorValue(newSpecification);
-        resolve();
-      })
-      .catch(() => {
-        // Rollback if the new configuration is invalid.
-        loadSimulation(currentSpecification)
-          .then(() => {
-            resolve();
-          })
-          .catch(() => {
-            /* NOOP */
-          });
-      });
-  });
-}
-
-// Fit the simulation in the viewport.
-export function fitSimulation() {
-  const boundaries = state.simulator.getVisibleWorldBoundaries();
-
-  const boundaryLeft = boundaries.left * BlockSize;
-  const boundaryRight = boundaries.right * BlockSize;
-  const boundaryTop = boundaries.top * BlockSize;
-  const boundaryBottom = boundaries.bottom * BlockSize;
-
-  const left = boundaryLeft - BlockSize; /* margin */
-  const top = boundaryTop - BlockSize; /* margin */
-
-  const width =
-    boundaryRight - boundaryLeft + BlockSize + BlockSize * 2; /* margin */
-
-  const height =
-    boundaryBottom - boundaryTop + BlockSize + BlockSize * 2; /* margin */
-
-  // The operation is executed twice because of a weird issue that I don't
-  // understand yet. Somehow, because we are using "viewport.clamp", the first
-  // tuple ["viewport.moveCenter", "viewport.fit"] below doesn't quite do its
-  // job and part of the simulation is slightly out of the viewport.
-  //
-  // This code feels like slapping the side of the CRT.
-  for (let i = 0; i < 2; i++) {
-    viewport.moveCenter(left + width / 2, top + height / 2);
-    viewport.fit(true, width, height);
-  }
-}
-
-// Get the number of keyframes in the flow.
-export function getKeyframesCount(): number {
-  return Math.max(
-    0,
-    new Set(
-      state.simulator
-        .getSystem()
-        .flows.at(0)
-        ?.steps?.map(step => step.keyframe) ?? [],
-    ).size - 1,
-  );
 }

@@ -10,6 +10,8 @@ export function initializeDropdowns() {
       } else {
         content.classList.add("closed");
       }
+
+      this.blur();
     });
   }
 
