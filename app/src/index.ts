@@ -10,7 +10,7 @@ import {
 import { BlockSize, debounce, sanitizeHtml } from "./helpers.js";
 import { initializeDropdowns } from "./dropdown.js";
 import { state, resetState, pushChange } from "./state.js";
-import { redrawGrid, setGridVisible } from "./grid.js";
+import { redrawGrid, setGridVisible } from "./renderer/grid.js";
 import Operation from "./operation.js";
 import addSystemOperation from "./operations/systemAdd.js";
 import setSystemTitleOperation from "./operations/systemSetTitle.js";
