@@ -1,4 +1,4 @@
-import { app, tick } from "./pixi.js";
+import { app, tick } from "./renderer/pixi.js";
 import { state } from "./state.js";
 import viewport from "./renderer/viewport.js";
 import {

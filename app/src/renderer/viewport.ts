@@ -1,6 +1,6 @@
 // @ts-ignore
 import { Viewport } from "pixi-viewport";
-import { app } from "../pixi.js";
+import { app } from "./pixi.js";
 
 const canvasContainer = document.getElementById("canvas") as HTMLDivElement;
 

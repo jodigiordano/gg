@@ -4,7 +4,7 @@ import SystemSelector from "../renderer/systemSelector.js";
 import { modifySpecification } from "../simulation.js";
 import { State } from "../state.js";
 import viewport from "../renderer/viewport.js";
-import { app } from "../pixi.js";
+import { app } from "../renderer/pixi.js";
 import { state } from "../state.js";
 
 const dialog = document.getElementById(
