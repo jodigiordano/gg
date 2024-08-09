@@ -87,8 +87,10 @@ self.onmessage = async event => {
       operation: event.data.operation,
       success: true,
     });
-  } else if (event.data.operation === "tick") {
-    app.ticker.update(event.data.deltaTime);
+  } else if (event.data.operation === "startTicker") {
+    app.ticker.start();
+  } else if (event.data.operation === "stopTicker") {
+    app.ticker.stop();
   } else if (event.data.operation === "resizeCanvas") {
     app.renderer.resize(event.data.width, event.data.height);
 
@@ -98,7 +100,7 @@ self.onmessage = async event => {
       redrawGrid(grid, viewport);
     }
 
-    app.render();
+    app.ticker.update();
 
     postMessage({
       operationId: event.data.operationId,
@@ -135,7 +137,7 @@ self.onmessage = async event => {
       redrawGrid(grid, viewport);
     }
 
-    app.render();
+    app.ticker.update();
 
     postMessage({
       operationId: event.data.operationId,
@@ -144,7 +146,7 @@ self.onmessage = async event => {
   } else if (event.data.operation === "setGridVisible") {
     grid.visible = event.data.visible;
 
-    app.render();
+    app.ticker.update();
 
     postMessage({
       operationId: event.data.operationId,
@@ -160,7 +162,7 @@ self.onmessage = async event => {
 
     drawFlow(flow, event.data.flow, spritesheet);
 
-    app.render();
+    app.ticker.update();
 
     postMessage({
       operationId: event.data.operationId,
@@ -169,6 +171,8 @@ self.onmessage = async event => {
   } else if (event.data.operation === "drawFlowTick") {
     drawFlowTick(flow, event.data.dataPositions, event.data.boundaries);
 
+    app.ticker.update();
+
     postMessage({
       operationId: event.data.operationId,
       operation: event.data.operation,
@@ -176,7 +180,7 @@ self.onmessage = async event => {
   } else if (event.data.operation === "setFlowVisible") {
     flow.visible = event.data.visible;
 
-    app.render();
+    app.ticker.update();
 
     postMessage({
       operationId: event.data.operationId,
@@ -190,26 +194,20 @@ self.onmessage = async event => {
   } else if (event.data.operation === "setSystemSelectorVisible") {
     const selector = systemSelectors[event.data.id];
 
-    if (selector.visible !== event.data.visible) {
-      selector.visible = event.data.visible;
+    selector.visible = event.data.visible;
 
-      app.render();
-    }
+    app.ticker.update();
   } else if (event.data.operation === "setSystemSelectorPosition") {
     const selector = systemSelectors[event.data.id];
 
-    if (
-      !selector.same(event.data.x1, event.data.y1, event.data.x2, event.data.y2)
-    ) {
-      selector.setPosition(
-        event.data.x1,
-        event.data.y1,
-        event.data.x2,
-        event.data.y2,
-      );
+    selector.setPosition(
+      event.data.x1,
+      event.data.y1,
+      event.data.x2,
+      event.data.y2,
+    );
 
-      app.render();
-    }
+    app.ticker.update();
   } else if (event.data.operation === "createSystemLinker") {
     const linker = new SystemLinker();
     systemLinkers[event.data.id] = linker;
@@ -218,26 +216,20 @@ self.onmessage = async event => {
   } else if (event.data.operation === "setSystemLinkerVisible") {
     const linker = systemLinkers[event.data.id];
 
-    if (linker.visible !== event.data.visible) {
-      linker.visible = event.data.visible;
+    linker.visible = event.data.visible;
 
-      app.render();
-    }
+    app.ticker.update();
   } else if (event.data.operation === "setSystemLinkerPosition") {
     const linker = systemLinkers[event.data.id];
 
-    if (
-      !linker.same(event.data.x1, event.data.y1, event.data.x2, event.data.y2)
-    ) {
-      linker.setPosition(
-        event.data.x1,
-        event.data.y1,
-        event.data.x2,
-        event.data.y2,
-      );
+    linker.setPosition(
+      event.data.x1,
+      event.data.y1,
+      event.data.x2,
+      event.data.y2,
+    );
 
-      app.render();
-    }
+    app.ticker.update();
   }
 };
 

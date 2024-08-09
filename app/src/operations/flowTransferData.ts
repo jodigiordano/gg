@@ -100,9 +100,15 @@ const operation: Operation = {
       } else {
         addFlowStep(system, keyframe, link.a, link.b);
       }
+    }).then(() => {
+      state.flowKeyframe = state.flowKeyframe | 0;
+
+      if (state.flowPlayer) {
+        state.flowPlayer.setKeyframe(state.flowKeyframe);
+        state.flowPlayer.draw();
+      }
     });
 
-    state.flowPlayer?.draw();
     onPointerMove(state);
   },
   onPointerDown: () => {},

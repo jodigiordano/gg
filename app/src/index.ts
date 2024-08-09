@@ -400,8 +400,17 @@ function redo(): void {
   }
 }
 
-document.getElementById("operation-undo")?.addEventListener("click", undo);
-document.getElementById("operation-redo")?.addEventListener("click", redo);
+document.getElementById("operation-undo")?.addEventListener("click", function() {
+  undo();
+
+  this.blur();
+});
+
+document.getElementById("operation-redo")?.addEventListener("click", function() {
+  redo();
+
+  this.blur();
+});
 
 //
 // Camera operations.
@@ -423,15 +432,27 @@ function cameraZoomOut(): void {
 
 document
   .getElementById("operation-camera-fit")
-  ?.addEventListener("click", cameraFit);
+  ?.addEventListener("click", function() {
+    cameraFit();
+
+    this.blur();
+  });
 
 document
   .getElementById("operation-camera-zoom-in")
-  ?.addEventListener("click", cameraZoomIn);
+  ?.addEventListener("click", function() {
+    cameraZoomIn();
+
+    this.blur();
+  });
 
 document
   .getElementById("operation-camera-zoom-out")
-  ?.addEventListener("click", cameraZoomOut);
+  ?.addEventListener("click", function() {
+    cameraZoomOut();
+
+    this.blur();
+  });
 
 //
 // Flow operations
@@ -532,6 +553,8 @@ flowRepeatOne.addEventListener("click", function () {
 
   flowRepeatOne.classList.add("hidden");
   flowRepeatAll.classList.remove("hidden");
+
+  flowRepeatOne.blur();
 });
 
 flowRepeatAll.addEventListener("click", function () {
@@ -539,6 +562,8 @@ flowRepeatAll.addEventListener("click", function () {
 
   flowRepeatOne.classList.remove("hidden");
   flowRepeatAll.classList.add("hidden");
+
+  flowRepeatAll.blur();
 });
 
 const flowStepSetTitleDialog = document.getElementById(
@@ -648,7 +673,7 @@ function updateFlowProgression(): void {
 // Initialize toolbox
 const singleChoiceButtons = document.querySelectorAll(
   "#toolbox .single-choice button",
-);
+) as unknown as HTMLButtonElement[];
 
 for (const button of singleChoiceButtons) {
   button.addEventListener("click", function () {
@@ -680,6 +705,8 @@ for (const button of singleChoiceButtons) {
 
     state.operation.onBegin(state);
     state.operation.onMute(state);
+
+    button.blur();
   });
 }
 

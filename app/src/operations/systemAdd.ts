@@ -82,12 +82,12 @@ const operation: Operation = {
 
     modifySpecification(() => {
       addSubsystem(parent, x, y, "");
+    }).then(() => {
+      onPointerMove(state);
     });
 
     pauseViewport(false);
     pointerIsDown = false;
-
-    onPointerMove(state);
   },
   // This code is only necessary on mobile.
   //

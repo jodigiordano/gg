@@ -122,20 +122,14 @@ const ticker = new Ticker();
 
 ticker.stop();
 
-ticker.add(t => {
-  worker.sendOperation({ operation: "tick", deltaTime: t.deltaTime });
-});
-
-export function tick() {
-  ticker.update();
-}
-
 export function startTicker() {
   ticker.start();
+  worker.sendOperation({ operation: "startTicker" });
 }
 
 export function stopTicker() {
   ticker.stop();
+  worker.sendOperation({ operation: "stopTicker" });
 }
 
 export function onTick(callback: (t: Ticker) => void): void {
@@ -154,16 +148,22 @@ export function setGridVisible(visible: boolean): void {
 // Simulation operations
 //
 
-export function drawSimulation(
+export async function drawSimulation(
   layout: SimulatorObject[][][],
   boundaries: SimulatorBoundaries,
   flow: RuntimeFlow,
-): void {
-  worker.sendOperation({
-    operation: "drawSimulation",
-    layout,
-    boundaries,
-    flow,
+): Promise<void> {
+  return new Promise(resolve => {
+    worker
+      .sendOperation({
+        operation: "drawSimulation",
+        layout,
+        boundaries,
+        flow,
+      })
+      .then(() => {
+        resolve();
+      });
   });
 }
 

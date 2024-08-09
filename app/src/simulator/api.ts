@@ -1,6 +1,6 @@
 import { SystemSimulator } from "@gg/core";
 import { BlockSize } from "../helpers.js";
-import { onTick, startTicker, tick, drawSimulation } from "../renderer/api.js";
+import { onTick, startTicker, drawSimulation } from "../renderer/api.js";
 import { state, pushChange } from "../state.js";
 import { save } from "../persistence.js";
 import { setJsonEditorValue } from "../jsonEditor.js";
@@ -39,17 +39,15 @@ export async function loadSimulation(json: string): Promise<void> {
             const boundaries = state.simulator.getBoundaries();
             const flow = state.simulator.getSystem().flows[0];
 
-            drawSimulation(layout, boundaries, flow);
+            drawSimulation(layout, boundaries, flow).then(() => {
+              // Play the flow, if needed.
+              if (state.flowPlay && state.flowPlayer) {
+                startTicker();
+              }
 
-            // Play the flow, if needed.
-            if (state.flowPlay && state.flowPlayer) {
-              startTicker();
-            }
-
-            tick();
-
-            state.simulatorInitialized = true;
-            resolve();
+              state.simulatorInitialized = true;
+              resolve();
+            });
           } else {
             for (const error of data.errors as string[]) {
               console.warn(error);
@@ -101,25 +99,16 @@ export async function modifySpecification(modifier: () => void): Promise<void> {
   // Try to apply the new configuration.
   const newSpecification = JSON.stringify(system.specification, null, 2);
 
-  return new Promise(resolve => {
-    loadSimulation(newSpecification)
-      .then(() => {
-        pushChange(newSpecification);
-        save(newSpecification);
-        setJsonEditorValue(newSpecification);
-        resolve();
-      })
-      .catch(() => {
-        // Rollback if the new configuration is invalid.
-        loadSimulation(currentSpecification)
-          .then(() => {
-            resolve();
-          })
-          .catch(() => {
-            /* NOOP */
-          });
-      });
-  });
+  try {
+    await loadSimulation(newSpecification);
+
+    pushChange(newSpecification);
+    save(newSpecification);
+    setJsonEditorValue(newSpecification);
+  } catch {
+    // Rollback if the new configuration is invalid.
+    await loadSimulation(currentSpecification);
+  }
 }
 
 export function getSimulationBoundaries(): {
