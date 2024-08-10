@@ -1,5 +1,3 @@
-// @ts-ignore
-import { Viewport } from "pixi-viewport";
 import { load, SystemSimulator } from "@gg/core";
 import FlowPlayer from "./simulator/flowPlayer.js";
 import Operation from "./operation.js";

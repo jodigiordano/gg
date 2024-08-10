@@ -94,6 +94,7 @@ const container = new Container();
 
 container.zIndex = 0;
 
+// @ts-ignore
 viewport.addChild(container);
 
 // Ticker to execute a step of the simulation.
@@ -303,16 +304,7 @@ export function fitSimulation() {
   const height =
     boundaryBottom - boundaryTop + BlockSize + BlockSize * 2; /* margin */
 
-  // The operation is executed twice because of a weird issue that I don't
-  // understand yet. Somehow, because we are using "viewport.clamp", the first
-  // tuple ["viewport.moveCenter", "viewport.fit"] below doesn't quite do its
-  // job and part of the simulation is slightly out of the viewport.
-  //
-  // This code feels like slapping the side of the CRT.
-  for (let i = 0; i < 2; i++) {
-    viewport.moveCenter(left + width / 2, top + height / 2);
-    viewport.fit(true, width, height);
-  }
+  viewport.fit(left + width / 2, top + height / 2, width, height);
 }
 
 // Get the number of keyframes in the flow.

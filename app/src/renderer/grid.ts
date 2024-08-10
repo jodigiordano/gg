@@ -19,12 +19,17 @@ const gridTexture = app.renderer.generateTexture(gridGraphic);
 
 gridTexture.baseTexture.scaleMode = SCALE_MODES.LINEAR;
 
-grid = new TilingSprite(gridTexture, viewport.worldWidth, viewport.worldHeight);
+grid = new TilingSprite(
+  gridTexture,
+  canvasContainer.clientWidth,
+  canvasContainer.clientHeight,
+);
 
 grid.x = viewport.left;
 grid.y = viewport.top;
 grid.zIndex = -1;
 
+// @ts-ignore
 viewport.addChild(grid);
 
 export function redrawGrid(): void {

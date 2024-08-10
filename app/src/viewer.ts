@@ -9,8 +9,40 @@ import {
 import { load } from "./persistence.js";
 import { debounce, sanitizeHtml } from "./helpers.js";
 
-// Update the simulation when the viewport is moved.
-viewport.on("moved", tick);
+const canvasContainer = document.getElementById("canvas") as HTMLDivElement;
+
+//
+// Events
+//
+
+// The user moves the cursor in the canvas.
+canvasContainer.addEventListener("pointermove", event => {
+  if (viewport.moving) {
+    viewport.move(event.pointerId, event.x, event.y);
+    tick();
+  }
+});
+
+// The user press the pointer in the canvas.
+canvasContainer.addEventListener("pointerdown", event => {
+  viewport.startMoving(event.pointerId, event.x, event.y);
+});
+
+// The user release the pointer in the canvas.
+canvasContainer.addEventListener("pointerup", event => {
+  viewport.stopMoving(event.pointerId);
+});
+
+// The user spin the mouse wheel.
+canvasContainer.addEventListener("wheel", event => {
+  if (event.deltaY > 0) {
+    viewport.zoomAt(-0.1, event.x, event.y);
+    tick();
+  } else if (event.deltaY < 0) {
+    viewport.zoomAt(0.1, event.x, event.y);
+    tick();
+  }
+});
 
 // Resize the container when the window is resized.
 window.addEventListener("resize", debounce(resizeCanvas, 30));
@@ -164,13 +196,13 @@ function cameraFit(): void {
 }
 
 function cameraZoomIn(): void {
-  viewport.zoomPercent(0.25, true);
+  viewport.zoomCenter(0.25);
 
   tick();
 }
 
 function cameraZoomOut(): void {
-  viewport.zoomPercent(-0.25, true);
+  viewport.zoomCenter(-0.25);
 
   tick();
 }
@@ -252,8 +284,6 @@ function updateFlowProgression(): void {
 //
 
 function resizeCanvas(): void {
-  const canvasContainer = document.getElementById("canvas") as HTMLDivElement;
-
   app.renderer.resize(
     canvasContainer.clientWidth,
     canvasContainer.clientHeight,

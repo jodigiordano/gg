@@ -1,4 +1,3 @@
-import { Point } from "pixi.js";
 import { app, tick } from "./renderer/pixi.js";
 import viewport from "./renderer/viewport.js";
 import {
@@ -28,55 +27,90 @@ import {
 } from "./jsonEditor.js";
 import { getUrlParams, setUrlParams, load, save } from "./persistence.js";
 
+const canvasContainer = document.getElementById("canvas") as HTMLDivElement;
+
 //
 // Events
 //
 
 // The user moves the cursor in the canvas.
-viewport.on("pointermove", (event: any) => {
+canvasContainer.addEventListener("pointermove", event => {
   if (isModalOpen() || isInitialLoad()) {
     return;
   }
 
-  updateStatePosition(event.data.global);
-  state.operation.onPointerMove(state);
+  if (viewport.moving) {
+    viewport.move(event.pointerId, event.x, event.y);
+  }
+
+  updateStatePosition(event.x, event.y);
+
+  if (viewport.moving) {
+    redrawGrid();
+  } else {
+    state.operation.onPointerMove(state);
+  }
+
   tick();
 });
 
 // The user press the pointer in the canvas.
-viewport.on("pointerdown", (event: any) => {
+canvasContainer.addEventListener("pointerdown", event => {
   if (isModalOpen() || isInitialLoad()) {
     return;
   }
 
-  // Only consider left mouse button.
+  viewport.startMoving(event.pointerId, event.x, event.y);
+
+  // Only consider left mouse button for operations.
   if (event.pointerType === "mouse" && event.button !== 0) {
     return;
   }
 
-  updateStatePosition(event.data.global);
+  updateStatePosition(event.x, event.y);
   state.operation.onPointerDown(state);
   tick();
 });
 
 // The user release the pointer in the canvas.
-viewport.on("pointerup", (event: any) => {
+canvasContainer.addEventListener("pointerup", event => {
   if (isModalOpen() || isInitialLoad()) {
     return;
   }
 
-  // Only consider left mouse button.
+  viewport.stopMoving(event.pointerId);
+
+  if (viewport.moving) {
+    return;
+  }
+
+  // Only consider left mouse button for operations.
   if (event.pointerType === "mouse" && event.button !== 0) {
     return;
   }
 
-  updateStatePosition(event.data.global);
+  updateStatePosition(event.x, event.y);
   state.operation.onPointerUp(state);
   tick();
 });
 
+// The user spin the mouse wheel.
+canvasContainer.addEventListener("wheel", event => {
+  if (event.deltaY > 0) {
+    viewport.zoomAt(-0.1, event.x, event.y);
+
+    redrawGrid();
+    tick();
+  } else if (event.deltaY < 0) {
+    viewport.zoomAt(0.1, event.x, event.y);
+
+    redrawGrid();
+    tick();
+  }
+});
+
 // The user cursor enters the canvas.
-viewport.on("pointerenter", () => {
+canvasContainer.addEventListener("pointerenter", () => {
   if (isModalOpen() || isInitialLoad()) {
     return;
   }
@@ -86,18 +120,14 @@ viewport.on("pointerenter", () => {
 });
 
 // The user cursor leaves the canvas.
-viewport.on("pointerleave", () => {
+canvasContainer.addEventListener("pointerleave", event => {
   if (isModalOpen() || isInitialLoad()) {
     return;
   }
 
-  state.operation.onMute(state);
-  tick();
-});
+  viewport.stopMoving(event.pointerId);
 
-// Move the grid when the viewport is moved.
-viewport.on("moved", () => {
-  redrawGrid();
+  state.operation.onMute(state);
   tick();
 });
 
@@ -288,9 +318,7 @@ document
     const width = canvasContainer.offsetWidth * 1.5;
     const height = canvasContainer.offsetHeight * 1.5;
 
-    viewport.moveCenter(width / 2, height / 2);
-
-    viewport.fit(true, width, height);
+    viewport.fit(width / 2, height / 2, width, height);
 
     redrawGrid();
     tick();
@@ -305,8 +333,6 @@ document
 
     setGridVisible(false);
     state.flowPlayer?.hide();
-
-    viewport.backgroundColor = "0xffffff";
 
     // @ts-ignore
     const dataUri = await app.renderer.extract.image(viewport);
@@ -439,14 +465,14 @@ function cameraFit(): void {
 }
 
 function cameraZoomIn(): void {
-  viewport.zoomPercent(0.25, true);
+  viewport.zoomCenter(0.25);
 
   redrawGrid();
   tick();
 }
 
 function cameraZoomOut(): void {
-  viewport.zoomPercent(-0.25, true);
+  viewport.zoomCenter(-0.25);
 
   redrawGrid();
   tick();
@@ -798,8 +824,8 @@ function isInitialLoad(): boolean {
  * The screen position is first transformed to the world position.
  * Then, this world position is transformed to the grid position.
  */
-function updateStatePosition(screenPosition: Point): void {
-  const coordinates = viewport.toWorld(screenPosition);
+function updateStatePosition(x: number, y: number): void {
+  const coordinates = viewport.screenToWorld(x, y);
 
   state.x =
     coordinates.x >= 0
