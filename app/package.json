@@ -27,6 +27,6 @@
     "@gg/core": "0.x",
     "js-yaml": "4.x",
     "pako": "2.x",
-    "pixi.js": "7.x"
+    "pixi.js": "8.x"
   }
 }

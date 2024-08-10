@@ -334,7 +334,6 @@ document
     setGridVisible(false);
     state.flowPlayer?.hide();
 
-    // @ts-ignore
     const dataUri = await app.renderer.extract.image(viewport);
 
     const link = document.createElement("a");

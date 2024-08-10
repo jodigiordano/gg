@@ -1,17 +1,7 @@
-import {
-  Application,
-  BaseTexture,
-  MIPMAP_MODES,
-  SCALE_MODES,
-  WRAP_MODES,
-  settings,
-} from "pixi.js";
+import { Application, AbstractRenderer } from "pixi.js";
 
-BaseTexture.defaultOptions.mipmap = MIPMAP_MODES.ON;
-BaseTexture.defaultOptions.scaleMode = SCALE_MODES.NEAREST;
-BaseTexture.defaultOptions.wrapMode = WRAP_MODES.REPEAT;
-
-settings.ROUND_PIXELS = true;
+AbstractRenderer.defaultOptions.roundPixels = true;
+AbstractRenderer.defaultOptions.failIfMajorPerformanceCaveat = false;
 
 const canvasContainer = document.getElementById("canvas") as HTMLDivElement;
 
@@ -21,12 +11,17 @@ canvasContainer.addEventListener("contextmenu", event => {
   event.stopPropagation();
 });
 
-export const app = new Application({
+export const app = new Application();
+
+await app.init({
   backgroundAlpha: 0,
-  resizeTo: canvasContainer,
-  autoDensity: true,
   resolution: window.devicePixelRatio,
+  width: canvasContainer.clientWidth,
+  height: canvasContainer.clientHeight,
+  autoDensity: true,
   antialias: false,
+  autoStart: false,
+  sharedTicker: false,
   eventMode: "none",
   eventFeatures: {
     move: true,
@@ -46,4 +41,4 @@ export function tick() {
 }
 
 // Add PixiJS to the DOM.
-canvasContainer.replaceChildren(app.view as unknown as Node);
+canvasContainer.replaceChildren(app.canvas as unknown as Node);

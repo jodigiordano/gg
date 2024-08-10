@@ -20,7 +20,6 @@ export default class SystemSelector extends Container {
     this.topLeft.width = BlockSize;
     this.topLeft.height = BlockSize;
 
-    // @ts-ignore
     this.addChild(this.topLeft);
 
     this.topRight = new Sprite(spritesheet.textures.systemSelectorTopRight);
@@ -28,7 +27,6 @@ export default class SystemSelector extends Container {
     this.topRight.width = BlockSize;
     this.topRight.height = BlockSize;
 
-    // @ts-ignore
     this.addChild(this.topRight);
 
     this.bottomLeft = new Sprite(spritesheet.textures.systemSelectorBottomLeft);
@@ -36,7 +34,6 @@ export default class SystemSelector extends Container {
     this.bottomLeft.width = BlockSize;
     this.bottomLeft.height = BlockSize;
 
-    // @ts-ignore
     this.addChild(this.bottomLeft);
 
     this.bottomRight = new Sprite(
@@ -46,7 +43,6 @@ export default class SystemSelector extends Container {
     this.bottomRight.width = BlockSize;
     this.bottomRight.height = BlockSize;
 
-    // @ts-ignore
     this.addChild(this.bottomRight);
   }
 

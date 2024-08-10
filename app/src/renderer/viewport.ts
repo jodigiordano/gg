@@ -246,7 +246,6 @@ const viewport = new Viewport(
 
 viewport.sortableChildren = true;
 
-// @ts-ignore
 app.stage.addChild(viewport);
 
 export default viewport;

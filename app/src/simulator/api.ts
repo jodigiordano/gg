@@ -7,7 +7,7 @@ import {
   SimulatorLink,
   SimulatorSystemDirectionType,
 } from "@gg/core";
-import { Sprite, Text, SCALE_MODES, Container } from "pixi.js";
+import { Sprite, Text, Container } from "pixi.js";
 import { spritesheet } from "../renderer/assets.js";
 import { BlockSize } from "../helpers.js";
 import { app, tick } from "../renderer/pixi.js";
@@ -46,7 +46,6 @@ export async function loadSimulation(json: string): Promise<void> {
             container.removeChildren();
 
             for (const objectToRender of getObjectsToRender()) {
-              // @ts-ignore
               container.addChild(objectToRender);
             }
 
@@ -58,7 +57,6 @@ export async function loadSimulation(json: string): Promise<void> {
               );
 
               for (const objectToRender of state.flowPlayer.getObjectsToRender()) {
-                // @ts-ignore
                 container.addChild(objectToRender);
               }
             }
@@ -94,14 +92,13 @@ const container = new Container();
 
 container.zIndex = 0;
 
-// @ts-ignore
 viewport.addChild(container);
 
 // Ticker to execute a step of the simulation.
-app.ticker.add<void>(deltaTime => {
+app.ticker.add<void>(t => {
   if (state.flowPlayer) {
     if (state.flowPlay) {
-      state.flowPlayer.update(deltaTime, state.flowPlayMode, state.flowSpeed);
+      state.flowPlayer.update(t.deltaTime, state.flowPlayMode, state.flowSpeed);
       state.flowKeyframe = Math.max(0, state.flowPlayer.getKeyframe());
     }
 
@@ -236,17 +233,20 @@ function getObjectsToRender(): (Sprite | Text)[] {
         } else if (obj.type === SimulatorObjectType.SystemTitle) {
           const { blackbox } = obj as SimulatorSubsystem;
 
-          const title = new Text((obj as SimulatorSystemTitle).chars, {
-            fontFamily: "ibm",
-            fontSize: BlockSize,
+          const title = new Text({
+            text: (obj as SimulatorSystemTitle).chars,
+            style: {
+              fontFamily: "ibm",
+              fontSize: BlockSize,
+            },
+            resolution: 2,
+            roundPixels: false,
           });
 
           title.x = (i - boundaries.translateX) * BlockSize;
           title.y = (j - boundaries.translateY) * BlockSize;
 
           title.style.fill = blackbox ? "ffffff" : "000000";
-          title.resolution = 2;
-          title.texture.baseTexture.scaleMode = SCALE_MODES.LINEAR;
 
           toDraw.push(title);
         }

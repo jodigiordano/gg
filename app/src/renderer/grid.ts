@@ -1,4 +1,4 @@
-import { Graphics, SCALE_MODES, TilingSprite } from "pixi.js";
+import { Graphics, TilingSprite } from "pixi.js";
 import { BlockSize } from "../helpers.js";
 import { app } from "./pixi.js";
 import viewport from "./viewport.js";
@@ -8,28 +8,28 @@ let grid: TilingSprite;
 const canvasContainer = document.getElementById("canvas") as HTMLDivElement;
 
 const gridGraphic = new Graphics()
-  .beginFill(0xcccccc)
-  .drawRect(0, 0, BlockSize, BlockSize)
-  .endFill()
-  .beginFill(0xdddddd)
-  .drawRect(1, 1, BlockSize - 1, BlockSize - 1)
-  .endFill();
+  .rect(0, 0, BlockSize, BlockSize)
+  .fill(0xcccccc)
+  .rect(1, 1, BlockSize - 1, BlockSize - 1)
+  .fill(0xdddddd);
 
 const gridTexture = app.renderer.generateTexture(gridGraphic);
 
-gridTexture.baseTexture.scaleMode = SCALE_MODES.LINEAR;
+gridTexture.source.antialias = true;
+gridTexture.source.autoGenerateMipmaps = true;
+gridTexture.source.scaleMode = "linear";
+gridTexture.source.addressMode = "clamp-to-edge";
 
-grid = new TilingSprite(
-  gridTexture,
-  canvasContainer.clientWidth,
-  canvasContainer.clientHeight,
-);
+grid = new TilingSprite({
+  texture: gridTexture,
+  width: canvasContainer.clientWidth,
+  height: canvasContainer.clientHeight,
+});
 
 grid.x = viewport.left;
 grid.y = viewport.top;
 grid.zIndex = -1;
 
-// @ts-ignore
 viewport.addChild(grid);
 
 export function redrawGrid(): void {

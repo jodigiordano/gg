@@ -11,12 +11,12 @@ await Assets.load({
 
 import spritesheetData from "../assets/spritesheet.png?base64";
 
-await Assets.load({
+const imageData = await Assets.load({
   name: "spritesheet",
   src: `data:image/png;base64,${spritesheetData}`,
 });
 
-export const spritesheet = new Spritesheet(Assets.get("spritesheet"), {
+export const spritesheet = new Spritesheet(imageData, {
   frames: {
     systemATopLeft: {
       frame: { x: 0, y: 0, w: 8, h: 8 },
@@ -178,3 +178,7 @@ export const spritesheet = new Spritesheet(Assets.get("spritesheet"), {
 });
 
 await spritesheet.parse();
+
+spritesheet.textureSource.autoGenerateMipmaps = true;
+spritesheet.textureSource.scaleMode = "nearest";
+spritesheet.textureSource.addressMode = "clamp-to-edge";
