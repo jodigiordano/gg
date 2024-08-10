@@ -15,6 +15,12 @@ settings.ROUND_PIXELS = true;
 
 const canvasContainer = document.getElementById("canvas") as HTMLDivElement;
 
+// Prevent opening right-click context menu.
+canvasContainer.addEventListener("contextmenu", event => {
+  event.preventDefault();
+  event.stopPropagation();
+});
+
 export const app = new Application({
   backgroundAlpha: 0,
   resizeTo: canvasContainer,
