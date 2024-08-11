@@ -549,7 +549,7 @@ export class SystemSimulator {
       if (
         !this.grid[x]![top]!.some(obj => obj.type === SimulatorObjectType.Link)
       ) {
-        finderGrid.setWeightAt(x, top, PathfindingWeights.EmptySpace);
+        finderGrid.setWeightAt(x, top, PathfindingWeights.SystemPerimeter);
       }
 
       if (
@@ -557,7 +557,7 @@ export class SystemSimulator {
           obj => obj.type === SimulatorObjectType.Link,
         )
       ) {
-        finderGrid.setWeightAt(x, bottom, PathfindingWeights.EmptySpace);
+        finderGrid.setWeightAt(x, bottom, PathfindingWeights.SystemPerimeter);
       }
     }
 
@@ -568,7 +568,7 @@ export class SystemSimulator {
       if (
         !this.grid[left]![y]!.some(obj => obj.type === SimulatorObjectType.Link)
       ) {
-        finderGrid.setWeightAt(left, y, PathfindingWeights.EmptySpace);
+        finderGrid.setWeightAt(left, y, PathfindingWeights.SystemPerimeter);
       }
 
       if (
@@ -576,7 +576,7 @@ export class SystemSimulator {
           obj => obj.type === SimulatorObjectType.Link,
         )
       ) {
-        finderGrid.setWeightAt(right, y, PathfindingWeights.EmptySpace);
+        finderGrid.setWeightAt(right, y, PathfindingWeights.SystemPerimeter);
       }
     }
   }
@@ -667,7 +667,7 @@ export class SystemSimulator {
         this.setSystemPerimeterWeights(
           gridSS,
           finderGrid,
-          PathfindingWeights.SystemPerimeter,
+          PathfindingWeights.EmptySpace,
         );
       } else {
         this.setSystemPerimeterWeights(
@@ -707,7 +707,7 @@ export class SystemSimulator {
       }
 
       // Title padding.
-      if (ss.systems.length) {
+      if (ss.systems.length && ss.title.trim().length > 0) {
         for (
           let x = gridSS.title.x - 1;
           x < gridSS.title.x + gridSS.title.width + 1;
@@ -1061,7 +1061,7 @@ export class SystemSimulator {
   }
 
   // @ts-ignore not referenced
-  private drawDebug(finderGrid: PathFinderGrid): void {
+  private debugDraw(finderGrid: PathFinderGrid): void {
     for (let x = 0; x < this.boundaries.width; x++) {
       for (let y = 0; y < this.boundaries.height; y++) {
         const debugInfo: SimulatorSystemTitle = {
@@ -1085,6 +1085,22 @@ export class SystemSimulator {
         this.grid[x]![y]!.push(debugInfo);
       }
     }
+  }
+
+  // @ts-ignore not referenced
+  private debugCost(path: number[][], finderGrid: PathFinderGrid): void {
+    if (!path.length) {
+      console.debug("no path");
+      return;
+    }
+
+    let cost = 0;
+
+    for (const [x, y] of path) {
+      cost += finderGrid.getWeightAt(x!, y!);
+    }
+
+    console.debug("cost", cost);
   }
 
   private synchronizeRuntimeObjects(

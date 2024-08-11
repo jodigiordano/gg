@@ -16,7 +16,7 @@ export const SystemMinSize: RuntimeSize = {
 
 export enum PathfindingWeights {
   EmptySpace = 1,
-  SystemPerimeter = 5,
+  SystemPerimeter = 1,
   Path = 10,
   MakeATurn = 10,
   Impenetrable = Infinity,
