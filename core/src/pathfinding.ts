@@ -1,3 +1,5 @@
+import { PathfindingWeights } from "./consts";
+
 enum NodeState {
   NotVisited = 1,
   WillVisit = 2,
@@ -87,7 +89,7 @@ export function findPath(
         (lastDirection.x !== x - node.x || lastDirection.y !== y - node.y);
 
       if (hasTurned) {
-        nextCostToVisit += 1; // penalty cost to turn.
+        nextCostToVisit += PathfindingWeights.MakeATurn;
       }
 
       // Visit the neighbor if it wasn't done before OR
@@ -174,8 +176,16 @@ export class Grid {
     return x >= 0 && x < this.width && y >= 0 && y < this.height;
   }
 
+  getWeightAt(x: number, y: number): number {
+    return this.nodes[x]![y]!.weight;
+  }
+
   setWeightAt(x: number, y: number, weight: number): void {
     this.nodes[x]![y]!.weight = weight;
+  }
+
+  addWeightAt(x: number, y: number, weight: number): void {
+    this.nodes[x]![y]!.weight += weight;
   }
 
   getNeighborsAt(x: number, y: number): Node[] {

@@ -9,15 +9,13 @@ import {
   PaddingWhiteBox,
   TitleCharsPerSquare,
   SystemMargin,
+  PathfindingWeights,
 } from "./consts.js";
 
 export enum SimulatorObjectType {
   System = 1,
-  Port = 2,
-  Link = 3,
-  SystemMargin = 4,
-  SystemTitle = 5,
-  SystemTitlePadding = 6,
+  Link = 2,
+  SystemTitle = 3,
 }
 
 export enum SimulatorLinkDirectionType {
@@ -52,20 +50,10 @@ export interface SimulatorSubsystem extends SimulatorObject {
   blackbox: boolean;
 }
 
-export interface SimulatorPort extends SimulatorObject {
-  type: SimulatorObjectType.Port;
-  system: RuntimeSubsystem;
-}
-
 export interface SimulatorLink extends SimulatorObject {
   type: SimulatorObjectType.Link;
   direction: SimulatorLinkDirectionType;
   link: RuntimeLink;
-}
-
-export interface SimulatorSystemMargin extends SimulatorObject {
-  type: SimulatorObjectType.SystemMargin;
-  system: RuntimeSystem | RuntimeSubsystem;
 }
 
 export interface SimulatorSystemTitle extends SimulatorObject {
@@ -73,12 +61,6 @@ export interface SimulatorSystemTitle extends SimulatorObject {
   system: RuntimeSubsystem;
   blackbox: boolean;
   chars: string;
-}
-
-export interface SimulatorSystemTitlePadding extends SimulatorObject {
-  type: SimulatorObjectType.SystemTitlePadding;
-  system: RuntimeSubsystem;
-  blackbox: boolean;
 }
 
 export interface SimulatorBoundaries {
@@ -115,10 +97,6 @@ interface GridSystem {
 
   width: number;
   height: number;
-  ports: {
-    x: number;
-    y: number;
-  }[];
   title: {
     x: number;
     y: number;
@@ -130,20 +108,20 @@ interface GridSystem {
 
 export class SystemSimulator {
   private system: RuntimeSystem;
-  private routes: Record<string, Record<string, number[][]>>;
+  private paths: Record<string, Record<string, number[][]>>;
   private gridSystems: Record<string, GridSystem>;
   private grid: SimulatorObject[][][];
   private boundaries: SimulatorBoundaries;
 
   constructor(options: {
     system: RuntimeSystem;
-    routes?: Record<string, Record<string, number[][]>>;
+    paths?: Record<string, Record<string, number[][]>>;
     gridSystems?: Record<string, GridSystem>;
     grid?: SimulatorObject[][][];
     boundaries?: SimulatorBoundaries;
   }) {
     this.system = options.system;
-    this.routes = options.routes ?? {};
+    this.paths = options.paths ?? {};
     this.gridSystems = options.gridSystems ?? {};
     this.grid = options.grid ?? [];
     this.boundaries = options.boundaries ?? this.computeBoundaries();
@@ -165,7 +143,6 @@ export class SystemSimulator {
 
     // Compute grid systems. Part III.
     // Requires positions.
-    this.computeSystemPorts(this.system);
     this.computeSystemTitles(this.system);
 
     // Create grid.
@@ -179,7 +156,7 @@ export class SystemSimulator {
     const finderGrid = new PathFinderGrid(
       this.boundaries.width,
       this.boundaries.height,
-      1,
+      PathfindingWeights.EmptySpace,
     );
 
     // Draw grid objects.
@@ -309,8 +286,8 @@ export class SystemSimulator {
     return null;
   }
 
-  getRoute(fromSystemId: string, toSystemId: string): number[][] | undefined {
-    return this.routes[fromSystemId]?.[toSystemId];
+  getPath(fromSystemId: string, toSystemId: string): number[][] | undefined {
+    return this.paths[fromSystemId]?.[toSystemId];
   }
 
   // Child systems in a parent system are offset
@@ -360,7 +337,6 @@ export class SystemSimulator {
       worldY: -1,
       width: -1,
       height: -1,
-      ports: [],
       title: {
         x: -1,
         y: -1,
@@ -443,20 +419,6 @@ export class SystemSimulator {
     gridSystem.height = system.size.height;
   }
 
-  private computeSystemPorts(system: RuntimeSystem | RuntimeSubsystem): void {
-    for (const ss of system.systems) {
-      const gridSystem = this.gridSystems[ss.id]!;
-
-      gridSystem.ports = ss.ports.map(port => ({
-        x: gridSystem.x1 + port.x,
-        y: gridSystem.y1 + port.y,
-      }));
-
-      // Recursive traversal.
-      this.computeSystemPorts(ss);
-    }
-  }
-
   private computeSystemTitles(system: RuntimeSystem | RuntimeSubsystem): void {
     // Recursive traversal.
     for (const ss of system.systems) {
@@ -529,6 +491,96 @@ export class SystemSimulator {
     };
   }
 
+  private getSystemPerimeterWeights(
+    gridSS: GridSystem,
+    finderGrid: PathFinderGrid,
+  ): number[][] {
+    const originals: number[][] = [];
+
+    for (let x = gridSS.x1 - SystemMargin; x <= gridSS.x2 + SystemMargin; x++) {
+      const top = gridSS.y1 - SystemMargin;
+      const bottom = gridSS.y2 + SystemMargin;
+
+      originals.push([x, top, finderGrid.getWeightAt(x, top)]);
+      originals.push([x, bottom, finderGrid.getWeightAt(x, bottom)]);
+    }
+
+    for (let y = gridSS.y1 - SystemMargin; y <= gridSS.y2 + SystemMargin; y++) {
+      const left = gridSS.x1 - SystemMargin;
+      const right = gridSS.x2 + SystemMargin;
+
+      originals.push([left, y, finderGrid.getWeightAt(left, y)]);
+      originals.push([right, y, finderGrid.getWeightAt(right, y)]);
+    }
+
+    return originals;
+  }
+
+  private setSystemPerimeterWeights(
+    gridSS: GridSystem,
+    finderGrid: PathFinderGrid,
+    weight: number,
+  ): void {
+    for (let x = gridSS.x1 - SystemMargin; x <= gridSS.x2 + SystemMargin; x++) {
+      const top = gridSS.y1 - SystemMargin;
+      const bottom = gridSS.y2 + SystemMargin;
+
+      finderGrid.setWeightAt(x, top, weight);
+      finderGrid.setWeightAt(x, bottom, weight);
+    }
+
+    for (let y = gridSS.y1 - SystemMargin; y <= gridSS.y2 + SystemMargin; y++) {
+      const left = gridSS.x1 - SystemMargin;
+      const right = gridSS.x2 + SystemMargin;
+
+      finderGrid.setWeightAt(left, y, weight);
+      finderGrid.setWeightAt(right, y, weight);
+    }
+  }
+
+  private setSystemPerimeterWeightsForRouting(
+    gridSS: GridSystem,
+    finderGrid: PathFinderGrid,
+  ): void {
+    for (let x = gridSS.x1 - SystemMargin; x <= gridSS.x2 + SystemMargin; x++) {
+      const top = gridSS.y1 - SystemMargin;
+      const bottom = gridSS.y2 + SystemMargin;
+
+      if (
+        !this.grid[x]![top]!.some(obj => obj.type === SimulatorObjectType.Link)
+      ) {
+        finderGrid.setWeightAt(x, top, PathfindingWeights.EmptySpace);
+      }
+
+      if (
+        !this.grid[x]![bottom]!.some(
+          obj => obj.type === SimulatorObjectType.Link,
+        )
+      ) {
+        finderGrid.setWeightAt(x, bottom, PathfindingWeights.EmptySpace);
+      }
+    }
+
+    for (let y = gridSS.y1 - SystemMargin; y <= gridSS.y2 + SystemMargin; y++) {
+      const left = gridSS.x1 - SystemMargin;
+      const right = gridSS.x2 + SystemMargin;
+
+      if (
+        !this.grid[left]![y]!.some(obj => obj.type === SimulatorObjectType.Link)
+      ) {
+        finderGrid.setWeightAt(left, y, PathfindingWeights.EmptySpace);
+      }
+
+      if (
+        !this.grid[right]![y]!.some(
+          obj => obj.type === SimulatorObjectType.Link,
+        )
+      ) {
+        finderGrid.setWeightAt(right, y, PathfindingWeights.EmptySpace);
+      }
+    }
+  }
+
   private drawSubsystems(
     system: RuntimeSystem | RuntimeSubsystem,
     finderGrid: PathFinderGrid,
@@ -536,41 +588,11 @@ export class SystemSimulator {
     for (const ss of system.systems) {
       const gridSS = this.gridSystems[ss.id]!;
 
-      // Draw margins.
-      const simulatorSystemMargin: SimulatorSystemMargin = Object.freeze({
-        type: SimulatorObjectType.SystemMargin,
-        system: ss,
-      });
-
-      for (
-        let x = gridSS.x1 - SystemMargin;
-        x <= gridSS.x2 + SystemMargin;
-        x++
-      ) {
-        const top = gridSS.y1 - SystemMargin;
-        const bottom = gridSS.y2 + SystemMargin;
-
-        this.grid[x]![top]!.push(simulatorSystemMargin);
-        finderGrid.setWeightAt(x, top, Infinity);
-
-        this.grid[x]![bottom]!.push(simulatorSystemMargin);
-        finderGrid.setWeightAt(x, bottom, Infinity);
-      }
-
-      for (
-        let y = gridSS.y1 - SystemMargin;
-        y <= gridSS.y2 + SystemMargin;
-        y++
-      ) {
-        const left = gridSS.x1 - SystemMargin;
-        const right = gridSS.x2 + SystemMargin;
-
-        this.grid[left]![y]!.push(simulatorSystemMargin);
-        finderGrid.setWeightAt(left, y, Infinity);
-
-        this.grid[right]![y]!.push(simulatorSystemMargin);
-        finderGrid.setWeightAt(right, y, Infinity);
-      }
+      this.setSystemPerimeterWeights(
+        gridSS,
+        finderGrid,
+        PathfindingWeights.Impenetrable,
+      );
 
       // Sub-systems.
       const blackbox = gridSS.hidden || ss.hideSystems || !ss.systems.length;
@@ -641,14 +663,22 @@ export class SystemSimulator {
         direction: SimulatorSystemDirectionType.BottomCenter,
       });
 
+      if (ss.systems.length) {
+        this.setSystemPerimeterWeights(
+          gridSS,
+          finderGrid,
+          PathfindingWeights.SystemPerimeter,
+        );
+      } else {
+        this.setSystemPerimeterWeights(
+          gridSS,
+          finderGrid,
+          PathfindingWeights.Impenetrable,
+        );
+      }
+
       for (let x = gridSS.x1; x <= gridSS.x2; x++) {
         for (let y = gridSS.y1; y <= gridSS.y2; y++) {
-          if (ss.systems.length) {
-            finderGrid.setWeightAt(x, y, 1);
-          } else {
-            finderGrid.setWeightAt(x, y, Infinity);
-          }
-
           // The sub-system is inside a blackbox.
           if (gridSS.hidden) {
             continue;
@@ -676,37 +706,20 @@ export class SystemSimulator {
         }
       }
 
-      // Ports.
-      const simulatorPort: SimulatorPort = Object.freeze({
-        type: SimulatorObjectType.Port,
-        system: ss,
-      });
-
-      for (const port of gridSS.ports) {
-        this.grid[port.x]![port.y]!.push(simulatorPort);
-        finderGrid.setWeightAt(port.x, port.y, 1);
-      }
-
       // Title padding.
-      const simulatorSystemTitlePadding: SimulatorSystemTitlePadding =
-        Object.freeze({
-          type: SimulatorObjectType.SystemTitlePadding,
-          blackbox,
-          system: ss,
-        });
-
-      for (
-        let x = gridSS.title.x - 1;
-        x < gridSS.title.x + gridSS.title.width + 1;
-        x++
-      ) {
+      if (ss.systems.length) {
         for (
-          let y = gridSS.title.y - 1;
-          y < gridSS.title.y + gridSS.title.height + 1;
-          y++
+          let x = gridSS.title.x - 1;
+          x < gridSS.title.x + gridSS.title.width + 1;
+          x++
         ) {
-          this.grid[x]![y]!.push(simulatorSystemTitlePadding);
-          finderGrid.setWeightAt(x, y, Infinity);
+          for (
+            let y = gridSS.title.y - 1;
+            y < gridSS.title.y + gridSS.title.height + 1;
+            y++
+          ) {
+            finderGrid.setWeightAt(x, y, PathfindingWeights.Impenetrable);
+          }
         }
       }
 
@@ -723,8 +736,6 @@ export class SystemSimulator {
           y < gridSS.title.y + gridSS.title.height;
           y++, j++
         ) {
-          finderGrid.setWeightAt(x, y, Infinity);
-
           // The sub-system is inside a blackbox.
           if (gridSS.hidden) {
             continue;
@@ -756,16 +767,17 @@ export class SystemSimulator {
 
       // Allowed systems to be traversed by the path from A to B. Part I.
       //
-      // The path from A to B may need to traverse whiteboxes.
+      // The path from A to B may needs to traverse whiteboxes.
       // Here we say that only certain whiteboxes can be traversed.
       //
       // For example, for the path A.X to B,
       // we don't want the path to go through A.Y.
       //
-      // To deny traversing systems, we momentarily close their ports.
-      //
+      // To deny traversing systems, we momentarily set an impenetrable
+      // perimeter around them.
       const allowedSystems: string[] = [link.a, link.b];
 
+      // Allow the parents of A.
       let parent: RuntimeSystem | RuntimeSubsystem | undefined =
         link.systemA.parent;
 
@@ -775,6 +787,7 @@ export class SystemSimulator {
         parent = parent.parent;
       }
 
+      // Allow the parents of B.
       parent = link.systemB.parent;
 
       while (parent?.id) {
@@ -783,228 +796,293 @@ export class SystemSimulator {
         parent = parent.parent;
       }
 
+      const allowedSystemPerimeters = [];
+
+      // Set the perimeters for parents.
       for (const gridSS of Object.values(this.gridSystems)) {
         if (!allowedSystems.includes(gridSS.id)) {
-          for (const port of gridSS.ports) {
-            finderGrid.setWeightAt(port.x, port.y, Infinity);
-          }
+          allowedSystemPerimeters.push(
+            this.getSystemPerimeterWeights(gridSS, finderGrid),
+          );
+
+          this.setSystemPerimeterWeights(
+            gridSS,
+            finderGrid,
+            PathfindingWeights.Impenetrable,
+          );
         }
       }
 
-      // Find available ports.
-      const subsystemAPorts = subsystemA.ports.filter(
-        port =>
-          this.grid[port.x]?.[port.y]?.at(-1)?.type ===
-          SimulatorObjectType.Port,
+      // Open the perimeter around A & B so a link can be found between
+      // the center of A and the center of B.
+      allowedSystemPerimeters.push(
+        this.getSystemPerimeterWeights(subsystemA, finderGrid),
       );
 
-      const subsystemBPorts = subsystemB.ports.filter(
-        port =>
-          this.grid[port.x]?.[port.y]?.at(-1)?.type ===
-          SimulatorObjectType.Port,
+      this.setSystemPerimeterWeightsForRouting(subsystemA, finderGrid);
+
+      allowedSystemPerimeters.push(
+        this.getSystemPerimeterWeights(subsystemB, finderGrid),
       );
 
-      const candidates = subsystemAPorts
-        .flatMap(portA =>
-          subsystemBPorts.map(portB => ({
-            portA,
-            portB,
-            distance: Math.sqrt(
-              Math.pow(portB.x - portA.x, 2) + Math.pow(portB.y - portA.y, 2),
-            ),
-          })),
-        )
-        .sort((a, b) => a.distance - b.distance);
+      this.setSystemPerimeterWeightsForRouting(subsystemB, finderGrid);
 
-      for (const { portA, portB } of candidates) {
-        finderGrid.reset();
+      finderGrid.reset();
 
-        const route = findPath(portA.x, portA.y, portB.x, portB.y, finderGrid);
+      // Find the path from the cener of A to the center of B.
+      const centerA = {
+        x: subsystemA.x1 + ((subsystemA.width / 2) | 0),
+        y: subsystemA.y1 + ((subsystemA.height / 2) | 0),
+      };
 
-        if (route.length) {
-          this.routes[link.a] ??= {};
-          this.routes[link.a]![link.b] = route;
+      const centerB = {
+        x: subsystemB.x1 + ((subsystemB.width / 2) | 0),
+        y: subsystemB.y1 + ((subsystemB.height / 2) | 0),
+      };
 
-          this.routes[link.b] ??= {};
-          this.routes[link.b]![link.a] = route.slice().reverse();
+      const path = findPath(
+        centerA.x,
+        centerA.y,
+        centerB.x,
+        centerB.y,
+        finderGrid,
+      );
 
-          const simulatorLinkHorizontal: SimulatorLink = Object.freeze({
-            type: SimulatorObjectType.Link,
-            direction: SimulatorLinkDirectionType.Horizontal,
-            link,
-          });
+      if (path.length) {
+        // Shorten the path. Part I.
+        //
+        // The path between A and B is shorten so it starts at the edge
+        // of A and ends at the edge of B.
+        //
+        // In this first part, we simply find how many segments of the path
+        // are inside A and B.
+        //
+        // The shortening of the path will be done later.
+        let insideACount = 0;
 
-          const simulatorLinkVertical: SimulatorLink = Object.freeze({
-            type: SimulatorObjectType.Link,
-            direction: SimulatorLinkDirectionType.Vertical,
-            link,
-          });
+        for (let i = 0; i < path.length; i++) {
+          const x = path[i]![0]!;
+          const y = path[i]![1]!;
 
-          const simulatorLinkBottomToRight: SimulatorLink = Object.freeze({
-            type: SimulatorObjectType.Link,
-            direction: SimulatorLinkDirectionType.BottomToRight,
-            link,
-          });
+          const isInside = this.grid[x]![y]!.some(
+            obj =>
+              obj.type === SimulatorObjectType.System &&
+              (obj as SimulatorSubsystem).system.id === link.a,
+          );
 
-          const simulatorLinkBottomToLeft: SimulatorLink = Object.freeze({
-            type: SimulatorObjectType.Link,
-            direction: SimulatorLinkDirectionType.BottomToLeft,
-            link,
-          });
-
-          const simulatorLinkTopToLeft: SimulatorLink = Object.freeze({
-            type: SimulatorObjectType.Link,
-            direction: SimulatorLinkDirectionType.TopToLeft,
-            link,
-          });
-
-          const simulatorLinkTopToRight: SimulatorLink = Object.freeze({
-            type: SimulatorObjectType.Link,
-            direction: SimulatorLinkDirectionType.TopToRight,
-            link,
-          });
-
-          for (let i = 0; i < route.length; i++) {
-            const [x, y] = route[i]!;
-
-            // A path is still considered walkable but it has a higher cost
-            // than an empty tile. It enables tunnels.
-            finderGrid.setWeightAt(x!, y!, 2);
-
-            const blackbox = this.grid[x!]![y!]!.find(
-              obj => "blackbox" in obj && obj.blackbox,
-            );
-
-            // The link part is inside a blackbox.
-            if (blackbox) {
-              // this.grid[x!]![y!]!.push(blackbox);
-              continue;
-            }
-
-            let xBefore: number;
-            let yBefore: number;
-            let xAfter: number;
-            let yAfter: number;
-
-            // There is no before / after.
-            if (route.length === 1) {
-              xBefore = portA.x;
-              yBefore = portA.y;
-
-              xAfter = portB.x;
-              yAfter = portB.y;
-
-              // There is no before.
-            } else if (i === 0) {
-              if (portA.x < subsystemA.x1) {
-                xBefore = portA.x + 1;
-                yBefore = portA.y;
-              } else if (portA.x > subsystemA.x2) {
-                xBefore = portA.x - 1;
-                yBefore = portA.y;
-              } else if (portA.y < subsystemA.y1) {
-                xBefore = portA.x;
-                yBefore = portA.y + 1;
-              } else {
-                xBefore = portA.x;
-                yBefore = portA.y - 1;
-              }
-
-              xAfter = route[i + 1]![0]!;
-              yAfter = route[i + 1]![1]!;
-
-              // There is no after.
-            } else if (i === route.length - 1) {
-              xBefore = route[i - 1]![0]!;
-              yBefore = route[i - 1]![1]!;
-
-              if (portB.x < subsystemB.x1) {
-                xAfter = portB.x + 1;
-                yAfter = portB.y;
-              } else if (portB.x > subsystemB.x2) {
-                xAfter = portB.x - 1;
-                yAfter = portB.y;
-              } else if (portB.y < subsystemB.y1) {
-                xAfter = portB.x;
-                yAfter = portB.y + 1;
-              } else {
-                xAfter = portB.x;
-                yAfter = portB.y - 1;
-              }
-
-              // There is a before / after.
-            } else {
-              xBefore = route[i - 1]![0]!;
-              yBefore = route[i - 1]![1]!;
-
-              xAfter = route[i + 1]![0]!;
-              yAfter = route[i + 1]![1]!;
-            }
-
-            // ...    ...
-            // BxA or AxB
-            // ...    ...
-            if (yBefore === y && yAfter === y) {
-              this.grid[x!]![y!]!.push(simulatorLinkHorizontal);
-
-              // .B.    .A.
-              // .x. or .x.
-              // .A.    .B.
-            } else if (xBefore === x && xAfter === x) {
-              this.grid[x!]![y!]!.push(simulatorLinkVertical);
-
-              // ...    ...
-              // .xA or .xB
-              // .B.    .A.
-            } else if (
-              (xBefore === x && yBefore > y! && xAfter > x! && yAfter === y) ||
-              (yBefore === y && xBefore > x! && yAfter > y! && xAfter === x)
-            ) {
-              this.grid[x!]![y!]!.push(simulatorLinkBottomToRight);
-
-              // ...    ...
-              // .Bx or .Ax
-              // ..A    ..B
-            } else if (
-              (xBefore < x! && yBefore === y && xAfter === x && yAfter > y!) ||
-              (yBefore > y! && xBefore === x && yAfter === y && xAfter < x!)
-            ) {
-              this.grid[x!]![y!]!.push(simulatorLinkBottomToLeft);
-
-              // ...    ...
-              // ..B or ..A
-              // .Ax    .Bx
-            } else if (
-              (xBefore === x && yBefore < y! && xAfter < x! && yAfter === y) ||
-              (yBefore === y && xBefore < x! && yAfter < y! && xAfter === x)
-            ) {
-              this.grid[x!]![y!]!.push(simulatorLinkTopToLeft);
-
-              // ...    ...
-              // .A. or .B.
-              // .xB    .xA
-            } else if (
-              (xBefore > x! && yBefore === y && xAfter === x && yAfter < y!) ||
-              (yBefore < y! && xBefore === x && yAfter === y && xAfter > x!)
-            ) {
-              this.grid[x!]![y!]!.push(simulatorLinkTopToRight);
-            }
+          if (!isInside) {
+            break;
           }
 
-          break;
+          insideACount++;
         }
+
+        let insideBCount = 0;
+
+        for (let i = path.length - 1; i > 0; i--) {
+          const x = path[i]![0]!;
+          const y = path[i]![1]!;
+
+          const isInside = this.grid[x]![y]!.some(
+            obj =>
+              obj.type === SimulatorObjectType.System &&
+              (obj as SimulatorSubsystem).system.id === link.b,
+          );
+
+          if (!isInside) {
+            break;
+          }
+
+          insideBCount++;
+        }
+
+        // Draw the path segments.
+        const simulatorLinkHorizontal: SimulatorLink = Object.freeze({
+          type: SimulatorObjectType.Link,
+          direction: SimulatorLinkDirectionType.Horizontal,
+          link,
+        });
+
+        const simulatorLinkVertical: SimulatorLink = Object.freeze({
+          type: SimulatorObjectType.Link,
+          direction: SimulatorLinkDirectionType.Vertical,
+          link,
+        });
+
+        const simulatorLinkBottomToRight: SimulatorLink = Object.freeze({
+          type: SimulatorObjectType.Link,
+          direction: SimulatorLinkDirectionType.BottomToRight,
+          link,
+        });
+
+        const simulatorLinkBottomToLeft: SimulatorLink = Object.freeze({
+          type: SimulatorObjectType.Link,
+          direction: SimulatorLinkDirectionType.BottomToLeft,
+          link,
+        });
+
+        const simulatorLinkTopToLeft: SimulatorLink = Object.freeze({
+          type: SimulatorObjectType.Link,
+          direction: SimulatorLinkDirectionType.TopToLeft,
+          link,
+        });
+
+        const simulatorLinkTopToRight: SimulatorLink = Object.freeze({
+          type: SimulatorObjectType.Link,
+          direction: SimulatorLinkDirectionType.TopToRight,
+          link,
+        });
+
+        for (let i = insideACount; i < path.length - insideBCount; i++) {
+          const [x, y] = path[i]!;
+
+          const blackbox = this.grid[x!]![y!]!.find(
+            obj => "blackbox" in obj && obj.blackbox,
+          );
+
+          // The link part is inside a blackbox.
+          if (blackbox) {
+            // this.grid[x!]![y!]!.push(blackbox);
+            continue;
+          }
+
+          const xBefore = path[i - 1]![0]!;
+          const yBefore = path[i - 1]![1]!;
+
+          const xAfter = path[i + 1]![0]!;
+          const yAfter = path[i + 1]![1]!;
+
+          // ...    ...
+          // BxA or AxB
+          // ...    ...
+          if (yBefore === y && yAfter === y) {
+            this.grid[x!]![y!]!.push(simulatorLinkHorizontal);
+
+            // .B.    .A.
+            // .x. or .x.
+            // .A.    .B.
+          } else if (xBefore === x && xAfter === x) {
+            this.grid[x!]![y!]!.push(simulatorLinkVertical);
+
+            // ...    ...
+            // .xA or .xB
+            // .B.    .A.
+          } else if (
+            (xBefore === x && yBefore > y! && xAfter > x! && yAfter === y) ||
+            (yBefore === y && xBefore > x! && yAfter > y! && xAfter === x)
+          ) {
+            this.grid[x!]![y!]!.push(simulatorLinkBottomToRight);
+
+            // ...    ...
+            // .Bx or .Ax
+            // ..A    ..B
+          } else if (
+            (xBefore < x! && yBefore === y && xAfter === x && yAfter > y!) ||
+            (yBefore > y! && xBefore === x && yAfter === y && xAfter < x!)
+          ) {
+            this.grid[x!]![y!]!.push(simulatorLinkBottomToLeft);
+
+            // ...    ...
+            // ..B or ..A
+            // .Ax    .Bx
+          } else if (
+            (xBefore === x && yBefore < y! && xAfter < x! && yAfter === y) ||
+            (yBefore === y && xBefore < x! && yAfter < y! && xAfter === x)
+          ) {
+            this.grid[x!]![y!]!.push(simulatorLinkTopToLeft);
+
+            // ...    ...
+            // .A. or .B.
+            // .xB    .xA
+          } else if (
+            (xBefore > x! && yBefore === y && xAfter === x && yAfter < y!) ||
+            (yBefore < y! && xBefore === x && yAfter === y && xAfter > x!)
+          ) {
+            this.grid[x!]![y!]!.push(simulatorLinkTopToRight);
+          }
+        }
+
+        // Shorten the path. Part II.
+        path.splice(0, insideACount);
+        path.splice(path.length - insideBCount, insideBCount);
+
+        // The path and its reverse sibling are kept for future use (ie. flows).
+        this.paths[link.a] ??= {};
+        this.paths[link.a]![link.b] = path;
+
+        this.paths[link.b] ??= {};
+        this.paths[link.b]![link.a] = path.slice().reverse();
       }
 
       // Allowed systems to be traversed by the path from A to B. Part II.
       //
-      // After a path from A to B is found (or not), we re-open the closed
-      // ports of denied systems.
-      for (const gridSS of Object.values(this.gridSystems)) {
-        if (!allowedSystems.includes(gridSS.id)) {
-          for (const port of gridSS.ports) {
-            finderGrid.setWeightAt(port.x, port.y, 1);
-          }
+      // After a path from A to B is found (or not), we remove the
+      // impenetrable perimeters around traversable parents...
+      for (const perimeter of allowedSystemPerimeters) {
+        for (const [x, y, weight] of perimeter) {
+          finderGrid.setWeightAt(x!, y!, weight!);
         }
+      }
+
+      // A path is still considered walkable but it has a higher cost
+      // than an empty tile. It enables crossing paths.
+      for (let i = 0; i < path.length; i++) {
+        const x = path[i]![0]!;
+        const y = path[i]![1]!;
+
+        // The start of the path cannot be crossed.
+        if (i === 0) {
+          finderGrid.setWeightAt(x!, y!, PathfindingWeights.Impenetrable);
+          // The end of the path cannot be crossed.
+        } else if (i === path.length - 1) {
+          finderGrid.setWeightAt(x!, y!, PathfindingWeights.Impenetrable);
+          // A turning path cannot be crossed.
+        } else if (
+          this.grid[x]![y]!.some(
+            obj =>
+              obj.type === SimulatorObjectType.Link &&
+              ((obj as SimulatorLink).direction ===
+                SimulatorLinkDirectionType.BottomToLeft ||
+                (obj as SimulatorLink).direction ===
+                  SimulatorLinkDirectionType.BottomToRight ||
+                (obj as SimulatorLink).direction ===
+                  SimulatorLinkDirectionType.TopToLeft ||
+                (obj as SimulatorLink).direction ===
+                  SimulatorLinkDirectionType.TopToRight),
+          )
+        ) {
+          finderGrid.setWeightAt(x!, y!, PathfindingWeights.Impenetrable);
+          // Any other segment of the path can be crossed.
+        } else {
+          finderGrid.addWeightAt(x!, y!, PathfindingWeights.Path);
+        }
+      }
+    }
+  }
+
+  // @ts-ignore not referenced
+  private drawDebug(finderGrid: PathFinderGrid): void {
+    for (let x = 0; x < this.boundaries.width; x++) {
+      for (let y = 0; y < this.boundaries.height; y++) {
+        const debugInfo: SimulatorSystemTitle = {
+          type: SimulatorObjectType.SystemTitle,
+          // @ts-ignore
+          system: undefined,
+          blackbox: false,
+          chars:
+            finderGrid.getWeightAt(x, y) === PathfindingWeights.Impenetrable
+              ? "X"
+              : finderGrid.getWeightAt(x, y) === PathfindingWeights.Path
+                ? "P"
+                : finderGrid.getWeightAt(x, y) === PathfindingWeights.EmptySpace
+                  ? "."
+                  : finderGrid.getWeightAt(x, y) ===
+                      PathfindingWeights.SystemPerimeter
+                    ? "A"
+                    : finderGrid.getWeightAt(x, y).toString(),
+        };
+
+        this.grid[x]![y]!.push(debugInfo);
       }
     }
   }

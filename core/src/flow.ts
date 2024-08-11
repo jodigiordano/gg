@@ -17,30 +17,30 @@ export function getFlowTick(
       return [];
     }
 
-    const route = systemSimulator.getRoute(step.from, step.to);
+    const path = systemSimulator.getPath(step.from, step.to);
 
-    if (!route) {
+    if (!path) {
       return [];
     }
 
     if (step.keyframe < keyframe) {
-      return route.at(-1) ?? [];
+      return path.at(-1) ?? [];
     }
 
-    const routeIndexRaw = (route.length - 1) * keyframeProgress;
-    const routeIndex = Math.floor(routeIndexRaw);
+    const pathIndexRaw = (path.length - 1) * keyframeProgress;
+    const pathIndex = Math.floor(pathIndexRaw);
 
-    if (routeIndex >= route.length) {
+    if (pathIndex >= path.length) {
       return [];
     }
 
-    const position = route[routeIndex];
+    const position = path[pathIndex];
 
     if (!position) {
       return [];
     }
 
-    const positionAfter = route[routeIndex + 1];
+    const positionAfter = path[pathIndex + 1];
 
     if (!positionAfter) {
       return position;
@@ -49,11 +49,11 @@ export function getFlowTick(
     const deltaX = positionAfter[0]! - position[0]!;
     const deltaY = positionAfter[1]! - position[1]!;
 
-    const routeIndexRemaining = routeIndexRaw - routeIndex;
+    const pathIndexRemaining = pathIndexRaw - pathIndex;
 
     return [
-      position[0]! + deltaX * routeIndexRemaining,
-      position[1]! + deltaY * routeIndexRemaining,
+      position[0]! + deltaX * pathIndexRemaining,
+      position[1]! + deltaY * pathIndexRemaining,
     ];
   });
 }
