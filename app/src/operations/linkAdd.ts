@@ -5,6 +5,7 @@ import { modifySpecification } from "../simulator/api.js";
 import Operation from "../operation.js";
 import { State } from "../state.js";
 import viewport from "../renderer/viewport.js";
+import { tick } from "../renderer/pixi.js";
 
 const selectAVisual = new SystemSelector();
 const selectBVisual = new SystemSelector();
@@ -82,6 +83,9 @@ const operation: Operation = {
     if (b && b.id !== a.id && !b.systems.length) {
       modifySpecification(() => {
         addLink(state.simulator.getSystem(), a!.id, b!.id);
+      }).then(() => {
+        onPointerMove(state);
+        tick();
       });
     }
 

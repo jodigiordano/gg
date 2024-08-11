@@ -4,6 +4,7 @@ import { State } from "../state.js";
 import Operation from "../operation.js";
 import viewport from "../renderer/viewport.js";
 import { addFlowStep, removeFlowStep } from "@gg/core";
+import { tick } from "../renderer/pixi.js";
 
 const selectLinkVisual1 = new SystemSelector();
 const selectLinkVisual2 = new SystemSelector();
@@ -94,9 +95,12 @@ const operation: Operation = {
       } else {
         addFlowStep(system, keyframe, link.a, link.b);
       }
+    }).then(() => {
+      state.flowPlayer?.draw();
+      onPointerMove(state);
+      tick();
     });
 
-    state.flowPlayer?.draw();
     onPointerMove(state);
   },
   onPointerDown: () => {},

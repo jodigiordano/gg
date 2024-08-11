@@ -4,6 +4,7 @@ import { modifySpecification } from "../simulator/api.js";
 import Operation from "../operation.js";
 import { State } from "../state.js";
 import viewport from "../renderer/viewport.js";
+import { tick } from "../renderer/pixi.js";
 
 const selectVisual = new SystemSelector();
 const moveVisual = new SystemSelector();
@@ -83,9 +84,10 @@ const operation: Operation = {
 
     modifySpecification(() => {
       moveSystem(subsystem!, deltaX, deltaY);
+    }).then(() => {
+      onPointerMove(state);
+      tick();
     });
-
-    selectVisual.setPosition(subsystem, { x: deltaX, y: deltaY });
 
     // Reset operation.
     viewport.pause = false;

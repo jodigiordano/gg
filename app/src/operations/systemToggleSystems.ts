@@ -3,6 +3,7 @@ import { State } from "../state.js";
 import { modifySpecification } from "../simulator/api.js";
 import Operation from "../operation.js";
 import viewport from "../renderer/viewport.js";
+import { tick } from "../renderer/pixi.js";
 
 const selectVisual = new SystemSelector();
 
@@ -44,6 +45,9 @@ const operation: Operation = {
         const { specification } = subsystem!;
 
         specification.hideSystems = !specification.hideSystems;
+      }).then(() => {
+        onPointerMove(state);
+        tick();
       });
     }
 

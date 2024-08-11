@@ -4,7 +4,7 @@ import SystemSelector from "../renderer/systemSelector.js";
 import { modifySpecification } from "../simulator/api.js";
 import { State } from "../state.js";
 import viewport from "../renderer/viewport.js";
-import { app } from "../renderer/pixi.js";
+import { tick } from "../renderer/pixi.js";
 import { state } from "../state.js";
 
 const dialog = document.getElementById(
@@ -25,6 +25,9 @@ document
       // Apply operation.
       modifySpecification(() => {
         setSubsystemTitle(subsystem!, editor.value.replace(/\n/g, "\\n"));
+      }).then(() => {
+        onPointerMove(state);
+        tick();
       });
 
       // Reset operation.
@@ -34,8 +37,7 @@ document
 
       onPointerMove(state);
 
-      // TODO: hmmm...
-      app.ticker.update();
+      tick();
     }
   });
 

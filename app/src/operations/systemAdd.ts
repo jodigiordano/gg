@@ -4,6 +4,7 @@ import { State } from "../state.js";
 import { modifySpecification } from "../simulator/api.js";
 import Operation from "../operation.js";
 import viewport from "../renderer/viewport.js";
+import { tick } from "../renderer/pixi.js";
 
 const placeholderVisual = new SystemSelector();
 const parentVisual = new SystemSelector();
@@ -76,6 +77,9 @@ const operation: Operation = {
 
     modifySpecification(() => {
       addSubsystem(parent, x, y, "");
+    }).then(() => {
+      onPointerMove(state);
+      tick();
     });
 
     viewport.pause = false;

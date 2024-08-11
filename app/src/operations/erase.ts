@@ -4,6 +4,7 @@ import SystemSelector from "../renderer/systemSelector.js";
 import Operation from "../operation.js";
 import { State } from "../state.js";
 import viewport from "../renderer/viewport.js";
+import { tick } from "../renderer/pixi.js";
 
 const selectSystemVisual = new SystemSelector();
 const selectLinkVisual1 = new SystemSelector();
@@ -94,6 +95,9 @@ const operation: Operation = {
       if (subsystem) {
         modifySpecification(() => {
           removeSubsystem(subsystem);
+        }).then(() => {
+          onPointerMove(state);
+          tick();
         });
       }
     }
