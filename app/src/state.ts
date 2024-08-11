@@ -1,7 +1,7 @@
 import { load, SystemSimulator } from "@gg/core";
 import FlowPlayer from "./simulator/flowPlayer.js";
 import Operation from "./operation.js";
-import MoveSystemOperation from "./operations/systemMove.js";
+import moveOperation from "./operations/move.js";
 import { getUrlParams } from "./persistence.js";
 
 export interface State {
@@ -25,7 +25,7 @@ const defaultSimulator = new SystemSimulator({ system: defaultSystem });
 
 defaultSimulator.compute();
 
-const defaultOperation = MoveSystemOperation;
+const defaultOperation = moveOperation;
 
 const urlParams = getUrlParams();
 

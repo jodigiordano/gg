@@ -13,7 +13,7 @@ import { redrawGrid, setGridVisible } from "./renderer/grid.js";
 import Operation from "./operation.js";
 import addSystemOperation from "./operations/systemAdd.js";
 import setSystemTitleOperation from "./operations/systemSetTitle.js";
-import moveSystemOperation from "./operations/systemMove.js";
+import moveOperation from "./operations/move.js";
 import setSystemParentOperation from "./operations/systemSetParent.js";
 import addLinkOperation from "./operations/linkAdd.js";
 import eraseOperation from "./operations/erase.js";
@@ -157,7 +157,7 @@ window.addEventListener("keydown", event => {
 
   // The user press "Esc" to cancel any ongoing operation.
   if (event.key === "Escape" || event.key === "1") {
-    switchOperation(moveSystemOperation);
+    switchOperation(moveOperation);
   } else if (event.key === "2") {
     switchOperation(addSystemOperation);
   } else if (event.key === "3") {
@@ -692,7 +692,7 @@ function updateFlowProgression(): void {
 // Initialize operations.
 addSystemOperation.setup(state);
 setSystemTitleOperation.setup(state);
-moveSystemOperation.setup(state);
+moveOperation.setup(state);
 setSystemParentOperation.setup(state);
 addLinkOperation.setup(state);
 eraseOperation.setup(state);
@@ -718,8 +718,8 @@ for (const button of singleChoiceButtons) {
       state.operation = addLinkOperation;
     } else if (button.id === "operation-system-add") {
       state.operation = addSystemOperation;
-    } else if (button.id === "operation-system-move") {
-      state.operation = moveSystemOperation;
+    } else if (button.id === "operation-move") {
+      state.operation = moveOperation;
     } else if (button.id === "operation-erase") {
       state.operation = eraseOperation;
     } else if (button.id === "operation-system-set-parent") {
