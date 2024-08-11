@@ -10,8 +10,6 @@ export interface RuntimePosition {
   y: number;
 }
 
-export interface RuntimePort extends RuntimePosition {}
-
 export interface RuntimeLink extends Link {
   specification: Link;
   index: number;
@@ -27,7 +25,6 @@ export interface RuntimeSubsystem extends Subsystem {
   index: number;
   size: RuntimeSize;
   position: RuntimePosition;
-  ports: RuntimePort[];
   parent?: RuntimeSystem | RuntimeSubsystem;
   hideSystems: boolean;
   systems: RuntimeSubsystem[];

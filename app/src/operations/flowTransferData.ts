@@ -12,10 +12,10 @@ function onPointerMove(state: State): void {
   const link = state.simulator.getLinkAt(state.x, state.y);
 
   if (link) {
-    const route = state.simulator.getRoute(link.a, link.b)!;
+    const path = state.simulator.getPath(link.a, link.b)!;
     const boundaries = state.simulator.getBoundaries();
 
-    const [startX, startY] = route.at(0)!;
+    const [startX, startY] = path.at(0)!;
 
     selectLinkVisual1.visible = true;
     selectLinkVisual1.setPositionRect(
@@ -25,7 +25,7 @@ function onPointerMove(state: State): void {
       startY - boundaries.translateY,
     );
 
-    const [endX, endY] = route.at(-1)!;
+    const [endX, endY] = path.at(-1)!;
 
     selectLinkVisual2.visible = true;
     selectLinkVisual2.setPositionRect(

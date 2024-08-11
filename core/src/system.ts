@@ -46,9 +46,6 @@ export function initSystem(
     y: TitlePadding,
   };
 
-  // Initialize ports.
-  system.ports = [];
-
   // Set the depth.
   system.depth = depth;
 }
@@ -137,16 +134,4 @@ export function computeSystemSize(
     width: maxWidth + PaddingWhiteBox * 2,
     height: maxHeight + system.titleSize.height + PaddingWhiteBox * 2,
   };
-}
-
-export function computeSystemPorts(system: RuntimeSubsystem): void {
-  for (let x = 1; x < system.size.width; x++) {
-    system.ports.push({ x, y: -1 });
-    system.ports.push({ x, y: system.size.height });
-  }
-
-  for (let y = 1; y < system.size.height; y++) {
-    system.ports.push({ x: -1, y });
-    system.ports.push({ x: system.size.width, y });
-  }
 }

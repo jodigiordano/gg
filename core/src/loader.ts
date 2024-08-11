@@ -1,12 +1,7 @@
 import { RuntimeSystem, RuntimeSubsystem, RuntimeLink } from "./runtime.js";
 import { System } from "./specification.js";
 import { validate, ValidationError } from "./validations.js";
-import {
-  computeSystemPorts,
-  computeSystemSize,
-  getSubsystemById,
-  initSystem,
-} from "./system.js";
+import { computeSystemSize, getSubsystemById, initSystem } from "./system.js";
 
 export function load(system: System): {
   system: RuntimeSystem;
@@ -30,7 +25,6 @@ export function load(system: System): {
   enhanceLinks(runtime);
   enhanceFlows(runtime);
   computeSizes(runtime, runtime.links);
-  computePorts(runtime);
 
   const errors = validate(system, runtime);
 
@@ -230,13 +224,4 @@ function computeSizes(
   }
 
   computeSystemSize(system, links);
-}
-
-function computePorts(system: RuntimeSystem | RuntimeSubsystem) {
-  for (const subsystem of system.systems) {
-    computeSystemPorts(subsystem);
-
-    // Recursive traversal.
-    computePorts(subsystem);
-  }
 }
