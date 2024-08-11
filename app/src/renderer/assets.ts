@@ -1,4 +1,10 @@
-import { Assets, Spritesheet } from "pixi.js";
+import {
+  Assets,
+  MIPMAP_MODES,
+  SCALE_MODES,
+  Spritesheet,
+  WRAP_MODES,
+} from "pixi.js";
 import fontData from "../assets/ibm.woff?base64";
 
 await Assets.load({
@@ -178,3 +184,7 @@ export const spritesheet = new Spritesheet(Assets.get("spritesheet"), {
 });
 
 await spritesheet.parse();
+
+spritesheet.baseTexture.wrapMode = WRAP_MODES.REPEAT;
+spritesheet.baseTexture.scaleMode = SCALE_MODES.NEAREST;
+spritesheet.baseTexture.mipmap = MIPMAP_MODES.ON;

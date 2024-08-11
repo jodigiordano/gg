@@ -1,4 +1,10 @@
-import { Graphics, SCALE_MODES, TilingSprite } from "pixi.js";
+import {
+  Graphics,
+  WRAP_MODES,
+  SCALE_MODES,
+  MIPMAP_MODES,
+  TilingSprite,
+} from "pixi.js";
 import { BlockSize } from "../helpers.js";
 import { app } from "./pixi.js";
 import viewport from "./viewport.js";
@@ -17,7 +23,9 @@ const gridGraphic = new Graphics()
 
 const gridTexture = app.renderer.generateTexture(gridGraphic);
 
+gridTexture.baseTexture.wrapMode = WRAP_MODES.REPEAT;
 gridTexture.baseTexture.scaleMode = SCALE_MODES.LINEAR;
+gridTexture.baseTexture.mipmap = MIPMAP_MODES.ON;
 
 grid = new TilingSprite(
   gridTexture,
