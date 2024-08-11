@@ -262,8 +262,7 @@ export class SystemSimulator {
 
       if (
         obj.type === SimulatorObjectType.System ||
-        obj.type === SimulatorObjectType.SystemTitle ||
-        obj.type === SimulatorObjectType.SystemTitlePadding
+        obj.type === SimulatorObjectType.SystemTitle
       ) {
         return (obj as SimulatorSubsystem).system;
       }
