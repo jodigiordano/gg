@@ -11,11 +11,14 @@ const selectLinkVisual1 = new SystemSelector();
 const selectLinkVisual2 = new SystemSelector();
 
 function onPointerMove(state: State) {
+  selectSystemVisual.visible = false;
+  selectLinkVisual1.visible = false;
+  selectLinkVisual2.visible = false;
+  viewport.pause = false;
+
   const link = state.simulator.getLinkAt(state.x, state.y);
 
   if (link) {
-    selectSystemVisual.visible = false;
-
     const path = state.simulator.getPath(link.a, link.b)!;
     const boundaries = state.simulator.getBoundaries();
 
@@ -40,24 +43,17 @@ function onPointerMove(state: State) {
     );
 
     viewport.pause = true;
-  } else {
-    selectLinkVisual1.visible = false;
-    selectLinkVisual2.visible = false;
 
-    viewport.pause = false;
+    return;
+  }
 
-    const subsystem = state.simulator.getSubsystemAt(state.x, state.y);
+  const subsystem = state.simulator.getSubsystemAt(state.x, state.y);
 
-    if (subsystem) {
-      selectSystemVisual.visible = true;
-      selectSystemVisual.setPosition(subsystem, { x: 0, y: 0 });
+  if (subsystem) {
+    selectSystemVisual.visible = true;
+    selectSystemVisual.setPosition(subsystem, { x: 0, y: 0 });
 
-      viewport.pause = true;
-    } else {
-      selectSystemVisual.visible = false;
-
-      viewport.pause = false;
-    }
+    viewport.pause = true;
   }
 }
 
@@ -88,6 +84,9 @@ const operation: Operation = {
     if (link) {
       modifySpecification(() => {
         removeLink(state.simulator.getSystem(), link);
+      }).then(() => {
+        onPointerMove(state);
+        tick();
       });
     } else {
       const subsystem = state.simulator.getSubsystemAt(state.x, state.y);
