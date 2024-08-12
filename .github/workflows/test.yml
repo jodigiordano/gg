@@ -1,0 +1,33 @@
+name: Tests
+
+on: pull_request
+
+concurrency:
+  group: tests-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  compile:
+    name: Validate gg compiles
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Compile
+        run: |
+          npm ci
+          npm run compile
+
+  test-core:
+    name: Test gg core
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Test
+        run: |
+          cd core
+          npm ci
+          npm run test
