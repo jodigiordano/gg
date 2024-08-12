@@ -168,6 +168,44 @@ export function addLink(system: RuntimeSystem, aId: string, bId: string): Link {
 }
 
 /*
+ * Move a link in the given system.
+ * The resulting system is not validated and may be invalid.
+ */
+export function moveLink(
+  link: RuntimeLink,
+  idToReplace: string,
+  idToReplaceWith: string,
+): void {
+  const rootSystem = getRootSystem(link.systemA);
+
+  const aId = link.a === idToReplace ? idToReplaceWith : link.a;
+  const bId = link.b === idToReplace ? idToReplaceWith : link.b;
+
+  addLink(rootSystem, aId, bId);
+
+  // Transfer flow steps.
+  for (const flow of rootSystem.specification.flows ?? []) {
+    for (const step of flow.steps) {
+      const goThroughLink =
+        (step.from === link.a && step.to === link.b) ||
+        (step.from === link.b && step.to === link.a);
+
+      if (goThroughLink) {
+        if (step.from === idToReplace) {
+          step.from = idToReplaceWith;
+        }
+
+        if (step.to === idToReplace) {
+          step.to = idToReplaceWith;
+        }
+      }
+    }
+  }
+
+  removeLink(rootSystem, link);
+}
+
+/*
  * Remove a link in the given system.
  * The resulting system is not validated and may be invalid.
  */
