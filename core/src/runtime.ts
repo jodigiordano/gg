@@ -13,6 +13,7 @@ export interface RuntimePosition {
 export interface RuntimeLink extends Link {
   specification: Link;
   index: number;
+  title: string;
   systemA: RuntimeSubsystem;
   systemB: RuntimeSubsystem;
 }

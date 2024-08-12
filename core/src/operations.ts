@@ -237,6 +237,14 @@ export function removeLink(rootSystem: RuntimeSystem, link: RuntimeLink): void {
   }
 }
 
+export function setLinkTitle(
+  link: RuntimeLink,
+  newTitle: string,
+): void {
+  link.specification.title = newTitle;
+  link.title = newTitle;
+}
+
 export function moveSubsystemToParent(
   subsystem: RuntimeSubsystem,
   parent: RuntimeSystem | RuntimeSubsystem,

@@ -66,6 +66,9 @@ function enhanceLinks(system: RuntimeSystem): void {
     // Set array position in the system.
     link.index = index;
 
+    // Set the title, if necessary.
+    link.title ??= '';
+
     // Set system A.
     link.systemA = getSubsystemById(system, link.a)!;
 
