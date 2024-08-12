@@ -29,8 +29,8 @@ function onPointerMove(state: State) {
 
     linkingLine.visible = true;
     linkingLine.setPosition(
-      a.position.x + a.size.width / 2,
-      a.position.y + a.size.height / 2,
+      a.position.x + Math.floor(a.size.width / 2),
+      a.position.y + Math.floor(a.size.height / 2),
       state.x,
       state.y,
     );

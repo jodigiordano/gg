@@ -19,7 +19,7 @@ export default class SystemLinker extends Container {
   setPosition(x1: number, y1: number, x2: number, y2: number): void {
     this.line.clear();
     this.line.lineStyle(BlockSize / 4, 0xffffff);
-    this.line.moveTo(x1 * BlockSize, y1 * BlockSize);
-    this.line.lineTo(x2 * BlockSize, y2 * BlockSize);
+    this.line.moveTo((x1 + 0.5) * BlockSize, (y1 + 0.5) * BlockSize);
+    this.line.lineTo((x2 + 0.5) * BlockSize, (y2 + 0.5) * BlockSize);
   }
 }
