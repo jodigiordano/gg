@@ -285,23 +285,20 @@ document
 // File operations
 //
 
-document
-  .getElementById("operation-file-new")
-  ?.addEventListener("click", async function () {
-    const json = JSON.stringify(
-      {
-        specificationVersion: "1.0.0",
-        title: "New system",
-      },
-      null,
-      2,
-    );
+function newFile(): void {
+  const json = JSON.stringify(
+    {
+      specificationVersion: "1.0.0",
+      title: "New system",
+    },
+    null,
+    2,
+  );
 
-    resetState();
-    setJsonEditorValue(json);
+  resetState();
+  setJsonEditorValue(json);
 
-    await loadSimulation(json);
-
+  loadSimulation(json).then(() => {
     updateFlowProgression();
     pushChange(json);
 
@@ -323,6 +320,11 @@ document
     redrawGrid();
     tick();
   });
+}
+
+document
+  .getElementById("operation-file-new")
+  ?.addEventListener("click", newFile);
 
 document
   .getElementById("operation-export-png")
@@ -775,32 +777,37 @@ loadSaveData();
 //
 
 function loadSaveData(): void {
+  const saveDataIsLoading = document.getElementById("save-data-is-loading")!;
+
+  saveDataIsLoading.classList.remove("hidden");
+
   const json = load();
 
-  if (json) {
-    const saveDataIsLoading = document.getElementById("save-data-is-loading")!;
+  if (!json) {
+    saveDataIsLoading.classList.add("hidden");
+    newFile();
 
-    saveDataIsLoading.classList.remove("hidden");
-
-    setJsonEditorValue(json);
-
-    loadSimulation(json)
-      .then(() => {
-        updateFlowProgression();
-        pushChange(json);
-        save(json);
-        fitSimulation();
-        redrawGrid();
-        state.flowPlayer?.draw();
-        tick();
-      })
-      .catch(() => {
-        /* NOOP */
-      })
-      .finally(() => {
-        saveDataIsLoading.classList.add("hidden");
-      });
+    return;
   }
+
+  setJsonEditorValue(json);
+
+  loadSimulation(json)
+    .then(() => {
+      updateFlowProgression();
+      pushChange(json);
+      save(json);
+      fitSimulation();
+      redrawGrid();
+      state.flowPlayer?.draw();
+      tick();
+    })
+    .catch(() => {
+      newFile();
+    })
+    .finally(() => {
+      saveDataIsLoading.classList.add("hidden");
+    });
 }
 
 function isModalOpen(): boolean {
