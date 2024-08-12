@@ -8,7 +8,7 @@ import { tick } from "../renderer/pixi.js";
 import { state } from "../state.js";
 
 const dialog = document.getElementById(
-  "input-system-set-title-dialog",
+  "input-set-title-dialog",
 ) as HTMLDialogElement;
 
 dialog.addEventListener("keydown", event => {
@@ -19,7 +19,7 @@ const title = dialog.querySelector("h1") as HTMLElement;
 const editor = dialog.querySelector("textarea") as HTMLTextAreaElement;
 
 document
-  .getElementById("operation-system-set-title-apply")
+  .getElementById("operation-set-title-apply")
   ?.addEventListener("click", function () {
     if (editor.value) {
       // Apply operation.
@@ -67,7 +67,7 @@ function onPointerMove(state: State) {
 }
 
 const operation: Operation = {
-  id: "operation-system-set-title",
+  id: "operation-set-title",
   setup: () => {
     viewport.addChild(selectVisual);
   },
