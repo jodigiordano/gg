@@ -123,7 +123,7 @@ function onPointerMove(state: State) {
 }
 
 const operation: Operation = {
-  id: "operation-system-move",
+  id: "operation-move",
   setup: () => {
     viewport.addChild(selectSystemVisual);
     viewport.addChild(moveSystemVisual);
