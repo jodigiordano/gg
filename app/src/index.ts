@@ -28,6 +28,7 @@ import {
 import { getUrlParams, setUrlParams, load, save } from "./persistence.js";
 
 const canvasContainer = document.getElementById("canvas") as HTMLDivElement;
+const saveDataIsLoading = document.getElementById("save-data-is-loading") as HTMLElement;
 
 //
 // Events
@@ -285,7 +286,7 @@ document
 // File operations
 //
 
-function newFile(): void {
+async function newFile(): Promise<void> {
   const json = JSON.stringify(
     {
       specificationVersion: "1.0.0",
@@ -298,33 +299,37 @@ function newFile(): void {
   resetState();
   setJsonEditorValue(json);
 
-  loadSimulation(json).then(() => {
-    updateFlowProgression();
-    pushChange(json);
+  await loadSimulation(json);
 
-    const urlParams = getUrlParams();
+  updateFlowProgression();
+  pushChange(json);
 
-    urlParams.autoplay = false;
-    urlParams.speed = 1;
+  const urlParams = getUrlParams();
 
-    setUrlParams(urlParams);
-    save(json);
+  urlParams.autoplay = false;
+  urlParams.speed = 1;
 
-    const canvasContainer = document.getElementById("canvas") as HTMLDivElement;
+  setUrlParams(urlParams);
+  save(json);
 
-    const width = canvasContainer.offsetWidth * 1.5;
-    const height = canvasContainer.offsetHeight * 1.5;
+  const canvasContainer = document.getElementById("canvas") as HTMLDivElement;
 
-    viewport.fit(width / 2, height / 2, width, height);
+  const width = canvasContainer.offsetWidth * 1.5;
+  const height = canvasContainer.offsetHeight * 1.5;
 
-    redrawGrid();
-    tick();
-  });
+  viewport.fit(width / 2, height / 2, width, height);
+
+  redrawGrid();
+  tick();
 }
 
 document
   .getElementById("operation-file-new")
-  ?.addEventListener("click", newFile);
+  ?.addEventListener("click", function() {
+    newFile().then(() => {
+      saveDataIsLoading.classList.add("hidden");
+    });
+  });
 
 document
   .getElementById("operation-export-png")
@@ -777,15 +782,14 @@ loadSaveData();
 //
 
 function loadSaveData(): void {
-  const saveDataIsLoading = document.getElementById("save-data-is-loading")!;
-
   saveDataIsLoading.classList.remove("hidden");
 
   const json = load();
 
   if (!json) {
-    saveDataIsLoading.classList.add("hidden");
-    newFile();
+    newFile().then(() => {
+      saveDataIsLoading.classList.add("hidden");
+    });
 
     return;
   }
@@ -803,7 +807,9 @@ function loadSaveData(): void {
       tick();
     })
     .catch(() => {
-      newFile();
+      newFile().then(() => {
+        saveDataIsLoading.classList.add("hidden");
+      });
     })
     .finally(() => {
       saveDataIsLoading.classList.add("hidden");
