@@ -92,6 +92,7 @@ export async function loadSimulation(json: string): Promise<void> {
 // Container to display simulation objects.
 const container = new Container();
 
+container.sortableChildren = false;
 container.zIndex = 0;
 
 // @ts-ignore
@@ -116,7 +117,13 @@ function getObjectsToRender(): (Sprite | Text)[] {
 
   for (let i = 0; i < boundaries.width; i++) {
     for (let j = 0; j < boundaries.height; j++) {
-      for (const obj of layout[i]![j]!) {
+      for (let k = layout[i]![j]!.length - 1; k >= 0; k--) {
+        const obj = layout[i]![j]!.at(k);
+
+        if (!obj) {
+          break;
+        }
+
         if (obj.type === SimulatorObjectType.System) {
           const sprite = new Sprite();
 
@@ -201,6 +208,7 @@ function getObjectsToRender(): (Sprite | Text)[] {
           }
 
           toDraw.push(sprite);
+          break;
         } else if (obj.type === SimulatorObjectType.Link) {
           const sprite = new Sprite();
 
@@ -233,24 +241,35 @@ function getObjectsToRender(): (Sprite | Text)[] {
           }
 
           toDraw.push(sprite);
-        } else if (obj.type === SimulatorObjectType.SystemTitle) {
-          const { blackbox } = obj as SimulatorSubsystem;
-
-          const title = new Text((obj as SimulatorSystemTitle).chars, {
-            fontFamily: "ibm",
-            fontSize: BlockSize,
-          });
-
-          title.x = (i - boundaries.translateX) * BlockSize;
-          title.y = (j - boundaries.translateY) * BlockSize;
-
-          title.style.fill = blackbox ? "ffffff" : "000000";
-          title.resolution = 2;
-          title.texture.baseTexture.scaleMode = SCALE_MODES.LINEAR;
-
-          toDraw.push(title);
+          break;
         }
       }
+    }
+  }
+
+  for (let i = 0; i < boundaries.width; i++) {
+    for (let j = 0; j < boundaries.height; j++) {
+      const obj = layout[i]![j]!.at(-1);
+
+      if (!obj || obj.type !== SimulatorObjectType.SystemTitle) {
+        continue;
+      }
+
+      const { blackbox } = obj as SimulatorSubsystem;
+
+      const title = new Text((obj as SimulatorSystemTitle).chars.replaceAll("\\n", "\n"), {
+        fontFamily: "ibm",
+        fontSize: BlockSize,
+      });
+
+      title.x = (i - boundaries.translateX) * BlockSize;
+      title.y = (j - boundaries.translateY) * BlockSize;
+
+      title.style.fill = blackbox ? "ffffff" : "000000";
+      title.resolution = 2;
+      title.texture.baseTexture.scaleMode = SCALE_MODES.LINEAR;
+
+      toDraw.push(title);
     }
   }
 

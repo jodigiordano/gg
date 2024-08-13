@@ -1,6 +1,6 @@
 import assert from "node:assert";
 import { System } from "../src/specification";
-import { load } from "../src/index";
+import { load, TitleMaxLineLength, TitleMaxLines } from "../src/index";
 
 describe("systems", () => {
   describe("id", () => {
@@ -78,6 +78,47 @@ describe("systems", () => {
           path: "/systems/0/systems/1",
         },
       ]);
+    });
+  });
+
+  describe("title", () => {
+    it("limits line length", () => {
+      const system: System = {
+        specificationVersion: "1.0.0",
+        title: "test",
+        systems: [
+          {
+            id: "foo",
+            position: { x: 0, y: 0 },
+            title: "a".repeat(TitleMaxLineLength + 1),
+          },
+        ],
+      };
+
+      const { system: runtime } = load(system);
+
+      assert.equal(runtime.systems.at(0)?.title.split("\\n").length, 2);
+    });
+
+    it("limits line count", () => {
+      const system: System = {
+        specificationVersion: "1.0.0",
+        title: "test",
+        systems: [
+          {
+            id: "foo",
+            position: { x: 0, y: 0 },
+            title: "a\\n".repeat(TitleMaxLines + 1),
+          },
+        ],
+      };
+
+      const { system: runtime } = load(system);
+
+      assert.equal(
+        runtime.systems.at(0)?.title.split("\\n").length,
+        TitleMaxLines,
+      );
     });
   });
 

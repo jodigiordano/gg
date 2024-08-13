@@ -5,12 +5,7 @@ import {
   RuntimeLink,
   RuntimePosition,
 } from "./runtime.js";
-import {
-  PaddingWhiteBox,
-  TitleCharsPerSquare,
-  SystemMargin,
-  PathfindingWeights,
-} from "./consts.js";
+import { PaddingWhiteBox, SystemMargin, PathfindingWeights } from "./consts.js";
 
 export enum SimulatorObjectType {
   System = 1,
@@ -676,31 +671,29 @@ export class SystemSimulator {
         );
       }
 
-      for (let x = gridSS.x1; x <= gridSS.x2; x++) {
-        for (let y = gridSS.y1; y <= gridSS.y2; y++) {
-          // The sub-system is inside a blackbox.
-          if (gridSS.hidden) {
-            continue;
-          }
-
-          if (x === gridSS.x1 && y == gridSS.y1) {
-            this.grid[x]![y]!.push(simulatorSystemTopLeftCorner);
-          } else if (x === gridSS.x2 && y == gridSS.y1) {
-            this.grid[x]![y]!.push(simulatorSystemTopRightCorner);
-          } else if (x === gridSS.x1 && y == gridSS.y2) {
-            this.grid[x]![y]!.push(simulatorSystemBottomLeftCorner);
-          } else if (x === gridSS.x2 && y == gridSS.y2) {
-            this.grid[x]![y]!.push(simulatorSystemBottomRightCorner);
-          } else if (x === gridSS.x1) {
-            this.grid[x]![y]!.push(simulatorSystemLeft);
-          } else if (x === gridSS.x2) {
-            this.grid[x]![y]!.push(simulatorSystemRight);
-          } else if (y === gridSS.y1) {
-            this.grid[x]![y]!.push(simulatorSystemTop);
-          } else if (y === gridSS.y2) {
-            this.grid[x]![y]!.push(simulatorSystemBottom);
-          } else {
-            this.grid[x]![y]!.push(simulatorSystem);
+      // i.e. the sub-system is not inside a blackbox.
+      if (!gridSS.hidden) {
+        for (let x = gridSS.x1; x <= gridSS.x2; x++) {
+          for (let y = gridSS.y1; y <= gridSS.y2; y++) {
+            if (x === gridSS.x1 && y == gridSS.y1) {
+              this.grid[x]![y]!.push(simulatorSystemTopLeftCorner);
+            } else if (x === gridSS.x2 && y == gridSS.y1) {
+              this.grid[x]![y]!.push(simulatorSystemTopRightCorner);
+            } else if (x === gridSS.x1 && y == gridSS.y2) {
+              this.grid[x]![y]!.push(simulatorSystemBottomLeftCorner);
+            } else if (x === gridSS.x2 && y == gridSS.y2) {
+              this.grid[x]![y]!.push(simulatorSystemBottomRightCorner);
+            } else if (x === gridSS.x1) {
+              this.grid[x]![y]!.push(simulatorSystemLeft);
+            } else if (x === gridSS.x2) {
+              this.grid[x]![y]!.push(simulatorSystemRight);
+            } else if (y === gridSS.y1) {
+              this.grid[x]![y]!.push(simulatorSystemTop);
+            } else if (y === gridSS.y2) {
+              this.grid[x]![y]!.push(simulatorSystemBottom);
+            } else {
+              this.grid[x]![y]!.push(simulatorSystem);
+            }
           }
         }
       }
@@ -723,35 +716,16 @@ export class SystemSimulator {
       }
 
       // Title.
-      const titleLines = ss.title.split("\\n");
+      // i.e. the sub-system is not inside a blackbox.
+      if (!gridSS.hidden) {
+        const simulatorSystemTitle: SimulatorSystemTitle = {
+          type: SimulatorObjectType.SystemTitle,
+          system: ss,
+          blackbox,
+          chars: ss.title,
+        };
 
-      for (
-        let x = gridSS.title.x, i = 0;
-        x < gridSS.title.x + gridSS.title.width;
-        x++, i++
-      ) {
-        for (
-          let y = gridSS.title.y, j = 0;
-          y < gridSS.title.y + gridSS.title.height;
-          y++, j++
-        ) {
-          // The sub-system is inside a blackbox.
-          if (gridSS.hidden) {
-            continue;
-          }
-
-          const simulatorSystemTitle: SimulatorSystemTitle = {
-            type: SimulatorObjectType.SystemTitle,
-            system: ss,
-            blackbox,
-            chars: titleLines[j]!.slice(
-              i * TitleCharsPerSquare,
-              i * TitleCharsPerSquare + TitleCharsPerSquare,
-            ),
-          };
-
-          this.grid[x]![y]!.push(simulatorSystemTitle);
-        }
+        this.grid[gridSS.title.x]![gridSS.title.y]!.push(simulatorSystemTitle);
       }
 
       // Recursive traversal.

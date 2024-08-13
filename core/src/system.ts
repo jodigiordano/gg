@@ -4,6 +4,8 @@ import {
   TitleCharsPerSquare,
   PaddingWhiteBox,
   SystemMinSize,
+  TitleMaxLineLength,
+  TitleMaxLines,
 } from "./consts.js";
 import { Subsystem } from "./specification.js";
 
@@ -27,7 +29,19 @@ export function initSystem(
   system.parent = parent;
 
   // Set the title, if necessary.
-  system.title ??= system.id;
+  system.title = (system.title ?? system.id)
+    .split("\\n")
+    .flatMap(line => {
+      const chunks: string[] = [];
+
+      for (let i = 0; i < line.length; i += TitleMaxLineLength - 1) {
+        chunks.push(line.substring(i, i + TitleMaxLineLength - 1));
+      }
+
+      return chunks;
+    })
+    .slice(0, TitleMaxLines)
+    .join("\\n");
 
   // Set hide systems default value.
   system.hideSystems ??= false;

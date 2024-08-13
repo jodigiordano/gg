@@ -3,6 +3,10 @@ import { RuntimeSize } from "./runtime";
 // Each system has a margin to make room for ports & routing.
 export const SystemMargin = 1;
 
+export const TitleMaxLineLength = 255;
+
+export const TitleMaxLines = 255;
+
 export const TitlePadding = 1;
 
 export const TitleCharsPerSquare = 2;
