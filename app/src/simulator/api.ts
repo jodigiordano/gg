@@ -257,10 +257,13 @@ function getObjectsToRender(): (Sprite | Text)[] {
 
       const { blackbox } = obj as SimulatorSubsystem;
 
-      const title = new Text((obj as SimulatorSystemTitle).chars.replaceAll("\\n", "\n"), {
-        fontFamily: "ibm",
-        fontSize: BlockSize,
-      });
+      const title = new Text(
+        (obj as SimulatorSystemTitle).chars.replaceAll("\\n", "\n"),
+        {
+          fontFamily: "ibm",
+          fontSize: BlockSize,
+        },
+      );
 
       title.x = (i - boundaries.translateX) * BlockSize;
       title.y = (j - boundaries.translateY) * BlockSize;

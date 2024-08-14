@@ -28,7 +28,9 @@ import {
 import { getUrlParams, setUrlParams, load, save } from "./persistence.js";
 
 const canvasContainer = document.getElementById("canvas") as HTMLDivElement;
-const saveDataIsLoading = document.getElementById("save-data-is-loading") as HTMLElement;
+const saveDataIsLoading = document.getElementById(
+  "save-data-is-loading",
+) as HTMLElement;
 
 //
 // Events
@@ -325,7 +327,7 @@ async function newFile(): Promise<void> {
 
 document
   .getElementById("operation-file-new")
-  ?.addEventListener("click", function() {
+  ?.addEventListener("click", function () {
     newFile().then(() => {
       saveDataIsLoading.classList.add("hidden");
     });
