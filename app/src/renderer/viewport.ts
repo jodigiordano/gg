@@ -233,7 +233,7 @@ class Viewport extends Container {
   }
 
   private clampScale(scale: number): number {
-    return Math.max(0.25, Math.min(1.5, scale));
+    return Math.max(0.15, Math.min(1.5, scale));
   }
 }
 
