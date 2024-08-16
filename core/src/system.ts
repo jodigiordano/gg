@@ -6,7 +6,7 @@ import {
   SystemMinSize,
   TitleMaxLineLength,
   TitleMaxLines,
-} from "./consts.js";
+} from "./helpers.js";
 import { Subsystem } from "./specification.js";
 
 export function initSystem(

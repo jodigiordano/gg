@@ -5,7 +5,11 @@ import {
   RuntimeLink,
   RuntimePosition,
 } from "./runtime.js";
-import { PaddingWhiteBox, SystemMargin, PathfindingWeights } from "./consts.js";
+import {
+  PaddingWhiteBox,
+  SystemMargin,
+  PathfindingWeights,
+} from "./helpers.js";
 
 export enum SimulatorObjectType {
   System = 1,

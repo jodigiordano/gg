@@ -4,7 +4,7 @@ import {
   RuntimeLink,
   RuntimeFlowStep,
 } from "./runtime.js";
-import { SystemMargin } from "./consts.js";
+import { SystemMargin } from "./helpers.js";
 import { Link, FlowStep, Subsystem } from "./specification.js";
 import { computeSystemSize, getRootSystem, initSystem } from "./system.js";
 
