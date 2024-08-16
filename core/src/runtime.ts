@@ -14,6 +14,7 @@ export interface RuntimeLink extends Link {
   specification: Link;
   index: number;
   title: string;
+  titleSize: RuntimeSize;
   systemA: RuntimeSubsystem;
   systemB: RuntimeSubsystem;
 }
