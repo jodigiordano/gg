@@ -118,14 +118,15 @@ export function findPath(
         // Add a new node to visit.
         if (neighbor.state !== NodeState.WillVisit) {
           neighbor.state = NodeState.WillVisit;
-          nodesToVisit.push(neighbor);
-          nodesToVisit.sort((a, b) => b.priority - a.priority);
+
+          insertSorted(nodesToVisit, neighbor);
+
           // Update an existing node previously visited.
         } else {
           nodesToVisit.splice(nodesToVisit.indexOf(neighbor), 1);
           neighbor.state = NodeState.WillVisit;
-          nodesToVisit.push(neighbor);
-          nodesToVisit.sort((a, b) => b.priority - a.priority);
+
+          insertSorted(nodesToVisit, neighbor);
         }
       }
     }
@@ -133,6 +134,23 @@ export function findPath(
 
   // No path found.
   return [];
+}
+
+function insertSorted(nodes: Node[], node: Node): void {
+  let indexLow = 0;
+  let indexHigh = nodes.length;
+
+  while (indexLow < indexHigh) {
+    const indexMiddle = Math.floor((indexLow + indexHigh) / 2);
+
+    if (nodes[indexMiddle]!.priority > node.priority) {
+      indexLow = indexMiddle + 1;
+    } else {
+      indexHigh = indexMiddle;
+    }
+  }
+
+  nodes.splice(indexLow, 0, node);
 }
 
 export class Grid {
