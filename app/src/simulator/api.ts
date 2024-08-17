@@ -116,6 +116,16 @@ function getObjectsToRender(): (Sprite | Text)[] {
   const layout = state.simulator.getLayout();
   const boundaries = state.simulator.getBoundaries();
 
+  const systemTopLeft = spritesheet.textures.boxTopLeft;
+  const systemTopCenter = spritesheet.textures.boxTopCenter;
+  const systemTopRight = spritesheet.textures.boxTopRight;
+  const systemCenterLeft = spritesheet.textures.boxCenterLeft;
+  const systemCenterCenter = spritesheet.textures.boxCenterCenter;
+  const systemCenterRight = spritesheet.textures.boxCenterRight;
+  const systemBottomLeft = spritesheet.textures.boxBottomLeft;
+  const systemBottomCenter = spritesheet.textures.boxBottomCenter;
+  const systemBottomRight = spritesheet.textures.boxBottomRight;
+
   for (let i = 0; i < boundaries.width; i++) {
     for (let j = 0; j < boundaries.height; j++) {
       for (let k = 0; k < layout[i]![j]!.length; k++) {
@@ -132,56 +142,14 @@ function getObjectsToRender(): (Sprite | Text)[] {
 
           const { system, blackbox, direction } = obj as SimulatorSubsystem;
 
-          let systemTopLeft;
-          let systemTopCenter;
-          let systemTopRight;
-          let systemCenterLeft;
-          let systemCenterCenter;
-          let systemCenterRight;
-          let systemBottomLeft;
-          let systemBottomCenter;
-          let systemBottomRight;
-
           if (blackbox) {
-            systemTopLeft = spritesheet.textures.systemATopLeft;
-            systemTopCenter = spritesheet.textures.systemATopCenter;
-            systemTopRight = spritesheet.textures.systemATopRight;
-            systemCenterLeft = spritesheet.textures.systemACenterLeft;
-            systemCenterCenter = spritesheet.textures.systemACenterCenter;
-            systemCenterRight = spritesheet.textures.systemACenterRight;
-            systemBottomLeft = spritesheet.textures.systemABottomLeft;
-            systemBottomCenter = spritesheet.textures.systemABottomCenter;
-            systemBottomRight = spritesheet.textures.systemABottomRight;
+            sprite.tint = "3d348b";
           } else if (system.depth % 2 === 0) {
-            systemTopLeft = spritesheet.textures.systemBTopLeft;
-            systemTopCenter = spritesheet.textures.systemBTopCenter;
-            systemTopRight = spritesheet.textures.systemBTopRight;
-            systemCenterLeft = spritesheet.textures.systemBCenterLeft;
-            systemCenterCenter = spritesheet.textures.systemBCenterCenter;
-            systemCenterRight = spritesheet.textures.systemBCenterRight;
-            systemBottomLeft = spritesheet.textures.systemBBottomLeft;
-            systemBottomCenter = spritesheet.textures.systemBBottomCenter;
-            systemBottomRight = spritesheet.textures.systemBBottomRight;
+            sprite.tint = "ced4da";
           } else if (system.depth % 3 === 0) {
-            systemTopLeft = spritesheet.textures.systemCTopLeft;
-            systemTopCenter = spritesheet.textures.systemCTopCenter;
-            systemTopRight = spritesheet.textures.systemCTopRight;
-            systemCenterLeft = spritesheet.textures.systemCCenterLeft;
-            systemCenterCenter = spritesheet.textures.systemCCenterCenter;
-            systemCenterRight = spritesheet.textures.systemCCenterRight;
-            systemBottomLeft = spritesheet.textures.systemCBottomLeft;
-            systemBottomCenter = spritesheet.textures.systemCBottomCenter;
-            systemBottomRight = spritesheet.textures.systemCBottomRight;
+            sprite.tint = "dee2e6";
           } else {
-            systemTopLeft = spritesheet.textures.systemDTopLeft;
-            systemTopCenter = spritesheet.textures.systemDTopCenter;
-            systemTopRight = spritesheet.textures.systemDTopRight;
-            systemCenterLeft = spritesheet.textures.systemDCenterLeft;
-            systemCenterCenter = spritesheet.textures.systemDCenterCenter;
-            systemCenterRight = spritesheet.textures.systemDCenterRight;
-            systemBottomLeft = spritesheet.textures.systemDBottomLeft;
-            systemBottomCenter = spritesheet.textures.systemDBottomCenter;
-            systemBottomRight = spritesheet.textures.systemDBottomRight;
+            sprite.tint = "e9ecef";
           }
 
           if (direction === SimulatorSystemDirectionType.TopLeft) {
@@ -249,6 +217,7 @@ function getObjectsToRender(): (Sprite | Text)[] {
           sprite.y = (j - boundaries.translateY) * BlockSize;
           sprite.width = BlockSize;
           sprite.height = BlockSize;
+          sprite.tint = "ced4da";
 
           if (direction === SimulatorSystemDirectionType.TopLeft) {
             sprite.texture = spritesheet.textures.linkLabelTopLeft;
