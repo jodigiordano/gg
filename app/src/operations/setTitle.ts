@@ -1,4 +1,9 @@
-import { RuntimeLink, RuntimeSubsystem, setSubsystemTitle, setLinkTitle } from "@gg/core";
+import {
+  RuntimeLink,
+  RuntimeSubsystem,
+  setSubsystemTitle,
+  setLinkTitle,
+} from "@gg/core";
 import Operation from "../operation.js";
 import SystemSelector from "../renderer/systemSelector.js";
 import { modifySpecification } from "../simulator/api.js";
@@ -21,34 +26,33 @@ const editor = dialog.querySelector("textarea") as HTMLTextAreaElement;
 document
   .getElementById("operation-set-title-apply")
   ?.addEventListener("click", function () {
-    if (editor.value) {
-      // Apply operation.
-      modifySpecification(() => {
-        if (subsystem) {
-          setSubsystemTitle(subsystem, editor.value.replace(/\n/g, "\\n"));
-        } else if (link) {
-          setLinkTitle(link, editor.value.replace(/\n/g, "\\n"));
-        }
-      }).then(() => {
-        onPointerMove(state);
-        tick();
-      });
-
-      // Reset operation.
-      dialog.close();
-
-      subsystem = null;
-      link = null;
-
+    // Apply operation.
+    modifySpecification(() => {
+      if (subsystem) {
+        setSubsystemTitle(subsystem, editor.value.replace(/\n/g, "\\n"));
+      } else if (link) {
+        setLinkTitle(link, editor.value.replace(/\n/g, "\\n"));
+      }
+    }).then(() => {
       onPointerMove(state);
-
       tick();
-    }
+    });
+
+    // Reset operation.
+    dialog.close();
+
+    subsystem = null;
+    link = null;
+
+    onPointerMove(state);
+
+    tick();
   });
 
 const selectSystemVisual = new SystemSelector();
 const selectLinkVisual1 = new SystemSelector();
 const selectLinkVisual2 = new SystemSelector();
+const selectLinkVisual3 = new SystemSelector();
 
 let subsystem: RuntimeSubsystem | null = null;
 let link: RuntimeLink | null = null;
@@ -57,6 +61,7 @@ function onPointerMove(state: State) {
   selectSystemVisual.visible = false;
   selectLinkVisual1.visible = false;
   selectLinkVisual2.visible = false;
+  selectLinkVisual3.visible = false;
   viewport.pause = false;
 
   if (dialog.open) {
@@ -67,7 +72,10 @@ function onPointerMove(state: State) {
     return;
   }
 
-  const link = state.simulator.getLinkAt(state.x, state.y);
+  const link = (
+    state.simulator.getLinkAt(state.x, state.y) ??
+    state.simulator.getLinkByTitleAt(state.x, state.y)
+  );
 
   if (link) {
     const path = state.simulator.getPath(link.a, link.b)!;
@@ -93,6 +101,16 @@ function onPointerMove(state: State) {
       endY - boundaries.translateY,
     );
 
+    if (link.title.length > 0) {
+      selectLinkVisual3.visible = true;
+      selectLinkVisual3.setPositionRect(
+        link.titlePosition.x,
+        link.titlePosition.y,
+        link.titlePosition.x + link.titleSize.width,
+        link.titlePosition.y + link.titleSize.height,
+      );
+    }
+
     viewport.pause = true;
 
     return;
@@ -113,12 +131,14 @@ const operation: Operation = {
     viewport.addChild(selectSystemVisual);
     viewport.addChild(selectLinkVisual1);
     viewport.addChild(selectLinkVisual2);
+    viewport.addChild(selectLinkVisual3);
   },
   onBegin: onPointerMove,
   onEnd() {
     selectSystemVisual.visible = false;
     selectLinkVisual1.visible = false;
     selectLinkVisual2.visible = false;
+    selectLinkVisual3.visible = false;
 
     viewport.pause = false;
   },
@@ -126,6 +146,7 @@ const operation: Operation = {
     selectSystemVisual.visible = false;
     selectLinkVisual1.visible = false;
     selectLinkVisual2.visible = false;
+    selectLinkVisual3.visible = false;
   },
   onUnmute: onPointerMove,
   onPointerMove,
@@ -135,7 +156,10 @@ const operation: Operation = {
       return;
     }
 
-    const linkToEdit = state.simulator.getLinkAt(state.x, state.y);
+    const linkToEdit = (
+      state.simulator.getLinkAt(state.x, state.y) ??
+      state.simulator.getLinkByTitleAt(state.x, state.y)
+    );
 
     if (linkToEdit) {
       link = linkToEdit;

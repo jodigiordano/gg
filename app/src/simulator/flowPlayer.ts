@@ -29,6 +29,7 @@ export default class FlowPlayer {
     this.sprites = flow.steps.map(() => {
       const sprite = new Sprite(spritesheet.textures.data);
 
+      sprite.zIndex = 1000;
       sprite.width = BlockSize;
       sprite.height = BlockSize;
       sprite.visible = false;

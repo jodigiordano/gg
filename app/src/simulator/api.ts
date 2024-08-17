@@ -5,6 +5,7 @@ import {
   SimulatorSubsystem,
   SimulatorLinkDirectionType,
   SimulatorLink,
+  SimulatorLinkTitleContainer,
   SimulatorSystemDirectionType,
 } from "@gg/core";
 import { Sprite, Text, SCALE_MODES, Container } from "pixi.js";
@@ -92,7 +93,7 @@ export async function loadSimulation(json: string): Promise<void> {
 // Container to display simulation objects.
 const container = new Container();
 
-container.sortableChildren = false;
+container.sortableChildren = true;
 container.zIndex = 0;
 
 // @ts-ignore
@@ -117,16 +118,13 @@ function getObjectsToRender(): (Sprite | Text)[] {
 
   for (let i = 0; i < boundaries.width; i++) {
     for (let j = 0; j < boundaries.height; j++) {
-      for (let k = layout[i]![j]!.length - 1; k >= 0; k--) {
-        const obj = layout[i]![j]!.at(k);
-
-        if (!obj) {
-          break;
-        }
+      for (let k = 0; k < layout[i]![j]!.length; k++) {
+        const obj = layout[i]![j]![k]!;
 
         if (obj.type === SimulatorObjectType.System) {
           const sprite = new Sprite();
 
+          sprite.zIndex = obj.zIndex;
           sprite.x = (i - boundaries.translateX) * BlockSize;
           sprite.y = (j - boundaries.translateY) * BlockSize;
           sprite.width = BlockSize;
@@ -208,10 +206,10 @@ function getObjectsToRender(): (Sprite | Text)[] {
           }
 
           toDraw.push(sprite);
-          break;
         } else if (obj.type === SimulatorObjectType.Link) {
           const sprite = new Sprite();
 
+          sprite.zIndex = obj.zIndex;
           sprite.x = (i - boundaries.translateX) * BlockSize + BlockSize / 2;
           sprite.y = (j - boundaries.translateY) * BlockSize + BlockSize / 2;
           sprite.width = BlockSize;
@@ -241,38 +239,78 @@ function getObjectsToRender(): (Sprite | Text)[] {
           }
 
           toDraw.push(sprite);
-          break;
+        } else if (obj.type === SimulatorObjectType.LinkTitleContainer) {
+          const { direction } = obj as SimulatorLinkTitleContainer;
+
+          const sprite = new Sprite();
+
+          sprite.zIndex = obj.zIndex;
+          sprite.x = (i - boundaries.translateX) * BlockSize;
+          sprite.y = (j - boundaries.translateY) * BlockSize;
+          sprite.width = BlockSize;
+          sprite.height = BlockSize;
+
+          if (direction === SimulatorSystemDirectionType.TopLeft) {
+            sprite.texture = spritesheet.textures.linkLabelTopLeft;
+          } else if (direction === SimulatorSystemDirectionType.TopCenter) {
+            sprite.texture = spritesheet.textures.linkLabelTopCenter;
+          } else if (direction === SimulatorSystemDirectionType.TopRight) {
+            sprite.texture = spritesheet.textures.linkLabelTopRight;
+          } else if (direction === SimulatorSystemDirectionType.CenterLeft) {
+            sprite.texture = spritesheet.textures.linkLabelCenterLeft;
+          } else if (direction === SimulatorSystemDirectionType.CenterRight) {
+            sprite.texture = spritesheet.textures.linkLabelCenterRight;
+          } else if (direction === SimulatorSystemDirectionType.BottomLeft) {
+            sprite.texture = spritesheet.textures.linkLabelBottomLeft;
+          } else if (direction === SimulatorSystemDirectionType.BottomCenter) {
+            sprite.texture = spritesheet.textures.linkLabelBottomCenter;
+          } else if (direction === SimulatorSystemDirectionType.BottomRight) {
+            sprite.texture = spritesheet.textures.linkLabelBottomRight;
+          } else {
+            sprite.texture = spritesheet.textures.linkLabelCenterCenter;
+          }
+
+          toDraw.push(sprite);
+        } else if (obj.type === SimulatorObjectType.SystemTitle) {
+          const { blackbox } = obj as SimulatorSubsystem;
+
+          const title = new Text(
+            (obj as SimulatorSystemTitle).chars.replaceAll("\\n", "\n"),
+            {
+              fontFamily: "ibm",
+              fontSize: BlockSize,
+            },
+          );
+
+          title.zIndex = obj.zIndex;
+          title.x = (i - boundaries.translateX) * BlockSize;
+          title.y = (j - boundaries.translateY) * BlockSize;
+
+          title.style.fill = blackbox ? "ffffff" : "000000";
+          title.resolution = 2;
+          title.texture.baseTexture.scaleMode = SCALE_MODES.LINEAR;
+
+          toDraw.push(title);
+        } else if (obj.type === SimulatorObjectType.LinkTitle) {
+          const title = new Text(
+            (obj as SimulatorSystemTitle).chars.replaceAll("\\n", "\n"),
+            {
+              fontFamily: "ibm",
+              fontSize: BlockSize,
+            },
+          );
+
+          title.zIndex = obj.zIndex;
+          title.x = (i - boundaries.translateX) * BlockSize;
+          title.y = (j - boundaries.translateY) * BlockSize;
+
+          title.style.fill = "000000";
+          title.resolution = 2;
+          title.texture.baseTexture.scaleMode = SCALE_MODES.LINEAR;
+
+          toDraw.push(title);
         }
       }
-    }
-  }
-
-  for (let i = 0; i < boundaries.width; i++) {
-    for (let j = 0; j < boundaries.height; j++) {
-      const obj = layout[i]![j]!.at(-1);
-
-      if (!obj || obj.type !== SimulatorObjectType.SystemTitle) {
-        continue;
-      }
-
-      const { blackbox } = obj as SimulatorSubsystem;
-
-      const title = new Text(
-        (obj as SimulatorSystemTitle).chars.replaceAll("\\n", "\n"),
-        {
-          fontFamily: "ibm",
-          fontSize: BlockSize,
-        },
-      );
-
-      title.x = (i - boundaries.translateX) * BlockSize;
-      title.y = (j - boundaries.translateY) * BlockSize;
-
-      title.style.fill = blackbox ? "ffffff" : "000000";
-      title.resolution = 2;
-      title.texture.baseTexture.scaleMode = SCALE_MODES.LINEAR;
-
-      toDraw.push(title);
     }
   }
 

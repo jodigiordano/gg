@@ -73,6 +73,13 @@ function enhanceLinks(system: RuntimeSystem): void {
     // Set the title size.
     link.titleSize = getTitleLength(link.title);
 
+    // Set the title position.
+    // This property is set later on by the simulator.
+    link.titlePosition = {
+      x: 0,
+      y: 0,
+    };
+
     // Set system A.
     link.systemA = getSubsystemById(system, link.a)!;
 

@@ -1,11 +1,10 @@
 import { RuntimeSystem, RuntimeSubsystem, RuntimeLink } from "./runtime.js";
 import {
   TitlePadding,
-  TitleCharsPerSquare,
   PaddingWhiteBox,
   SystemMinSize,
-  TitleMaxLineLength,
-  TitleMaxLines,
+  sanitizeTitle,
+  getTitleLength,
 } from "./helpers.js";
 import { Subsystem } from "./specification.js";
 
@@ -28,37 +27,20 @@ export function initSystem(
   // Set the parent system.
   system.parent = parent;
 
-  // Set the title, if necessary.
-  system.title = (system.title ?? system.id)
-    .split("\\n")
-    .flatMap(line => {
-      const chunks: string[] = [];
-
-      for (let i = 0; i < line.length; i += TitleMaxLineLength - 1) {
-        chunks.push(line.substring(i, i + TitleMaxLineLength - 1));
-      }
-
-      return chunks;
-    })
-    .slice(0, TitleMaxLines)
-    .join("\\n");
-
-  // Set hide systems default value.
-  system.hideSystems ??= false;
+  // Set the title.
+  system.title = sanitizeTitle(system.title ?? system.id);
 
   // Set the title size.
-  const titleLengths = system.title.split("\\n").map(line => line.length);
-
-  system.titleSize = {
-    width: Math.ceil(Math.max(...titleLengths) / TitleCharsPerSquare) | 0,
-    height: titleLengths.length,
-  };
+  system.titleSize = getTitleLength(system.title);
 
   // Set the title position.
   system.titlePosition = {
     x: TitlePadding,
     y: TitlePadding,
   };
+
+  // Set hide systems default value.
+  system.hideSystems ??= false;
 
   // Set the depth.
   system.depth = depth;
