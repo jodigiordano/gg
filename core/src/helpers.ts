@@ -20,8 +20,10 @@ export enum PathfindingWeights {
   Impenetrable = Infinity,
 }
 
-const TitleMaxLineLength = 255;
-const TitleMaxLines = 255;
+export const TitleMaxLineLength = 255;
+
+export const TitleMaxLines = 255;
+
 const TitleCharsPerSquare = 2;
 
 // Sanitize a title so it doesn't have more than TitleMaxLines lines of
