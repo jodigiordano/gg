@@ -5,12 +5,18 @@ import {
   RuntimeLink,
   RuntimePosition,
 } from "./runtime.js";
-import { PaddingWhiteBox, SystemMargin, PathfindingWeights } from "./consts.js";
+import {
+  PaddingWhiteBox,
+  SystemMargin,
+  PathfindingWeights,
+} from "./helpers.js";
 
 export enum SimulatorObjectType {
   System = 1,
-  Link = 2,
-  SystemTitle = 3,
+  SystemTitle = 2,
+  Link = 3,
+  LinkTitle = 4,
+  LinkTitleContainer = 5,
 }
 
 export enum SimulatorLinkDirectionType {
@@ -36,6 +42,7 @@ export enum SimulatorSystemDirectionType {
 
 export interface SimulatorObject {
   type: SimulatorObjectType;
+  zIndex: number;
 }
 
 export interface SimulatorSubsystem extends SimulatorObject {
@@ -45,17 +52,29 @@ export interface SimulatorSubsystem extends SimulatorObject {
   blackbox: boolean;
 }
 
+export interface SimulatorSystemTitle extends SimulatorObject {
+  type: SimulatorObjectType.SystemTitle;
+  system: RuntimeSubsystem;
+  blackbox: boolean;
+  chars: string;
+}
+
 export interface SimulatorLink extends SimulatorObject {
   type: SimulatorObjectType.Link;
   direction: SimulatorLinkDirectionType;
   link: RuntimeLink;
 }
 
-export interface SimulatorSystemTitle extends SimulatorObject {
-  type: SimulatorObjectType.SystemTitle;
-  system: RuntimeSubsystem;
-  blackbox: boolean;
+export interface SimulatorLinkTitle extends SimulatorObject {
+  type: SimulatorObjectType.LinkTitle;
+  link: RuntimeLink;
   chars: string;
+}
+
+export interface SimulatorLinkTitleContainer extends SimulatorObject {
+  type: SimulatorObjectType.LinkTitleContainer;
+  direction: SimulatorSystemDirectionType;
+  link: RuntimeLink;
 }
 
 export interface SimulatorBoundaries {
@@ -192,7 +211,8 @@ export class SystemSimulator {
         const hasVisibleObjects = this.grid[i]![j]!.some(
           obj =>
             obj.type === SimulatorObjectType.System ||
-            obj.type === SimulatorObjectType.Link,
+            obj.type === SimulatorObjectType.Link ||
+            obj.type === SimulatorObjectType.LinkTitleContainer,
         );
 
         if (!hasVisibleObjects) {
@@ -260,6 +280,23 @@ export class SystemSimulator {
         obj.type === SimulatorObjectType.SystemTitle
       ) {
         return (obj as SimulatorSubsystem).system;
+      }
+    }
+
+    return null;
+  }
+
+  getLinkByTitleAt(worldX: number, worldY: number): RuntimeLink | null {
+    const objects = this.getObjectsAt(worldX, worldY);
+
+    for (let i = objects.length - 1; i >= 0; i--) {
+      const obj = objects[i]!;
+
+      if (
+        obj.type === SimulatorObjectType.LinkTitleContainer ||
+        obj.type === SimulatorObjectType.LinkTitle
+      ) {
+        return (obj as SimulatorLink).link;
       }
     }
 
@@ -467,11 +504,22 @@ export class SystemSimulator {
       top = bottom;
     }
 
+    // Path titles are placed centered, in the middle of a path.
+    // When computing the boundaries, we don't know how the links will
+    // be routed so we must be prepared for the worst case scenario.
+    const maxTitleWidth = Math.max(
+      ...this.system.links.map(link => link.titleSize.width),
+    );
+
+    const maxTitleHeight = Math.max(
+      ...this.system.links.map(link => link.titleSize.height),
+    );
+
     // Apply system margins.
-    left -= SystemMargin * 5;
-    right += SystemMargin * 5;
-    top -= SystemMargin * 5;
-    bottom += SystemMargin * 5;
+    left -= SystemMargin * Math.max(5, Math.ceil(maxTitleWidth / 2));
+    right += SystemMargin * Math.max(5, Math.ceil(maxTitleWidth / 2));
+    top -= SystemMargin * Math.max(5, Math.ceil(maxTitleHeight / 2));
+    bottom += SystemMargin * Math.max(5, Math.ceil(maxTitleHeight / 2));
 
     return {
       left,
@@ -596,65 +644,71 @@ export class SystemSimulator {
         blackbox,
         system: ss,
         direction: SimulatorSystemDirectionType.CenterCenter,
+        zIndex: ss.depth,
       });
 
-      const simulatorSystemTopLeftCorner: SimulatorSubsystem = Object.freeze({
+      const topLeft: SimulatorSubsystem = Object.freeze({
         type: SimulatorObjectType.System,
         blackbox,
         system: ss,
         direction: SimulatorSystemDirectionType.TopLeft,
+        zIndex: ss.depth,
       });
 
-      const simulatorSystemTopRightCorner: SimulatorSubsystem = Object.freeze({
+      const topRight: SimulatorSubsystem = Object.freeze({
         type: SimulatorObjectType.System,
         blackbox,
         system: ss,
         direction: SimulatorSystemDirectionType.TopRight,
+        zIndex: ss.depth,
       });
 
-      const simulatorSystemBottomLeftCorner: SimulatorSubsystem = Object.freeze(
-        {
-          type: SimulatorObjectType.System,
-          blackbox,
-          system: ss,
-          direction: SimulatorSystemDirectionType.BottomLeft,
-        },
-      );
+      const bottomLeft: SimulatorSubsystem = Object.freeze({
+        type: SimulatorObjectType.System,
+        blackbox,
+        system: ss,
+        direction: SimulatorSystemDirectionType.BottomLeft,
+        zIndex: ss.depth,
+      });
 
-      const simulatorSystemBottomRightCorner: SimulatorSubsystem =
-        Object.freeze({
-          type: SimulatorObjectType.System,
-          blackbox,
-          system: ss,
-          direction: SimulatorSystemDirectionType.BottomRight,
-        });
+      const bottomRight: SimulatorSubsystem = Object.freeze({
+        type: SimulatorObjectType.System,
+        blackbox,
+        system: ss,
+        direction: SimulatorSystemDirectionType.BottomRight,
+        zIndex: ss.depth,
+      });
 
-      const simulatorSystemLeft: SimulatorSubsystem = Object.freeze({
+      const left: SimulatorSubsystem = Object.freeze({
         type: SimulatorObjectType.System,
         blackbox,
         system: ss,
         direction: SimulatorSystemDirectionType.CenterLeft,
+        zIndex: ss.depth,
       });
 
-      const simulatorSystemRight: SimulatorSubsystem = Object.freeze({
+      const right: SimulatorSubsystem = Object.freeze({
         type: SimulatorObjectType.System,
         blackbox,
         system: ss,
         direction: SimulatorSystemDirectionType.CenterRight,
+        zIndex: ss.depth,
       });
 
-      const simulatorSystemTop: SimulatorSubsystem = Object.freeze({
+      const top: SimulatorSubsystem = Object.freeze({
         type: SimulatorObjectType.System,
         blackbox,
         system: ss,
         direction: SimulatorSystemDirectionType.TopCenter,
+        zIndex: ss.depth,
       });
 
-      const simulatorSystemBottom: SimulatorSubsystem = Object.freeze({
+      const bottom: SimulatorSubsystem = Object.freeze({
         type: SimulatorObjectType.System,
         blackbox,
         system: ss,
         direction: SimulatorSystemDirectionType.BottomCenter,
+        zIndex: ss.depth,
       });
 
       if (ss.systems.length) {
@@ -676,21 +730,21 @@ export class SystemSimulator {
         for (let x = gridSS.x1; x <= gridSS.x2; x++) {
           for (let y = gridSS.y1; y <= gridSS.y2; y++) {
             if (x === gridSS.x1 && y == gridSS.y1) {
-              this.grid[x]![y]!.push(simulatorSystemTopLeftCorner);
+              this.grid[x]![y]!.push(topLeft);
             } else if (x === gridSS.x2 && y == gridSS.y1) {
-              this.grid[x]![y]!.push(simulatorSystemTopRightCorner);
+              this.grid[x]![y]!.push(topRight);
             } else if (x === gridSS.x1 && y == gridSS.y2) {
-              this.grid[x]![y]!.push(simulatorSystemBottomLeftCorner);
+              this.grid[x]![y]!.push(bottomLeft);
             } else if (x === gridSS.x2 && y == gridSS.y2) {
-              this.grid[x]![y]!.push(simulatorSystemBottomRightCorner);
+              this.grid[x]![y]!.push(bottomRight);
             } else if (x === gridSS.x1) {
-              this.grid[x]![y]!.push(simulatorSystemLeft);
+              this.grid[x]![y]!.push(left);
             } else if (x === gridSS.x2) {
-              this.grid[x]![y]!.push(simulatorSystemRight);
+              this.grid[x]![y]!.push(right);
             } else if (y === gridSS.y1) {
-              this.grid[x]![y]!.push(simulatorSystemTop);
+              this.grid[x]![y]!.push(top);
             } else if (y === gridSS.y2) {
-              this.grid[x]![y]!.push(simulatorSystemBottom);
+              this.grid[x]![y]!.push(bottom);
             } else {
               this.grid[x]![y]!.push(simulatorSystem);
             }
@@ -723,6 +777,7 @@ export class SystemSimulator {
           system: ss,
           blackbox,
           chars: ss.title,
+          zIndex: ss.depth + 1,
         };
 
         this.grid[gridSS.title.x]![gridSS.title.y]!.push(simulatorSystemTitle);
@@ -734,7 +789,15 @@ export class SystemSimulator {
   }
 
   private drawLinks(system: RuntimeSystem, finderGrid: PathFinderGrid): void {
-    for (const link of system.links) {
+    // Links with titles are drawn first, as the titles are placed on the grid
+    // and other links must avoid going through them.
+    const sortedLinks = system.links
+      .slice(0)
+      .sort((a, b) => b.title.length - a.title.length);
+
+    for (let linkIndex = 0; linkIndex < sortedLinks.length; linkIndex++) {
+      const link = sortedLinks[linkIndex]!;
+
       const subsystemA = this.gridSystems[link.a]!;
       const subsystemB = this.gridSystems[link.b]!;
 
@@ -870,40 +933,46 @@ export class SystemSimulator {
         }
 
         // Draw the path segments.
-        const simulatorLinkHorizontal: SimulatorLink = Object.freeze({
+        const horizontal: SimulatorLink = Object.freeze({
           type: SimulatorObjectType.Link,
           direction: SimulatorLinkDirectionType.Horizontal,
           link,
+          zIndex: 100,
         });
 
-        const simulatorLinkVertical: SimulatorLink = Object.freeze({
+        const vertical: SimulatorLink = Object.freeze({
           type: SimulatorObjectType.Link,
           direction: SimulatorLinkDirectionType.Vertical,
           link,
+          zIndex: 100,
         });
 
-        const simulatorLinkBottomToRight: SimulatorLink = Object.freeze({
+        const bottomToRight: SimulatorLink = Object.freeze({
           type: SimulatorObjectType.Link,
           direction: SimulatorLinkDirectionType.BottomToRight,
           link,
+          zIndex: 100,
         });
 
-        const simulatorLinkBottomToLeft: SimulatorLink = Object.freeze({
+        const bottomToLeft: SimulatorLink = Object.freeze({
           type: SimulatorObjectType.Link,
           direction: SimulatorLinkDirectionType.BottomToLeft,
           link,
+          zIndex: 100,
         });
 
-        const simulatorLinkTopToLeft: SimulatorLink = Object.freeze({
+        const topToLeft: SimulatorLink = Object.freeze({
           type: SimulatorObjectType.Link,
           direction: SimulatorLinkDirectionType.TopToLeft,
           link,
+          zIndex: 100,
         });
 
-        const simulatorLinkTopToRight: SimulatorLink = Object.freeze({
+        const topToRight: SimulatorLink = Object.freeze({
           type: SimulatorObjectType.Link,
           direction: SimulatorLinkDirectionType.TopToRight,
           link,
+          zIndex: 100,
         });
 
         for (let i = insideACount; i < path.length - insideBCount; i++) {
@@ -929,13 +998,13 @@ export class SystemSimulator {
           // BxA or AxB
           // ...    ...
           if (yBefore === y && yAfter === y) {
-            this.grid[x!]![y!]!.push(simulatorLinkHorizontal);
+            this.grid[x!]![y!]!.push(horizontal);
 
             // .B.    .A.
             // .x. or .x.
             // .A.    .B.
           } else if (xBefore === x && xAfter === x) {
-            this.grid[x!]![y!]!.push(simulatorLinkVertical);
+            this.grid[x!]![y!]!.push(vertical);
 
             // ...    ...
             // .xA or .xB
@@ -944,7 +1013,7 @@ export class SystemSimulator {
             (xBefore === x && yBefore > y! && xAfter > x! && yAfter === y) ||
             (yBefore === y && xBefore > x! && yAfter > y! && xAfter === x)
           ) {
-            this.grid[x!]![y!]!.push(simulatorLinkBottomToRight);
+            this.grid[x!]![y!]!.push(bottomToRight);
 
             // ...    ...
             // .Bx or .Ax
@@ -953,7 +1022,7 @@ export class SystemSimulator {
             (xBefore < x! && yBefore === y && xAfter === x && yAfter > y!) ||
             (yBefore > y! && xBefore === x && yAfter === y && xAfter < x!)
           ) {
-            this.grid[x!]![y!]!.push(simulatorLinkBottomToLeft);
+            this.grid[x!]![y!]!.push(bottomToLeft);
 
             // ...    ...
             // ..B or ..A
@@ -962,7 +1031,7 @@ export class SystemSimulator {
             (xBefore === x && yBefore < y! && xAfter < x! && yAfter === y) ||
             (yBefore === y && xBefore < x! && yAfter < y! && xAfter === x)
           ) {
-            this.grid[x!]![y!]!.push(simulatorLinkTopToLeft);
+            this.grid[x!]![y!]!.push(topToLeft);
 
             // ...    ...
             // .A. or .B.
@@ -971,7 +1040,7 @@ export class SystemSimulator {
             (xBefore > x! && yBefore === y && xAfter === x && yAfter < y!) ||
             (yBefore < y! && xBefore === x && yAfter === y && xAfter > x!)
           ) {
-            this.grid[x!]![y!]!.push(simulatorLinkTopToRight);
+            this.grid[x!]![y!]!.push(topToRight);
           }
         }
 
@@ -985,6 +1054,199 @@ export class SystemSimulator {
 
         this.paths[link.b] ??= {};
         this.paths[link.b]![link.a] = path.slice().reverse();
+
+        // Draw the link title.
+        if (
+          link.title.length > 0 &&
+          !(subsystemA.hidden && subsystemB.hidden)
+        ) {
+          const topLeft: SimulatorLinkTitleContainer = Object.freeze({
+            type: SimulatorObjectType.LinkTitleContainer,
+            link,
+            direction: SimulatorSystemDirectionType.TopLeft,
+            zIndex: 101 + linkIndex,
+          });
+
+          const topRight: SimulatorLinkTitleContainer = Object.freeze({
+            type: SimulatorObjectType.LinkTitleContainer,
+            link,
+            direction: SimulatorSystemDirectionType.TopRight,
+            zIndex: 101 + linkIndex,
+          });
+
+          const bottomLeft: SimulatorLinkTitleContainer = Object.freeze({
+            type: SimulatorObjectType.LinkTitleContainer,
+            link,
+            direction: SimulatorSystemDirectionType.BottomLeft,
+            zIndex: 101 + linkIndex,
+          });
+
+          const bottomRight: SimulatorLinkTitleContainer = Object.freeze({
+            type: SimulatorObjectType.LinkTitleContainer,
+            link,
+            direction: SimulatorSystemDirectionType.BottomRight,
+            zIndex: 101 + linkIndex,
+          });
+
+          const left: SimulatorLinkTitleContainer = Object.freeze({
+            type: SimulatorObjectType.LinkTitleContainer,
+            link,
+            direction: SimulatorSystemDirectionType.CenterLeft,
+            zIndex: 101 + linkIndex,
+          });
+
+          const right: SimulatorLinkTitleContainer = Object.freeze({
+            type: SimulatorObjectType.LinkTitleContainer,
+            link,
+            direction: SimulatorSystemDirectionType.CenterRight,
+            zIndex: 101 + linkIndex,
+          });
+
+          const top: SimulatorLinkTitleContainer = Object.freeze({
+            type: SimulatorObjectType.LinkTitleContainer,
+            link,
+            direction: SimulatorSystemDirectionType.TopCenter,
+            zIndex: 101 + linkIndex,
+          });
+
+          const bottom: SimulatorLinkTitleContainer = Object.freeze({
+            type: SimulatorObjectType.LinkTitleContainer,
+            link,
+            direction: SimulatorSystemDirectionType.BottomCenter,
+            zIndex: 101 + linkIndex,
+          });
+
+          const center: SimulatorLinkTitleContainer = Object.freeze({
+            type: SimulatorObjectType.LinkTitleContainer,
+            link,
+            direction: SimulatorSystemDirectionType.CenterCenter,
+            zIndex: 101 + linkIndex,
+          });
+
+          // Unfortunately, link titles may collide with subsystems, due to the
+          // fact that they require links to be routed, and this routing is done
+          // automatically for the user, in this "draw stuff on the grid" phase.
+          //
+          // To detect and resolve collisions between subsystems and link
+          // titles, we would need to do it way before, when the user is placing
+          // subsystems and links on the canvas. We would need to move the
+          // link routing in the "collisions detection" system, probably route
+          // and re-route links multiple times, as we detect collisions, then
+          // save all the route information in the specification, so this code
+          // here can draw routes exactly as they were computed while resolving
+          // collisions. I spent a lot of time thinking about that one and I
+          // can't think of a cheap way to do it. I did prototype a solution
+          // where I treated a link title Z as a subsystem, make it go through
+          // the collisions detection system, and then route the link
+          // from A to Z, then Z to B but... the results were horrendous.
+          //
+          // Anyway, here's the cheap solution:
+          //
+          // We place the link title in the middle of the path. We then spend a
+          // small amount of CPU cycles to detect collisions with subsystems.
+          // When we find a collision, we move the link title a little bit
+          // alongside the link path.
+          //
+          let pathSegment: number[] | undefined;
+          let x1: number = 0;
+          let y1: number = 0;
+          let x2: number = 0;
+          let y2: number = 0;
+
+          let iterations = 0;
+          let offset = 0;
+          let colliding = false;
+
+          do {
+            pathSegment = path.at(Math.floor(path.length / 2) + offset);
+
+            if (pathSegment) {
+              x1 = pathSegment[0]! - Math.ceil(link.titleSize.width / 2);
+              y1 = pathSegment[1]! - Math.ceil(link.titleSize.height / 2);
+              x2 = x1 + link.titleSize.width + 1;
+              y2 = y1 + link.titleSize.height + 1;
+
+              colliding = false;
+
+              for (let x = x1; x <= x2; x++) {
+                if (colliding) {
+                  break;
+                }
+
+                for (let y = y1; y <= y2; y++) {
+                  if (
+                    this.grid[x]![y]!.some(
+                      obj =>
+                        obj.type === SimulatorObjectType.System &&
+                        (obj as SimulatorSubsystem).blackbox,
+                    )
+                  ) {
+                    colliding = true;
+
+                    break;
+                  }
+                }
+              }
+            }
+
+            // 0, 1, -1, 2, -2, 3, -3, ...
+            offset = offset > 0 ? -offset : Math.abs(offset) + 1;
+          } while (pathSegment && colliding && iterations < 20);
+
+          this.gridSystems[this.getGridLinkId(link)] = {
+            id: this.getGridLinkId(link),
+            x1,
+            y1,
+            x2,
+            y2,
+            worldX: x1 - this.boundaries.translateX,
+            worldY: y1 - this.boundaries.translateY,
+            width: link.titleSize.width + 1,
+            height: link.titleSize.height + 1,
+            title: {
+              x: x1,
+              y: y1,
+              width: link.titleSize.width,
+              height: link.titleSize.height,
+            },
+            hidden: false,
+          };
+
+          for (let x = x1; x <= x2; x++) {
+            for (let y = y1; y <= y2; y++) {
+              finderGrid.setWeightAt(x, y, PathfindingWeights.Impenetrable);
+
+              if (x === x1 && y == y1) {
+                this.grid[x]![y]!.push(topLeft);
+              } else if (x === x2 && y == y1) {
+                this.grid[x]![y]!.push(topRight);
+              } else if (x === x1 && y == y2) {
+                this.grid[x]![y]!.push(bottomLeft);
+              } else if (x === x2 && y == y2) {
+                this.grid[x]![y]!.push(bottomRight);
+              } else if (x === x1) {
+                this.grid[x]![y]!.push(left);
+              } else if (x === x2) {
+                this.grid[x]![y]!.push(right);
+              } else if (y === y1) {
+                this.grid[x]![y]!.push(top);
+              } else if (y === y2) {
+                this.grid[x]![y]!.push(bottom);
+              } else {
+                this.grid[x]![y]!.push(center);
+              }
+            }
+          }
+
+          const title: SimulatorLinkTitle = {
+            type: SimulatorObjectType.LinkTitle,
+            link,
+            chars: link.title,
+            zIndex: 101 + linkIndex + 1,
+          };
+
+          this.grid[x1 + 1]![y1 + 1]!.push(title);
+        }
       }
 
       // Allowed systems to be traversed by the path from A to B. Part II.
@@ -1079,14 +1341,26 @@ export class SystemSimulator {
   private synchronizeRuntimeObjects(
     system: RuntimeSystem | RuntimeSubsystem,
   ): void {
+    // Root system.
+    if (!system.id) {
+      for (const link of system.links) {
+        const gridLink = this.gridSystems[this.getGridLinkId(link)];
+
+        if (gridLink) {
+          link.titlePosition.x = gridLink.worldX;
+          link.titlePosition.y = gridLink.worldY;
+
+          link.titleSize.width = gridLink.width;
+          link.titleSize.height = gridLink.height;
+        }
+      }
+    }
+
     // Recursive traversal.
     for (const ss of system.systems) {
       const gridSS = this.gridSystems[ss.id]!;
 
       // Synchronize grid object with runtime system.
-      // TODO: is it really how we want to tackle this?
-      // TODO: or should a runtime system has a "grid" property, alike "specification".
-      // TODO: so for a propertu, we would have the "spec" -> "runtime" -> "grid" transformations.
       ss.position.x = gridSS.worldX;
       ss.position.y = gridSS.worldY;
 
@@ -1095,5 +1369,9 @@ export class SystemSimulator {
 
       this.synchronizeRuntimeObjects(ss);
     }
+  }
+
+  private getGridLinkId(link: RuntimeLink): string {
+    return [link.a, link.b].join("<>");
   }
 }

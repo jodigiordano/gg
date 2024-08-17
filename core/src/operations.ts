@@ -4,7 +4,7 @@ import {
   RuntimeLink,
   RuntimeFlowStep,
 } from "./runtime.js";
-import { SystemMargin } from "./consts.js";
+import { SystemMargin } from "./helpers.js";
 import { Link, FlowStep, Subsystem } from "./specification.js";
 import { computeSystemSize, getRootSystem, initSystem } from "./system.js";
 
@@ -155,11 +155,20 @@ export function setSubsystemTitle(
  * Add a link in the given system.
  * The resulting system is not validated and may be invalid.
  */
-export function addLink(system: RuntimeSystem, aId: string, bId: string): Link {
+export function addLink(
+  system: RuntimeSystem,
+  aId: string,
+  bId: string,
+  title?: string,
+): Link {
   const newLink: Link = {
     a: aId,
     b: bId,
   };
+
+  if (title) {
+    newLink.title = title;
+  }
 
   system.specification.links ??= [];
   system.specification.links.push(structuredClone(newLink));
@@ -181,7 +190,7 @@ export function moveLink(
   const aId = link.a === idToReplace ? idToReplaceWith : link.a;
   const bId = link.b === idToReplace ? idToReplaceWith : link.b;
 
-  addLink(rootSystem, aId, bId);
+  addLink(rootSystem, aId, bId, link.title);
 
   // Transfer flow steps.
   for (const flow of rootSystem.specification.flows ?? []) {
@@ -235,6 +244,16 @@ export function removeLink(rootSystem: RuntimeSystem, link: RuntimeLink): void {
 
     flow.steps.length = stepWriteIndex;
   }
+}
+
+export function setLinkTitle(link: RuntimeLink, newTitle: string): void {
+  if (newTitle.length) {
+    link.specification.title = newTitle;
+  } else {
+    delete link.specification.title;
+  }
+
+  link.title = newTitle;
 }
 
 export function moveSubsystemToParent(

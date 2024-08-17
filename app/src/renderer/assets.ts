@@ -174,6 +174,34 @@ export const spritesheet = new Spritesheet(Assets.get("spritesheet"), {
     data: {
       frame: { x: 32, y: 0, w: 8, h: 8 },
     },
+
+    linkLabelTopLeft: {
+      frame: { x: 24, y: 24 + 0, w: 8, h: 8 },
+    },
+    linkLabelTopRight: {
+      frame: { x: 24 + 16, y: 24 + 0, w: 8, h: 8 },
+    },
+    linkLabelBottomLeft: {
+      frame: { x: 24, y: 24 + 16, w: 8, h: 8 },
+    },
+    linkLabelBottomRight: {
+      frame: { x: 24 + 16, y: 24 + 16, w: 8, h: 8 },
+    },
+    linkLabelCenterLeft: {
+      frame: { x: 24, y: 24 + 8, w: 8, h: 8 },
+    },
+    linkLabelCenterRight: {
+      frame: { x: 24 + 16, y: 24 + 8, w: 8, h: 8 },
+    },
+    linkLabelTopCenter: {
+      frame: { x: 24 + 8, y: 24 + 0, w: 8, h: 8 },
+    },
+    linkLabelBottomCenter: {
+      frame: { x: 24 + 8, y: 24 + 16, w: 8, h: 8 },
+    },
+    linkLabelCenterCenter: {
+      frame: { x: 24 + 8, y: 24 + 8, w: 8, h: 8 },
+    },
   },
   meta: {
     image: "spritesheet.png",

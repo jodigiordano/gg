@@ -2,6 +2,7 @@ import { RuntimeSystem, RuntimeSubsystem, RuntimeLink } from "./runtime.js";
 import { System } from "./specification.js";
 import { validate, ValidationError } from "./validations.js";
 import { computeSystemSize, getSubsystemById, initSystem } from "./system.js";
+import { getTitleLength, sanitizeTitle } from "./helpers.js";
 
 export function load(system: System): {
   system: RuntimeSystem;
@@ -65,6 +66,19 @@ function enhanceLinks(system: RuntimeSystem): void {
 
     // Set array position in the system.
     link.index = index;
+
+    // Set the title.
+    link.title = sanitizeTitle(link.title ?? "");
+
+    // Set the title size.
+    link.titleSize = getTitleLength(link.title);
+
+    // Set the title position.
+    // This property is set later on by the simulator.
+    link.titlePosition = {
+      x: 0,
+      y: 0,
+    };
 
     // Set system A.
     link.systemA = getSubsystemById(system, link.a)!;

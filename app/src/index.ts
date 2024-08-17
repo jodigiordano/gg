@@ -12,7 +12,7 @@ import { state, resetState, pushChange } from "./state.js";
 import { redrawGrid, setGridVisible } from "./renderer/grid.js";
 import Operation from "./operation.js";
 import addSystemOperation from "./operations/systemAdd.js";
-import setSystemTitleOperation from "./operations/systemSetTitle.js";
+import setTitleOperation from "./operations/setTitle.js";
 import moveOperation from "./operations/move.js";
 import setSystemParentOperation from "./operations/systemSetParent.js";
 import addLinkOperation from "./operations/linkAdd.js";
@@ -164,7 +164,7 @@ window.addEventListener("keydown", event => {
   } else if (event.key === "2") {
     switchOperation(addSystemOperation);
   } else if (event.key === "3") {
-    switchOperation(setSystemTitleOperation);
+    switchOperation(setTitleOperation);
   } else if (event.key === "4") {
     switchOperation(addLinkOperation);
   } else if (event.key === "q") {
@@ -700,7 +700,7 @@ function updateFlowProgression(): void {
 
 // Initialize operations.
 addSystemOperation.setup(state);
-setSystemTitleOperation.setup(state);
+setTitleOperation.setup(state);
 moveOperation.setup(state);
 setSystemParentOperation.setup(state);
 addLinkOperation.setup(state);
@@ -733,8 +733,8 @@ for (const button of singleChoiceButtons) {
       state.operation = eraseOperation;
     } else if (button.id === "operation-system-set-parent") {
       state.operation = setSystemParentOperation;
-    } else if (button.id === "operation-system-set-title") {
-      state.operation = setSystemTitleOperation;
+    } else if (button.id === "operation-set-title") {
+      state.operation = setTitleOperation;
     } else if (button.id === "operation-system-hide-systems") {
       state.operation = setSystemHideSystemsOperation;
     } else if (button.id === "operation-flow-data-transfer") {

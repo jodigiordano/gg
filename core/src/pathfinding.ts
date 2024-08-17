@@ -1,4 +1,4 @@
-import { PathfindingWeights } from "./consts";
+import { PathfindingWeights } from "./helpers.js";
 
 enum NodeState {
   NotVisited = 1,
