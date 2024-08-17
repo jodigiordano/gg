@@ -7,7 +7,7 @@ export default class SystemLinker extends Container {
   constructor() {
     super();
 
-    this.zIndex = 100;
+    this.zIndex = 100000;
     this.visible = false;
 
     this.line = new Graphics();

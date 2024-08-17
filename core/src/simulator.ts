@@ -19,6 +19,14 @@ export enum SimulatorObjectType {
   LinkTitleContainer = 5,
 }
 
+export enum SimulatorObjectZIndex {
+  System = 0,
+  SystemTitle = 1,
+  Link = 100,
+  LinkTitleContainer = 500,
+  LinkTitle = 501,
+}
+
 export enum SimulatorLinkDirectionType {
   Horizontal = 1,
   Vertical = 2,
@@ -644,7 +652,7 @@ export class SystemSimulator {
         blackbox,
         system: ss,
         direction: SimulatorSystemDirectionType.CenterCenter,
-        zIndex: ss.depth,
+        zIndex: SimulatorObjectZIndex.System + ss.depth,
       });
 
       const topLeft: SimulatorSubsystem = Object.freeze({
@@ -652,7 +660,7 @@ export class SystemSimulator {
         blackbox,
         system: ss,
         direction: SimulatorSystemDirectionType.TopLeft,
-        zIndex: ss.depth,
+        zIndex: SimulatorObjectZIndex.System + ss.depth,
       });
 
       const topRight: SimulatorSubsystem = Object.freeze({
@@ -660,7 +668,7 @@ export class SystemSimulator {
         blackbox,
         system: ss,
         direction: SimulatorSystemDirectionType.TopRight,
-        zIndex: ss.depth,
+        zIndex: SimulatorObjectZIndex.System + ss.depth,
       });
 
       const bottomLeft: SimulatorSubsystem = Object.freeze({
@@ -668,7 +676,7 @@ export class SystemSimulator {
         blackbox,
         system: ss,
         direction: SimulatorSystemDirectionType.BottomLeft,
-        zIndex: ss.depth,
+        zIndex: SimulatorObjectZIndex.System + ss.depth,
       });
 
       const bottomRight: SimulatorSubsystem = Object.freeze({
@@ -676,7 +684,7 @@ export class SystemSimulator {
         blackbox,
         system: ss,
         direction: SimulatorSystemDirectionType.BottomRight,
-        zIndex: ss.depth,
+        zIndex: SimulatorObjectZIndex.System + ss.depth,
       });
 
       const left: SimulatorSubsystem = Object.freeze({
@@ -684,7 +692,7 @@ export class SystemSimulator {
         blackbox,
         system: ss,
         direction: SimulatorSystemDirectionType.CenterLeft,
-        zIndex: ss.depth,
+        zIndex: SimulatorObjectZIndex.System + ss.depth,
       });
 
       const right: SimulatorSubsystem = Object.freeze({
@@ -692,7 +700,7 @@ export class SystemSimulator {
         blackbox,
         system: ss,
         direction: SimulatorSystemDirectionType.CenterRight,
-        zIndex: ss.depth,
+        zIndex: SimulatorObjectZIndex.System + ss.depth,
       });
 
       const top: SimulatorSubsystem = Object.freeze({
@@ -700,7 +708,7 @@ export class SystemSimulator {
         blackbox,
         system: ss,
         direction: SimulatorSystemDirectionType.TopCenter,
-        zIndex: ss.depth,
+        zIndex: SimulatorObjectZIndex.System + ss.depth,
       });
 
       const bottom: SimulatorSubsystem = Object.freeze({
@@ -708,7 +716,7 @@ export class SystemSimulator {
         blackbox,
         system: ss,
         direction: SimulatorSystemDirectionType.BottomCenter,
-        zIndex: ss.depth,
+        zIndex: SimulatorObjectZIndex.System + ss.depth,
       });
 
       if (ss.systems.length) {
@@ -777,7 +785,7 @@ export class SystemSimulator {
           system: ss,
           blackbox,
           chars: ss.title,
-          zIndex: ss.depth + 1,
+          zIndex: SimulatorObjectZIndex.SystemTitle + ss.depth,
         };
 
         this.grid[gridSS.title.x]![gridSS.title.y]!.push(simulatorSystemTitle);
@@ -937,42 +945,42 @@ export class SystemSimulator {
           type: SimulatorObjectType.Link,
           direction: SimulatorLinkDirectionType.Horizontal,
           link,
-          zIndex: 100,
+          zIndex: SimulatorObjectZIndex.Link + linkIndex,
         });
 
         const vertical: SimulatorLink = Object.freeze({
           type: SimulatorObjectType.Link,
           direction: SimulatorLinkDirectionType.Vertical,
           link,
-          zIndex: 100,
+          zIndex: SimulatorObjectZIndex.Link + linkIndex,
         });
 
         const bottomToRight: SimulatorLink = Object.freeze({
           type: SimulatorObjectType.Link,
           direction: SimulatorLinkDirectionType.BottomToRight,
           link,
-          zIndex: 100,
+          zIndex: SimulatorObjectZIndex.Link + linkIndex,
         });
 
         const bottomToLeft: SimulatorLink = Object.freeze({
           type: SimulatorObjectType.Link,
           direction: SimulatorLinkDirectionType.BottomToLeft,
           link,
-          zIndex: 100,
+          zIndex: SimulatorObjectZIndex.Link + linkIndex,
         });
 
         const topToLeft: SimulatorLink = Object.freeze({
           type: SimulatorObjectType.Link,
           direction: SimulatorLinkDirectionType.TopToLeft,
           link,
-          zIndex: 100,
+          zIndex: SimulatorObjectZIndex.Link + linkIndex,
         });
 
         const topToRight: SimulatorLink = Object.freeze({
           type: SimulatorObjectType.Link,
           direction: SimulatorLinkDirectionType.TopToRight,
           link,
-          zIndex: 100,
+          zIndex: SimulatorObjectZIndex.Link + linkIndex,
         });
 
         for (let i = insideACount; i < path.length - insideBCount; i++) {
@@ -1064,63 +1072,63 @@ export class SystemSimulator {
             type: SimulatorObjectType.LinkTitleContainer,
             link,
             direction: SimulatorSystemDirectionType.TopLeft,
-            zIndex: 101 + linkIndex,
+            zIndex: SimulatorObjectZIndex.LinkTitleContainer + linkIndex,
           });
 
           const topRight: SimulatorLinkTitleContainer = Object.freeze({
             type: SimulatorObjectType.LinkTitleContainer,
             link,
             direction: SimulatorSystemDirectionType.TopRight,
-            zIndex: 101 + linkIndex,
+            zIndex: SimulatorObjectZIndex.LinkTitleContainer + linkIndex,
           });
 
           const bottomLeft: SimulatorLinkTitleContainer = Object.freeze({
             type: SimulatorObjectType.LinkTitleContainer,
             link,
             direction: SimulatorSystemDirectionType.BottomLeft,
-            zIndex: 101 + linkIndex,
+            zIndex: SimulatorObjectZIndex.LinkTitleContainer + linkIndex,
           });
 
           const bottomRight: SimulatorLinkTitleContainer = Object.freeze({
             type: SimulatorObjectType.LinkTitleContainer,
             link,
             direction: SimulatorSystemDirectionType.BottomRight,
-            zIndex: 101 + linkIndex,
+            zIndex: SimulatorObjectZIndex.LinkTitleContainer + linkIndex,
           });
 
           const left: SimulatorLinkTitleContainer = Object.freeze({
             type: SimulatorObjectType.LinkTitleContainer,
             link,
             direction: SimulatorSystemDirectionType.CenterLeft,
-            zIndex: 101 + linkIndex,
+            zIndex: SimulatorObjectZIndex.LinkTitleContainer + linkIndex,
           });
 
           const right: SimulatorLinkTitleContainer = Object.freeze({
             type: SimulatorObjectType.LinkTitleContainer,
             link,
             direction: SimulatorSystemDirectionType.CenterRight,
-            zIndex: 101 + linkIndex,
+            zIndex: SimulatorObjectZIndex.LinkTitleContainer + linkIndex,
           });
 
           const top: SimulatorLinkTitleContainer = Object.freeze({
             type: SimulatorObjectType.LinkTitleContainer,
             link,
             direction: SimulatorSystemDirectionType.TopCenter,
-            zIndex: 101 + linkIndex,
+            zIndex: SimulatorObjectZIndex.LinkTitleContainer + linkIndex,
           });
 
           const bottom: SimulatorLinkTitleContainer = Object.freeze({
             type: SimulatorObjectType.LinkTitleContainer,
             link,
             direction: SimulatorSystemDirectionType.BottomCenter,
-            zIndex: 101 + linkIndex,
+            zIndex: SimulatorObjectZIndex.LinkTitleContainer + linkIndex,
           });
 
           const center: SimulatorLinkTitleContainer = Object.freeze({
             type: SimulatorObjectType.LinkTitleContainer,
             link,
             direction: SimulatorSystemDirectionType.CenterCenter,
-            zIndex: 101 + linkIndex,
+            zIndex: SimulatorObjectZIndex.LinkTitleContainer + linkIndex,
           });
 
           // Unfortunately, link titles may collide with subsystems, due to the
@@ -1242,7 +1250,7 @@ export class SystemSimulator {
             type: SimulatorObjectType.LinkTitle,
             link,
             chars: link.title,
-            zIndex: 101 + linkIndex + 1,
+            zIndex: SimulatorObjectZIndex.LinkTitle + linkIndex,
           };
 
           this.grid[x1 + 1]![y1 + 1]!.push(title);
