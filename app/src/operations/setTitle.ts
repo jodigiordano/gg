@@ -72,10 +72,9 @@ function onPointerMove(state: State) {
     return;
   }
 
-  const link = (
+  const link =
     state.simulator.getLinkAt(state.x, state.y) ??
-    state.simulator.getLinkByTitleAt(state.x, state.y)
-  );
+    state.simulator.getLinkByTitleAt(state.x, state.y);
 
   if (link) {
     const path = state.simulator.getPath(link.a, link.b)!;
@@ -156,10 +155,9 @@ const operation: Operation = {
       return;
     }
 
-    const linkToEdit = (
+    const linkToEdit =
       state.simulator.getLinkAt(state.x, state.y) ??
-      state.simulator.getLinkByTitleAt(state.x, state.y)
-    );
+      state.simulator.getLinkByTitleAt(state.x, state.y);
 
     if (linkToEdit) {
       link = linkToEdit;
