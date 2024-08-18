@@ -338,31 +338,90 @@ document
 
 document
   .getElementById("operation-export-png")
-  ?.addEventListener("click", async function () {
+  ?.addEventListener("click", function () {
+    // Finish any ongoing operation.
     state.operation.onEnd(state);
 
+    // Stop PixiJS.
     app.stop();
 
+    // Hide the grid.
     setGridVisible(false);
+
+    // Hide flow animations.
     state.flowPlayer?.hide();
 
+    // Extract the viewport on an HTML canvas.
     // @ts-ignore
-    const dataUri = await app.renderer.extract.image(viewport);
+    const viewportCanvas = app.renderer.extract.canvas(viewport);
 
+    // Create a destination canvas that will be exported in PNG.
+    const exportCanvas = document.createElement("canvas");
+
+    const margin = 20;
+    const backlinkWidth = 150;
+    const backlinkHeight = 22;
+
+    // Add margin around the graph.
+    // Add some space at the bottom of the image for the backlink.
+    exportCanvas.width =
+      Math.max(backlinkWidth, viewportCanvas.width) + margin * 2;
+
+    exportCanvas.height = viewportCanvas.height + margin * 2 + backlinkHeight;
+
+    // Start drawing.
+    const context = exportCanvas.getContext("2d")!;
+
+    // Draw a white background.
+    context.fillStyle = "#ffffff";
+    context.fillRect(0, 0, exportCanvas.width, exportCanvas.height);
+
+    // Draw the viewport on the canvas.
+    context.drawImage(viewportCanvas as HTMLCanvasElement, margin, margin);
+
+    // Draw the backlink.
+    context.fillStyle = "#000000";
+
+    context.fillRect(
+      0,
+      exportCanvas.height - backlinkHeight,
+      exportCanvas.width,
+      backlinkHeight,
+    );
+
+    context.fillStyle = "#ffffff";
+    context.font = "16px ibm";
+    context.textAlign = "end";
+
+    context.fillText(
+      "Made with gg-charts.com",
+      exportCanvas.width - 6,
+      exportCanvas.height - 6,
+    );
+
+    // Export the canvas to a data URL.
+    const dataUri = exportCanvas.toDataURL();
+
+    // Create a download link.
     const link = document.createElement("a");
 
-    link.setAttribute("href", dataUri.src);
+    link.setAttribute("href", dataUri);
 
     link.setAttribute(
       "download",
       `gg.${new Date().toJSON().replaceAll(":", ".")}.png`,
     );
 
+    // Click on the download link.
     link.click();
 
+    // Show the grid.
     setGridVisible(true);
+
+    // Show the flow animations.
     state.flowPlayer?.draw();
 
+    // Start PixiJS.
     app.start();
   });
 
