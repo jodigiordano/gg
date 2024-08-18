@@ -12,7 +12,7 @@ export default class SystemSelector extends Container {
   constructor() {
     super();
 
-    this.zIndex = 100;
+    this.zIndex = 100000;
     this.visible = false;
 
     this.topLeft = new Sprite(spritesheet.textures.systemSelectorTopLeft);

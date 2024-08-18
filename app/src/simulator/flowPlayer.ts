@@ -1,4 +1,9 @@
-import { RuntimeFlow, SystemSimulator, getFlowTick } from "@gg/core";
+import {
+  RuntimeFlow,
+  SystemSimulator,
+  getFlowTick,
+  SimulatorObjectZIndex,
+} from "@gg/core";
 import { Sprite } from "pixi.js";
 import { spritesheet } from "../renderer/assets.js";
 import { BlockSize } from "../helpers.js";
@@ -29,7 +34,7 @@ export default class FlowPlayer {
     this.sprites = flow.steps.map(() => {
       const sprite = new Sprite(spritesheet.textures.data);
 
-      sprite.zIndex = 1000;
+      sprite.zIndex = SimulatorObjectZIndex.Link + 1;
       sprite.width = BlockSize;
       sprite.height = BlockSize;
       sprite.visible = false;
