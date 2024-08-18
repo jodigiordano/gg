@@ -14,6 +14,10 @@
       "type": "string",
       "description": "The description of the link, in markdown format."
     },
+    "titleBackgroundColor": {
+      "type": "string",
+      "description": "The background color of the link title."
+    },
     "a": {
       "type": "string",
       "pattern": "^[a-z0-9_-]+$",

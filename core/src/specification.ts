@@ -57,6 +57,10 @@ export interface Subsystem {
     y: number;
   };
   /**
+   * The background color of the sub-system.
+   */
+  backgroundColor?: string;
+  /**
    * Whether to show or hide the sub-systems of the system.
    */
   hideSystems?: boolean;
@@ -77,6 +81,10 @@ export interface Link {
    * The description of the link, in markdown format.
    */
   description?: string;
+  /**
+   * The background color of the link title.
+   */
+  titleBackgroundColor?: string;
   /**
    * Side A of the link.
    */
@@ -196,6 +204,10 @@ const schemas = [
         type: "string",
         description: "The description of the link, in markdown format.",
       },
+      titleBackgroundColor: {
+        type: "string",
+        description: "The background color of the link title.",
+      },
       a: {
         type: "string",
         pattern: "^[a-z0-9_-]+$",
@@ -248,6 +260,10 @@ const schemas = [
               "The Y position of the sub-system in the parent system.",
           },
         },
+      },
+      backgroundColor: {
+        type: "string",
+        description: "The background color of the sub-system.",
       },
       hideSystems: {
         type: "boolean",
