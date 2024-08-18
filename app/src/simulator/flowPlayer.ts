@@ -34,7 +34,7 @@ export default class FlowPlayer {
     this.sprites = flow.steps.map(() => {
       const sprite = new Sprite(spritesheet.textures.data);
 
-      sprite.zIndex = SimulatorObjectZIndex.Link + 1;
+      sprite.zIndex = SimulatorObjectZIndex.LinkTitleContainer - 1;
       sprite.width = BlockSize;
       sprite.height = BlockSize;
       sprite.visible = false;
