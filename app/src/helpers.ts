@@ -31,3 +31,20 @@ const domParser = new DOMParser();
 export function sanitizeHtml(html: string): string {
   return domParser.parseFromString(html, "text/html").body.textContent ?? "";
 }
+
+// Get the white or black foreground color of a given background color.
+export function getForegroundColor(backgroundColor: string) {
+  const components = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(
+    backgroundColor,
+  )!;
+
+  const r = parseInt(components[1], 16);
+  const g = parseInt(components[2], 16);
+  const b = parseInt(components[3], 16);
+
+  // Relative luminance.
+  // https://en.wikipedia.org/wiki/Luma_(video)#Use_of_relative_luminance
+  const luminance = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+
+  return luminance < 140 ? "#ffffff" : "#000000";
+}

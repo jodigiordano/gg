@@ -19,6 +19,7 @@ import addLinkOperation from "./operations/linkAdd.js";
 import eraseOperation from "./operations/erase.js";
 import setSystemHideSystemsOperation from "./operations/systemToggleSystems.js";
 import transferDataOperation from "./operations/flowTransferData.js";
+import paintOperation from "./operations/paint.js";
 import {
   getJsonEditorValue,
   isJsonEditorOpen,
@@ -175,6 +176,8 @@ window.addEventListener("keydown", event => {
     switchOperation(setSystemHideSystemsOperation);
   } else if (event.key === "r") {
     switchOperation(transferDataOperation);
+  } else if (event.key === "a") {
+    switchOperation(paintOperation);
   } else if (event.key === " ") {
     if (state.flowPlay) {
       pauseFlow();
@@ -707,6 +710,7 @@ addLinkOperation.setup(state);
 eraseOperation.setup(state);
 setSystemHideSystemsOperation.setup(state);
 transferDataOperation.setup(state);
+paintOperation.setup(state);
 
 // Initialize buttons.
 const singleChoiceButtons = document.querySelectorAll(
@@ -739,6 +743,8 @@ for (const button of singleChoiceButtons) {
       state.operation = setSystemHideSystemsOperation;
     } else if (button.id === "operation-flow-data-transfer") {
       state.operation = transferDataOperation;
+    } else if (button.id === "operation-set-color") {
+      state.operation = paintOperation;
     }
 
     state.operation.onBegin(state);

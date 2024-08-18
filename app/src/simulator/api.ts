@@ -7,10 +7,11 @@ import {
   SimulatorLink,
   SimulatorLinkTitleContainer,
   SimulatorSystemDirectionType,
+  SimulatorLinkTitle,
 } from "@gg/core";
 import { Sprite, Text, SCALE_MODES, Container } from "pixi.js";
 import { spritesheet } from "../renderer/assets.js";
-import { BlockSize } from "../helpers.js";
+import { BlockSize, getForegroundColor } from "../helpers.js";
 import { app, tick } from "../renderer/pixi.js";
 import viewport from "../renderer/viewport.js";
 import { state, pushChange } from "../state.js";
@@ -143,13 +144,13 @@ function getObjectsToRender(): (Sprite | Text)[] {
           const { system, blackbox, direction } = obj as SimulatorSubsystem;
 
           if (blackbox) {
-            sprite.tint = "3d348b";
+            sprite.tint = system.backgroundColor ?? "3d348b";
           } else if (system.depth % 2 === 0) {
-            sprite.tint = "ced4da";
+            sprite.tint = system.backgroundColor ?? "ced4da";
           } else if (system.depth % 3 === 0) {
-            sprite.tint = "dee2e6";
+            sprite.tint = system.backgroundColor ?? "dee2e6";
           } else {
-            sprite.tint = "e9ecef";
+            sprite.tint = system.backgroundColor ?? "e9ecef";
           }
 
           if (direction === SimulatorSystemDirectionType.TopLeft) {
@@ -208,7 +209,7 @@ function getObjectsToRender(): (Sprite | Text)[] {
 
           toDraw.push(sprite);
         } else if (obj.type === SimulatorObjectType.LinkTitleContainer) {
-          const { direction } = obj as SimulatorLinkTitleContainer;
+          const { link, direction } = obj as SimulatorLinkTitleContainer;
 
           const sprite = new Sprite();
 
@@ -217,7 +218,7 @@ function getObjectsToRender(): (Sprite | Text)[] {
           sprite.y = (j - boundaries.translateY) * BlockSize;
           sprite.width = BlockSize;
           sprite.height = BlockSize;
-          sprite.tint = "ced4da";
+          sprite.tint = link.titleBackgroundColor ?? "ced4da";
 
           if (direction === SimulatorSystemDirectionType.TopLeft) {
             sprite.texture = spritesheet.textures.linkLabelTopLeft;
@@ -241,13 +242,18 @@ function getObjectsToRender(): (Sprite | Text)[] {
 
           toDraw.push(sprite);
         } else if (obj.type === SimulatorObjectType.SystemTitle) {
-          const { blackbox } = obj as SimulatorSubsystem;
+          const { system, blackbox } = obj as SimulatorSubsystem;
 
           const title = new Text(
             (obj as SimulatorSystemTitle).chars.replaceAll("\\n", "\n"),
             {
               fontFamily: "ibm",
               fontSize: BlockSize,
+              fill: system.backgroundColor
+                ? getForegroundColor(system.backgroundColor)
+                : blackbox
+                  ? "ffffff"
+                  : "000000",
             },
           );
 
@@ -255,25 +261,25 @@ function getObjectsToRender(): (Sprite | Text)[] {
           title.x = (i - boundaries.translateX) * BlockSize;
           title.y = (j - boundaries.translateY) * BlockSize;
 
-          title.style.fill = blackbox ? "ffffff" : "000000";
           title.resolution = 2;
           title.texture.baseTexture.scaleMode = SCALE_MODES.LINEAR;
 
           toDraw.push(title);
         } else if (obj.type === SimulatorObjectType.LinkTitle) {
-          const title = new Text(
-            (obj as SimulatorSystemTitle).chars.replaceAll("\\n", "\n"),
-            {
-              fontFamily: "ibm",
-              fontSize: BlockSize,
-            },
-          );
+          const { link, chars } = obj as SimulatorLinkTitle;
+
+          const title = new Text(chars.replaceAll("\\n", "\n"), {
+            fontFamily: "ibm",
+            fontSize: BlockSize,
+            fill: link.titleBackgroundColor
+              ? getForegroundColor(link.titleBackgroundColor)
+              : "000000",
+          });
 
           title.zIndex = obj.zIndex;
           title.x = (i - boundaries.translateX) * BlockSize;
           title.y = (j - boundaries.translateY) * BlockSize;
 
-          title.style.fill = "000000";
           title.resolution = 2;
           title.texture.baseTexture.scaleMode = SCALE_MODES.LINEAR;
 

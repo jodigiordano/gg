@@ -184,10 +184,14 @@
 
       /* Page-wide styles for dialogs */
       dialog {
+        max-width: 80%;
+        max-height: 80%;
+
         .content {
           display: flex;
           flex-direction: column;
           gap: 1em;
+          justify-content: space-between;
 
           h1 {
             font-weight: bold;
@@ -296,7 +300,8 @@
             position: relative;
 
             &.selected {
-              background: #aaa;
+              border: 2px solid #666;
+              outline: 2px solid #aaa;
             }
 
             &.hidden {
@@ -368,8 +373,10 @@
 
       /* Modal to edit the title of a system */
       #input-set-title-dialog {
-        width: 40%;
-        height: 40%;
+        max-width: 30em;
+        max-height: 20em;
+        width: 80%;
+        height: 80%;
 
         .content {
           height: 100%;
@@ -382,15 +389,49 @@
         }
       }
 
+      /* Modal to edit the title of a step */
       #input-flow-step-set-title-dialog {
         width: 60%;
       }
 
+      /* Modal to choose a color to paint */
+      #input-set-color-dialog {
+        max-width: 40em;
+        max-height: 30em;
+        width: 80%;
+        height: 80%;
+
+        .content {
+          height: 100%;
+
+          .colors {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, 5em);
+            grid-gap: 0.5em;
+            justify-content: space-between;
+
+            div {
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              text-align: center;
+
+              width: 5em;
+              height: 5em;
+
+              outline: 1px #aaa solid;
+
+              &:hover {
+                cursor: pointer;
+                outline: 1px #000 solid;
+              }
+            }
+          }
+        }
+      }
+
       /* Modal to show the guide */
       #guide {
-        max-width: 80%;
-        max-height: 80%;
-
         .content {
           table {
             margin: 1em;
@@ -527,6 +568,35 @@
             <img src="./assets/icon-flow-data.svg" />
             <div class="keyboard">r</div>
           </button>
+          <button id="operation-set-color" title="Color systems & links">
+            <!--
+              Content of "icon-paint.svg" so it can inherit
+              the CSS color attribute, set dynamically in the paint operation.
+            -->
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              width="24"
+              height="24"
+              fill="none"
+            >
+              <path
+                d="M19 12.1294L12.9388 18.207C11.1557 19.9949 10.2641 20.8889 9.16993 20.9877C8.98904 21.0041 8.80705 21.0041 8.62616 20.9877C7.53195 20.8889 6.64039 19.9949 4.85726 18.207L2.83687 16.1811C1.72104 15.0622 1.72104 13.2482 2.83687 12.1294M19 12.1294L10.9184 4.02587M19 12.1294H2.83687M10.9184 4.02587L2.83687 12.1294M10.9184 4.02587L8.89805 2"
+                stroke="currentColor"
+                stroke-width="1.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+              <path
+                d="M22 20C22 21.1046 21.1046 22 20 22C18.8954 22 18 21.1046 18 20C18 18.8954 20 17 20 17C20 17 22 18.8954 22 20Z"
+                stroke="currentColor"
+                stroke-width="1.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+            <div class="keyboard">a</div>
+          </button>
         </div>
         <div class="separator"></div>
         <div class="operations">
@@ -654,6 +724,14 @@
               <td><img src="./assets/icon-eraser.svg" /></td>
               <td>Remove a system or a link from the canvas.</td>
             </tr>
+            <tr>
+              <td><img src="./assets/icon-text.svg" /></td>
+              <td>Add or modify the title of a system or link.</td>
+            </tr>
+            <tr>
+              <td><img src="./assets/icon-paint.svg" /></td>
+              <td>Paint a system or a link.</td>
+            </tr>
           </tbody>
         </table>
         <table>
@@ -664,10 +742,6 @@
             <tr>
               <td><img src="./assets/icon-system.svg" /></td>
               <td>Add a system to the canvas.</td>
-            </tr>
-            <tr>
-              <td><img src="./assets/icon-text.svg" /></td>
-              <td>Add or modify the title of a system or link.</td>
             </tr>
             <tr>
               <td><img src="./assets/icon-parent.svg" /></td>
@@ -819,6 +893,43 @@
         <input />
         <form method="dialog">
           <button id="operation-flow-step-set-title-apply">apply</button>
+          <button>cancel</button>
+        </form>
+      </div>
+    </dialog>
+    <dialog id="input-set-color-dialog">
+      <div class="content">
+        <h1>Pick a color to paint</h1>
+        <div class="colors">
+          <div data-color="">clear to default color</div>
+          <div style="background: #e6194b" data-color="#e6194b"></div>
+          <div style="background: #3cb44b" data-color="#3cb44b"></div>
+          <div style="background: #ffe119" data-color="#ffe119"></div>
+          <div style="background: #4363d8" data-color="#4363d8"></div>
+          <div style="background: #f58231" data-color="#f58231"></div>
+          <div style="background: #911eb4" data-color="#911eb4"></div>
+          <div style="background: #46f0f0" data-color="#46f0f0"></div>
+          <div style="background: #f032e6" data-color="#f032e6"></div>
+          <div style="background: #bcf60c" data-color="#bcf60c"></div>
+          <div style="background: #fabebe" data-color="#fabebe"></div>
+          <div style="background: #008080" data-color="#008080"></div>
+          <div style="background: #e6beff" data-color="#e6beff"></div>
+          <div style="background: #9a6324" data-color="#9a6324"></div>
+          <div style="background: #fffac8" data-color="#fffac8"></div>
+          <div style="background: #800000" data-color="#800000"></div>
+          <div style="background: #aaffc3" data-color="#aaffc3"></div>
+          <div style="background: #808000" data-color="#808000"></div>
+          <div style="background: #ffd8b1" data-color="#ffd8b1"></div>
+          <div style="background: #000075" data-color="#000075"></div>
+          <div style="background: #808080" data-color="#808080"></div>
+          <div style="background: #ffffff" data-color="#ffffff"></div>
+          <div style="background: #dddddd" data-color="#dddddd"></div>
+          <div style="background: #bbbbbb" data-color="#bbbbbb"></div>
+          <div style="background: #888888" data-color="#888888"></div>
+          <div style="background: #444444" data-color="#444444"></div>
+          <div style="background: #000000" data-color="#000000"></div>
+        </div>
+        <form method="dialog">
           <button>cancel</button>
         </form>
       </div>
