@@ -17,7 +17,6 @@ import moveOperation from "./operations/move.js";
 import setSystemParentOperation from "./operations/systemSetParent.js";
 import linkOperation from "./operations/link.js";
 import eraseOperation from "./operations/erase.js";
-import setSystemHideSystemsOperation from "./operations/systemToggleSystems.js";
 import transferDataOperation from "./operations/flowTransferData.js";
 import paintOperation from "./operations/paint.js";
 import {
@@ -172,8 +171,6 @@ window.addEventListener("keydown", event => {
     switchOperation(setSystemParentOperation);
   } else if (event.key === "w") {
     switchOperation(eraseOperation);
-  } else if (event.key === "e") {
-    switchOperation(setSystemHideSystemsOperation);
   } else if (event.key === "r") {
     switchOperation(transferDataOperation);
   } else if (event.key === "a") {
@@ -802,7 +799,6 @@ moveOperation.setup(state);
 setSystemParentOperation.setup(state);
 linkOperation.setup(state);
 eraseOperation.setup(state);
-setSystemHideSystemsOperation.setup(state);
 transferDataOperation.setup(state);
 paintOperation.setup(state);
 
@@ -833,8 +829,6 @@ for (const button of singleChoiceButtons) {
       state.operation = setSystemParentOperation;
     } else if (button.id === "operation-set-title") {
       state.operation = setTitleOperation;
-    } else if (button.id === "operation-system-hide-systems") {
-      state.operation = setSystemHideSystemsOperation;
     } else if (button.id === "operation-flow-data-transfer") {
       state.operation = transferDataOperation;
     } else if (button.id === "operation-set-color") {

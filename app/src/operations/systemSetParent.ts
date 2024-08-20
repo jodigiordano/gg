@@ -129,10 +129,6 @@ const operation: Operation = {
         }
 
         moveSubsystemToParent(subsystem!, parent, x, y);
-
-        if (parent.id) {
-          parent.specification.hideSystems = false;
-        }
       }
     }).then(() => {
       onPointerMove(state);

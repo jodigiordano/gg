@@ -64,7 +64,8 @@ export interface Subsystem {
    */
   backgroundColor?: string;
   /**
-   * Whether to show or hide the sub-systems of the system.
+   * @deprecated
+   * Whether to show or hide the sub-systems of the system. Since deprecation, this property has no effect
    */
   hideSystems?: boolean;
   /**
@@ -318,7 +319,9 @@ const schemas = [
       },
       hideSystems: {
         type: "boolean",
-        description: "Whether to show or hide the sub-systems of the system.",
+        deprecated: true,
+        description:
+          "Whether to show or hide the sub-systems of the system. Since deprecation, this property has no effect",
       },
       systems: {
         type: "array",

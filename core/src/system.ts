@@ -39,9 +39,6 @@ export function initSystem(
     y: TitlePadding,
   };
 
-  // Set hide systems default value.
-  system.hideSystems ??= false;
-
   // Set the depth.
   system.depth = depth;
 }

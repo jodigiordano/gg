@@ -138,7 +138,6 @@ interface GridSystem {
     width: number;
     height: number;
   };
-  hidden: boolean;
 }
 
 export class SystemSimulator {
@@ -165,7 +164,6 @@ export class SystemSimulator {
   compute(): void {
     // Compute grid systems. Part I.
     this.initializeSystems(this.system);
-    this.computeSystemVisibility(this.system, false);
     this.computeSystemWorldPositions(this.system);
     this.computeSystemSizes(this.system);
 
@@ -395,29 +393,9 @@ export class SystemSimulator {
         width: -1,
         height: -1,
       },
-      hidden: false,
     };
 
     this.gridSystems[system.id] = gridSystem;
-  }
-
-  private computeSystemVisibility(
-    system: RuntimeSystem | RuntimeSubsystem,
-    hidden: boolean,
-  ): void {
-    // Recursive traversal.
-    for (const ss of system.systems) {
-      this.computeSystemVisibility(ss, hidden || (system.hideSystems ?? false));
-    }
-
-    // Root system.
-    if (!system.id) {
-      return;
-    }
-
-    const gridSystem = this.gridSystems[system.id]!;
-
-    gridSystem.hidden = hidden;
   }
 
   private computeSystemWorldPositions(
@@ -658,7 +636,7 @@ export class SystemSimulator {
       );
 
       // Sub-systems.
-      const blackbox = gridSS.hidden || ss.hideSystems || !ss.systems.length;
+      const blackbox = !ss.systems.length;
 
       const simulatorSystem: SimulatorSubsystem = Object.freeze({
         type: SimulatorObjectType.System,
@@ -746,29 +724,26 @@ export class SystemSimulator {
         );
       }
 
-      // i.e. the sub-system is not inside a blackbox.
-      if (!gridSS.hidden) {
-        for (let x = gridSS.x1; x <= gridSS.x2; x++) {
-          for (let y = gridSS.y1; y <= gridSS.y2; y++) {
-            if (x === gridSS.x1 && y == gridSS.y1) {
-              this.grid[x]![y]!.push(topLeft);
-            } else if (x === gridSS.x2 && y == gridSS.y1) {
-              this.grid[x]![y]!.push(topRight);
-            } else if (x === gridSS.x1 && y == gridSS.y2) {
-              this.grid[x]![y]!.push(bottomLeft);
-            } else if (x === gridSS.x2 && y == gridSS.y2) {
-              this.grid[x]![y]!.push(bottomRight);
-            } else if (x === gridSS.x1) {
-              this.grid[x]![y]!.push(left);
-            } else if (x === gridSS.x2) {
-              this.grid[x]![y]!.push(right);
-            } else if (y === gridSS.y1) {
-              this.grid[x]![y]!.push(top);
-            } else if (y === gridSS.y2) {
-              this.grid[x]![y]!.push(bottom);
-            } else {
-              this.grid[x]![y]!.push(simulatorSystem);
-            }
+      for (let x = gridSS.x1; x <= gridSS.x2; x++) {
+        for (let y = gridSS.y1; y <= gridSS.y2; y++) {
+          if (x === gridSS.x1 && y == gridSS.y1) {
+            this.grid[x]![y]!.push(topLeft);
+          } else if (x === gridSS.x2 && y == gridSS.y1) {
+            this.grid[x]![y]!.push(topRight);
+          } else if (x === gridSS.x1 && y == gridSS.y2) {
+            this.grid[x]![y]!.push(bottomLeft);
+          } else if (x === gridSS.x2 && y == gridSS.y2) {
+            this.grid[x]![y]!.push(bottomRight);
+          } else if (x === gridSS.x1) {
+            this.grid[x]![y]!.push(left);
+          } else if (x === gridSS.x2) {
+            this.grid[x]![y]!.push(right);
+          } else if (y === gridSS.y1) {
+            this.grid[x]![y]!.push(top);
+          } else if (y === gridSS.y2) {
+            this.grid[x]![y]!.push(bottom);
+          } else {
+            this.grid[x]![y]!.push(simulatorSystem);
           }
         }
       }
@@ -791,18 +766,15 @@ export class SystemSimulator {
       }
 
       // Title.
-      // i.e. the sub-system is not inside a blackbox.
-      if (!gridSS.hidden) {
-        const simulatorSystemTitle: SimulatorSystemTitle = {
-          type: SimulatorObjectType.SystemTitle,
-          system: ss,
-          blackbox,
-          chars: ss.title,
-          zIndex: SimulatorObjectZIndex.SystemTitle + ss.depth,
-        };
+      const simulatorSystemTitle: SimulatorSystemTitle = {
+        type: SimulatorObjectType.SystemTitle,
+        system: ss,
+        blackbox,
+        chars: ss.title,
+        zIndex: SimulatorObjectZIndex.SystemTitle + ss.depth,
+      };
 
-        this.grid[gridSS.title.x]![gridSS.title.y]!.push(simulatorSystemTitle);
-      }
+      this.grid[gridSS.title.x]![gridSS.title.y]!.push(simulatorSystemTitle);
 
       // Recursive traversal.
       this.drawSubsystems(ss, finderGrid);
@@ -1234,10 +1206,7 @@ export class SystemSimulator {
         this.paths[link.b]![link.a] = path.slice().reverse();
 
         // Draw the link title.
-        if (
-          link.title.length > 0 &&
-          !(subsystemA.hidden && subsystemB.hidden)
-        ) {
+        if (link.title.length > 0) {
           const topLeft: SimulatorLinkTitleContainer = Object.freeze({
             type: SimulatorObjectType.LinkTitleContainer,
             link,
@@ -1387,7 +1356,6 @@ export class SystemSimulator {
               width: link.titleSize.width,
               height: link.titleSize.height,
             },
-            hidden: false,
           };
 
           for (let x = x1; x <= x2; x++) {

@@ -40,7 +40,6 @@ export interface RuntimeSubsystem extends Subsystem {
   size: RuntimeSize;
   position: RuntimePosition;
   parent?: RuntimeSystem | RuntimeSubsystem;
-  hideSystems: boolean;
   systems: RuntimeSubsystem[];
   links: RuntimeLink[];
   depth: number;
@@ -54,7 +53,6 @@ export interface RuntimeSystem extends System {
   size: RuntimeSize;
   position: RuntimePosition;
   parent?: undefined;
-  hideSystems: false;
   systems: RuntimeSubsystem[];
   links: RuntimeLink[];
   flows: RuntimeFlow[];
