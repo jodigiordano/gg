@@ -38,6 +38,7 @@ export default class FlowPlayer {
       sprite.width = BlockSize;
       sprite.height = BlockSize;
       sprite.visible = false;
+      sprite.tint = "0de500";
 
       return sprite;
     });
