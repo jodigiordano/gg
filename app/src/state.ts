@@ -10,6 +10,8 @@ export interface State {
   operation: Operation;
   x: number;
   y: number;
+  preciseX: number;
+  preciseY: number;
   simulator: SystemSimulator;
   simulatorInitialized: boolean;
   flowPlayer: FlowPlayer | null;
@@ -36,6 +38,8 @@ export const state: State = {
   operation: defaultOperation,
   x: -999999,
   y: -999999,
+  preciseX: -999999,
+  preciseY: -999999,
   simulator: defaultSimulator,
   simulatorInitialized: false,
   flowPlayer: null,

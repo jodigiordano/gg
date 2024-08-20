@@ -45,15 +45,15 @@ function onPointerMove(state: State) {
   selectVisual1.visible = false;
   selectVisual2.visible = false;
 
-  const step = state.flowPlayer?.getStepAt(state.x, state.y);
+  const data = state.flowPlayer?.getDataAt(state.preciseX, state.preciseY);
 
-  if (step) {
+  if (data) {
     selectVisual1.visible = true;
     selectVisual1.setPositionRect(
-      state.x - 0.5,
-      state.y - 0.5,
-      state.x + 0.5,
-      state.y + 0.5,
+      data.x - 0.5,
+      data.y - 0.5,
+      data.x + 0.5,
+      data.y + 0.5,
     );
 
     return;
@@ -138,11 +138,11 @@ const operation: Operation = {
   onPointerMove,
   onPointerDown() {},
   onPointerUp(state) {
-    const step = state.flowPlayer?.getStepAt(state.x, state.y);
+    const data = state.flowPlayer?.getDataAt(state.preciseX, state.preciseY);
 
-    if (step) {
+    if (data) {
       modifySpecification(() => {
-        step.specification.dataBackgroundColor = fillColor;
+        data.step.specification.dataBackgroundColor = fillColor;
       }).then(() => {
         onPointerMove(state);
         tick();

@@ -10,6 +10,12 @@ import { spritesheet } from "../renderer/assets.js";
 import { BlockSize } from "../helpers.js";
 import { state } from "../state.js";
 
+export interface FlowPlayerData {
+  x: number;
+  y: number;
+  step: RuntimeFlowStep;
+}
+
 export default class FlowPlayer {
   private simulator: SystemSimulator;
   private maxKeyframes: number;
@@ -70,17 +76,31 @@ export default class FlowPlayer {
     this.currentKeyframe = keyframe;
   }
 
-  getStepAt(worldX: number, worldY: number): RuntimeFlowStep | null {
-    const data = this.getTickData();
+  getDataAt(
+    preciseWorldX: number,
+    preciseWorldY: number,
+  ): FlowPlayerData | null {
     const boundaries = this.simulator.getBoundaries();
 
-    for (let i = 0; i < data.length; i++) {
-      if (data[i].length) {
-        const x = Math.floor(data[i][0]) - boundaries.translateX;
-        const y = Math.floor(data[i][1]) - boundaries.translateY;
+    const pointerX = preciseWorldX + boundaries.translateX;
+    const pointerY = preciseWorldY + boundaries.translateY;
 
-        if (x === worldX && y === worldY) {
-          return this.flow.steps[i];
+    for (let i = 0; i < this.sprites.length; i++) {
+      if (this.sprites[i].visible) {
+        const spriteX = this.sprites[i].position.x;
+        const spriteY = this.sprites[i].position.y;
+
+        if (
+          pointerX >= spriteX &&
+          pointerX <= spriteX + BlockSize &&
+          pointerY >= spriteY &&
+          pointerY <= spriteY + BlockSize
+        ) {
+          return {
+            x: this.sprites[i].x / BlockSize,
+            y: this.sprites[i].y / BlockSize,
+            step: this.flow.steps[i],
+          };
         }
       }
     }
@@ -113,7 +133,23 @@ export default class FlowPlayer {
   }
 
   draw(): void {
-    const data = this.getTickData();
+    const keyframe = this.currentKeyframe | 0;
+    const keyframeProgress = this.currentKeyframe - keyframe;
+
+    const data = getFlowTick(
+      this.simulator,
+      this.flow,
+      keyframe,
+      // easeInOutQuart
+      keyframeProgress < 0.5
+        ? 8 *
+            keyframeProgress *
+            keyframeProgress *
+            keyframeProgress *
+            keyframeProgress
+        : 1 - Math.pow(-2 * keyframeProgress + 2, 4) / 2,
+    );
+
     const boundaries = this.simulator.getBoundaries();
 
     for (let i = 0; i < data.length; i++) {
@@ -128,24 +164,5 @@ export default class FlowPlayer {
         this.sprites[i].visible = false;
       }
     }
-  }
-
-  private getTickData(): number[][] {
-    const keyframe = this.currentKeyframe | 0;
-    const keyframeProgress = this.currentKeyframe - keyframe;
-
-    return getFlowTick(
-      this.simulator,
-      this.flow,
-      keyframe,
-      // easeInOutQuart
-      keyframeProgress < 0.5
-        ? 8 *
-            keyframeProgress *
-            keyframeProgress *
-            keyframeProgress *
-            keyframeProgress
-        : 1 - Math.pow(-2 * keyframeProgress + 2, 4) / 2,
-    );
   }
 }

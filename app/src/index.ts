@@ -181,6 +181,8 @@ window.addEventListener("keydown", event => {
     } else {
       playFlow();
     }
+
+    event.preventDefault();
   } else if (event.key === "ArrowLeft" || event.key === "ArrowDown") {
     goToPreviousKeyframe();
   } else if (event.key === "ArrowRight" || event.key === "ArrowUp") {
@@ -949,6 +951,9 @@ function isInitialLoad(): boolean {
  */
 function updateStatePosition(x: number, y: number): void {
   const coordinates = viewport.screenToWorld(x, y);
+
+  state.preciseX = coordinates.x;
+  state.preciseY = coordinates.y;
 
   state.x =
     coordinates.x >= 0
