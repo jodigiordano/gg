@@ -1,4 +1,12 @@
-import { Link, System, Subsystem, Flow, FlowStep } from "./specification.js";
+import {
+  Link,
+  System,
+  Subsystem,
+  Flow,
+  FlowStep,
+  PathEndingPattern,
+  PathPattern,
+} from "./specification.js";
 
 export interface RuntimeSize {
   width: number;
@@ -16,6 +24,9 @@ export interface RuntimeLink extends Link {
   title: string;
   titlePosition: RuntimePosition;
   titleSize: RuntimeSize;
+  startPattern: PathEndingPattern;
+  endPattern: PathEndingPattern;
+  middlePattern: PathPattern;
   systemA: RuntimeSubsystem;
   systemB: RuntimeSubsystem;
 }

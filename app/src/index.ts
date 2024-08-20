@@ -15,7 +15,7 @@ import addSystemOperation from "./operations/systemAdd.js";
 import setTitleOperation from "./operations/setTitle.js";
 import moveOperation from "./operations/move.js";
 import setSystemParentOperation from "./operations/systemSetParent.js";
-import addLinkOperation from "./operations/linkAdd.js";
+import linkOperation from "./operations/link.js";
 import eraseOperation from "./operations/erase.js";
 import setSystemHideSystemsOperation from "./operations/systemToggleSystems.js";
 import transferDataOperation from "./operations/flowTransferData.js";
@@ -167,7 +167,7 @@ window.addEventListener("keydown", event => {
   } else if (event.key === "3") {
     switchOperation(setTitleOperation);
   } else if (event.key === "4") {
-    switchOperation(addLinkOperation);
+    switchOperation(linkOperation);
   } else if (event.key === "q") {
     switchOperation(setSystemParentOperation);
   } else if (event.key === "w") {
@@ -757,6 +757,41 @@ function updateFlowProgression(): void {
 }
 
 //
+// Link operations
+//
+
+const linkStylePipe = document.getElementById("operation-set-link-style-pipe")!;
+
+const linkStyleSolid = document.getElementById(
+  "operation-set-link-style-solid",
+)!;
+
+const linkStyleDotted = document.getElementById(
+  "operation-set-link-style-dotted",
+)!;
+
+linkStylePipe.addEventListener("click", function () {
+  state.linkStyle = "solid-line";
+
+  linkStylePipe.classList.add("hidden");
+  linkStyleSolid.classList.remove("hidden");
+});
+
+linkStyleSolid.addEventListener("click", function () {
+  state.linkStyle = "dotted-line";
+
+  linkStyleSolid.classList.add("hidden");
+  linkStyleDotted.classList.remove("hidden");
+});
+
+linkStyleDotted.addEventListener("click", function () {
+  state.linkStyle = "pipe";
+
+  linkStyleDotted.classList.add("hidden");
+  linkStylePipe.classList.remove("hidden");
+});
+
+//
 // Toolbox
 //
 
@@ -765,7 +800,7 @@ addSystemOperation.setup(state);
 setTitleOperation.setup(state);
 moveOperation.setup(state);
 setSystemParentOperation.setup(state);
-addLinkOperation.setup(state);
+linkOperation.setup(state);
 eraseOperation.setup(state);
 setSystemHideSystemsOperation.setup(state);
 transferDataOperation.setup(state);
@@ -786,8 +821,8 @@ for (const button of singleChoiceButtons) {
 
     button.classList.add("selected");
 
-    if (button.id === "operation-link-add") {
-      state.operation = addLinkOperation;
+    if (button.id === "operation-link") {
+      state.operation = linkOperation;
     } else if (button.id === "operation-system-add") {
       state.operation = addSystemOperation;
     } else if (button.id === "operation-move") {

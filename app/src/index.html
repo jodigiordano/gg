@@ -548,7 +548,7 @@
             <img src="./assets/icon-text.svg" />
             <div class="keyboard">3</div>
           </button>
-          <button id="operation-link-add" title="Add link">
+          <button id="operation-link" title="Add or modify a link">
             <img src="./assets/icon-link.svg" />
             <div class="keyboard">4</div>
           </button>
@@ -596,6 +596,23 @@
               />
             </svg>
             <div class="keyboard">a</div>
+          </button>
+          <button
+            id="operation-set-link-style-dotted"
+            class="hidden"
+            title="Dotted link"
+          >
+            <img src="./assets/icon-link-style-dotted.svg" />
+          </button>
+          <button
+            id="operation-set-link-style-solid"
+            class="hidden"
+            title="Solid link"
+          >
+            <img src="./assets/icon-link-style-solid.svg" />
+          </button>
+          <button id="operation-set-link-style-pipe" title="Pipe link">
+            <img src="./assets/icon-link-style-pipe.svg" />
           </button>
         </div>
         <div class="separator"></div>
@@ -726,7 +743,7 @@
             </tr>
             <tr>
               <td><img src="./assets/icon-text.svg" /></td>
-              <td>Add or modify the title of a system or link.</td>
+              <td>Add or modify the title of a system or a link.</td>
             </tr>
             <tr>
               <td><img src="./assets/icon-paint.svg" /></td>
@@ -761,11 +778,25 @@
             <tr>
               <td><img src="./assets/icon-link.svg" /></td>
               <td>
-                Add a link between two systems.
+                Add or modify a link between two systems.
                 <br />
                 Hold your pointer on the first system then drag your pointer to
                 the second system to create the link.
+                <br />
+                Click on an existing link to modify its style.
               </td>
+            </tr>
+            <tr>
+              <td><img src="./assets/icon-link-style-pipe.svg" /></td>
+              <td>Draw a pipe link using <img src="./assets/icon-link.svg" /></td>
+            </tr>
+            <tr>
+              <td><img src="./assets/icon-link-style-solid.svg" /></td>
+              <td>Draw a solid link using <img src="./assets/icon-link.svg" /></td>
+            </tr>
+            <tr>
+              <td><img src="./assets/icon-link-style-dotted.svg" /></td>
+              <td>Draw a dotted link using <img src="./assets/icon-link.svg" /></td>
             </tr>
           </tbody>
         </table>

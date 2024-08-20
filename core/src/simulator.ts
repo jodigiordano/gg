@@ -28,15 +28,27 @@ export enum SimulatorObjectZIndex {
 }
 
 export enum SimulatorLinkDirectionType {
-  Horizontal = 1,
-  Vertical = 2,
-  BottomToRight = 3,
-  BottomToLeft = 4,
-  TopToRight = 5,
-  TopToLeft = 6,
+  TopToLeft = 1,
+  TopToBottom = 2,
+  TopToRight = 3,
+  LeftToTop = 4,
+  LeftToRight = 5,
+  LeftToBottom = 6,
+  RightToTop = 7,
+  RightToLeft = 8,
+  RightToBottom = 9,
+  BottomToLeft = 10,
+  BottomToTop = 11,
+  BottomToRight = 12,
 }
 
-export enum SimulatorSystemDirectionType {
+export enum SimulatorLinkPathPosition {
+  Start = 1,
+  Middle = 2,
+  End = 3,
+}
+
+export enum SimulatorDirectionType {
   TopLeft = 1,
   TopCenter = 2,
   TopRight = 3,
@@ -56,7 +68,7 @@ export interface SimulatorObject {
 export interface SimulatorSubsystem extends SimulatorObject {
   type: SimulatorObjectType.System;
   system: RuntimeSubsystem;
-  direction: SimulatorSystemDirectionType;
+  direction: SimulatorDirectionType;
   blackbox: boolean;
 }
 
@@ -70,6 +82,7 @@ export interface SimulatorSystemTitle extends SimulatorObject {
 export interface SimulatorLink extends SimulatorObject {
   type: SimulatorObjectType.Link;
   direction: SimulatorLinkDirectionType;
+  pathPosition: SimulatorLinkPathPosition;
   link: RuntimeLink;
 }
 
@@ -81,7 +94,7 @@ export interface SimulatorLinkTitle extends SimulatorObject {
 
 export interface SimulatorLinkTitleContainer extends SimulatorObject {
   type: SimulatorObjectType.LinkTitleContainer;
-  direction: SimulatorSystemDirectionType;
+  direction: SimulatorDirectionType;
   link: RuntimeLink;
 }
 
@@ -651,7 +664,7 @@ export class SystemSimulator {
         type: SimulatorObjectType.System,
         blackbox,
         system: ss,
-        direction: SimulatorSystemDirectionType.CenterCenter,
+        direction: SimulatorDirectionType.CenterCenter,
         zIndex: SimulatorObjectZIndex.System + ss.depth,
       });
 
@@ -659,7 +672,7 @@ export class SystemSimulator {
         type: SimulatorObjectType.System,
         blackbox,
         system: ss,
-        direction: SimulatorSystemDirectionType.TopLeft,
+        direction: SimulatorDirectionType.TopLeft,
         zIndex: SimulatorObjectZIndex.System + ss.depth,
       });
 
@@ -667,7 +680,7 @@ export class SystemSimulator {
         type: SimulatorObjectType.System,
         blackbox,
         system: ss,
-        direction: SimulatorSystemDirectionType.TopRight,
+        direction: SimulatorDirectionType.TopRight,
         zIndex: SimulatorObjectZIndex.System + ss.depth,
       });
 
@@ -675,7 +688,7 @@ export class SystemSimulator {
         type: SimulatorObjectType.System,
         blackbox,
         system: ss,
-        direction: SimulatorSystemDirectionType.BottomLeft,
+        direction: SimulatorDirectionType.BottomLeft,
         zIndex: SimulatorObjectZIndex.System + ss.depth,
       });
 
@@ -683,7 +696,7 @@ export class SystemSimulator {
         type: SimulatorObjectType.System,
         blackbox,
         system: ss,
-        direction: SimulatorSystemDirectionType.BottomRight,
+        direction: SimulatorDirectionType.BottomRight,
         zIndex: SimulatorObjectZIndex.System + ss.depth,
       });
 
@@ -691,7 +704,7 @@ export class SystemSimulator {
         type: SimulatorObjectType.System,
         blackbox,
         system: ss,
-        direction: SimulatorSystemDirectionType.CenterLeft,
+        direction: SimulatorDirectionType.CenterLeft,
         zIndex: SimulatorObjectZIndex.System + ss.depth,
       });
 
@@ -699,7 +712,7 @@ export class SystemSimulator {
         type: SimulatorObjectType.System,
         blackbox,
         system: ss,
-        direction: SimulatorSystemDirectionType.CenterRight,
+        direction: SimulatorDirectionType.CenterRight,
         zIndex: SimulatorObjectZIndex.System + ss.depth,
       });
 
@@ -707,7 +720,7 @@ export class SystemSimulator {
         type: SimulatorObjectType.System,
         blackbox,
         system: ss,
-        direction: SimulatorSystemDirectionType.TopCenter,
+        direction: SimulatorDirectionType.TopCenter,
         zIndex: SimulatorObjectZIndex.System + ss.depth,
       });
 
@@ -715,7 +728,7 @@ export class SystemSimulator {
         type: SimulatorObjectType.System,
         blackbox,
         system: ss,
-        direction: SimulatorSystemDirectionType.BottomCenter,
+        direction: SimulatorDirectionType.BottomCenter,
         zIndex: SimulatorObjectZIndex.System + ss.depth,
       });
 
@@ -941,17 +954,43 @@ export class SystemSimulator {
         }
 
         // Draw the path segments.
-        const horizontal: SimulatorLink = Object.freeze({
+        const leftToRight: SimulatorLink = Object.freeze({
           type: SimulatorObjectType.Link,
-          direction: SimulatorLinkDirectionType.Horizontal,
+          direction: SimulatorLinkDirectionType.LeftToRight,
           link,
+          pathPosition: SimulatorLinkPathPosition.Middle,
           zIndex: SimulatorObjectZIndex.Link + linkIndex,
         });
 
-        const vertical: SimulatorLink = Object.freeze({
+        const rightToLeft: SimulatorLink = Object.freeze({
           type: SimulatorObjectType.Link,
-          direction: SimulatorLinkDirectionType.Vertical,
+          direction: SimulatorLinkDirectionType.RightToLeft,
           link,
+          pathPosition: SimulatorLinkPathPosition.Middle,
+          zIndex: SimulatorObjectZIndex.Link + linkIndex,
+        });
+
+        const rightToTop: SimulatorLink = Object.freeze({
+          type: SimulatorObjectType.Link,
+          direction: SimulatorLinkDirectionType.RightToTop,
+          link,
+          pathPosition: SimulatorLinkPathPosition.Middle,
+          zIndex: SimulatorObjectZIndex.Link + linkIndex,
+        });
+
+        const topToBottom: SimulatorLink = Object.freeze({
+          type: SimulatorObjectType.Link,
+          direction: SimulatorLinkDirectionType.TopToBottom,
+          link,
+          pathPosition: SimulatorLinkPathPosition.Middle,
+          zIndex: SimulatorObjectZIndex.Link + linkIndex,
+        });
+
+        const bottomToTop: SimulatorLink = Object.freeze({
+          type: SimulatorObjectType.Link,
+          direction: SimulatorLinkDirectionType.BottomToTop,
+          link,
+          pathPosition: SimulatorLinkPathPosition.Middle,
           zIndex: SimulatorObjectZIndex.Link + linkIndex,
         });
 
@@ -959,6 +998,7 @@ export class SystemSimulator {
           type: SimulatorObjectType.Link,
           direction: SimulatorLinkDirectionType.BottomToRight,
           link,
+          pathPosition: SimulatorLinkPathPosition.Middle,
           zIndex: SimulatorObjectZIndex.Link + linkIndex,
         });
 
@@ -966,6 +1006,7 @@ export class SystemSimulator {
           type: SimulatorObjectType.Link,
           direction: SimulatorLinkDirectionType.BottomToLeft,
           link,
+          pathPosition: SimulatorLinkPathPosition.Middle,
           zIndex: SimulatorObjectZIndex.Link + linkIndex,
         });
 
@@ -973,6 +1014,7 @@ export class SystemSimulator {
           type: SimulatorObjectType.Link,
           direction: SimulatorLinkDirectionType.TopToLeft,
           link,
+          pathPosition: SimulatorLinkPathPosition.Middle,
           zIndex: SimulatorObjectZIndex.Link + linkIndex,
         });
 
@@ -980,6 +1022,31 @@ export class SystemSimulator {
           type: SimulatorObjectType.Link,
           direction: SimulatorLinkDirectionType.TopToRight,
           link,
+          pathPosition: SimulatorLinkPathPosition.Middle,
+          zIndex: SimulatorObjectZIndex.Link + linkIndex,
+        });
+
+        const leftToBottom: SimulatorLink = Object.freeze({
+          type: SimulatorObjectType.Link,
+          direction: SimulatorLinkDirectionType.LeftToBottom,
+          link,
+          pathPosition: SimulatorLinkPathPosition.Middle,
+          zIndex: SimulatorObjectZIndex.Link + linkIndex,
+        });
+
+        const rightToBottom: SimulatorLink = Object.freeze({
+          type: SimulatorObjectType.Link,
+          direction: SimulatorLinkDirectionType.RightToBottom,
+          link,
+          pathPosition: SimulatorLinkPathPosition.Middle,
+          zIndex: SimulatorObjectZIndex.Link + linkIndex,
+        });
+
+        const leftToTop: SimulatorLink = Object.freeze({
+          type: SimulatorObjectType.Link,
+          direction: SimulatorLinkDirectionType.LeftToTop,
+          link,
+          pathPosition: SimulatorLinkPathPosition.Middle,
           zIndex: SimulatorObjectZIndex.Link + linkIndex,
         });
 
@@ -996,6 +1063,13 @@ export class SystemSimulator {
             continue;
           }
 
+          const pathPosition =
+            i === insideACount
+              ? SimulatorLinkPathPosition.Start
+              : i === path.length - insideBCount - 1
+                ? SimulatorLinkPathPosition.End
+                : SimulatorLinkPathPosition.Middle;
+
           const xBefore = path[i - 1]![0]!;
           const yBefore = path[i - 1]![1]!;
 
@@ -1003,52 +1077,148 @@ export class SystemSimulator {
           const yAfter = path[i + 1]![1]!;
 
           // ...    ...
-          // BxA or AxB
+          // B■A or A■B
           // ...    ...
           if (yBefore === y && yAfter === y) {
-            this.grid[x!]![y!]!.push(horizontal);
+            if (xBefore < xAfter) {
+              this.grid[x!]![y!]!.push({
+                ...leftToRight,
+                pathPosition,
+              } as SimulatorLink);
+            } else {
+              this.grid[x!]![y!]!.push({
+                ...rightToLeft,
+                pathPosition,
+              } as SimulatorLink);
+            }
 
             // .B.    .A.
-            // .x. or .x.
+            // .■. or .■.
             // .A.    .B.
           } else if (xBefore === x && xAfter === x) {
-            this.grid[x!]![y!]!.push(vertical);
+            if (yBefore < yAfter) {
+              this.grid[x!]![y!]!.push({
+                ...topToBottom,
+                pathPosition,
+              } as SimulatorLink);
+            } else {
+              this.grid[x!]![y!]!.push({
+                ...bottomToTop,
+                pathPosition,
+              } as SimulatorLink);
+            }
 
-            // ...    ...
-            // .xA or .xB
-            // .B.    .A.
+            // ...
+            // .■A
+            // .B.
           } else if (
-            (xBefore === x && yBefore > y! && xAfter > x! && yAfter === y) ||
-            (yBefore === y && xBefore > x! && yAfter > y! && xAfter === x)
+            xBefore === x &&
+            yBefore > y! &&
+            xAfter > x! &&
+            yAfter === y
           ) {
-            this.grid[x!]![y!]!.push(bottomToRight);
+            this.grid[x!]![y!]!.push({
+              ...leftToBottom,
+              pathPosition,
+            } as SimulatorLink);
 
-            // ...    ...
-            // .Bx or .Ax
-            // ..A    ..B
+            // ...
+            // .■B
+            // .A.
           } else if (
-            (xBefore < x! && yBefore === y && xAfter === x && yAfter > y!) ||
-            (yBefore > y! && xBefore === x && yAfter === y && xAfter < x!)
+            yBefore === y &&
+            xBefore > x! &&
+            yAfter > y! &&
+            xAfter === x
           ) {
-            this.grid[x!]![y!]!.push(bottomToLeft);
+            this.grid[x!]![y!]!.push({
+              ...bottomToRight,
+              pathPosition,
+            } as SimulatorLink);
 
-            // ...    ...
-            // ..B or ..A
-            // .Ax    .Bx
+            // ...
+            // .A■
+            // ..B
           } else if (
-            (xBefore === x && yBefore < y! && xAfter < x! && yAfter === y) ||
-            (yBefore === y && xBefore < x! && yAfter < y! && xAfter === x)
+            xBefore < x! &&
+            yBefore === y &&
+            xAfter === x &&
+            yAfter > y!
           ) {
-            this.grid[x!]![y!]!.push(topToLeft);
+            this.grid[x!]![y!]!.push({
+              ...rightToBottom,
+              pathPosition,
+            } as SimulatorLink);
 
-            // ...    ...
-            // .A. or .B.
-            // .xB    .xA
+            // ...
+            // ..A
+            // .B■
           } else if (
-            (xBefore > x! && yBefore === y && xAfter === x && yAfter < y!) ||
-            (yBefore < y! && xBefore === x && yAfter === y && xAfter > x!)
+            yBefore > y! &&
+            xBefore === x &&
+            yAfter === y &&
+            xAfter < x!
           ) {
-            this.grid[x!]![y!]!.push(topToRight);
+            this.grid[x!]![y!]!.push({
+              ...bottomToLeft,
+              pathPosition,
+            } as SimulatorLink);
+
+            // ...
+            // .B■
+            // ..A
+          } else if (
+            xBefore === x &&
+            yBefore < y! &&
+            xAfter < x! &&
+            yAfter === y
+          ) {
+            this.grid[x!]![y!]!.push({
+              ...topToLeft,
+              pathPosition,
+            } as SimulatorLink);
+
+            // ...
+            // ..B
+            // .A■
+          } else if (
+            yBefore === y &&
+            xBefore < x! &&
+            yAfter < y! &&
+            xAfter === x
+          ) {
+            this.grid[x!]![y!]!.push({
+              ...rightToTop,
+              pathPosition,
+            } as SimulatorLink);
+
+            // ...
+            // .A.
+            // .■B
+          } else if (
+            yBefore < y! &&
+            xBefore === x &&
+            yAfter === y &&
+            xAfter > x!
+          ) {
+            this.grid[x!]![y!]!.push({
+              ...topToRight,
+              pathPosition,
+            } as SimulatorLink);
+
+            // ...
+            // .B.
+            // .■A
+          } else if (
+            xBefore > x! &&
+            yBefore === y &&
+            xAfter === x &&
+            yAfter < y!
+          ) {
+            this.grid[x!]![y!]!.push({
+              ...leftToTop,
+              pathPosition,
+            } as SimulatorLink);
           }
         }
 
@@ -1071,63 +1241,63 @@ export class SystemSimulator {
           const topLeft: SimulatorLinkTitleContainer = Object.freeze({
             type: SimulatorObjectType.LinkTitleContainer,
             link,
-            direction: SimulatorSystemDirectionType.TopLeft,
+            direction: SimulatorDirectionType.TopLeft,
             zIndex: SimulatorObjectZIndex.LinkTitleContainer + linkIndex,
           });
 
           const topRight: SimulatorLinkTitleContainer = Object.freeze({
             type: SimulatorObjectType.LinkTitleContainer,
             link,
-            direction: SimulatorSystemDirectionType.TopRight,
+            direction: SimulatorDirectionType.TopRight,
             zIndex: SimulatorObjectZIndex.LinkTitleContainer + linkIndex,
           });
 
           const bottomLeft: SimulatorLinkTitleContainer = Object.freeze({
             type: SimulatorObjectType.LinkTitleContainer,
             link,
-            direction: SimulatorSystemDirectionType.BottomLeft,
+            direction: SimulatorDirectionType.BottomLeft,
             zIndex: SimulatorObjectZIndex.LinkTitleContainer + linkIndex,
           });
 
           const bottomRight: SimulatorLinkTitleContainer = Object.freeze({
             type: SimulatorObjectType.LinkTitleContainer,
             link,
-            direction: SimulatorSystemDirectionType.BottomRight,
+            direction: SimulatorDirectionType.BottomRight,
             zIndex: SimulatorObjectZIndex.LinkTitleContainer + linkIndex,
           });
 
           const left: SimulatorLinkTitleContainer = Object.freeze({
             type: SimulatorObjectType.LinkTitleContainer,
             link,
-            direction: SimulatorSystemDirectionType.CenterLeft,
+            direction: SimulatorDirectionType.CenterLeft,
             zIndex: SimulatorObjectZIndex.LinkTitleContainer + linkIndex,
           });
 
           const right: SimulatorLinkTitleContainer = Object.freeze({
             type: SimulatorObjectType.LinkTitleContainer,
             link,
-            direction: SimulatorSystemDirectionType.CenterRight,
+            direction: SimulatorDirectionType.CenterRight,
             zIndex: SimulatorObjectZIndex.LinkTitleContainer + linkIndex,
           });
 
           const top: SimulatorLinkTitleContainer = Object.freeze({
             type: SimulatorObjectType.LinkTitleContainer,
             link,
-            direction: SimulatorSystemDirectionType.TopCenter,
+            direction: SimulatorDirectionType.TopCenter,
             zIndex: SimulatorObjectZIndex.LinkTitleContainer + linkIndex,
           });
 
           const bottom: SimulatorLinkTitleContainer = Object.freeze({
             type: SimulatorObjectType.LinkTitleContainer,
             link,
-            direction: SimulatorSystemDirectionType.BottomCenter,
+            direction: SimulatorDirectionType.BottomCenter,
             zIndex: SimulatorObjectZIndex.LinkTitleContainer + linkIndex,
           });
 
           const center: SimulatorLinkTitleContainer = Object.freeze({
             type: SimulatorObjectType.LinkTitleContainer,
             link,
-            direction: SimulatorSystemDirectionType.CenterCenter,
+            direction: SimulatorDirectionType.CenterCenter,
             zIndex: SimulatorObjectZIndex.LinkTitleContainer + linkIndex,
           });
 

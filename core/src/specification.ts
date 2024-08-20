@@ -1,3 +1,6 @@
+export type PathEndingPattern = "none" | "solid-arrow";
+export type PathPattern = "solid-line" | "dotted-line" | "pipe";
+
 /**
  * A system
  */
@@ -85,6 +88,18 @@ export interface Link {
    * The background color of the link title.
    */
   titleBackgroundColor?: string;
+  /**
+   * The pattern of the first path segment
+   */
+  startPattern?: PathEndingPattern;
+  /**
+   * The pattern of the path from A to B
+   */
+  middlePattern?: PathPattern;
+  /**
+   * The pattern of the last path segment
+   */
+  endPattern?: PathEndingPattern;
   /**
    * Side A of the link.
    */
@@ -208,6 +223,30 @@ const schemas = [
         type: "string",
         description: "The background color of the link title.",
       },
+      startPattern: {
+        description: "The pattern of the first path segment",
+        allOf: [
+          {
+            $ref: "#/$defs/pathEndingPattern",
+          },
+        ],
+      },
+      middlePattern: {
+        description: "The pattern of the path from A to B",
+        allOf: [
+          {
+            $ref: "#/$defs/pathPattern",
+          },
+        ],
+      },
+      endPattern: {
+        description: "The pattern of the last path segment",
+        allOf: [
+          {
+            $ref: "#/$defs/pathEndingPattern",
+          },
+        ],
+      },
       a: {
         type: "string",
         pattern: "^[a-z0-9_-]+$",
@@ -217,6 +256,18 @@ const schemas = [
         type: "string",
         pattern: "^[a-z0-9_-]+$",
         description: "Side B of the link.",
+      },
+    },
+    $defs: {
+      pathPattern: {
+        $id: "PathPattern",
+        type: "string",
+        enum: ["solid-line", "dotted-line", "pipe"],
+      },
+      pathEndingPattern: {
+        $id: "PathEndingPattern",
+        type: "string",
+        enum: ["none", "solid-arrow"],
       },
     },
   },

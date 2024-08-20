@@ -1,4 +1,4 @@
-import { load, SystemSimulator } from "@gg/core";
+import { load, PathPattern, SystemSimulator } from "@gg/core";
 import FlowPlayer from "./simulator/flowPlayer.js";
 import Operation from "./operation.js";
 import moveOperation from "./operations/move.js";
@@ -17,6 +17,7 @@ export interface State {
   flowPlay: boolean;
   flowPlayMode: "playOne" | "repeatAll" | "repeatOne";
   flowSpeed: number;
+  linkStyle: PathPattern;
 }
 
 const defaultSystem = load({ specificationVersion: "1.0.0", title: "" }).system;
@@ -42,6 +43,7 @@ export const state: State = {
   flowPlay: urlParams.autoplay,
   flowPlayMode: "repeatAll",
   flowSpeed: urlParams.speed,
+  linkStyle: "pipe",
 };
 
 defaultOperation.onBegin(state);

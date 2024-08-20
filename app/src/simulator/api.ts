@@ -6,10 +6,11 @@ import {
   SimulatorLinkDirectionType,
   SimulatorLink,
   SimulatorLinkTitleContainer,
-  SimulatorSystemDirectionType,
+  SimulatorDirectionType,
   SimulatorLinkTitle,
+  SimulatorLinkPathPosition,
 } from "@gg/core";
-import { Sprite, Text, SCALE_MODES, Container } from "pixi.js";
+import { Sprite, Text, SCALE_MODES, Container, Texture } from "pixi.js";
 import { spritesheet } from "../renderer/assets.js";
 import { BlockSize, getForegroundColor } from "../helpers.js";
 import { app, tick } from "../renderer/pixi.js";
@@ -153,21 +154,21 @@ function getObjectsToRender(): (Sprite | Text)[] {
             sprite.tint = system.backgroundColor ?? "e9ecef";
           }
 
-          if (direction === SimulatorSystemDirectionType.TopLeft) {
+          if (direction === SimulatorDirectionType.TopLeft) {
             sprite.texture = systemTopLeft;
-          } else if (direction === SimulatorSystemDirectionType.TopCenter) {
+          } else if (direction === SimulatorDirectionType.TopCenter) {
             sprite.texture = systemTopCenter;
-          } else if (direction === SimulatorSystemDirectionType.TopRight) {
+          } else if (direction === SimulatorDirectionType.TopRight) {
             sprite.texture = systemTopRight;
-          } else if (direction === SimulatorSystemDirectionType.CenterLeft) {
+          } else if (direction === SimulatorDirectionType.CenterLeft) {
             sprite.texture = systemCenterLeft;
-          } else if (direction === SimulatorSystemDirectionType.CenterRight) {
+          } else if (direction === SimulatorDirectionType.CenterRight) {
             sprite.texture = systemCenterRight;
-          } else if (direction === SimulatorSystemDirectionType.BottomLeft) {
+          } else if (direction === SimulatorDirectionType.BottomLeft) {
             sprite.texture = systemBottomLeft;
-          } else if (direction === SimulatorSystemDirectionType.BottomCenter) {
+          } else if (direction === SimulatorDirectionType.BottomCenter) {
             sprite.texture = systemBottomCenter;
-          } else if (direction === SimulatorSystemDirectionType.BottomRight) {
+          } else if (direction === SimulatorDirectionType.BottomRight) {
             sprite.texture = systemBottomRight;
           } else {
             // CenterCenter
@@ -186,25 +187,161 @@ function getObjectsToRender(): (Sprite | Text)[] {
           sprite.anchor.x = 0.5;
           sprite.anchor.y = 0.5;
 
-          const { direction } = obj as SimulatorLink;
+          const { direction, pathPosition, link } = obj as SimulatorLink;
 
-          if (direction === SimulatorLinkDirectionType.Horizontal) {
-            sprite.texture = spritesheet.textures.link;
-            sprite.rotation = -Math.PI / 2;
-          } else if (direction === SimulatorLinkDirectionType.TopToLeft) {
-            sprite.texture = spritesheet.textures.linkCorner;
-            sprite.rotation = -Math.PI / 2;
-          } else if (direction === SimulatorLinkDirectionType.TopToRight) {
-            sprite.texture = spritesheet.textures.linkCorner;
-          } else if (direction === SimulatorLinkDirectionType.BottomToLeft) {
-            sprite.texture = spritesheet.textures.linkCorner;
-            sprite.rotation = Math.PI;
-          } else if (direction === SimulatorLinkDirectionType.BottomToRight) {
-            sprite.texture = spritesheet.textures.linkCorner;
-            sprite.rotation = Math.PI / 2;
+          if (link.middlePattern !== "pipe") {
+            sprite.tint = "#000000";
+          }
+
+          const isCorner =
+            direction === SimulatorLinkDirectionType.BottomToLeft ||
+            direction === SimulatorLinkDirectionType.LeftToBottom ||
+            direction === SimulatorLinkDirectionType.BottomToRight ||
+            direction === SimulatorLinkDirectionType.RightToBottom ||
+            direction === SimulatorLinkDirectionType.TopToLeft ||
+            direction === SimulatorLinkDirectionType.LeftToTop ||
+            direction === SimulatorLinkDirectionType.RightToTop ||
+            direction === SimulatorLinkDirectionType.TopToRight;
+
+          if (
+            link.middlePattern !== "pipe" &&
+            pathPosition === SimulatorLinkPathPosition.Start &&
+            link.startPattern !== "none"
+          ) {
+            if (link.middlePattern === "solid-line") {
+              if (isCorner) {
+                sprite.texture =
+                  spritesheet.textures.linkSolidLineSolidArrowCorner;
+              } else {
+                sprite.texture = spritesheet.textures.linkSolidLineSolidArrow;
+              }
+            } /* dotted-line */ else {
+              if (isCorner) {
+                sprite.texture =
+                  spritesheet.textures.linkDottedLineSolidArrowCorner;
+              } else {
+                sprite.texture = spritesheet.textures.linkDottedLineSolidArrow;
+              }
+            }
+
+            if (direction === SimulatorLinkDirectionType.LeftToRight) {
+              sprite.rotation = Math.PI / 2;
+            } else if (direction === SimulatorLinkDirectionType.RightToLeft) {
+              sprite.rotation = -Math.PI / 2;
+            } else if (direction === SimulatorLinkDirectionType.TopToBottom) {
+              sprite.rotation = Math.PI;
+            } else if (direction === SimulatorLinkDirectionType.BottomToTop) {
+              /* NOOP */
+            } else if (direction === SimulatorLinkDirectionType.RightToTop) {
+              sprite.rotation = Math.PI;
+            } else if (direction === SimulatorLinkDirectionType.TopToRight) {
+              sprite.rotation = -Math.PI / 2;
+            } else if (direction === SimulatorLinkDirectionType.TopToLeft) {
+              sprite.rotation = -Math.PI / 2;
+            } else if (direction === SimulatorLinkDirectionType.LeftToTop) {
+              /* NOOP */
+            } else if (direction === SimulatorLinkDirectionType.RightToBottom) {
+              sprite.rotation = Math.PI;
+            } else if (direction === SimulatorLinkDirectionType.BottomToRight) {
+              /* NOOP */
+            } else if (direction === SimulatorLinkDirectionType.BottomToLeft) {
+              sprite.rotation = Math.PI / 2;
+            } else if (direction === SimulatorLinkDirectionType.LeftToBottom) {
+              sprite.rotation = Math.PI / 2;
+            }
+          } else if (
+            link.middlePattern !== "pipe" &&
+            pathPosition === SimulatorLinkPathPosition.End &&
+            link.endPattern !== "none"
+          ) {
+            if (link.middlePattern === "solid-line") {
+              if (isCorner) {
+                sprite.texture =
+                  spritesheet.textures.linkSolidLineSolidArrowCorner;
+              } else {
+                sprite.texture = spritesheet.textures.linkSolidLineSolidArrow;
+              }
+            } /* dotted-line */ else {
+              if (isCorner) {
+                sprite.texture =
+                  spritesheet.textures.linkDottedLineSolidArrowCorner;
+              } else {
+                sprite.texture = spritesheet.textures.linkDottedLineSolidArrow;
+              }
+            }
+
+            if (direction === SimulatorLinkDirectionType.LeftToRight) {
+              sprite.rotation = -Math.PI / 2;
+            } else if (direction === SimulatorLinkDirectionType.RightToLeft) {
+              sprite.rotation = Math.PI / 2;
+            } else if (direction === SimulatorLinkDirectionType.TopToBottom) {
+              /* NOOP */
+            } else if (direction === SimulatorLinkDirectionType.BottomToTop) {
+              sprite.rotation = -Math.PI;
+            } else if (direction === SimulatorLinkDirectionType.RightToTop) {
+              sprite.rotation = -Math.PI / 2;
+            } else if (direction === SimulatorLinkDirectionType.TopToRight) {
+              /* NOOP */
+            } else if (direction === SimulatorLinkDirectionType.TopToLeft) {
+              sprite.rotation = -Math.PI;
+            } else if (direction === SimulatorLinkDirectionType.LeftToTop) {
+              sprite.rotation = -Math.PI / 2;
+            } else if (direction === SimulatorLinkDirectionType.RightToBottom) {
+              sprite.rotation = Math.PI / 2;
+            } else if (direction === SimulatorLinkDirectionType.BottomToRight) {
+              sprite.rotation = Math.PI / 2;
+            } else if (direction === SimulatorLinkDirectionType.BottomToLeft) {
+              sprite.rotation = -Math.PI;
+            } else if (direction === SimulatorLinkDirectionType.LeftToBottom) {
+              /* NOOP */
+            }
           } else {
-            // Vertical.
-            sprite.texture = spritesheet.textures.link;
+            let linkTexture: Texture;
+            let linkCornerTexture: Texture;
+
+            if (link.middlePattern === "solid-line") {
+              linkTexture = spritesheet.textures.linkSolidLine;
+              linkCornerTexture = spritesheet.textures.linkSolidLineCorner;
+            } else if (link.middlePattern === "dotted-line") {
+              linkTexture = spritesheet.textures.linkDottedLine;
+              linkCornerTexture = spritesheet.textures.linkDottedLineCorner;
+            } /* pipe */ else {
+              linkTexture = spritesheet.textures.linkPipe;
+              linkCornerTexture = spritesheet.textures.linkPipeCorner;
+            }
+
+            if (
+              direction === SimulatorLinkDirectionType.LeftToRight ||
+              direction === SimulatorLinkDirectionType.RightToLeft
+            ) {
+              sprite.texture = linkTexture;
+              sprite.rotation = -Math.PI / 2;
+            } else if (
+              direction === SimulatorLinkDirectionType.TopToLeft ||
+              direction === SimulatorLinkDirectionType.RightToTop
+            ) {
+              sprite.texture = linkCornerTexture;
+              sprite.rotation = -Math.PI / 2;
+            } else if (
+              direction === SimulatorLinkDirectionType.TopToRight ||
+              direction === SimulatorLinkDirectionType.LeftToTop
+            ) {
+              sprite.texture = linkCornerTexture;
+            } else if (
+              direction === SimulatorLinkDirectionType.BottomToLeft ||
+              direction === SimulatorLinkDirectionType.RightToBottom
+            ) {
+              sprite.texture = linkCornerTexture;
+              sprite.rotation = Math.PI;
+            } else if (
+              direction === SimulatorLinkDirectionType.BottomToRight ||
+              direction === SimulatorLinkDirectionType.LeftToBottom
+            ) {
+              sprite.texture = linkCornerTexture;
+              sprite.rotation = Math.PI / 2;
+            } /* TopToBottom & BottomToTop */ else {
+              sprite.texture = linkTexture;
+            }
           }
 
           toDraw.push(sprite);
@@ -220,21 +357,21 @@ function getObjectsToRender(): (Sprite | Text)[] {
           sprite.height = BlockSize;
           sprite.tint = link.titleBackgroundColor ?? "ced4da";
 
-          if (direction === SimulatorSystemDirectionType.TopLeft) {
+          if (direction === SimulatorDirectionType.TopLeft) {
             sprite.texture = spritesheet.textures.linkLabelTopLeft;
-          } else if (direction === SimulatorSystemDirectionType.TopCenter) {
+          } else if (direction === SimulatorDirectionType.TopCenter) {
             sprite.texture = spritesheet.textures.linkLabelTopCenter;
-          } else if (direction === SimulatorSystemDirectionType.TopRight) {
+          } else if (direction === SimulatorDirectionType.TopRight) {
             sprite.texture = spritesheet.textures.linkLabelTopRight;
-          } else if (direction === SimulatorSystemDirectionType.CenterLeft) {
+          } else if (direction === SimulatorDirectionType.CenterLeft) {
             sprite.texture = spritesheet.textures.linkLabelCenterLeft;
-          } else if (direction === SimulatorSystemDirectionType.CenterRight) {
+          } else if (direction === SimulatorDirectionType.CenterRight) {
             sprite.texture = spritesheet.textures.linkLabelCenterRight;
-          } else if (direction === SimulatorSystemDirectionType.BottomLeft) {
+          } else if (direction === SimulatorDirectionType.BottomLeft) {
             sprite.texture = spritesheet.textures.linkLabelBottomLeft;
-          } else if (direction === SimulatorSystemDirectionType.BottomCenter) {
+          } else if (direction === SimulatorDirectionType.BottomCenter) {
             sprite.texture = spritesheet.textures.linkLabelBottomCenter;
-          } else if (direction === SimulatorSystemDirectionType.BottomRight) {
+          } else if (direction === SimulatorDirectionType.BottomRight) {
             sprite.texture = spritesheet.textures.linkLabelBottomRight;
           } else {
             sprite.texture = spritesheet.textures.linkLabelCenterCenter;
