@@ -90,6 +90,10 @@ export interface Link {
    */
   titleBackgroundColor?: string;
   /**
+   * The background color of the link.
+   */
+  backgroundColor?: string;
+  /**
    * The pattern of the first path segment
    */
   startPattern?: PathEndingPattern;
@@ -223,6 +227,10 @@ const schemas = [
       titleBackgroundColor: {
         type: "string",
         description: "The background color of the link title.",
+      },
+      backgroundColor: {
+        type: "string",
+        description: "The background color of the link.",
       },
       startPattern: {
         description: "The pattern of the first path segment",

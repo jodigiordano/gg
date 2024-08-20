@@ -189,8 +189,10 @@ function getObjectsToRender(): (Sprite | Text)[] {
 
           const { direction, pathPosition, link } = obj as SimulatorLink;
 
-          if (link.middlePattern !== "pipe") {
-            sprite.tint = "#000000";
+          if (link.backgroundColor) {
+            sprite.tint = link.backgroundColor;
+          } else if (link.middlePattern !== "pipe") {
+            sprite.tint = "000000";
           }
 
           const isCorner =

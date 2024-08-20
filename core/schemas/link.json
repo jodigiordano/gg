@@ -18,6 +18,10 @@
       "type": "string",
       "description": "The background color of the link title."
     },
+    "backgroundColor": {
+      "type": "string",
+      "description": "The background color of the link."
+    },
     "startPattern": {
       "description": "The pattern of the first path segment",
       "allOf": [

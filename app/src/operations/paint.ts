@@ -39,25 +39,53 @@ for (const availableColor of availableColors) {
 }
 
 const selectSystemVisual = new SystemSelector();
-const selectLinkTitleVisual = new SystemSelector();
+const selectLinkVisual1 = new SystemSelector();
+const selectLinkVisual2 = new SystemSelector();
 
 function onPointerMove(state: State) {
   selectSystemVisual.visible = false;
-  selectLinkTitleVisual.visible = false;
-  viewport.pause = false;
+  selectLinkVisual1.visible = false;
+  selectLinkVisual2.visible = false;
 
-  const link = state.simulator.getLinkByTitleAt(state.x, state.y);
+  const linkByTitle = state.simulator.getLinkByTitleAt(state.x, state.y);
 
-  if (link && link.title.length > 0) {
-    selectLinkTitleVisual.visible = true;
-    selectLinkTitleVisual.setPositionRect(
-      link.titlePosition.x,
-      link.titlePosition.y,
-      link.titlePosition.x + link.titleSize.width,
-      link.titlePosition.y + link.titleSize.height,
+  if (linkByTitle && linkByTitle.title.length > 0) {
+    selectLinkVisual1.visible = true;
+    selectLinkVisual1.setPositionRect(
+      linkByTitle.titlePosition.x,
+      linkByTitle.titlePosition.y,
+      linkByTitle.titlePosition.x + linkByTitle.titleSize.width,
+      linkByTitle.titlePosition.y + linkByTitle.titleSize.height,
     );
 
-    viewport.pause = true;
+    return;
+  }
+
+  const link = state.simulator.getLinkAt(state.x, state.y);
+
+  if (link) {
+    const path = state.simulator.getPath(link.a, link.b)!;
+    const boundaries = state.simulator.getBoundaries();
+
+    const [startX, startY] = path.at(0)!;
+
+    selectLinkVisual1.visible = true;
+    selectLinkVisual1.setPositionRect(
+      startX - boundaries.translateX,
+      startY - boundaries.translateY,
+      startX - boundaries.translateX,
+      startY - boundaries.translateY,
+    );
+
+    const [endX, endY] = path.at(-1)!;
+
+    selectLinkVisual2.visible = true;
+    selectLinkVisual2.setPositionRect(
+      endX - boundaries.translateX,
+      endY - boundaries.translateY,
+      endX - boundaries.translateX,
+      endY - boundaries.translateY,
+    );
 
     return;
   }
@@ -67,7 +95,6 @@ function onPointerMove(state: State) {
   if (ss) {
     selectSystemVisual.setPosition(ss, { x: 0, y: 0 });
     selectSystemVisual.visible = true;
-    viewport.pause = true;
   }
 }
 
@@ -75,7 +102,8 @@ const operation: Operation = {
   id: "operation-set-color",
   setup: () => {
     viewport.addChild(selectSystemVisual);
-    viewport.addChild(selectLinkTitleVisual);
+    viewport.addChild(selectLinkVisual1);
+    viewport.addChild(selectLinkVisual2);
   },
   onBegin: state => {
     onPointerMove(state);
@@ -86,26 +114,26 @@ const operation: Operation = {
   },
   onEnd() {
     selectSystemVisual.visible = false;
-    selectLinkTitleVisual.visible = false;
+    selectLinkVisual1.visible = false;
+    selectLinkVisual2.visible = false;
 
     button.style.removeProperty("background-color");
     button.style.removeProperty("color");
-
-    viewport.pause = false;
   },
   onMute: () => {
     selectSystemVisual.visible = false;
-    selectLinkTitleVisual.visible = false;
+    selectLinkVisual1.visible = false;
+    selectLinkVisual2.visible = false;
   },
   onUnmute: onPointerMove,
   onPointerMove,
   onPointerDown() {},
   onPointerUp(state) {
-    const linkToEdit = state.simulator.getLinkByTitleAt(state.x, state.y);
+    const linkByTitle = state.simulator.getLinkByTitleAt(state.x, state.y);
 
-    if (linkToEdit) {
+    if (linkByTitle) {
       modifySpecification(() => {
-        linkToEdit.specification.titleBackgroundColor = fillColor;
+        linkByTitle.specification.titleBackgroundColor = fillColor;
       }).then(() => {
         onPointerMove(state);
         tick();
@@ -114,11 +142,24 @@ const operation: Operation = {
       return;
     }
 
-    const systemToEdit = state.simulator.getSubsystemAt(state.x, state.y);
+    const link = state.simulator.getLinkAt(state.x, state.y);
 
-    if (systemToEdit) {
+    if (link) {
       modifySpecification(() => {
-        systemToEdit.specification.backgroundColor = fillColor;
+        link.specification.backgroundColor = fillColor;
+      }).then(() => {
+        onPointerMove(state);
+        tick();
+      });
+
+      return;
+    }
+
+    const system = state.simulator.getSubsystemAt(state.x, state.y);
+
+    if (system) {
+      modifySpecification(() => {
+        system.specification.backgroundColor = fillColor;
       }).then(() => {
         onPointerMove(state);
         tick();
