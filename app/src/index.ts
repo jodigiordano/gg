@@ -161,19 +161,19 @@ window.addEventListener("keydown", event => {
   // The user press "Esc" to cancel any ongoing operation.
   if (event.key === "Escape" || event.key === "1") {
     switchOperation(moveOperation);
-  } else if (event.key === "2") {
-    switchOperation(addSystemOperation);
   } else if (event.key === "3") {
+    switchOperation(addSystemOperation);
+  } else if (event.key === "e") {
     switchOperation(setTitleOperation);
-  } else if (event.key === "4") {
-    switchOperation(linkOperation);
   } else if (event.key === "q") {
+    switchOperation(linkOperation);
+  } else if (event.key === "4") {
     switchOperation(setSystemParentOperation);
-  } else if (event.key === "w") {
+  } else if (event.key === "2") {
     switchOperation(eraseOperation);
-  } else if (event.key === "r") {
-    switchOperation(transferDataOperation);
   } else if (event.key === "a") {
+    switchOperation(transferDataOperation);
+  } else if (event.key === "r") {
     switchOperation(paintOperation);
   } else if (event.key === " ") {
     if (state.flowPlay) {
@@ -195,6 +195,14 @@ window.addEventListener("keydown", event => {
     cameraZoomIn();
   } else if (event.key === "-") {
     cameraZoomOut();
+  } else if (event.key === "w") {
+    if (!linkPatternPipe.classList.contains("hidden")) {
+      setLinkPatternSolid();
+    } else if (!linkPatternSolid.classList.contains("hidden")) {
+      setLinkPatternDotted();
+    } else {
+      setLinkPatternPipe();
+    }
   }
 
   tick();
@@ -769,26 +777,30 @@ const linkPatternDotted = document.getElementById(
   "operation-set-link-pattern-dotted",
 )!;
 
-linkPatternPipe.addEventListener("click", function () {
-  state.linkPattern = "solid-line";
-
-  linkPatternPipe.classList.add("hidden");
-  linkPatternSolid.classList.remove("hidden");
-});
-
-linkPatternSolid.addEventListener("click", function () {
-  state.linkPattern = "dotted-line";
-
-  linkPatternSolid.classList.add("hidden");
-  linkPatternDotted.classList.remove("hidden");
-});
-
-linkPatternDotted.addEventListener("click", function () {
+function setLinkPatternPipe(): void {
   state.linkPattern = "pipe";
 
   linkPatternDotted.classList.add("hidden");
   linkPatternPipe.classList.remove("hidden");
-});
+}
+
+function setLinkPatternSolid(): void {
+  state.linkPattern = "solid-line";
+
+  linkPatternPipe.classList.add("hidden");
+  linkPatternSolid.classList.remove("hidden");
+}
+
+function setLinkPatternDotted(): void {
+  state.linkPattern = "dotted-line";
+
+  linkPatternSolid.classList.add("hidden");
+  linkPatternDotted.classList.remove("hidden");
+}
+
+linkPatternPipe.addEventListener("click", setLinkPatternSolid);
+linkPatternSolid.addEventListener("click", setLinkPatternDotted);
+linkPatternDotted.addEventListener("click", setLinkPatternPipe);
 
 //
 // Toolbox
@@ -806,7 +818,7 @@ paintOperation.setup(state);
 
 // Initialize buttons.
 const singleChoiceButtons = document.querySelectorAll(
-  "#toolbox .single-choice button",
+  "#toolbox button.single-choice",
 );
 
 for (const button of singleChoiceButtons) {

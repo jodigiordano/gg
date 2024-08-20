@@ -327,6 +327,22 @@
           border-top: solid 1px #bbb;
           margin: 1em 0.5em;
         }
+
+        .separator-with-title {
+          font-size: 0.75em;
+          margin: 1em 0;
+          text-align: center;
+
+          &::before,
+          &::after {
+            display: inline-block;
+            content: "";
+            border-top: 1px solid #bbb;
+            width: 1em;
+            margin: 0 0.25em;
+            transform: translateY(-0.25em);
+          }
+        }
       }
 
       /* Canvas on the right of the content */
@@ -535,36 +551,80 @@
           </button>
         </div>
         <div class="separator"></div>
-        <div class="operations single-choice">
-          <button id="operation-move" title="Move" class="selected">
+        <div class="operations">
+          <button
+            id="operation-move"
+            title="Move"
+            class="selected single-choice"
+          >
             <img src="./assets/icon-move.svg" />
             <div class="keyboard">1</div>
           </button>
-          <button id="operation-system-add" title="Add system">
-            <img src="./assets/icon-system.svg" />
+          <button id="operation-erase" title="Eraser" class="single-choice">
+            <img src="./assets/icon-eraser.svg" />
             <div class="keyboard">2</div>
           </button>
-          <button id="operation-set-title" title="Name systems & links">
-            <img src="./assets/icon-text.svg" />
+          <button
+            id="operation-system-add"
+            title="Add system"
+            class="single-choice"
+          >
+            <img src="./assets/icon-system.svg" />
             <div class="keyboard">3</div>
           </button>
-          <button id="operation-link" title="Add or modify a link">
-            <img src="./assets/icon-link.svg" />
+          <button
+            id="operation-system-set-parent"
+            title="Set system parent"
+            class="single-choice"
+          >
+            <img src="./assets/icon-parent.svg" />
             <div class="keyboard">4</div>
           </button>
-          <button id="operation-system-set-parent" title="Set system parent">
-            <img src="./assets/icon-parent.svg" />
+          <button
+            id="operation-link"
+            title="Add or modify a link"
+            class="single-choice"
+          >
+            <img src="./assets/icon-link.svg" />
             <div class="keyboard">q</div>
           </button>
-          <button id="operation-erase" title="Eraser">
-            <img src="./assets/icon-eraser.svg" />
+          <button
+            id="operation-set-link-pattern-dotted"
+            class="hidden single-choice"
+            title="Dotted link"
+          >
+            <img src="./assets/icon-link-pattern-dotted.svg" />
             <div class="keyboard">w</div>
           </button>
-          <button id="operation-flow-data-transfer" title="Transfer data">
-            <img src="./assets/icon-flow-data.svg" />
-            <div class="keyboard">r</div>
+          <button
+            id="operation-set-link-pattern-solid"
+            class="hidden single-choice"
+            title="Solid link"
+          >
+            <img src="./assets/icon-link-pattern-solid.svg" />
+            <div class="keyboard">w</div>
           </button>
-          <button id="operation-set-color" title="Color systems & links">
+          <button
+            id="operation-set-link-pattern-pipe"
+            title="Pipe link"
+            class="single-choice"
+          >
+            <img src="./assets/icon-link-pattern-pipe.svg" />
+            <div class="keyboard">w</div>
+          </button>
+          <button
+            id="operation-set-title"
+            title="Name systems & links"
+            class="single-choice"
+          >
+            <img src="./assets/icon-text.svg" />
+            <div class="keyboard">e</div>
+          </button>
+          <button
+            id="operation-set-color"
+            title="Color systems & links"
+            class="single-choice"
+          >
             <!--
               Content of "icon-paint.svg" so it can inherit
               the CSS color attribute, set dynamically in the paint operation.
@@ -591,28 +651,20 @@
                 stroke-linejoin="round"
               />
             </svg>
-            <div class="keyboard">a</div>
-          </button>
-          <button
-            id="operation-set-link-style-dotted"
-            class="hidden"
-            title="Dotted link"
-          >
-            <img src="./assets/icon-link-style-dotted.svg" />
-          </button>
-          <button
-            id="operation-set-link-style-solid"
-            class="hidden"
-            title="Solid link"
-          >
-            <img src="./assets/icon-link-style-solid.svg" />
-          </button>
-          <button id="operation-set-link-style-pipe" title="Pipe link">
-            <img src="./assets/icon-link-style-pipe.svg" />
+            <div class="keyboard">r</div>
           </button>
         </div>
-        <div class="separator"></div>
+        <div class="separator-with-title">flows</div>
         <div class="operations">
+          <button
+            id="operation-flow-data-transfer"
+            title="Transfer data"
+            class="single-choice"
+          >
+            <img src="./assets/icon-flow-data.svg" />
+            <div class="keyboard">a</div>
+          </button>
+          <div></div>
           <button id="operation-flow-play" title="Play the flow animation">
             <img src="./assets/icon-flow-play.svg" />
             <div class="keyboard">␣</div>
@@ -779,16 +831,22 @@
               </td>
             </tr>
             <tr>
-              <td><img src="./assets/icon-link-style-pipe.svg" /></td>
-              <td>Draw a pipe link using <img src="./assets/icon-link.svg" /></td>
+              <td><img src="./assets/icon-link-pattern-pipe.svg" /></td>
+              <td>
+                Draw a pipe link using <img src="./assets/icon-link.svg" />
+              </td>
             </tr>
             <tr>
-              <td><img src="./assets/icon-link-style-solid.svg" /></td>
-              <td>Draw a solid link using <img src="./assets/icon-link.svg" /></td>
+              <td><img src="./assets/icon-link-pattern-solid.svg" /></td>
+              <td>
+                Draw a solid link using <img src="./assets/icon-link.svg" />
+              </td>
             </tr>
             <tr>
-              <td><img src="./assets/icon-link-style-dotted.svg" /></td>
-              <td>Draw a dotted link using <img src="./assets/icon-link.svg" /></td>
+              <td><img src="./assets/icon-link-pattern-dotted.svg" /></td>
+              <td>
+                Draw a dotted link using <img src="./assets/icon-link.svg" />
+              </td>
             </tr>
           </tbody>
         </table>
