@@ -757,35 +757,37 @@ function updateFlowProgression(): void {
 // Link operations
 //
 
-const linkStylePipe = document.getElementById("operation-set-link-style-pipe")!;
-
-const linkStyleSolid = document.getElementById(
-  "operation-set-link-style-solid",
+const linkPatternPipe = document.getElementById(
+  "operation-set-link-pattern-pipe",
 )!;
 
-const linkStyleDotted = document.getElementById(
-  "operation-set-link-style-dotted",
+const linkPatternSolid = document.getElementById(
+  "operation-set-link-pattern-solid",
 )!;
 
-linkStylePipe.addEventListener("click", function () {
-  state.linkStyle = "solid-line";
+const linkPatternDotted = document.getElementById(
+  "operation-set-link-pattern-dotted",
+)!;
 
-  linkStylePipe.classList.add("hidden");
-  linkStyleSolid.classList.remove("hidden");
+linkPatternPipe.addEventListener("click", function () {
+  state.linkPattern = "solid-line";
+
+  linkPatternPipe.classList.add("hidden");
+  linkPatternSolid.classList.remove("hidden");
 });
 
-linkStyleSolid.addEventListener("click", function () {
-  state.linkStyle = "dotted-line";
+linkPatternSolid.addEventListener("click", function () {
+  state.linkPattern = "dotted-line";
 
-  linkStyleSolid.classList.add("hidden");
-  linkStyleDotted.classList.remove("hidden");
+  linkPatternSolid.classList.add("hidden");
+  linkPatternDotted.classList.remove("hidden");
 });
 
-linkStyleDotted.addEventListener("click", function () {
-  state.linkStyle = "pipe";
+linkPatternDotted.addEventListener("click", function () {
+  state.linkPattern = "pipe";
 
-  linkStyleDotted.classList.add("hidden");
-  linkStylePipe.classList.remove("hidden");
+  linkPatternDotted.classList.add("hidden");
+  linkPatternPipe.classList.remove("hidden");
 });
 
 //

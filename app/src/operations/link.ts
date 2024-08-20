@@ -109,7 +109,9 @@ const operation: Operation = {
 
       if (b && b.id !== a.id && !b.systems.length) {
         modifySpecification(() => {
-          addLink(state.simulator.getSystem(), a!.id, b!.id);
+          addLink(state.simulator.getSystem(), a!.id, b!.id, {
+            middlePattern: state.linkPattern,
+          });
         }).then(() => {
           onPointerMove(state);
           tick();
@@ -135,11 +137,8 @@ const operation: Operation = {
     }
 
     modifySpecification(() => {
-      if (link.specification.middlePattern === state.linkStyle) {
-        if (
-          link.startPattern === "none" &&
-          link.endPattern === "none"
-        ) {
+      if (link.specification.middlePattern === state.linkPattern) {
+        if (link.startPattern === "none" && link.endPattern === "none") {
           link.specification.startPattern = "none";
           link.specification.endPattern = "solid-arrow";
         } else if (
@@ -162,7 +161,7 @@ const operation: Operation = {
           link.specification.endPattern = "none";
         }
       } else {
-        link.specification.middlePattern = state.linkStyle;
+        link.specification.middlePattern = state.linkPattern;
       }
     }).then(() => {
       onPointerMove(state);

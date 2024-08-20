@@ -17,7 +17,7 @@ export interface State {
   flowPlay: boolean;
   flowPlayMode: "playOne" | "repeatAll" | "repeatOne";
   flowSpeed: number;
-  linkStyle: PathPattern;
+  linkPattern: PathPattern;
 }
 
 const defaultSystem = load({ specificationVersion: "1.0.0", title: "" }).system;
@@ -43,7 +43,7 @@ export const state: State = {
   flowPlay: urlParams.autoplay,
   flowPlayMode: "repeatAll",
   flowSpeed: urlParams.speed,
-  linkStyle: "pipe",
+  linkPattern: "pipe",
 };
 
 defaultOperation.onBegin(state);

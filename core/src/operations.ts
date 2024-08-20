@@ -5,7 +5,13 @@ import {
   RuntimeFlowStep,
 } from "./runtime.js";
 import { SystemMargin } from "./helpers.js";
-import { Link, FlowStep, Subsystem } from "./specification.js";
+import {
+  Link,
+  FlowStep,
+  Subsystem,
+  PathPattern,
+  PathEndingPattern,
+} from "./specification.js";
 import { computeSystemSize, getRootSystem, initSystem } from "./system.js";
 
 /*
@@ -159,15 +165,32 @@ export function addLink(
   system: RuntimeSystem,
   aId: string,
   bId: string,
-  title?: string,
+  options: {
+    title?: string;
+    startPattern?: PathEndingPattern;
+    middlePattern?: PathPattern;
+    endPattern?: PathEndingPattern;
+  } = {},
 ): Link {
   const newLink: Link = {
     a: aId,
     b: bId,
   };
 
-  if (title) {
-    newLink.title = title;
+  if (options.title) {
+    newLink.title = options.title;
+  }
+
+  if (options.startPattern) {
+    newLink.startPattern = options.startPattern;
+  }
+
+  if (options.middlePattern) {
+    newLink.middlePattern = options.middlePattern;
+  }
+
+  if (options.endPattern) {
+    newLink.endPattern = options.endPattern;
   }
 
   system.specification.links ??= [];
@@ -190,7 +213,12 @@ export function moveLink(
   const aId = link.a === idToReplace ? idToReplaceWith : link.a;
   const bId = link.b === idToReplace ? idToReplaceWith : link.b;
 
-  addLink(rootSystem, aId, bId, link.title);
+  addLink(rootSystem, aId, bId, {
+    title: link.title,
+    startPattern: link.startPattern,
+    middlePattern: link.middlePattern,
+    endPattern: link.endPattern,
+  });
 
   // Transfer flow steps.
   for (const flow of rootSystem.specification.flows ?? []) {
