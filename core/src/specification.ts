@@ -152,6 +152,10 @@ export interface FlowStep {
    * The data of the step.
    */
   data?: string;
+  /**
+   * The background color of the data of the step.
+   */
+  dataBackgroundColor?: string;
 }
 
 const schemas = [
@@ -202,6 +206,10 @@ const schemas = [
             data: {
               type: "string",
               description: "The data of the step.",
+            },
+            dataBackgroundColor: {
+              type: "string",
+              description: "The background color of the data of the step.",
             },
           },
         },

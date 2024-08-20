@@ -3,6 +3,7 @@ import {
   SystemSimulator,
   getFlowTick,
   SimulatorObjectZIndex,
+  RuntimeFlowStep,
 } from "@gg/core";
 import { Sprite } from "pixi.js";
 import { spritesheet } from "../renderer/assets.js";
@@ -38,7 +39,6 @@ export default class FlowPlayer {
       sprite.width = BlockSize;
       sprite.height = BlockSize;
       sprite.visible = false;
-      sprite.tint = "0de500";
 
       return sprite;
     });
@@ -70,6 +70,24 @@ export default class FlowPlayer {
     this.currentKeyframe = keyframe;
   }
 
+  getStepAt(worldX: number, worldY: number): RuntimeFlowStep | null {
+    const data = this.getTickData();
+    const boundaries = this.simulator.getBoundaries();
+
+    for (let i = 0; i < data.length; i++) {
+      if (data[i].length) {
+        const x = Math.floor(data[i][0]) - boundaries.translateX;
+        const y = Math.floor(data[i][1]) - boundaries.translateY;
+
+        if (x === worldX && y === worldY) {
+          return this.flow.steps[i];
+        }
+      }
+    }
+
+    return null;
+  }
+
   update(
     deltaTime: number,
     mode: typeof state.flowPlayMode,
@@ -95,10 +113,28 @@ export default class FlowPlayer {
   }
 
   draw(): void {
+    const data = this.getTickData();
+    const boundaries = this.simulator.getBoundaries();
+
+    for (let i = 0; i < data.length; i++) {
+      if (data[i].length) {
+        this.sprites[i].tint =
+          this.flow.steps[i].dataBackgroundColor ?? "0de500";
+
+        this.sprites[i].x = (data[i][0] - boundaries.translateX) * BlockSize;
+        this.sprites[i].y = (data[i][1] - boundaries.translateY) * BlockSize;
+        this.sprites[i].visible = true;
+      } else {
+        this.sprites[i].visible = false;
+      }
+    }
+  }
+
+  private getTickData(): number[][] {
     const keyframe = this.currentKeyframe | 0;
     const keyframeProgress = this.currentKeyframe - keyframe;
 
-    const data = getFlowTick(
+    return getFlowTick(
       this.simulator,
       this.flow,
       keyframe,
@@ -111,17 +147,5 @@ export default class FlowPlayer {
             keyframeProgress
         : 1 - Math.pow(-2 * keyframeProgress + 2, 4) / 2,
     );
-
-    const boundaries = this.simulator.getBoundaries();
-
-    for (let i = 0; i < data.length; i++) {
-      if (data[i].length) {
-        this.sprites[i].x = (data[i][0] - boundaries.translateX) * BlockSize;
-        this.sprites[i].y = (data[i][1] - boundaries.translateY) * BlockSize;
-        this.sprites[i].visible = true;
-      } else {
-        this.sprites[i].visible = false;
-      }
-    }
   }
 }

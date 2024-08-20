@@ -45,6 +45,10 @@
           "data": {
             "type": "string",
             "description": "The data of the step."
+          },
+          "dataBackgroundColor": {
+            "type": "string",
+            "description": "The background color of the data of the step."
           }
         }
       }
