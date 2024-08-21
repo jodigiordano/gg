@@ -19,7 +19,6 @@
   },
   "devDependencies": {
     "@tsconfig/strictest": "2.x",
-    "@types/js-yaml": "4.x",
     "@types/mocha": "10.x",
     "@types/node": "20.x",
     "json-schema-to-typescript": "14.x",
