@@ -1,11 +1,11 @@
 # `gg`
 
 > [!IMPORTANT]
-> This tool is still in alpha so expect rough edges. 😅
+> This editor is still in alpha so expect rough edges. 😅
 
-`gg` is a **diagramming tool** (i.e. flowcharts) and a light **software architecture simulator** for documentation and presentation purposes.
+`gg` is a **diagramming editor** (i.e. flowcharts) and a light **software architecture simulator** for documentation and presentation purposes.
 
-As a diagramming tool, it helps you produce complex diagrams easily, with its simple UI and its innovative approach to layout.
+As a diagramming editor, it helps you produce complex diagrams easily, with its simple UI and its innovative approach to layout.
 
 As a software architecture simulator, it helps you define any kind of software architecture and produce step-by-step presentations of various usage scenarios.
 
@@ -26,7 +26,7 @@ As a software architecture simulator, it helps you define any kind of software a
 
 - **Mobile-friendly**: create diagrams with your phone!
 - **Privacy-friendly**: no ads, no analytics, no cookies. Built for the small web.
-- **Assisted layout**: this tool helps you layout boxes and paths on the canvas.
+- **Assisted layout**: this editor helps you layout boxes and paths on the canvas.
 - **Fast UI and rendering**: it aims to run on a potato.
 - **Presentation mode**: show your beautiful work to an external audience.
 
