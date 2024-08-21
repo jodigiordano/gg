@@ -1,5 +1,6 @@
 // @ts-ignore
 import pako from "pako";
+// @ts-ignore
 import { load as parseYaml } from "js-yaml";
 
 export function load(): string | null {
