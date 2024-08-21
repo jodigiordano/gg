@@ -32,6 +32,11 @@ export function sanitizeTitle(rawTitle: string): string {
   return rawTitle
     .split("\\n")
     .flatMap(line => {
+      // Preserve empty newlines.
+      if (line.length === 0) {
+        return [""];
+      }
+
       const chunks: string[] = [];
 
       for (let i = 0; i < line.length; i += TitleMaxLineLength - 1) {

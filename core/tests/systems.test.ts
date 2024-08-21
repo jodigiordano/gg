@@ -120,6 +120,45 @@ describe("systems", () => {
         TitleMaxLines,
       );
     });
+
+    it("preserves empty newlines", () => {
+      const system: System = {
+        specificationVersion: "1.0.0",
+        title: "test",
+        systems: [
+          {
+            id: "foo",
+            position: { x: 0, y: 0 },
+            title: "a\\n\\nb\\nc\\n",
+          },
+        ],
+      };
+
+      const { system: runtime } = load(system);
+
+      assert.equal(runtime.systems.at(0)?.title, "a\\n\\nb\\nc\\n");
+    });
+
+    it("doesn't add an extra newline on edge case", () => {
+      const system: System = {
+        specificationVersion: "1.0.0",
+        title: "test",
+        systems: [
+          {
+            id: "foo",
+            position: { x: 0, y: 0 },
+            title: "a".repeat(TitleMaxLineLength - 1),
+          },
+        ],
+      };
+
+      const { system: runtime } = load(system);
+
+      assert.equal(
+        runtime.systems.at(0)?.title,
+        "a".repeat(TitleMaxLineLength - 1),
+      );
+    });
   });
 
   describe("titleSize", () => {
