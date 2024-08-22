@@ -442,14 +442,16 @@ document
     window.location.replace(`/viewer.html${window.location.hash}`);
   });
 
-const options = document.getElementById("options") as HTMLDialogElement;
+const flowOptions = document.getElementById(
+  "flow-options",
+) as HTMLDialogElement;
 
 document
   .getElementById("operation-flow-options-open")
   ?.addEventListener("click", function () {
-    options.inert = true;
-    options.showModal();
-    options.inert = false;
+    flowOptions.inert = true;
+    flowOptions.showModal();
+    flowOptions.inert = false;
   });
 
 const autoplay = document.getElementById("option-autoplay") as HTMLInputElement;
@@ -931,7 +933,7 @@ function loadSaveData(): void {
 function isModalOpen(): boolean {
   return (
     isJsonEditorOpen() ||
-    options.open ||
+    flowOptions.open ||
     guide.open ||
     about.open ||
     privacy.open ||
