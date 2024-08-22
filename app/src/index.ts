@@ -445,7 +445,7 @@ document
 const options = document.getElementById("options") as HTMLDialogElement;
 
 document
-  .getElementById("operation-options-open")
+  .getElementById("operation-flow-options-open")
   ?.addEventListener("click", function () {
     options.inert = true;
     options.showModal();
