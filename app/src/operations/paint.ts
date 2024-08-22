@@ -14,7 +14,7 @@ const dialog = document.getElementById(
   "input-set-color-dialog",
 ) as HTMLDialogElement;
 
-const availableColors = dialog.querySelectorAll(".colors div");
+const availableColors = dialog.querySelectorAll(".colors button");
 
 let fillColor: string | undefined = undefined;
 
