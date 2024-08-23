@@ -8,12 +8,17 @@ import {
 import { BlockSize } from "../helpers.js";
 import { app } from "./pixi.js";
 import viewport from "./viewport.js";
+import { state } from "../state.js";
 
 let grid: TilingSprite;
 
 const canvasContainer = document.getElementById("canvas") as HTMLDivElement;
 
-const gridGraphic = new Graphics()
+//
+// Light grid
+//
+
+const lightGridGraphic = new Graphics()
   .beginFill(0xcccccc)
   .drawRect(0, 0, BlockSize, BlockSize)
   .endFill()
@@ -21,14 +26,32 @@ const gridGraphic = new Graphics()
   .drawRect(1, 1, BlockSize - 1, BlockSize - 1)
   .endFill();
 
-const gridTexture = app.renderer.generateTexture(gridGraphic);
+const lightGridTexture = app.renderer.generateTexture(lightGridGraphic);
 
-gridTexture.baseTexture.wrapMode = WRAP_MODES.REPEAT;
-gridTexture.baseTexture.scaleMode = SCALE_MODES.LINEAR;
-gridTexture.baseTexture.mipmap = MIPMAP_MODES.ON;
+lightGridTexture.baseTexture.wrapMode = WRAP_MODES.REPEAT;
+lightGridTexture.baseTexture.scaleMode = SCALE_MODES.LINEAR;
+lightGridTexture.baseTexture.mipmap = MIPMAP_MODES.ON;
+
+//
+// Dark grid
+//
+
+const darkGridGraphic = new Graphics()
+  .beginFill(0x333333)
+  .drawRect(0, 0, BlockSize, BlockSize)
+  .endFill()
+  .beginFill(0x222222)
+  .drawRect(1, 1, BlockSize - 1, BlockSize - 1)
+  .endFill();
+
+const darkGridTexture = app.renderer.generateTexture(darkGridGraphic);
+
+darkGridTexture.baseTexture.wrapMode = WRAP_MODES.REPEAT;
+darkGridTexture.baseTexture.scaleMode = SCALE_MODES.LINEAR;
+darkGridTexture.baseTexture.mipmap = MIPMAP_MODES.ON;
 
 grid = new TilingSprite(
-  gridTexture,
+  state.theme === "light" ? lightGridTexture : darkGridTexture,
   canvasContainer.clientWidth,
   canvasContainer.clientHeight,
 );
@@ -39,6 +62,14 @@ grid.zIndex = -1;
 
 // @ts-ignore
 viewport.addChild(grid);
+
+export function setGridTheme(theme: "light" | "dark"): void {
+  if (theme === "light") {
+    grid.texture = lightGridTexture;
+  } /* dark */ else {
+    grid.texture = darkGridTexture;
+  }
+}
 
 export function redrawGrid(): void {
   grid.tilePosition.x = -viewport.left;

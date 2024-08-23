@@ -45,33 +45,7 @@ export async function loadSimulation(json: string): Promise<void> {
             // Set the new simulation in the state.
             state.simulator = new SystemSimulator(data.simulator as any);
 
-            // Draw the new simulaton.
-            container.removeChildren();
-
-            for (const objectToRender of getObjectsToRender()) {
-              // @ts-ignore
-              container.addChild(objectToRender);
-            }
-
-            if (state.simulator.getSystem().flows.length) {
-              state.flowPlayer = new FlowPlayer(
-                state.simulator,
-                state.simulator.getSystem().flows[0]!,
-                state.flowKeyframe,
-              );
-
-              for (const objectToRender of state.flowPlayer.getObjectsToRender()) {
-                // @ts-ignore
-                container.addChild(objectToRender);
-              }
-            }
-
-            // Play the flow, if needed.
-            if (state.flowPlay && state.flowPlayer) {
-              app.ticker.start();
-            }
-
-            tick();
+            drawSimulation();
 
             state.simulatorInitialized = true;
 
@@ -91,6 +65,36 @@ export async function loadSimulation(json: string): Promise<void> {
 //
 // Draw the simulation.
 //
+
+export function drawSimulation(): void {
+  // Draw the new simulaton.
+  container.removeChildren();
+
+  for (const objectToRender of getObjectsToRender()) {
+    // @ts-ignore
+    container.addChild(objectToRender);
+  }
+
+  if (state.simulator.getSystem().flows.length) {
+    state.flowPlayer = new FlowPlayer(
+      state.simulator,
+      state.simulator.getSystem().flows[0]!,
+      state.flowKeyframe,
+    );
+
+    for (const objectToRender of state.flowPlayer.getObjectsToRender()) {
+      // @ts-ignore
+      container.addChild(objectToRender);
+    }
+  }
+
+  // Play the flow, if needed.
+  if (state.flowPlay && state.flowPlayer) {
+    app.ticker.start();
+  }
+
+  tick();
+}
 
 // Container to display simulation objects.
 const container = new Container();
@@ -112,6 +116,31 @@ app.ticker.add<void>(deltaTime => {
     state.flowPlayer.draw();
   }
 });
+
+const defaultColors = {
+  light: {
+    system1: "3d348b",
+    system2: "ced4da",
+    system3: "dee2e6",
+    system4: "e9ecef",
+    link: "000000",
+    linkTitleBackground: "ced4da",
+    linkTitle: "000000",
+    systemTitleBlackbox: "ffffff",
+    systemTitleWhitebox: "000000",
+  },
+  dark: {
+    system1: "4363d8",
+    system2: "2b2b2b",
+    system3: "1b1b1b",
+    system4: "000000",
+    link: "dddddd",
+    linkTitleBackground: "4b4b4b",
+    linkTitle: "ffffff",
+    systemTitleBlackbox: "ffffff",
+    systemTitleWhitebox: "ffffff",
+  },
+};
 
 function getObjectsToRender(): (Sprite | Text)[] {
   const toDraw: (Sprite | Text)[] = [];
@@ -145,13 +174,17 @@ function getObjectsToRender(): (Sprite | Text)[] {
           const { system, blackbox, direction } = obj as SimulatorSubsystem;
 
           if (blackbox) {
-            sprite.tint = system.backgroundColor ?? "3d348b";
+            sprite.tint =
+              system.backgroundColor ?? defaultColors[state.theme].system1;
           } else if (system.depth % 2 === 0) {
-            sprite.tint = system.backgroundColor ?? "ced4da";
+            sprite.tint =
+              system.backgroundColor ?? defaultColors[state.theme].system2;
           } else if (system.depth % 3 === 0) {
-            sprite.tint = system.backgroundColor ?? "dee2e6";
+            sprite.tint =
+              system.backgroundColor ?? defaultColors[state.theme].system3;
           } else {
-            sprite.tint = system.backgroundColor ?? "e9ecef";
+            sprite.tint =
+              system.backgroundColor ?? defaultColors[state.theme].system4;
           }
 
           if (direction === SimulatorDirectionType.TopLeft) {
@@ -191,8 +224,8 @@ function getObjectsToRender(): (Sprite | Text)[] {
 
           if (link.backgroundColor) {
             sprite.tint = link.backgroundColor;
-          } else if (link.middlePattern !== "pipe") {
-            sprite.tint = "000000";
+          } else if (link.middlePattern !== "pipe" || state.theme === "dark") {
+            sprite.tint = defaultColors[state.theme].link;
           }
 
           const isCorner =
@@ -357,7 +390,9 @@ function getObjectsToRender(): (Sprite | Text)[] {
           sprite.y = (j - boundaries.translateY) * BlockSize;
           sprite.width = BlockSize;
           sprite.height = BlockSize;
-          sprite.tint = link.titleBackgroundColor ?? "ced4da";
+          sprite.tint =
+            link.titleBackgroundColor ??
+            defaultColors[state.theme].linkTitleBackground;
 
           if (direction === SimulatorDirectionType.TopLeft) {
             sprite.texture = spritesheet.textures.linkLabelTopLeft;
@@ -391,8 +426,8 @@ function getObjectsToRender(): (Sprite | Text)[] {
               fill: system.backgroundColor
                 ? getForegroundColor(system.backgroundColor)
                 : blackbox
-                  ? "ffffff"
-                  : "000000",
+                  ? defaultColors[state.theme].systemTitleBlackbox
+                  : defaultColors[state.theme].systemTitleWhitebox,
             },
           );
 
@@ -412,7 +447,7 @@ function getObjectsToRender(): (Sprite | Text)[] {
             fontSize: BlockSize,
             fill: link.titleBackgroundColor
               ? getForegroundColor(link.titleBackgroundColor)
-              : "000000",
+              : defaultColors[state.theme].linkTitle,
           });
 
           title.zIndex = obj.zIndex;

@@ -5,11 +5,12 @@ import {
   fitSimulation,
   modifySpecification,
   getKeyframesCount,
+  drawSimulation,
 } from "./simulator/api.js";
 import { BlockSize, debounce, sanitizeHtml } from "./helpers.js";
 import { initializeDropdowns } from "./dropdown.js";
 import { state, resetState, pushChange } from "./state.js";
-import { redrawGrid, setGridVisible } from "./renderer/grid.js";
+import { redrawGrid, setGridTheme, setGridVisible } from "./renderer/grid.js";
 import Operation from "./operation.js";
 import addSystemOperation from "./operations/systemAdd.js";
 import setTitleOperation from "./operations/setTitle.js";
@@ -26,6 +27,7 @@ import {
   setJsonEditorValue,
 } from "./jsonEditor.js";
 import { getUrlParams, setUrlParams, load, save } from "./persistence.js";
+import { getThemeOnLoad } from "./theme.js";
 
 const canvasContainer = document.getElementById("canvas") as HTMLDivElement;
 const saveDataIsLoading = document.getElementById(
@@ -295,6 +297,66 @@ document
   });
 
 //
+// Theme operations
+//
+
+const theme = document.getElementById("theme") as HTMLDialogElement;
+
+document
+  .getElementById("operation-theme")
+  ?.addEventListener("click", function () {
+    state.operation.onMute(state);
+
+    theme.inert = true;
+    theme.showModal();
+    theme.inert = false;
+  });
+
+document
+  .getElementById("operation-theme-light")
+  ?.addEventListener("click", function () {
+    state.theme = "light";
+
+    window.localStorage.setItem("theme", state.theme);
+    document.documentElement.setAttribute("theme", state.theme);
+
+    setGridTheme(state.theme);
+
+    drawSimulation();
+
+    theme.close();
+  });
+
+document
+  .getElementById("operation-theme-dark")
+  ?.addEventListener("click", function () {
+    state.theme = "dark";
+
+    window.localStorage.setItem("theme", state.theme);
+    document.documentElement.setAttribute("theme", state.theme);
+
+    setGridTheme(state.theme);
+
+    drawSimulation();
+
+    theme.close();
+  });
+
+document
+  .getElementById("operation-theme-system")
+  ?.addEventListener("click", function () {
+    window.localStorage.removeItem("theme");
+    document.documentElement.removeAttribute("theme");
+
+    state.theme = getThemeOnLoad();
+    setGridTheme(state.theme);
+
+    drawSimulation();
+
+    theme.close();
+  });
+
+//
 // File operations
 //
 
@@ -357,6 +419,12 @@ document
 
     // Hide flow animations.
     state.flowPlayer?.hide();
+
+    // Set light theme.
+    state.theme = "light";
+
+    // Draw the simulation with the right theme.
+    drawSimulation();
 
     // Extract the viewport on an HTML canvas.
     // @ts-ignore
@@ -427,6 +495,12 @@ document
 
     // Show the flow animations.
     state.flowPlayer?.draw();
+
+    // Set user theme.
+    state.theme = getThemeOnLoad();
+
+    // Draw the simulation with the right theme.
+    drawSimulation();
 
     // Start PixiJS.
     app.start();
@@ -934,6 +1008,7 @@ function isModalOpen(): boolean {
   return (
     isJsonEditorOpen() ||
     flowOptions.open ||
+    theme.open ||
     guide.open ||
     about.open ||
     privacy.open ||

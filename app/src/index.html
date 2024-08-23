@@ -13,16 +13,75 @@
     <link rel="icon" type="image/png" href="assets/favicon.ico" />
     <link rel="stylesheet" href="assets/global.css" />
     <title>charts</title>
+    <script>
+      // Default theme.
+      let theme = "light";
+
+      // The chosen theme is stored in local storage.
+      const themeFromLocalStorage = localStorage.getItem("theme");
+
+      if (themeFromLocalStorage) {
+        if (themeFromLocalStorage === "dark") {
+          theme = "dark";
+        }
+      } else if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
+        // Theme set by the OS.
+        theme = "dark";
+      }
+
+      // Set dark theme, if preferred.
+      if (theme === "dark") {
+        document.documentElement.setAttribute("theme", theme);
+      }
+    </script>
     <style>
       /* Constants */
       :root {
+        color-scheme: light dark;
+
         --header-height: 3em;
         --menu-width: 12em;
+
+        /* theme: light */
+        --color: #000;
+        --background: #dfdfdf;
+        --header-background: #eee;
+        --toolbox-background: #dfdfdf;
+        --dropdown-background: #f9f9f9;
+        --dropdown-hover-background: #ccc;
+        --dropdown-active-background: #bbb;
+        --information-flow-step-title-background: #eee;
+        --button-color: #000;
+        --button-background: #e9e9ed;
+        --button-border-color: #8f8f9d;
+        --button-hover-background: #d0d0d7;
+        --button-active-background: #b1b1b9;
+        --github-background: #000;
+        --dialog-backdrop-background: rgba(0, 0, 0, 0.4);
+      }
+
+      [theme="dark"] {
+        --color: #ddd;
+        --background: #000;
+        --header-background: #111;
+        --toolbox-background: #202020;
+        --dropdown-background: #060606;
+        --dropdown-hover-background: #333;
+        --dropdown-active-background: #444;
+        --information-flow-step-title-background: #111;
+        --button-color: #ddd;
+        --button-background: #000;
+        --button-border-color: #8f8f9d;
+        --button-hover-background: #2f2f28;
+        --button-active-background: #4e4e46;
+        --github-background: #fff;
+        --dialog-backdrop-background: rgba(0, 0, 0, 0.6);
       }
 
       /* Page-wide styles */
       body {
-        background: #dfdfdf;
+        color: var(--color);
+        background: var(--background);
         position: fixed;
         overflow: hidden;
         width: 100%;
@@ -39,10 +98,21 @@
         line-height: 1.25em;
       }
 
+      a:visited {
+        color: var(--color);
+      }
+
       /* Page-wide styles for dialogs */
       dialog {
         max-width: 80%;
         max-height: 80%;
+
+        &::backdrop {
+          background: var(--dialog-backdrop-background);
+        }
+
+        color: var(--color);
+        background: var(--background);
 
         .content {
           display: flex;
@@ -65,6 +135,20 @@
 
         /* Remove 300ms delay on mobile */
         touch-action: none;
+
+        border-radius: 3px;
+        border: 1px solid var(--button-border-color);
+
+        color: var(--button-color);
+        background: var(--button-background);
+
+        &:hover {
+          background: var(--button-hover-background);
+        }
+
+        &:active {
+          background: var(--button-active-background);
+        }
       }
 
       .dropdown {
@@ -74,7 +158,7 @@
         .content {
           position: absolute;
           left: 0.5em;
-          background-color: #f9f9f9;
+          background: var(--dropdown-background);
           box-shadow: 0 0.5em 1em 0 rgba(0, 0, 0, 0.2);
           padding-top: 0.5em;
           padding-bottom: 0.5em;
@@ -90,11 +174,11 @@
             cursor: pointer;
 
             &:hover {
-              background: #ccc;
+              background: var(--dropdown-hover-background);
             }
 
             &:active {
-              background: #bbb;
+              background: var(--dropdown-active-background);
             }
 
             &.separator {
@@ -113,7 +197,7 @@
         flex-wrap: nowrap;
 
         height: var(--header-height);
-        background: #eee;
+        background: var(--header-background);
 
         button {
           margin-left: 0.25em;
@@ -145,6 +229,7 @@
       #toolbox {
         padding: 0.5em;
         overflow-y: scroll;
+        background: var(--toolbox-background);
 
         .operations {
           display: grid;
@@ -216,13 +301,14 @@
         width: 60%;
         text-align: center;
         padding: 0.5em;
-        background: #eee;
         left: 0;
         right: 0;
         margin-left: auto;
         margin-right: auto;
         min-height: 1em;
         border: 1px solid #888;
+
+        background: var(--information-flow-step-title-background);
 
         &.hidden {
           display: none;
@@ -303,6 +389,58 @@
         }
       }
 
+      /* Modal to choose a theme */
+      #theme {
+        max-width: 20em;
+        max-height: 10em;
+        width: 80%;
+        height: 80%;
+
+        .content {
+          height: 100%;
+
+          .themes {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, 5em);
+            grid-gap: 0.5em;
+            justify-content: space-between;
+
+            button {
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              text-align: center;
+
+              width: 5em;
+              height: 5em;
+
+              outline: 1px #aaa solid;
+
+              &:hover {
+                cursor: pointer;
+                outline: 1px #000 solid;
+              }
+            }
+          }
+        }
+      }
+
+      /* Modal to show about */
+      #about {
+        max-width: 30em;
+        max-height: 22em;
+        width: 80%;
+        height: 80%;
+      }
+
+      /* Modal to show about & privacy */
+      #privacy {
+        max-width: 30em;
+        max-height: 17em;
+        width: 80%;
+        height: 80%;
+      }
+
       /* Modal to show the guide */
       #guide {
         .content {
@@ -339,8 +477,12 @@
         margin-left: auto;
         margin-right: 1em;
 
-        img {
+        svg {
           width: 1.5em;
+
+          path {
+            fill: var(--github-background);
+          }
         }
       }
 
@@ -350,7 +492,10 @@
         top: 50%;
         left: 50%;
         transform: translate(-50%, -50%);
-        background: #eee;
+
+        color: var(--color);
+        background: var(--background);
+
         border: 1px solid #888;
         padding: 1em;
 
@@ -380,6 +525,7 @@
           <li id="operation-json-editor-open">json editor</li>
         </ul>
       </div>
+      <button id="operation-theme">theme</button>
       <div class="dropdown">
         <button>help</button>
         <ul class="content closed">
@@ -389,7 +535,7 @@
         </ul>
       </div>
       <a id="github" href="https://github.com/jodigiordano/gg" target="_blank">
-        <img src="./assets/icon-github.svg" />
+        <inline-svg>icon-github</inline-svg>
       </a>
     </div>
     <div id="content">
@@ -401,11 +547,11 @@
       <div id="toolbox">
         <div class="operations">
           <button id="operation-undo" title="Undo">
-            <img src="./assets/icon-undo.svg" />
+            <inline-svg>icon-undo</inline-svg>
             <div class="keyboard">[</div>
           </button>
           <button id="operation-redo" title="Redo">
-            <img src="./assets/icon-redo.svg" />
+            <inline-svg>icon-redo</inline-svg>
             <div class="keyboard">]</div>
           </button>
         </div>
@@ -416,11 +562,11 @@
             title="Move"
             class="selected single-choice"
           >
-            <img src="./assets/icon-move.svg" />
+            <inline-svg>icon-move</inline-svg>
             <div class="keyboard">1</div>
           </button>
           <button id="operation-erase" title="Eraser" class="single-choice">
-            <img src="./assets/icon-eraser.svg" />
+            <inline-svg>icon-eraser</inline-svg>
             <div class="keyboard">2</div>
           </button>
           <button
@@ -428,7 +574,7 @@
             title="Add system"
             class="single-choice"
           >
-            <img src="./assets/icon-system.svg" />
+            <inline-svg>icon-system</inline-svg>
             <div class="keyboard">3</div>
           </button>
           <button
@@ -436,7 +582,7 @@
             title="Set system parent"
             class="single-choice"
           >
-            <img src="./assets/icon-parent.svg" />
+            <inline-svg>icon-parent</inline-svg>
             <div class="keyboard">4</div>
           </button>
           <button
@@ -444,7 +590,7 @@
             title="Add or modify a link"
             class="single-choice"
           >
-            <img src="./assets/icon-link.svg" />
+            <inline-svg>icon-link</inline-svg>
             <div class="keyboard">q</div>
           </button>
           <button
@@ -452,7 +598,7 @@
             class="hidden single-choice"
             title="Dotted link"
           >
-            <img src="./assets/icon-link-pattern-dotted.svg" />
+            <inline-svg>icon-link-pattern-dotted</inline-svg>
             <div class="keyboard">w</div>
           </button>
           <button
@@ -460,7 +606,7 @@
             class="hidden single-choice"
             title="Solid link"
           >
-            <img src="./assets/icon-link-pattern-solid.svg" />
+            <inline-svg>icon-link-pattern-solid</inline-svg>
             <div class="keyboard">w</div>
           </button>
           <button
@@ -468,7 +614,7 @@
             title="Pipe link"
             class="single-choice"
           >
-            <img src="./assets/icon-link-pattern-pipe.svg" />
+            <inline-svg>icon-link-pattern-pipe</inline-svg>
             <div class="keyboard">w</div>
           </button>
           <button
@@ -476,7 +622,7 @@
             title="Name systems & links"
             class="single-choice"
           >
-            <img src="./assets/icon-text.svg" />
+            <inline-svg>icon-text</inline-svg>
             <div class="keyboard">e</div>
           </button>
           <button
@@ -484,32 +630,7 @@
             title="Color systems & links"
             class="single-choice"
           >
-            <!--
-              Content of "icon-paint.svg" so it can inherit
-              the CSS color attribute, set dynamically in the paint operation.
-            -->
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              width="24"
-              height="24"
-              fill="none"
-            >
-              <path
-                d="M19 12.1294L12.9388 18.207C11.1557 19.9949 10.2641 20.8889 9.16993 20.9877C8.98904 21.0041 8.80705 21.0041 8.62616 20.9877C7.53195 20.8889 6.64039 19.9949 4.85726 18.207L2.83687 16.1811C1.72104 15.0622 1.72104 13.2482 2.83687 12.1294M19 12.1294L10.9184 4.02587M19 12.1294H2.83687M10.9184 4.02587L2.83687 12.1294M10.9184 4.02587L8.89805 2"
-                stroke="currentColor"
-                stroke-width="1.5"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              />
-              <path
-                d="M22 20C22 21.1046 21.1046 22 20 22C18.8954 22 18 21.1046 18 20C18 18.8954 20 17 20 17C20 17 22 18.8954 22 20Z"
-                stroke="currentColor"
-                stroke-width="1.5"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              />
-            </svg>
+            <inline-svg>icon-paint</inline-svg>
             <div class="keyboard">r</div>
           </button>
         </div>
@@ -520,12 +641,12 @@
             title="Transfer data"
             class="single-choice"
           >
-            <img src="./assets/icon-flow-data.svg" />
+            <inline-svg>icon-flow-data</inline-svg>
             <div class="keyboard">a</div>
           </button>
           <div></div>
           <button id="operation-flow-play" title="Play the flow animation">
-            <img src="./assets/icon-flow-play.svg" />
+            <inline-svg>icon-flow-play</inline-svg>
             <div class="keyboard">␣</div>
           </button>
           <button
@@ -533,7 +654,7 @@
             class="hidden"
             title="Pause the flow animation"
           >
-            <img src="./assets/icon-flow-pause.svg" />
+            <inline-svg>icon-flow-pause</inline-svg>
             <div class="keyboard">␣</div>
           </button>
           <button
@@ -541,42 +662,42 @@
             class="hidden"
             title="Repeat current keyframe"
           >
-            <img src="./assets/icon-flow-repeat-one.svg" />
+            <inline-svg>icon-flow-repeat-one</inline-svg>
           </button>
           <button id="operation-flow-repeat-all" title="Repeat all keyframes">
-            <img src="./assets/icon-flow-repeat-all.svg" />
+            <inline-svg>icon-flow-repeat-all</inline-svg>
           </button>
-          <div id="information-flow-keyframe" title="Current keyframe"></div>
+          <div id="information-flow-keyframe" title="Current keyframe">0</div>
           <button
             id="operation-flow-edit-step-title"
             title="Add or edit the title of the current keyframe"
           >
-            <img src="./assets/icon-flow-step-title.svg" />
+            <inline-svg>icon-flow-step-title</inline-svg>
           </button>
           <button
             id="operation-flow-previous-keyframe"
             title="Previous keyframe"
           >
-            <img src="./assets/icon-flow-previous.svg" />
+            <inline-svg>icon-flow-previous</inline-svg>
             <div class="keyboard">←</div>
           </button>
           <button id="operation-flow-next-keyframe" title="Next keyframe">
-            <img src="./assets/icon-flow-next.svg" />
+            <inline-svg>icon-flow-next</inline-svg>
             <div class="keyboard">→</div>
           </button>
         </div>
         <div class="separator"></div>
         <div class="operations">
           <button id="operation-camera-fit" title="Fit to screen">
-            <img src="./assets/icon-zoom-fit.svg" />
+            <inline-svg>icon-zoom-fit</inline-svg>
             <div class="keyboard">=</div>
           </button>
           <button id="operation-camera-zoom-in" title="Zoom in">
-            <img src="./assets/icon-zoom-in.svg" />
+            <inline-svg>icon-zoom-in</inline-svg>
             <div class="keyboard">+</div>
           </button>
           <button id="operation-camera-zoom-out" title="Zoom out">
-            <img src="./assets/icon-zoom-out.svg" />
+            <inline-svg>icon-zoom-out</inline-svg>
             <div class="keyboard">-</div>
           </button>
           <!-- Fixes a scrolling issue in Firefox Mobile -->
@@ -604,16 +725,16 @@
       <div class="content">
         <h1>Guide</h1>
         <p>
-          In gg, you <b>add systems</b> (<img src="./assets/icon-system.svg" />)
+          In gg, you <b>add systems</b> (<inline-svg>icon-system</inline-svg>)
           to the canvas and then
           <br />
-          you <b>create links</b> (<img src="./assets/icon-link.svg" />) between
+          you <b>create links</b> (<inline-svg>icon-link</inline-svg>) between
           them.
         </p>
         <p>
-          You can then <b>make data flow</b> between your systems (<img
-            src="./assets/icon-flow-data.svg"
-          />) !
+          You can then <b>make data flow</b> between your systems (
+          <inline-svg>icon-flow-data</inline-svg>
+          ) !
         </p>
         <table>
           <caption>
@@ -621,39 +742,39 @@
           </caption>
           <tbody>
             <tr>
-              <td><img src="./assets/icon-undo.svg" /></td>
+              <td><inline-svg>icon-undo</inline-svg></td>
               <td>Undo an operation.</td>
             </tr>
             <tr>
-              <td><img src="./assets/icon-redo.svg" /></td>
+              <td><inline-svg>icon-redo</inline-svg></td>
               <td>Redo an operation.</td>
             </tr>
             <tr>
-              <td><img src="./assets/icon-zoom-fit.svg" /></td>
+              <td><inline-svg>icon-zoom-fit</inline-svg></td>
               <td>Fit the camera to show all the content of the canvas.</td>
             </tr>
             <tr>
-              <td><img src="./assets/icon-zoom-in.svg" /></td>
+              <td><inline-svg>icon-zoom-in</inline-svg></td>
               <td>Zoom in the canvas.</td>
             </tr>
             <tr>
-              <td><img src="./assets/icon-zoom-out.svg" /></td>
+              <td><inline-svg>icon-zoom-out</inline-svg></td>
               <td>Zoom out of the canvas.</td>
             </tr>
             <tr>
-              <td><img src="./assets/icon-move.svg" /></td>
+              <td><inline-svg>icon-move</inline-svg></td>
               <td>Move a system or a link in the canvas.</td>
             </tr>
             <tr>
-              <td><img src="./assets/icon-eraser.svg" /></td>
+              <td><inline-svg>icon-eraser</inline-svg></td>
               <td>Remove a system or a link from the canvas.</td>
             </tr>
             <tr>
-              <td><img src="./assets/icon-text.svg" /></td>
+              <td><inline-svg>icon-text</inline-svg></td>
               <td>Add or modify the title of a system or a link.</td>
             </tr>
             <tr>
-              <td><img src="./assets/icon-paint.svg" /></td>
+              <td><inline-svg>icon-paint</inline-svg></td>
               <td>Paint a system or a link.</td>
             </tr>
           </tbody>
@@ -664,11 +785,11 @@
           </caption>
           <tbody>
             <tr>
-              <td><img src="./assets/icon-system.svg" /></td>
+              <td><inline-svg>icon-system</inline-svg></td>
               <td>Add a system to the canvas.</td>
             </tr>
             <tr>
-              <td><img src="./assets/icon-parent.svg" /></td>
+              <td><inline-svg>icon-parent</inline-svg></td>
               <td>Move a system inside or outside another system.</td>
             </tr>
           </tbody>
@@ -679,7 +800,7 @@
           </caption>
           <tbody>
             <tr>
-              <td><img src="./assets/icon-link.svg" /></td>
+              <td><inline-svg>icon-link</inline-svg></td>
               <td>
                 <p>Add or modify a link between two systems.</p>
                 <p>
@@ -690,21 +811,19 @@
               </td>
             </tr>
             <tr>
-              <td><img src="./assets/icon-link-pattern-pipe.svg" /></td>
+              <td><inline-svg>icon-link-pattern-pipe</inline-svg></td>
+              <td>Draw a pipe link using <inline-svg>icon-link</inline-svg></td>
+            </tr>
+            <tr>
+              <td><inline-svg>icon-link-pattern-solid</inline-svg></td>
               <td>
-                Draw a pipe link using <img src="./assets/icon-link.svg" />
+                Draw a solid link using <inline-svg>icon-link</inline-svg>
               </td>
             </tr>
             <tr>
-              <td><img src="./assets/icon-link-pattern-solid.svg" /></td>
+              <td><inline-svg>icon-link-pattern-dotted</inline-svg></td>
               <td>
-                Draw a solid link using <img src="./assets/icon-link.svg" />
-              </td>
-            </tr>
-            <tr>
-              <td><img src="./assets/icon-link-pattern-dotted.svg" /></td>
-              <td>
-                Draw a dotted link using <img src="./assets/icon-link.svg" />
+                Draw a dotted link using <inline-svg>icon-link</inline-svg>
               </td>
             </tr>
           </tbody>
@@ -715,7 +834,7 @@
           </caption>
           <tbody>
             <tr>
-              <td><img src="./assets/icon-flow-data.svg" /></td>
+              <td><inline-svg>icon-flow-data</inline-svg></td>
               <td>
                 <p>Make data flow between two systems.</p>
                 <p>Click once on a link to make data flow from A to B.</p>
@@ -724,31 +843,31 @@
               </td>
             </tr>
             <tr>
-              <td><img src="./assets/icon-flow-play.svg" /></td>
+              <td><inline-svg>icon-flow-play</inline-svg></td>
               <td>Play the flow animation in a continuous loop.</td>
             </tr>
             <tr>
-              <td><img src="./assets/icon-flow-pause.svg" /></td>
+              <td><inline-svg>icon-flow-pause</inline-svg></td>
               <td>Pause the flow animation.</td>
             </tr>
             <tr>
-              <td><img src="./assets/icon-flow-repeat-one.svg" /></td>
+              <td><inline-svg>icon-flow-repeat-one</inline-svg></td>
               <td>Play the current keyframe of the flow animation.</td>
             </tr>
             <tr>
-              <td><img src="./assets/icon-flow-repeat-all.svg" /></td>
+              <td><inline-svg>icon-flow-repeat-all</inline-svg></td>
               <td>Play all the keyframes of the flow animation.</td>
             </tr>
             <tr>
-              <td><img src="./assets/icon-flow-step-title.svg" /></td>
+              <td><inline-svg>icon-flow-step-title</inline-svg></td>
               <td>Add or edit the title of the current keyframe.</td>
             </tr>
             <tr>
-              <td><img src="./assets/icon-flow-previous.svg" /></td>
+              <td><inline-svg>icon-flow-previous</inline-svg></td>
               <td>Go to the previous keyframe of the flow.</td>
             </tr>
             <tr>
-              <td><img src="./assets/icon-flow-next.svg" /></td>
+              <td><inline-svg>icon-flow-next</inline-svg></td>
               <td>Go to the next keyframe of the flow.</td>
             </tr>
           </tbody>
@@ -762,25 +881,17 @@
       <div class="content">
         <h1>About</h1>
         <p>
-          gg aims to help you quickly produce
-          <br />
-          good looking diagrams, by letting you focus on
-          <br />
-          its components instead of fiddling with its layout.
+          gg aims to help you quickly produce good looking diagrams, by letting
+          you focus on its components instead of fiddling with its layout.
         </p>
         <p>
-          When building a diagram to explain a dynamic system,
-          <br />
-          like a software architecture, you can go a step further
-          <br />
-          and display data flowing in your system.
+          When building a diagram to explain a dynamic system, like a software
+          architecture, you can go a step further and display data flowing in
+          your system.
         </p>
         <p>
-          For any request (bug report, question, feature, etc.)
-          <br />
-          send me an e-mail at jodi@gg-charts.com
-          <br />
-          or
+          For any request (bug report, question, feature, etc.) send me an
+          e-mail at jodi@gg-charts.com or
           <a href="https://github.com/jodigiordano/gg/issues" target="_blank">
             create an issue in the Github repository
           </a>
@@ -805,9 +916,8 @@
           </li>
         </ul>
         <p>
-          More importantly, the data you enter in the editor
-          <br />
-          is kept 100% on your side and is never collected.
+          More importantly, the data you enter in the editor is kept 100% on
+          your side and is never collected.
         </p>
         <form method="dialog">
           <button>close</button>
@@ -834,11 +944,39 @@
         </form>
       </div>
     </dialog>
+    <dialog id="theme">
+      <div class="content">
+        <h1>Theme</h1>
+        <div class="themes">
+          <button
+            style="background: #fff; color: #000"
+            id="operation-theme-light"
+          >
+            light
+          </button>
+          <button
+            style="background: #000; color: #fff"
+            id="operation-theme-dark"
+          >
+            dark
+          </button>
+          <button
+            style="background: #888; color: #000"
+            id="operation-theme-system"
+          >
+            system
+          </button>
+        </div>
+        <form method="dialog">
+          <button>cancel</button>
+        </form>
+      </div>
+    </dialog>
     <dialog id="input-set-color-dialog">
       <div class="content">
         <h1>Pick a color to paint</h1>
         <div class="colors">
-          <div data-color="">clear to default color</div>
+          <button data-color="">clear color</button>
           <button style="background: #e6194b" data-color="#e6194b"></button>
           <button style="background: #3cb44b" data-color="#3cb44b"></button>
           <button style="background: #ffe119" data-color="#ffe119"></button>
@@ -901,6 +1039,6 @@
         </form>
       </div>
     </dialog>
-    <script type="module" src="/index.ts"></script>
+    <script type="module" src="./index.ts"></script>
   </body>
 </html>

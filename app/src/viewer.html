@@ -13,10 +13,58 @@
     <link rel="icon" type="image/png" href="assets/favicon.ico" />
     <link rel="stylesheet" href="assets/global.css" />
     <title>charts</title>
+    <script>
+      // Default theme.
+      let theme = "light";
+
+      // The chosen theme is stored in local storage.
+      const themeFromLocalStorage = localStorage.getItem("theme");
+
+      if (themeFromLocalStorage) {
+        if (themeFromLocalStorage === "dark") {
+          theme = "dark";
+        }
+      } else if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
+        // Theme set by the OS.
+        theme = "dark";
+      }
+
+      // Set dark theme, if preferred.
+      if (theme === "dark") {
+        document.documentElement.setAttribute("theme", theme);
+      }
+    </script>
     <style>
+      /* Constants */
+      :root {
+        color-scheme: light dark;
+
+        /* theme: light */
+        --color: #000;
+        --background: #dfdfdf;
+        --information-flow-step-title-background: #eee;
+        --button-color: #000;
+        --button-background: #e9e9ed;
+        --button-border-color: #8f8f9d;
+        --button-hover-background: #d0d0d7;
+        --button-active-background: #b1b1b9;
+      }
+
+      [theme="dark"] {
+        --color: #ddd;
+        --background: #222;
+        --information-flow-step-title-background: #111;
+        --button-color: #ddd;
+        --button-background: #000;
+        --button-border-color: #8f8f9d;
+        --button-hover-background: #2f2f28;
+        --button-active-background: #4e4e46;
+      }
+
       /* Page-wide styles */
       body {
-        background: #dfdfdf;
+        color: var(--color);
+        background: var(--background);
         position: fixed;
         overflow: hidden;
         width: 100%;
@@ -33,19 +81,6 @@
         font-weight: bold;
       }
 
-      /* Page-wide styles for dialogs */
-      dialog {
-        .content {
-          display: flex;
-          flex-direction: column;
-          gap: 1em;
-
-          h1 {
-            font-weight: bold;
-          }
-        }
-      }
-
       /* Page-wide styles for buttons */
       button {
         font-family: JetBrains Mono;
@@ -55,6 +90,20 @@
 
         /* Remove 300ms delay on mobile */
         touch-action: none;
+
+        border-radius: 3px;
+        border: 1px solid var(--button-border-color);
+
+        color: var(--button-color);
+        background: var(--button-background);
+
+        &:hover {
+          background: var(--button-hover-background);
+        }
+
+        &:active {
+          background: var(--button-active-background);
+        }
       }
 
       #toolbox {
@@ -112,6 +161,8 @@
         padding: 0.3em;
         margin: 0 0.2em 0 0.2em;
 
+        background: var(--information-flow-step-title-background);
+
         display: flex;
         flex-direction: row;
         align-items: center;
@@ -137,9 +188,14 @@
         top: 50%;
         left: 50%;
         transform: translate(-50%, -50%);
-        background: #eee;
+
+        color: var(--color);
+        background: var(--background);
+
         border: 1px solid #888;
         padding: 1em;
+
+        width: 6em;
 
         &.hidden {
           display: none;
@@ -151,28 +207,28 @@
     <div id="toolbox">
       <div class="operations left">
         <button id="operation-goto-editor" title="Go to editor">
-          <img src="./assets/icon-edit.svg" />
+          <inline-svg>icon-edit</inline-svg>
         </button>
       </div>
       <div class="operations center">
         <button id="operation-flow-rewind" title="Rewind the flow animation">
-          <img src="./assets/icon-flow-rewind.svg" />
+          <inline-svg>icon-flow-rewind</inline-svg>
         </button>
         <button id="operation-flow-play" title="Play the flow animation">
-          <img src="./assets/icon-flow-play.svg" />
+          <inline-svg>icon-flow-play</inline-svg>
         </button>
         <button
           id="operation-flow-pause"
           class="hidden"
           title="Pause the flow animation"
         >
-          <img src="./assets/icon-flow-pause.svg" />
+          <inline-svg>icon-flow-pause</inline-svg>
         </button>
         <button id="operation-flow-previous-keyframe" title="Previous keyframe">
-          <img src="./assets/icon-flow-previous.svg" />
+          <inline-svg>icon-flow-previous</inline-svg>
         </button>
         <button id="operation-flow-next-keyframe" title="Next keyframe">
-          <img src="./assets/icon-flow-next.svg" />
+          <inline-svg>icon-flow-next</inline-svg>
         </button>
         <div id="information-flow-progression" title="Progression of the flow">
           <input
@@ -187,13 +243,13 @@
       </div>
       <div class="operations right">
         <button id="operation-camera-fit" title="Fit to screen">
-          <img src="./assets/icon-zoom-fit.svg" />
+          <inline-svg>icon-zoom-fit</inline-svg>
         </button>
         <button id="operation-camera-zoom-in" title="Zoom in">
-          <img src="./assets/icon-zoom-in.svg" />
+          <inline-svg>icon-zoom-in</inline-svg>
         </button>
         <button id="operation-camera-zoom-out" title="Zoom out">
-          <img src="./assets/icon-zoom-out.svg" />
+          <inline-svg>icon-zoom-out</inline-svg>
         </button>
       </div>
     </div>

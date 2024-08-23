@@ -3,6 +3,7 @@ import FlowPlayer from "./simulator/flowPlayer.js";
 import Operation from "./operation.js";
 import moveOperation from "./operations/move.js";
 import { getUrlParams } from "./persistence.js";
+import { getThemeOnLoad } from "./theme.js";
 
 export interface State {
   changes: string[];
@@ -20,6 +21,7 @@ export interface State {
   flowPlayMode: "playOne" | "repeatAll" | "repeatOne";
   flowSpeed: number;
   linkPattern: PathPattern;
+  theme: "light" | "dark";
 }
 
 const defaultSystem = load({ specificationVersion: "1.0.0", title: "" }).system;
@@ -48,6 +50,7 @@ export const state: State = {
   flowPlayMode: "repeatAll",
   flowSpeed: urlParams.speed,
   linkPattern: "pipe",
+  theme: getThemeOnLoad(),
 };
 
 defaultOperation.onBegin(state);

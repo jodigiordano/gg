@@ -18,6 +18,20 @@ function base64Loader() {
   };
 }
 
+function inlineSvgLoader(data) {
+  return {
+    name: "inline-svg-loader",
+    transformIndexHtml(html) {
+      return html.replace(
+        /<inline-svg>(.*)<\/inline-svg>/g,
+        (_match, filename) => {
+          return fs.readFileSync(`./src/assets/${filename}.svg`);
+        },
+      );
+    },
+  };
+}
+
 export default {
   root: "src",
   cacheDir: "tmp",
@@ -29,6 +43,7 @@ export default {
       typescript: true,
     }),
     base64Loader(),
+    inlineSvgLoader({ key: "value" }),
   ],
   build: {
     outDir: "../dist",

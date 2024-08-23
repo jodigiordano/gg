@@ -32,6 +32,7 @@ As a software architecture simulator, it helps you define any kind of software a
 - **Infinite canvas**: there is no limit to your awesome ideas!
 - **Presentation mode**: show your beautiful work to an external audience.
 - **Data flow simulation**: show data moving through your systems.
+- **Dark mode**: for those late nights of diagramming parties.
 
 ## Examples
 
