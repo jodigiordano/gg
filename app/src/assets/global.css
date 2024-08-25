@@ -172,6 +172,9 @@ table {
   --button-border-color: #8f8f9d;
   --button-hover-background: #d0d0d7;
   --button-active-background: #b1b1b9;
+  --input-color: #000;
+  --input-background: #fff;
+  --input-border-color: #8f8f9d;
   --dialog-backdrop-background: rgba(0, 0, 0, 0.4);
 }
 
@@ -188,6 +191,9 @@ table {
   --button-border-color: #8f8f9d;
   --button-hover-background: #2f2f28;
   --button-active-background: #4e4e46;
+  --input-color: #ddd;
+  --input-background: #000;
+  --input-border-color: #8f8f9d;
   --dialog-backdrop-background: rgba(0, 0, 0, 0.6);
 }
 
@@ -213,6 +219,14 @@ li {
 
 a:visited {
   color: var(--color);
+}
+
+textarea, input {
+  border-radius: 3px;
+  border: 1px solid var(--input-border-color);
+
+  color: var(--input-color);
+  background: var(--input-background);
 }
 
 /* Page-wide styles for dialogs */
