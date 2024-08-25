@@ -3,70 +3,22 @@
   color-scheme: light dark;
 
   /* theme: light */
-  --color: #000;
   --background: #dfdfdf;
   --information-flow-step-title-background: #eee;
-  --button-color: #000;
-  --button-background: #e9e9ed;
-  --button-border-color: #8f8f9d;
-  --button-hover-background: #d0d0d7;
-  --button-active-background: #b1b1b9;
 }
 
 [theme="dark"] {
-  --color: #ddd;
   --background: #222;
   --information-flow-step-title-background: #111;
-  --button-color: #ddd;
-  --button-background: #000;
-  --button-border-color: #8f8f9d;
-  --button-hover-background: #2f2f28;
-  --button-active-background: #4e4e46;
 }
 
 /* Page-wide styles */
 body {
-  color: var(--color);
-  background: var(--background);
-  position: fixed;
-  overflow: hidden;
-  width: 100%;
   height: 100vh;
-
-  font-family: JetBrains Mono;
 
   display: flex;
   flex-direction: column;
   gap: 0.2em;
-}
-
-b {
-  font-weight: bold;
-}
-
-/* Page-wide styles for buttons */
-button {
-  font-family: JetBrains Mono;
-
-  /* Show a pointer icon over buttons */
-  cursor: pointer;
-
-  /* Remove 300ms delay on mobile */
-  touch-action: none;
-
-  border-radius: 3px;
-  border: 1px solid var(--button-border-color);
-
-  color: var(--button-color);
-  background: var(--button-background);
-
-  &:hover {
-    background: var(--button-hover-background);
-  }
-
-  &:active {
-    background: var(--button-active-background);
-  }
 }
 
 #toolbox {

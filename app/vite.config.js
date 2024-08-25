@@ -18,7 +18,7 @@ function base64Loader() {
   };
 }
 
-function inlineSvgLoader(data) {
+function inlineSvgLoader() {
   return {
     name: "inline-svg-loader",
     transformIndexHtml(html) {
