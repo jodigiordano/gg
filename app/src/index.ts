@@ -1029,8 +1029,8 @@ function isInitialLoad(): boolean {
 function updateStatePosition(x: number, y: number): void {
   const coordinates = viewport.screenToWorld(x, y);
 
-  state.preciseX = coordinates.x;
-  state.preciseY = coordinates.y;
+  state.preciseX = coordinates.x / BlockSize;
+  state.preciseY = coordinates.y / BlockSize;
 
   state.x =
     coordinates.x >= 0

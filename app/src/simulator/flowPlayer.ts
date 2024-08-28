@@ -80,10 +80,8 @@ export default class FlowPlayer {
     preciseWorldX: number,
     preciseWorldY: number,
   ): FlowPlayerData | null {
-    const boundaries = this.simulator.getBoundaries();
-
-    const pointerX = preciseWorldX + boundaries.translateX;
-    const pointerY = preciseWorldY + boundaries.translateY;
+    const pointerX = preciseWorldX * BlockSize;
+    const pointerY = preciseWorldY * BlockSize;
 
     for (let i = 0; i < this.sprites.length; i++) {
       if (this.sprites[i].visible) {
