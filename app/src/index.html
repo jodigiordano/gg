@@ -10,31 +10,11 @@
       name="description"
       content="gg is a free online diagram editor for flowcharts, process diagrams and network diagrams. It is also a light software architecture simulator."
     />
-    <link rel="icon" type="image/png" href="assets/favicon.ico" />
+    <partial>favicon</partial>
     <link rel="stylesheet" href="assets/global.css" />
     <link rel="stylesheet" href="index.css" />
     <title>charts</title>
-    <script>
-      // Default theme.
-      let theme = "light";
-
-      // The chosen theme is stored in local storage.
-      const themeFromLocalStorage = localStorage.getItem("theme");
-
-      if (themeFromLocalStorage) {
-        if (themeFromLocalStorage === "dark") {
-          theme = "dark";
-        }
-      } else if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
-        // Theme set by the OS.
-        theme = "dark";
-      }
-
-      // Set dark theme, if preferred.
-      if (theme === "dark") {
-        document.documentElement.setAttribute("theme", theme);
-      }
-    </script>
+    <partial>theme</partial>
   </head>
   <body>
     <div id="header">

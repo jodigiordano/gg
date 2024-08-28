@@ -1,0 +1,21 @@
+<script>
+  // Default theme.
+  let theme = "light";
+
+  // The chosen theme is stored in local storage.
+  const themeFromLocalStorage = localStorage.getItem("theme");
+
+  if (themeFromLocalStorage) {
+    if (themeFromLocalStorage === "dark") {
+      theme = "dark";
+    }
+  } else if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
+    // Theme set by the OS.
+    theme = "dark";
+  }
+
+  // Set dark theme, if preferred.
+  if (theme === "dark") {
+    document.documentElement.setAttribute("theme", theme);
+  }
+</script>

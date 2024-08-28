@@ -32,6 +32,20 @@ function inlineSvgLoader() {
   };
 }
 
+function partialHtmlLoader() {
+  return {
+    name: "partial-html-loader",
+    transformIndexHtml(html) {
+      return html.replace(
+        /<partial>(.*)<\/partial>/g,
+        (_match, filename) => {
+          return fs.readFileSync(`./src/assets/${filename}.html`);
+        },
+      );
+    },
+  };
+}
+
 export default {
   root: "src",
   cacheDir: "tmp",
@@ -43,7 +57,8 @@ export default {
       typescript: true,
     }),
     base64Loader(),
-    inlineSvgLoader({ key: "value" }),
+    inlineSvgLoader(),
+    partialHtmlLoader(),
   ],
   build: {
     outDir: "../dist",
