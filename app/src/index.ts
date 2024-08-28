@@ -860,6 +860,13 @@ function setLinkPatternPipe(): void {
 
   linkPatternDotted.classList.add("hidden");
   linkPatternPipe.classList.remove("hidden");
+
+  // Timeout used to apply this operation after the "click" event
+  // has bubbled up. Without this, the "selected" class is not applied
+  // on the link button.
+  setTimeout(() => {
+    switchOperation(linkOperation);
+  }, 0);
 }
 
 function setLinkPatternSolid(): void {
@@ -867,6 +874,13 @@ function setLinkPatternSolid(): void {
 
   linkPatternPipe.classList.add("hidden");
   linkPatternSolid.classList.remove("hidden");
+
+  // Timeout used to apply this operation after the "click" event
+  // has bubbled up. Without this, the "selected" class is not applied
+  // on the link button.
+  setTimeout(() => {
+    switchOperation(linkOperation);
+  }, 0);
 }
 
 function setLinkPatternDotted(): void {
@@ -874,6 +888,13 @@ function setLinkPatternDotted(): void {
 
   linkPatternSolid.classList.add("hidden");
   linkPatternDotted.classList.remove("hidden");
+
+  // Timeout used to apply this operation after the "click" event
+  // has bubbled up. Without this, the "selected" class is not applied
+  // on the link button.
+  setTimeout(() => {
+    switchOperation(linkOperation);
+  }, 0);
 }
 
 linkPatternPipe.addEventListener("click", setLinkPatternSolid);
