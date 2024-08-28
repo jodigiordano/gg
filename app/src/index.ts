@@ -400,6 +400,12 @@ async function newFile(): Promise<void> {
 document
   .getElementById("operation-file-new")
   ?.addEventListener("click", function () {
+    // When the user creates a new file, we save the current file in the browser
+    // history. That way, we don't need a confirmation dialog that asks
+    // "are you sure you want to abandon the current work?" as the current work
+    // is not lost.
+    window.history.pushState({}, "");
+
     newFile().then(() => {
       saveDataIsLoading.classList.add("hidden");
     });
