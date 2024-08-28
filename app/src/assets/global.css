@@ -221,7 +221,8 @@ a:visited {
   color: var(--color);
 }
 
-textarea, input {
+textarea,
+input {
   border-radius: 3px;
   border: 1px solid var(--input-border-color);
 
