@@ -176,6 +176,7 @@ table {
   --input-background: #fff;
   --input-border-color: #8f8f9d;
   --dialog-backdrop-background: rgba(0, 0, 0, 0.4);
+  --github-background: #000;
 }
 
 [theme="dark"] {
@@ -195,6 +196,7 @@ table {
   --input-background: #000;
   --input-border-color: #8f8f9d;
   --dialog-backdrop-background: rgba(0, 0, 0, 0.6);
+  --github-background: #fff;
 }
 
 /* Page-wide styles */
@@ -356,5 +358,12 @@ button {
     display: flex;
     justify-content: center;
     align-items: center;
+  }
+
+.github-icon {
+  svg {
+    path {
+      fill: var(--github-background);
+    }
   }
 }
