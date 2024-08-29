@@ -215,6 +215,7 @@ li {
   line-height: 1.25em;
 }
 
+a,
 a:visited {
   color: var(--color);
 }
