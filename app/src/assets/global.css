@@ -317,6 +317,10 @@ button {
         border-top: solid 1px #bbb;
         padding: 0;
       }
+
+      a {
+        text-decoration: none;
+      }
     }
   }
 }
