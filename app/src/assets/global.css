@@ -278,6 +278,12 @@ button {
   &:active {
     background: var(--button-active-background);
   }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    content: "oops";
+  }
 }
 
 .dropdown {
