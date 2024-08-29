@@ -36,12 +36,9 @@ function partialHtmlLoader() {
   return {
     name: "partial-html-loader",
     transformIndexHtml(html) {
-      return html.replace(
-        /<partial>(.*)<\/partial>/g,
-        (_match, filename) => {
-          return fs.readFileSync(`./src/assets/${filename}.html`);
-        },
-      );
+      return html.replace(/<partial>(.*)<\/partial>/g, (_match, filename) => {
+        return fs.readFileSync(`./src/assets/${filename}.html`);
+      });
     },
   };
 }
