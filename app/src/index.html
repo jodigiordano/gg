@@ -22,7 +22,9 @@
       <div class="dropdown">
         <button>file</button>
         <ul class="content closed">
-          <li id="operation-file-new">new file</li>
+          <li id="operation-file-new">new</li>
+          <li id="operation-file-save">save to disk</li>
+          <li id="operation-file-open">open from disk</li>
           <li id="operation-export-png">export to PNG</li>
           <li id="operation-flow-options-open">flow options</li>
         </ul>
@@ -548,6 +550,16 @@
         </form>
       </div>
     </dialog>
+    <dialog id="load-file-failed-dialog">
+      <div class="content">
+        <h1>Operation failed</h1>
+        <p>Loading the graph failed.</p>
+        <form method="dialog">
+          <button>ok</button>
+        </form>
+      </div>
+    </dialog>
+    <input id="file-from-disk" type="file" accept="application/json" />
     <script type="module" src="./index.ts"></script>
   </body>
 </html>

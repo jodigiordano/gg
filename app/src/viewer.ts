@@ -315,10 +315,14 @@ for (const button of toolboxButtons) {
 // Initialization.
 //
 
-// Load the save.
-const json = load();
+const saveDataIsLoading = document.getElementById(
+  "save-data-is-loading",
+) as HTMLElement;
 
-if (json) {
+try {
+  // Load the save.
+  const json = load();
+
   // Start the simulation.
   await loadSimulation(json);
 
@@ -349,5 +353,7 @@ if (json) {
   resizeCanvas();
 
   // Remove the loading banner.
-  document.getElementById("save-data-is-loading")!.classList.add("hidden");
+  saveDataIsLoading.classList.add("hidden");
+} catch {
+  saveDataIsLoading.innerHTML = "Loading the graph failed.";
 }

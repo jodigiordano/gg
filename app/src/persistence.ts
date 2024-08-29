@@ -1,26 +1,30 @@
 // @ts-ignore
 import pako from "pako";
 
-export function load(): string | null {
-  let value: string | null = null;
-
+export function load(): string {
   const urlParams = getUrlParams();
 
+  let value: string | null = null;
+
   if (urlParams.file) {
-    try {
-      value = new TextDecoder().decode(
-        pako.inflate(
-          Uint8Array.from(window.atob(urlParams.file), c => c.codePointAt(0)!),
-        ),
-      );
-    } catch (err) {
-      console.warn(
-        "Could not load data from URL because:",
-        (err as Error).message ?? err,
-      );
-    }
+    value = new TextDecoder().decode(
+      pako.inflate(
+        Uint8Array.from(window.atob(urlParams.file), c => c.codePointAt(0)!),
+      ),
+    );
   } else {
     value = window.localStorage.getItem("file");
+  }
+
+  if (!value) {
+    value = JSON.stringify(
+      {
+        specificationVersion: "1.0.0",
+        title: "New system",
+      },
+      null,
+      2,
+    );
   }
 
   return value;

@@ -30,9 +30,14 @@ import { getUrlParams, setUrlParams, load, save } from "./persistence.js";
 import { getThemeOnLoad } from "./theme.js";
 
 const canvasContainer = document.getElementById("canvas") as HTMLDivElement;
+
 const saveDataIsLoading = document.getElementById(
   "save-data-is-loading",
 ) as HTMLElement;
+
+const loadFileFailed = document.getElementById(
+  "load-file-failed-dialog",
+) as HTMLDialogElement;
 
 //
 // Events
@@ -241,17 +246,18 @@ document
     const json = getJsonEditorValue();
 
     if (json) {
-      state.operation.onEnd(state);
-      pushChange(json);
-      save(json);
-
       loadSimulation(json)
         .then(() => {
+          state.operation.onEnd(state);
+          pushChange(json);
+          save(json);
           updateFlowProgression();
           tick();
         })
         .catch(() => {
-          /* NOOP */
+          setJsonEditorValue(state.changes[state.changeIndex]);
+
+          loadFileFailed.showModal();
         });
     }
   });
@@ -410,6 +416,49 @@ document
       saveDataIsLoading.classList.add("hidden");
     });
   });
+
+document
+  .getElementById("operation-file-save")
+  ?.addEventListener("click", function () {
+    const json = getJsonEditorValue();
+
+    // Create a download link.
+    const link = document.createElement("a");
+
+    link.setAttribute("href", `data:application/json;base64,${btoa(json)}`);
+
+    link.setAttribute(
+      "download",
+      `gg.${new Date().toJSON().replaceAll(":", ".")}.json`,
+    );
+
+    // Click on the download link.
+    link.click();
+  });
+
+const fileFromDisk = document.getElementById(
+  "file-from-disk",
+) as HTMLInputElement;
+
+document
+  .getElementById("operation-file-open")
+  ?.addEventListener("click", function () {
+    fileFromDisk.click();
+  });
+
+fileFromDisk.addEventListener("change", async function () {
+  if (fileFromDisk.files && fileFromDisk.files.length > 0) {
+    const reader = new FileReader();
+
+    reader.readAsText(fileFromDisk.files[0]);
+
+    reader.addEventListener("load", function () {
+      if (reader.result) {
+        loadSaveData(reader.result?.toString());
+      }
+    });
+  }
+});
 
 document
   .getElementById("operation-export-png")
@@ -996,17 +1045,23 @@ loadSaveData();
 // Utility functions
 //
 
-function loadSaveData(): void {
+function loadSaveData(saveData?: string): void {
   saveDataIsLoading.classList.remove("hidden");
 
-  const json = load();
+  let json: string;
 
-  if (!json) {
+  try {
+    json = saveData ?? load();
+  } catch {
     newFile().then(() => {
       saveDataIsLoading.classList.add("hidden");
     });
 
+    loadFileFailed.showModal();
+
     return;
+  } finally {
+    saveDataIsLoading.classList.add("hidden");
   }
 
   setJsonEditorValue(json);
@@ -1025,6 +1080,8 @@ function loadSaveData(): void {
       newFile().then(() => {
         saveDataIsLoading.classList.add("hidden");
       });
+
+      loadFileFailed.showModal();
     })
     .finally(() => {
       saveDataIsLoading.classList.add("hidden");

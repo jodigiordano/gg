@@ -303,3 +303,7 @@
     display: none;
   }
 }
+
+#file-from-disk {
+  display: none;
+}
