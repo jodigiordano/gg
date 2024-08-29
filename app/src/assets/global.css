@@ -201,8 +201,6 @@ table {
 body {
   color: var(--color);
   background: var(--background);
-  position: fixed;
-  overflow: hidden;
   width: 100%;
 
   font-family: JetBrains Mono;

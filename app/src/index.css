@@ -10,6 +10,12 @@
   --github-background: #fff;
 }
 
+/* Page-wide styles */
+body {
+  position: fixed;
+  overflow: hidden;
+}
+
 /* Below the header content */
 #content {
   display: flex;

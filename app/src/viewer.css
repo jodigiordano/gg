@@ -15,6 +15,8 @@
 /* Page-wide styles */
 body {
   height: 100vh;
+  position: fixed;
+  overflow: hidden;
 
   display: flex;
   flex-direction: column;
