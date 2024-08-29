@@ -24,15 +24,20 @@ As a software architecture simulator, it helps you define any kind of software a
 
 ## Features
 
-- **Free & open-source**: free as in freedom and free beer.
-- **Mobile-friendly**: create diagrams with your phone!
-- **Privacy-friendly**: no ads, no analytics, no cookies. Built for the small web.
-- **Assisted layout**: this editor helps you layout boxes and paths on the canvas.
-- **Fast UI and rendering**: it aims to run on a potato.
-- **Infinite canvas**: there is no limit to your awesome ideas!
-- **Presentation mode**: show your beautiful work to an external audience.
-- **Data flow simulation**: show data moving through your systems.
-- **Dark mode**: for those late nights of diagramming parties.
+- 🍻 Free & open-source
+- 📱 Mobile-friendly
+- 🙈 Privacy-friendly (no ads, no tracking, built for the small web)
+- 📴 Offline first
+- 💾 Local file support
+- 🐕‍🦺 Assisted layout
+- 🏂 Fast UI and rendering
+- 🧑‍💼️ Presentation mode
+- 🏓 Data flow simulation
+- 🖼 Export to PNG
+- 🌓 Dark mode
+- 🧑‍🎨️ Infinite canvas
+- 🔄 Undo / Redo
+- 🤯 ...and more!
 
 ## Examples
 
