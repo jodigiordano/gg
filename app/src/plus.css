@@ -1,0 +1,140 @@
+/* Constants */
+:root {
+  /* theme: light */
+  --logo-outline-color: #000;
+  --main-container-background: #eee;
+  --comparison-background-color: #eee;
+  --plus-color: #fff;
+}
+
+[theme="dark"] {
+  --logo-outline-color: #888;
+  --main-container-background: #111;
+  --comparison-background-color: #333;
+  --plus-color: #000;
+}
+
+#logo {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: nowrap;
+  gap: 0.1em;
+
+  font-size: 3em;
+
+  svg {
+    outline: 1px solid var(--logo-outline-color);
+  }
+}
+
+#content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1em;
+
+  margin-top: 1em;
+}
+
+#main-container {
+  max-width: 40em;
+  width: 80%;
+
+  background: var(--main-container-background);
+  padding: 2em;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1em;
+
+  text-align: center;
+}
+
+#product-screenshot {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5em;
+  align-items: center;
+
+  img {
+    width: 75%;
+  }
+}
+
+#features {
+  display: grid;
+  grid-template-columns: auto auto;
+  grid-column-gap: 2em;
+  grid-row-gap: 2em;
+
+  .feature {
+    h2 {
+      text-align: center;
+      font-size: 1.25em;
+      font-weight: bold;
+      margin-bottom: 0.5em;
+    }
+  }
+}
+
+#comparison {
+  td,
+  th {
+    padding: 1em;
+    border: 1px solid #333;
+    text-align: center;
+    vertical-align: middle;
+  }
+
+  td:first-child {
+    text-align: left;
+  }
+
+  .yes {
+    color: #000;
+    background: #5aff6f;
+  }
+
+  .no {
+    color: #000;
+    background: #ff4d78;
+  }
+
+  .price {
+    font-size: 0.75em;
+    text-wrap: nowrap;
+  }
+}
+
+.sign-up {
+  font-size: 1.2em;
+  padding: 0.5em;
+
+  background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+  background-size: 400% 400%;
+  animation: gg-plus-gradiant 10s ease infinite;
+  border: 1px solid #000;
+  color: var(--plus-color);
+  cursor: pointer;
+  font-weight: bold;
+}
+
+@keyframes gg-plus-gradiant {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+#footer {
+  margin-bottom: 2em;
+}
