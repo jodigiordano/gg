@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=0.75" />
+    <meta
+      name="description"
+      content="gg is a free online diagram editor for flowcharts, process diagrams and network diagrams. It is also a light software architecture simulator."
+    />
+    <partial>favicon</partial>
+    <link rel="stylesheet" href="assets/global.css" />
+    <link rel="stylesheet" href="sign-in.css" />
+    <title>charts</title>
+    <partial>theme</partial>
+  </head>
+  <body>
+    <div id="header">
+      <a href="/">
+        <button title="Go to editor">
+          <inline-svg>icon-edit</inline-svg>
+        </button>
+      </a>
+    </div>
+    <div id="content">
+      <div id="logo">
+        <inline-svg>logo</inline-svg>
+      </div>
+      <h1>Sign-in</h1>
+      <div id="main-container">
+        <div id="state-failure" class="hidden">
+          We failed to authenticate you :( Please try again.
+        </div>
+        <div id="identity-providers">
+          <button id="identity-provider-google" title="">
+            <inline-svg>icon-google</inline-svg>
+            Sign in with Google
+          </button>
+          <button id="identity-provider-github" title="">
+            <span class="github-icon">
+              <inline-svg>icon-github</inline-svg>
+            </span>
+            Sign in with Github
+          </button>
+        </div>
+        <div class="separator-with-title">or</div>
+        <h2>Passwordless sign-in</h2>
+        <div id="passwordless">
+          <div id="passwordless-step-1">
+            <ul id="passwordless-step-1-instructions">
+              <li>1. Submit your email address.</li>
+              <li>2. Receive an email with a sign-in link.</li>
+              <li>
+                3. Click on the link and you will be automatically signed in.
+              </li>
+            </ul>
+            <form id="passwordless-form">
+              <fieldset>
+                <input
+                  placeholder="Your email"
+                  type="email"
+                  name="email"
+                  required="required"
+                />
+                <input
+                  id="passwordless-submit"
+                  type="submit"
+                  value="Send sign-in link"
+                />
+              </fieldset>
+            </form>
+          </div>
+          <div id="passwordless-step-2" class="hidden">
+            <p>
+              You should receive an email to
+              <span id="passwordless-email">bob@example.com</span>
+              with your sign-in link shortly.
+            </p>
+            <p id="passwordless-spam">
+              (if you didn't receive the email in the next minute, look inside
+              your spam folder)
+            </p>
+          </div>
+        </div>
+      </div>
+      <div id="terms">
+        By continuing, you are agreeing to the
+        <a href="/terms.html">Terms of Use</a> and
+        <a href="/privacy.html">Privacy Policy</a>.
+      </div>
+    </div>
+    <script type="module" src="./sign-in.ts"></script>
+  </body>
+</html>

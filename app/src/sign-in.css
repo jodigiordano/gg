@@ -1,0 +1,167 @@
+/* Constants */
+:root {
+  /* theme: light */
+  --logo-outline-color: #000;
+  --main-container-background: #eee;
+}
+
+[theme="dark"] {
+  --logo-outline-color: #888;
+  --main-container-background: #111;
+}
+
+h1 {
+  font-size: 2em;
+}
+
+#content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1em;
+
+  margin-top: 1em;
+}
+
+#logo {
+  svg {
+    width: 6em;
+    height: 6em;
+
+    outline: 1px solid var(--logo-outline-color);
+  }
+}
+
+#main-container {
+  max-width: 40em;
+  width: 80%;
+
+  background: var(--main-container-background);
+  padding: 4em 2em;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1em;
+}
+
+.separator-with-title {
+  font-size: 0.75em;
+  margin: 1em 0;
+  text-align: center;
+
+  &::before,
+  &::after {
+    display: inline-block;
+    content: "";
+    border-top: 1px solid #bbb;
+    width: 3em;
+    margin: 0 0.25em;
+    transform: translateY(-0.25em);
+  }
+}
+
+#identity-providers {
+  width: 80%;
+  display: flex;
+  flex-direction: column;
+  gap: 1em;
+
+  button {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1em;
+
+    width: 100%;
+    padding: 1em;
+
+    svg {
+      width: 2em;
+      height: 2em;
+    }
+  }
+}
+
+#passwordless {
+  width: 80%;
+
+  .hidden {
+    display: none;
+  }
+}
+
+#passwordless-step-1 {
+  display: flex;
+  flex-direction: column;
+  gap: 1em;
+}
+
+#passwordless-step-1-instructions {
+  font-size: 0.75em;
+}
+
+#passwordless-form {
+  fieldset {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 1em;
+
+    input {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 1em;
+    }
+  }
+}
+
+#passwordless-email {
+  font-weight: bold;
+}
+
+#passwordless-step-2 {
+  display: flex;
+  flex-direction: column;
+  gap: 1em;
+
+  button {
+    width: 100%;
+    padding: 1em;
+  }
+}
+
+#passwordless-submit {
+  cursor: pointer;
+
+  &:hover {
+    background: var(--button-hover-background);
+  }
+
+  &:active {
+    background: var(--button-active-background);
+  }
+}
+
+#passwordless-spam {
+  font-size: 0.75em;
+}
+
+#state-failure {
+  color: red;
+  margin-bottom: 2em;
+
+  &.hidden {
+    display: none;
+  }
+}
+
+#terms {
+  font-size: 0.9em;
+  text-align: center;
+  width: 80%;
+  margin-bottom: 2em;
+}

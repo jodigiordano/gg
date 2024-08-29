@@ -67,6 +67,7 @@ export default {
       input: {
         editor: "./src/index.html",
         viewer: "./src/viewer.html",
+        signIn: "./src/sign-in.html",
         terms: "./src/terms.html",
         privacy: "./src/privacy.html",
       },
