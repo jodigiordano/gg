@@ -1,3 +1,4 @@
+
 # `gg`
 
 > [!IMPORTANT]
@@ -14,7 +15,7 @@ As a software architecture simulator, it helps you define any kind of software a
 </p>
 
 <p align="center">
-  <img src="./screenshot.gif" />
+  <img src="./readme/screenshot.gif" />
 </p>
 
 <p align="center">
@@ -24,20 +25,62 @@ As a software architecture simulator, it helps you define any kind of software a
 
 ## Features
 
-- 🍻 Free & open-source
-- 📱 Mobile-friendly
-- 🙈 Privacy-friendly (no ads, no tracking, built for the small web)
-- 📴 Offline first
-- 💾 Local file support
-- 🐕‍🦺 Assisted layout
-- 🏂 Fast UI and rendering
-- 🧑‍💼️ Presentation mode
-- 🏓 Data flow simulation
-- 🖼 Export to PNG
-- 🌓 Dark mode
-- 🧑‍🎨️ Infinite canvas
-- 🔄 Undo / Redo
-- 🤯 ...and more!
+<table>
+  <tr>
+    <td>
+      <img src="./readme/icon-open.png" /> Free & open-source
+    </td>
+    <td>
+      <img src="./readme/icon-mobile.png" /> Mobile-friendly
+    </td>
+    <td>
+      <img src="./readme/icon-privacy.png" /> Privacy-friendly
+    </td>
+    <td>
+      <img src="./readme/icon-offline.png" /> Offline first
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <img src="./readme/icon-local.png" /> Local file support
+    </td>
+    <td>
+      <img src="./readme/icon-layout.png" /> Assisted layout
+    </td>
+    <td>
+      <img src="./readme/icon-fast.png" /> Fast UI and rendering
+    </td>
+    <td>
+      <img src="./readme/icon-presentation.png" /> Presentation mode
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <img src="./readme/icon-flow.png" /> Data flow simulation
+    </td>
+    <td>
+      <img src="./readme/icon-image.png" /> Export to PNG
+    </td>
+    <td>
+      <img src="./readme/icon-darkmode.png" /> Dark mode
+    </td>
+    <td>
+      <img src="./readme/icon-canvas.png" /> Infinite canvas
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <img src="./readme/icon-undo.png" /> Undo / Redo
+    </td>
+    <td>
+      <img src="./readme/icon-more.png" /> ...and more!
+    </td>
+    <td>
+    </td>
+    <td>
+    </td>
+  </tr>
+</table>
 
 ## Examples
 
