@@ -14,6 +14,10 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      - name: Install Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
       - name: Compile
         run: |
           npm ci
@@ -26,8 +30,44 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      - name: Install Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
       - name: Test
         run: |
           cd core
           npm ci
           npm run test
+
+  test-server:
+    name: Test gg server
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    services:
+      postgres:
+        image: postgres
+        env:
+          POSTGRES_USER: gg
+          POSTGRES_PASSWORD: gg
+          POSTGRES_DB: gg_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Install Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+      - name: Test
+        run: |
+          cd server
+          npm ci
+          npm run test:db:setup
+          npm run ci:test
