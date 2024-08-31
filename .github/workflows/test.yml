@@ -69,4 +69,5 @@ jobs:
         run: |
           cd server
           npm ci
+          npm run test:db:setup
           npm run ci:test
