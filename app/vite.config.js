@@ -45,6 +45,7 @@ function partialHtmlLoader() {
 
 export default {
   root: "src",
+  envDir: "../",
   cacheDir: "tmp",
   server: {
     host: "0.0.0.0",
@@ -76,6 +77,7 @@ export default {
         viewer: "./src/viewer.html",
         signIn: "./src/sign-in.html",
         plus: "./src/plus.html",
+        profile: "./src/profile.html",
         terms: "./src/terms.html",
         privacy: "./src/privacy.html",
       },
