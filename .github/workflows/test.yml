@@ -31,3 +31,16 @@ jobs:
           cd core
           npm ci
           npm run test
+
+  test-server:
+    name: Test gg server
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Test
+        run: |
+          cd server
+          npm ci
+          npm run ci:test
