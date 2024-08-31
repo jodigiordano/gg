@@ -1,0 +1,53 @@
+{
+  "name": "@gg/server",
+  "version": "0.1.0",
+  "type": "module",
+  "engines": {
+    "node": ">= 22.7.0"
+  },
+  "license": "See ../LICENSE.md",
+  "types": "./dist/index.d.ts",
+  "exports": "./dist/index.js",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "lint": "prettier . --write",
+    "dev": "tsc-watch --onSuccess \"node --env-file=.env ./dist/index.js\"",
+    "test": "tsc --project tsconfig.test.json && NODE_OPTIONS='--import tsx' node --env-file=.env.test ../node_modules/mocha/bin/mocha.js --exit tests/**/*.ts",
+    "test:debug": "tsc --project tsconfig.test.json && NODE_OPTIONS='--import tsx' node --env-file=.env.test ../node_modules/mocha/bin/mocha.js --inspect-brk --exit tests/**/*.ts",
+    "test:db:setup": "ENV_FILE=../.env.test ./infra/setup.sh",
+    "db:setup": "ENV_FILE=../.env ./infra/setup.sh",
+    "compile": "rm -rf dist && tsc",
+    "ci:test": "c8 npm run test"
+  },
+  "devDependencies": {
+    "@tsconfig/strictest": "2.x",
+    "@types/cookie": "0.6.x",
+    "@types/cookie-parser": "1.x",
+    "@types/cookie-signature": "1.x",
+    "@types/cors": "2.x",
+    "@types/express": "4.x",
+    "@types/jsonwebtoken": "9.x",
+    "@types/mocha": "10.x",
+    "@types/node": "20.x",
+    "@types/pg": "8.x",
+    "@types/sinon": "17.x",
+    "@types/supertest": "6.x",
+    "c8": "10.x",
+    "mocha": "10.x",
+    "prettier": "3.x",
+    "sinon": "18.x",
+    "supertest": "7.x",
+    "tsc-watch": "6.x",
+    "tsx": "4.x",
+    "typescript": "5.x"
+  },
+  "dependencies": {
+    "cookie-parser": "1.x",
+    "cors": "2.x",
+    "express": "v5.0.0-beta.3",
+    "jsonwebtoken": "9.x",
+    "pg": "8.x"
+  }
+}
