@@ -69,5 +69,4 @@ jobs:
         run: |
           cd server
           npm ci
-          cp .env.template .env.test
           npm run ci:test
