@@ -303,6 +303,10 @@ button {
       display: none;
     }
 
+    a {
+      text-decoration: none;
+    }
+
     li {
       display: flex;
       align-items: center;
@@ -324,10 +328,6 @@ button {
       &.separator {
         border-top: solid 1px #bbb;
         padding: 0;
-      }
-
-      a {
-        text-decoration: none;
       }
     }
   }

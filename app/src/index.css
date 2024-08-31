@@ -2,12 +2,10 @@
 :root {
   /* theme: light */
   --information-flow-step-title-background: #eee;
-  --github-background: #000;
 }
 
 [theme="dark"] {
   --information-flow-step-title-background: #111;
-  --github-background: #fff;
 }
 
 /* Page-wide styles */
@@ -272,20 +270,6 @@ body {
         font-weight: bold;
         height: 2em;
       }
-    }
-  }
-}
-
-/* Link to Github */
-#github {
-  margin-left: auto;
-  margin-right: 1em;
-
-  svg {
-    width: 1.5em;
-
-    path {
-      fill: var(--github-background);
     }
   }
 }
