@@ -303,6 +303,11 @@ button {
       display: none;
     }
 
+    &.open-left {
+      left: unset;
+      right: 0.5em;
+    }
+
     a {
       text-decoration: none;
     }
@@ -364,6 +369,10 @@ button {
     display: flex;
     justify-content: center;
     align-items: center;
+
+    .hidden {
+      display: none;
+    }
   }
 }
 

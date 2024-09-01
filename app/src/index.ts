@@ -957,6 +957,28 @@ linkPatternSolid.addEventListener("click", setLinkPatternDotted);
 linkPatternDotted.addEventListener("click", setLinkPatternPipe);
 
 //
+// Profile operations
+//
+
+document
+  .getElementById("operation-sign-out")
+  ?.addEventListener("click", function () {
+    fetch("/api/sign-out", {
+      method: "POST",
+    })
+      .then(async response => {
+        if (response.redirected) {
+          window.location.replace(response.url);
+        } else {
+          // TODO: handle error.
+        }
+      })
+      .catch(() => {
+        /* TODO: handle error */
+      });
+  });
+
+//
 // Toolbox
 //
 
@@ -1040,6 +1062,32 @@ initializeDropdowns();
 
 // Load saved data.
 loadSaveData();
+
+//
+// Load profile.
+//
+
+fetch("/api/profile")
+  .then(async response => {
+    let toShow = "unauthenticated";
+    let toHide = "authenticated";
+
+    if (response.ok) {
+      toShow = "authenticated";
+      toHide = "unauthenticated";
+    }
+
+    for (const button of document.querySelectorAll(`#header-right .${toShow}`)) {
+      button.classList.remove("hidden");
+    }
+
+    for (const button of document.querySelectorAll(`#header-right .${toHide}`)) {
+      button.classList.add("hidden");
+    }
+  })
+  .catch(() => {
+    // TODO: handle error.
+  });
 
 //
 // Utility functions
