@@ -172,6 +172,10 @@ table {
   --button-border-color: #8f8f9d;
   --button-hover-background: #d0d0d7;
   --button-active-background: #b1b1b9;
+  --button-primary-color: #ddd;
+  --button-primary-background: #000;
+  --button-primary-hover-background: #2f2f28;
+  --button-primary-active-background: #4e4e46;
   --input-color: #000;
   --input-background: #fff;
   --input-border-color: #8f8f9d;
@@ -192,6 +196,10 @@ table {
   --button-border-color: #8f8f9d;
   --button-hover-background: #2f2f28;
   --button-active-background: #4e4e46;
+  --button-primary-color: #000;
+  --button-primary-background: #dfdfdf;
+  --button-primary-hover-background: #d0d0d7;
+  --button-primary-active-background: #b1b1b9;
   --input-color: #ddd;
   --input-background: #000;
   --input-border-color: #8f8f9d;
@@ -283,6 +291,21 @@ button {
     opacity: 0.5;
     cursor: not-allowed;
     content: "oops";
+  }
+
+  &.primary {
+    font-weight: bold;
+
+    color: var(--button-primary-color);
+    background: var(--button-primary-background);
+
+    &:hover {
+      background: var(--button-primary-hover-background);
+    }
+
+    &:active {
+      background: var(--button-primary-active-background);
+    }
   }
 }
 
