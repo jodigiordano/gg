@@ -1108,11 +1108,11 @@ fetch("/api/profile")
       state.profile.readOnly = profile.readOnly;
     }
 
-    for (const button of document.querySelectorAll(`#header-right .${toShow}`)) {
+    for (const button of document.querySelectorAll(`#header .${toShow}`)) {
       button.classList.remove("hidden");
     }
 
-    for (const button of document.querySelectorAll(`#header-right .${toHide}`)) {
+    for (const button of document.querySelectorAll(`#header .${toHide}`)) {
       button.classList.add("hidden");
     }
   })
