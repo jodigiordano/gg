@@ -330,3 +330,26 @@ body {
     font-weight: bold;
   }
 }
+
+#operation-connectivity-status-open {
+  color: #3cb44b;
+
+  &.warning {
+    color: #f58231;
+  }
+
+  &.alert {
+    color: #e6194b;
+  }
+}
+
+#connectivity-status-dialog {
+  max-width: 40em;
+  width: 80%;
+
+  #connectivity-status-details {
+    display: flex;
+    flex-direction: column;
+    gap: 1em;
+  }
+}

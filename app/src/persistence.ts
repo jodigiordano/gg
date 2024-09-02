@@ -40,14 +40,42 @@ export async function load(): Promise<string> {
   return value;
 }
 
-export function save(value: string): void {
+export async function save(value: string): Promise<void> {
+  const urlParams = getUrlParams();
+
+  // Cloud save.
+  if (urlParams.id) {
+    try {
+      const response = await fetch(`/api/graphs/${urlParams.id}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          data: value,
+        }),
+      });
+
+      if (response.status !== 204) {
+        window.localStorage.setItem(urlParams.id, value);
+
+        throw new Error(`PATCH /api/graphs/${urlParams.id} failed`);
+      }
+    } catch {
+      window.localStorage.setItem(urlParams.id, value);
+
+      throw new Error(`PATCH /api/graphs/${urlParams.id} failed`);
+    }
+
+    return;
+  }
+
+  // Local save.
   window.localStorage.setItem("file", value);
 
   const encodedValue = window.btoa(
     String.fromCodePoint(...pako.deflate(new TextEncoder().encode(value))),
   );
-
-  const urlParams = getUrlParams();
 
   urlParams.file = encodedValue;
 

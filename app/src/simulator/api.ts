@@ -16,10 +16,11 @@ import { BlockSize, getForegroundColor } from "../helpers.js";
 import { app, tick } from "../renderer/pixi.js";
 import viewport from "../renderer/viewport.js";
 import { state, pushChange } from "../state.js";
-import { save } from "../persistence.js";
+import { getUrlParams, save } from "../persistence.js";
 import { setJsonEditorValue } from "../jsonEditor.js";
 import FlowPlayer from "./flowPlayer.js";
 import WebWorker from "../worker.js";
+import { setConnectivity } from "../connectivity.js";
 
 //
 // Load the simulation.
@@ -487,8 +488,11 @@ export async function modifySpecification(modifier: () => void): Promise<void> {
     await loadSimulation(newSpecification);
 
     pushChange(newSpecification);
-    save(newSpecification);
     setJsonEditorValue(newSpecification);
+
+    save(newSpecification)
+      .then(() => setConnectivity(getUrlParams().file ? "local-file" : "ok"))
+      .catch(() => setConnectivity("save-failed"));
   } catch {
     // Rollback if the new configuration is invalid.
     await loadSimulation(currentSpecification);

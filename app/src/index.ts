@@ -26,8 +26,15 @@ import {
   openJsonEditor,
   setJsonEditorValue,
 } from "./jsonEditor.js";
-import { getUrlParams, setUrlParams, load, save } from "./persistence.js";
+import {
+  getUrlParams,
+  setUrlParams,
+  load,
+  save,
+  resetUrlParams,
+} from "./persistence.js";
 import { getThemeOnLoad } from "./theme.js";
+import { setConnectivity, connectivityStatus } from "./connectivity.js";
 
 const canvasContainer = document.getElementById("canvas") as HTMLDivElement;
 
@@ -242,24 +249,31 @@ document
 
 document
   .getElementById("operation-json-editor-apply-changes")
-  ?.addEventListener("click", function () {
+  ?.addEventListener("click", async function () {
     const json = getJsonEditorValue();
 
-    if (json) {
-      loadSimulation(json)
-        .then(() => {
-          state.operation.onEnd(state);
-          pushChange(json);
-          save(json);
-          updateFlowProgression();
-          tick();
-        })
-        .catch(() => {
-          setJsonEditorValue(state.changes[state.changeIndex]);
-
-          loadFileFailed.showModal();
-        });
+    if (!json) {
+      return;
     }
+
+    try {
+      await loadSimulation(json);
+    } catch {
+      setJsonEditorValue(state.changes[state.changeIndex]);
+      loadFileFailed.showModal();
+
+      return;
+    }
+
+    state.operation.onEnd(state);
+    pushChange(json);
+
+    save(json)
+      .then(() => setConnectivity(isLocalFile() ? "local-file" : "ok"))
+      .catch(() => setConnectivity("save-failed"));
+
+    updateFlowProgression();
+    tick();
   });
 
 //
@@ -367,14 +381,49 @@ document
 //
 
 async function newFile(): Promise<void> {
-  const json = JSON.stringify(
+  resetUrlParams();
+
+  // Local file.
+  let json = JSON.stringify(
     {
       specificationVersion: "1.0.0",
-      title: "New system",
+      title: "Untitled graph",
     },
     null,
     2,
   );
+
+  // Cloud file.
+  if (state.profile.authenticated) {
+    if (state.profile.readOnly) {
+      // When in read-only, a local file is created.
+      setConnectivity("read-only");
+    } else {
+      try {
+        const response = await fetch("/api/graphs", { method: "POST" });
+
+        if (response.ok) {
+          const graph = await response.json();
+
+          json = JSON.stringify(graph.data, null, 2);
+
+          const urlParams = getUrlParams();
+
+          urlParams.id = graph.id;
+
+          setUrlParams(urlParams);
+
+          setConnectivity("ok");
+        } else {
+          // Fallback: a local file is created.
+          setConnectivity("local-file");
+        }
+      } catch {
+        // Fallback: a local file is created.
+        setConnectivity("local-file");
+      }
+    }
+  }
 
   resetState();
   setJsonEditorValue(json);
@@ -384,13 +433,9 @@ async function newFile(): Promise<void> {
   updateFlowProgression();
   pushChange(json);
 
-  const urlParams = getUrlParams();
-
-  urlParams.autoplay = false;
-  urlParams.speed = 1;
-
-  setUrlParams(urlParams);
-  save(json);
+  save(json)
+    .then(() => setConnectivity(isLocalFile() ? "local-file" : "ok"))
+    .catch(() => setConnectivity("save-failed"));
 
   const canvasContainer = document.getElementById("canvas") as HTMLDivElement;
 
@@ -401,6 +446,10 @@ async function newFile(): Promise<void> {
 
   redrawGrid();
   tick();
+}
+
+function isLocalFile(): boolean {
+  return !!getUrlParams().file;
 }
 
 document
@@ -418,7 +467,7 @@ document
   });
 
 document
-  .getElementById("operation-file-save")
+  .getElementById("operation-file-save-to-disk")
   ?.addEventListener("click", function () {
     const json = getJsonEditorValue();
 
@@ -436,12 +485,20 @@ document
     link.click();
   });
 
+document
+  .getElementById("operation-file-save-to-cloud")
+  ?.addEventListener("click", function () {
+    save(getJsonEditorValue())
+      .then(() => setConnectivity(isLocalFile() ? "local-file" : "ok"))
+      .catch(() => setConnectivity("save-failed"));
+  });
+
 const fileFromDisk = document.getElementById(
   "file-from-disk",
 ) as HTMLInputElement;
 
 document
-  .getElementById("operation-file-open")
+  .getElementById("operation-file-open-from-disk")
   ?.addEventListener("click", function () {
     fileFromDisk.click();
   });
@@ -454,7 +511,12 @@ fileFromDisk.addEventListener("change", async function () {
 
     reader.addEventListener("load", function () {
       if (reader.result) {
-        loadSaveData(reader.result?.toString());
+        resetUrlParams();
+        loadSaveData(reader.result?.toString()).then(() => {
+          save(getJsonEditorValue())
+            .then(() => setConnectivity(isLocalFile() ? "local-file" : "ok"))
+            .catch(() => setConnectivity("save-failed"));
+        });
       }
     });
   }
@@ -617,7 +679,10 @@ graphTitle.addEventListener("change", function () {
   setJsonEditorValue(newSpecification);
 
   pushChange(newSpecification);
-  save(newSpecification);
+
+  save(newSpecification)
+    .then(() => setConnectivity(isLocalFile() ? "local-file" : "ok"))
+    .catch(() => setConnectivity("save-failed"));
 });
 
 autoplay.addEventListener("change", function () {
@@ -656,8 +721,11 @@ function undo(): void {
     loadSimulation(json)
       .then(() => {
         updateFlowProgression();
-        save(json);
         tick();
+
+        save(json)
+          .then(() => setConnectivity(isLocalFile() ? "local-file" : "ok"))
+          .catch(() => setConnectivity("save-failed"));
       })
       .catch(() => {
         /* NOOP */
@@ -677,8 +745,11 @@ function redo(): void {
     loadSimulation(json)
       .then(() => {
         updateFlowProgression();
-        save(json);
         tick();
+
+        save(json)
+          .then(() => setConnectivity(isLocalFile() ? "local-file" : "ok"))
+          .catch(() => setConnectivity("save-failed"));
       })
       .catch(() => {
         /* NOOP */
@@ -820,19 +891,19 @@ flowRepeatAll.addEventListener("click", function () {
   flowRepeatAll.classList.add("hidden");
 });
 
-const flowStepSetTitleDialog = document.getElementById(
+const flowStepSetTitle = document.getElementById(
   "input-flow-step-set-title-dialog",
 ) as HTMLDialogElement;
 
-flowStepSetTitleDialog.addEventListener("keydown", event => {
+flowStepSetTitle.addEventListener("keydown", event => {
   event.stopPropagation();
 });
 
-const flowStepSetTitleTitle = flowStepSetTitleDialog.querySelector(
+const flowStepSetTitleTitle = flowStepSetTitle.querySelector(
   "h1",
 ) as HTMLElement;
 
-const flowStepSetTitleEditor = flowStepSetTitleDialog.querySelector(
+const flowStepSetTitleEditor = flowStepSetTitle.querySelector(
   "input",
 ) as HTMLInputElement;
 
@@ -855,7 +926,7 @@ document
 
     flowStepSetTitleEditor.value = title;
 
-    flowStepSetTitleDialog.showModal();
+    flowStepSetTitle.showModal();
   });
 
 document
@@ -1106,6 +1177,10 @@ fetch("/api/profile")
 
       state.profile.authenticated = true;
       state.profile.readOnly = profile.readOnly;
+
+      setConnectivity(
+        profile.readOnly ? "read-only" : isLocalFile() ? "local-file" : "ok",
+      );
     }
 
     for (const button of document.querySelectorAll(`#header .${toShow}`)) {
@@ -1145,26 +1220,26 @@ async function loadSaveData(saveData?: string): Promise<void> {
 
   setJsonEditorValue(json);
 
-  loadSimulation(json)
-    .then(() => {
-      updateFlowProgression();
-      pushChange(json);
-      save(json);
-      fitSimulation();
-      redrawGrid();
-      state.flowPlayer?.draw();
-      tick();
-    })
-    .catch(() => {
-      newFile().then(() => {
-        saveDataIsLoading.classList.add("hidden");
-      });
+  try {
+    await loadSimulation(json);
 
-      loadFileFailed.showModal();
-    })
-    .finally(() => {
+    updateFlowProgression();
+    pushChange(json);
+    fitSimulation();
+    redrawGrid();
+    state.flowPlayer?.draw();
+    tick();
+  } catch {
+    newFile().then(() => {
       saveDataIsLoading.classList.add("hidden");
     });
+
+    loadFileFailed.showModal();
+  } finally {
+    saveDataIsLoading.classList.add("hidden");
+  }
+
+  setConnectivity(getUrlParams().file ? "local-file" : "ok");
 }
 
 function isModalOpen(): boolean {
@@ -1175,7 +1250,8 @@ function isModalOpen(): boolean {
     guide.open ||
     about.open ||
     privacy.open ||
-    flowStepSetTitleDialog.open
+    connectivityStatus.open ||
+    flowStepSetTitle.open
   );
 }
 

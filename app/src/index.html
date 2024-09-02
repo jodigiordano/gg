@@ -22,9 +22,12 @@
       <div class="dropdown">
         <button>file</button>
         <ul class="content closed">
-          <li id="operation-file-save">save to disk</li>
-          <li id="operation-file-open">open from disk</li>
           <li id="operation-file-new">new graph</li>
+          <li id="operation-file-save-to-disk">save to disk</li>
+          <li id="operation-file-save-to-cloud" class="authenticated hidden">
+            save to cloud
+          </li>
+          <li id="operation-file-open-from-disk">open from disk</li>
           <li id="operation-export-png">export to PNG</li>
         </ul>
       </div>
@@ -48,6 +51,13 @@
           </a>
         </ul>
       </div>
+      <button
+        id="operation-connectivity-status-open"
+        class="authenticated hidden"
+        title="Connectivity status"
+      >
+        ●
+      </button>
       <div id="header-right">
         <a href="/sign-in.html" class="unauthenticated hidden">
           <button>sign in</button>
@@ -595,6 +605,48 @@
           <button>ok</button>
         </form>
       </div>
+    </dialog>
+    <dialog id="connectivity-status-dialog">
+      <div class="content">
+        <h1>Connectivity status</h1>
+        <div id="connectivity-status-details"></div>
+        <form method="dialog">
+          <button>ok</button>
+        </form>
+      </div>
+      <template id="connectivity-status-ok">
+        <p><b>You are online!</b></p>
+        <p>Changes to your graphs will be synchronized with the server.</p>
+      </template>
+      <template id="connectivity-status-read-only">
+        <p><b>Your account is in read-only mode.</b></p>
+        <p>Changes to your graphs won't be synchronized with the server.</p>
+        <p>
+          Go to <a href="profile.html">your profile</a> for more information.
+        </p>
+      </template>
+      <template id="connectivity-status-local-file">
+        <p><b>You are working with a local file.</b></p>
+        <p>Changes to your graphs won't be synchronized with the server.</p>
+        <p>
+          <button class="convert-to-cloud">save to cloud</button>
+        </p>
+      </template>
+      <template id="connectivity-status-save-failed">
+        <p>
+          <b>The last synchronization of your graph with the server failed.</b>
+        </p>
+        <p>
+          To avoid loosing your work, make sure the synchronization succeed
+          before closing this browser tab.
+        </p>
+        <form method="dialog">
+          <p>
+            <button class="save-to-cloud">retry save to cloud</button>
+            <button class="save-to-disk">save to disk</button>
+          </p>
+        </form>
+      </template>
     </dialog>
     <input id="file-from-disk" type="file" accept="application/json" />
     <script type="module" src="./index.ts"></script>
