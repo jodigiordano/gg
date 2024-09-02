@@ -214,7 +214,7 @@ describe("/api/graphs", function () {
   });
 
   describe("PATCH /:id", function () {
-    it("204", async function () {
+    it("204 - data", async function () {
       await request(server)
         .patch(`/api/graphs/${graph.id}`)
         .set("Cookie", [generateAuthenticationCookie(user.id)])
@@ -241,7 +241,22 @@ describe("/api/graphs", function () {
       });
     });
 
-    it("400", async function () {
+    it("204 - public", async function () {
+      await request(server)
+        .patch(`/api/graphs/${graph.id}`)
+        .set("Cookie", [generateAuthenticationCookie(user.id)])
+        .set("Content-Type", "application/json")
+        .send({
+          public: true,
+        })
+        .expect(204);
+
+      const updatedGraph = await getGraphById(graph.id);
+
+      assert(updatedGraph!.public);
+    });
+
+    it("400 - graph id", async function () {
       await request(server)
         .patch("/api/graphs/nope")
         .set("Cookie", [generateAuthenticationCookie(user.id)])
@@ -255,7 +270,18 @@ describe("/api/graphs", function () {
         .expect(400);
     });
 
-    it("400 - invalid JSON", async function () {
+    it("400 - public", async function () {
+      await request(server)
+        .patch(`/api/graphs/${graph.id}`)
+        .set("Cookie", [generateAuthenticationCookie(user.id)])
+        .set("Content-Type", "application/json")
+        .send({
+          public: "nope",
+        })
+        .expect(400);
+    });
+
+    it("400 - data", async function () {
       await request(server)
         .patch(`/api/graphs/${graph.id}`)
         .set("Cookie", [generateAuthenticationCookie(user.id)])
@@ -266,7 +292,7 @@ describe("/api/graphs", function () {
         .expect(400);
     });
 
-    it("400 - not string", async function () {
+    it("400 - data not string", async function () {
       await request(server)
         .patch(`/api/graphs/${graph.id}`)
         .set("Cookie", [generateAuthenticationCookie(user.id)])

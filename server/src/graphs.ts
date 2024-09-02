@@ -13,6 +13,7 @@ import {
   getUserGraphsCount,
   Graph,
   setGraphData,
+  setGraphPublic,
   User,
 } from "./db.js";
 import { HttpError } from "./errors.js";
@@ -143,24 +144,30 @@ router.patch(
       throw new HttpError(400);
     }
 
-    if (
-      !req.body ||
-      typeof req.body !== "object" ||
-      typeof req.body.data !== "string"
-    ) {
+    if (!req.body || typeof req.body !== "object") {
       throw new HttpError(400);
     }
 
-    let system: ReturnType<typeof loadJSON>;
-
-    try {
-      system = loadJSON(req.body.data);
-    } catch {
+    if ("data" in req.body && typeof req.body.data !== "string") {
       throw new HttpError(400);
     }
 
-    if (system.errors.length) {
-      throw new HttpError(422);
+    if ("public" in req.body && typeof req.body.public !== "boolean") {
+      throw new HttpError(400);
+    }
+
+    if (req.body.data) {
+      let system: ReturnType<typeof loadJSON>;
+
+      try {
+        system = loadJSON(req.body.data);
+      } catch {
+        throw new HttpError(400);
+      }
+
+      if (system.errors.length) {
+        throw new HttpError(422);
+      }
     }
 
     const graph = await getGraphById(req.params["id"]);
@@ -173,7 +180,13 @@ router.patch(
       throw new HttpError(403);
     }
 
-    await setGraphData(graph.id, req.body.data);
+    if (req.body.data) {
+      await setGraphData(graph.id, req.body.data);
+    }
+
+    if ("public" in req.body) {
+      await setGraphPublic(graph.id, req.body.public);
+    }
 
     res.sendStatus(204);
   },
