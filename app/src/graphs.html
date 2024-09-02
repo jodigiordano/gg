@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=0.75" />
+    <meta
+      name="description"
+      content="gg is a free online diagram editor for flowcharts, process diagrams and network diagrams. It is also a light software architecture simulator."
+    />
+    <partial>favicon</partial>
+    <link rel="stylesheet" href="assets/global.css" />
+    <link rel="stylesheet" href="graphs.css" />
+    <title>charts - manage graphs</title>
+    <partial>theme</partial>
+  </head>
+  <body>
+    <div id="header">
+      <a href="/">
+        <button title="Go to editor">
+          <inline-svg>icon-edit</inline-svg>
+        </button>
+      </a>
+    </div>
+    <div id="content">
+      <h1>Graphs</h1>
+      <div id="main-container">
+        <p id="create-graph-container">
+          <button id="create-graph" class="primary">create a graph</button>
+        </p>
+        <div id="graphs-index">Loading...</div>
+      </div>
+    </div>
+    <template id="cant-load-graphs-template">
+      <p>Could not load graphs from the server.</p>
+      <p>Reload the page to retry.</p>
+    </template>
+    <template id="no-graphs-template">
+      <p>You don't have graphs yet.</p>
+      <p>
+        <button id="create-first-graph">create your first graph</button>
+      </p>
+    </template>
+    <template id="graph-template">
+      <div class="graph">
+        <div class="name"></div>
+        <div class="preview-overlay">
+          <iframe
+            class="preview"
+            width="100%"
+            height="100%"
+            src="/viewer.html#autoplay=false&toolbox=false&id=GRAPH_ID"
+          >
+          </iframe>
+        </div>
+        <button class="operation-file-properties-open">properties</button>
+        <button class="operation-delete">delete</button>
+      </div>
+    </template>
+    <dialog id="file-properties">
+      <div class="content">
+        <h1>Properties</h1>
+        <div class="section">
+          <h2>General</h2>
+          <p>
+            <label for="option-graph-title" title="The title of this graph">
+              Title:</label
+            >
+            <input id="option-graph-title" />
+          </p>
+        </div>
+        <form method="dialog">
+          <button>close</button>
+        </form>
+      </div>
+    </dialog>
+    <dialog id="delete-graph">
+      <div class="content">
+        <p><b>Are you sure you want to delete this graph?</b></p>
+        <p id="delete-graph-name"></p>
+        <form method="dialog">
+          <button id="operation-delete-graph-apply">yes</button>
+          <button>no</button>
+        </form>
+      </div>
+    </dialog>
+    <dialog id="operation-failed">
+      <div class="content">
+        <p><b>Operation failed</b></p>
+        <p id="operation-failed-reason"></p>
+        <p>Please try again.</p>
+        <p>
+          If the situation persists, contact
+          <a href="mailto:support@gg-charts.com">support@gg-charts.com</a>.
+        </p>
+        <form method="dialog">
+          <button>ok</button>
+        </form>
+      </div>
+    </dialog>
+    <script type="module" src="./graphs.ts"></script>
+  </body>
+</html>

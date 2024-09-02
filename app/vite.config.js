@@ -80,6 +80,7 @@ export default {
         profile: "./src/profile.html",
         terms: "./src/terms.html",
         privacy: "./src/privacy.html",
+        graphs: "./src/graphs.html",
       },
     },
   },

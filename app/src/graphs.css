@@ -1,0 +1,103 @@
+/* Constants */
+:root {
+  /* theme: light */
+  --main-container-background: #eee;
+}
+
+[theme="dark"] {
+  --main-container-background: #111;
+}
+
+h1 {
+  font-size: 2em;
+}
+
+h2 {
+  font-size: 1.2em;
+  text-align: center;
+}
+
+#content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1em;
+
+  margin-top: 1em;
+}
+
+#main-container {
+  max-width: 40em;
+  width: 80%;
+
+  background: var(--main-container-background);
+  padding: 2em;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 1em;
+}
+
+#graphs-index {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1em;
+  align-items: end;
+
+  .graph {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5em;
+
+    padding: 0.5em;
+
+    .name {
+      overflow-wrap: anywhere;
+    }
+
+    .name,
+    .preview-overlay {
+      cursor: pointer;
+    }
+
+    .preview {
+      pointer-events: none;
+    }
+  }
+}
+
+#file-properties {
+  max-width: 40em;
+  width: 80%;
+
+  h1 {
+    font-size: 1.2em;
+    text-align: left;
+  }
+
+  .section {
+    background: var(--main-container-background);
+    padding: 1em;
+
+    display: flex;
+    flex-direction: column;
+    gap: 0.5em;
+
+    h2 {
+      font-size: 1em;
+      font-weight: bold;
+      text-align: left;
+    }
+  }
+}
+
+#create-graph-container {
+  display: flex;
+  justify-content: right;
+}
+
+#create-graph {
+  padding: 0.5em;
+}
