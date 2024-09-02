@@ -1097,6 +1097,11 @@ fetch("/api/profile")
     if (response.ok) {
       toShow = "authenticated";
       toHide = "unauthenticated";
+
+      const profile = await response.json();
+
+      state.profile.authenticated = true;
+      state.profile.readOnly = profile.readOnly;
     }
 
     for (const button of document.querySelectorAll(`#header-right .${toShow}`)) {

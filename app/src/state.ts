@@ -22,6 +22,10 @@ export interface State {
   flowSpeed: number;
   linkPattern: PathPattern;
   theme: "light" | "dark";
+  profile: {
+    authenticated: boolean;
+    readOnly: boolean;
+  };
 }
 
 const defaultSystem = load({ specificationVersion: "1.0.0", title: "" }).system;
@@ -51,6 +55,10 @@ export const state: State = {
   flowSpeed: urlParams.speed,
   linkPattern: "pipe",
   theme: getThemeOnLoad(),
+  profile: {
+    authenticated: false,
+    readOnly: true,
+  },
 };
 
 defaultOperation.onBegin(state);
