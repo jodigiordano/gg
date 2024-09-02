@@ -127,7 +127,10 @@ export async function getUserGraphs(userId: string): Promise<Graph[]> {
   );
 }
 
-export async function createGraph(userId: string): Promise<Graph> {
+export async function createGraph(
+  userId: string,
+  data?: string,
+): Promise<Graph> {
   const id = randomUUID();
 
   await pool.query(
@@ -135,10 +138,11 @@ export async function createGraph(userId: string): Promise<Graph> {
     [
       id,
       userId,
-      JSON.stringify({
-        specificationVersion: "1.0.0",
-        title: "Untitled graph",
-      }),
+      data ??
+        JSON.stringify({
+          specificationVersion: "1.0.0",
+          title: "Untitled graph",
+        }),
     ],
   );
 

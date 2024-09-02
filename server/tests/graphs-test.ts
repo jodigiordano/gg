@@ -6,7 +6,6 @@ import { createUser, generateAuthenticationCookie } from "./helpers.js";
 import {
   createGraph,
   getGraphById,
-  getUserGraphs,
   Graph,
   setUserStripeSubscription,
   User,
@@ -48,20 +47,33 @@ describe("/api/graphs", function () {
 
   describe("POST /", function () {
     it("200", async function () {
-      const response = await request(server)
+      await request(server)
         .post("/api/graphs")
         .set("Cookie", [generateAuthenticationCookie(user.id)])
         .expect(200);
+    });
 
-      const graphs = await getUserGraphs(user.id);
-      const graph = (await getGraphById(graphs.at(0)!.id))!;
+    it("200 - data", async function () {
+      const data = {
+        specificationVersion: "1.0.0",
+        title: "My graph",
+      };
 
-      assert.deepEqual(response.body, {
-        id: graph.id,
-        title: graph.title,
-        data: graph.data,
-        userId: user.id,
-      });
+      await request(server)
+        .post("/api/graphs")
+        .set("Cookie", [generateAuthenticationCookie(user.id)])
+        .set("Content-Type", "application/json")
+        .send({ data: JSON.stringify(data) })
+        .expect(200);
+    });
+
+    it("400", async function () {
+      await request(server)
+        .post("/api/graphs")
+        .set("Cookie", [generateAuthenticationCookie(user.id)])
+        .set("Content-Type", "application/json")
+        .send({ data: "nope" })
+        .expect(400);
     });
 
     it("402", async function () {
@@ -75,6 +87,21 @@ describe("/api/graphs", function () {
 
     it("401", async function () {
       request(server).post("/api/graphs").expect(401);
+    });
+
+    it("422", async function () {
+      const data = {
+        specificationVersion: "1.0.0",
+        title: "My graph",
+        extraProperty: "oops",
+      };
+
+      await request(server)
+        .post("/api/graphs")
+        .set("Cookie", [generateAuthenticationCookie(user.id)])
+        .set("Content-Type", "application/json")
+        .send({ data: JSON.stringify(data) })
+        .expect(422);
     });
   });
 

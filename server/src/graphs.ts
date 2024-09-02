@@ -39,7 +39,29 @@ router.post("/", async function (req: express.Request, res: express.Response) {
     throw new HttpError(402);
   }
 
-  const graph = await createGraph(user.id);
+  let data: string | undefined = undefined;
+
+  if (
+    req.body &&
+    typeof req.body === "object" &&
+    typeof req.body.data === "string"
+  ) {
+    let system: ReturnType<typeof loadJSON>;
+
+    try {
+      system = loadJSON(req.body.data);
+    } catch {
+      throw new HttpError(400);
+    }
+
+    if (system.errors.length) {
+      throw new HttpError(422);
+    }
+
+    data = req.body.data;
+  }
+
+  const graph = await createGraph(user.id, data);
 
   res.status(200).json(graph);
 });
