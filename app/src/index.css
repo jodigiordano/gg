@@ -162,9 +162,7 @@ body {
 /* Modal to choose a color to paint */
 #input-set-color-dialog {
   max-width: 40em;
-  max-height: 30em;
   width: 80%;
-  height: 80%;
 
   .content {
     height: 100%;
@@ -198,9 +196,7 @@ body {
 /* Modal to choose a theme */
 #theme {
   max-width: 20em;
-  max-height: 10em;
   width: 80%;
-  height: 80%;
 
   .content {
     height: 100%;
@@ -234,9 +230,7 @@ body {
 /* Modal to show about */
 #about {
   max-width: 30em;
-  max-height: 22em;
   width: 80%;
-  height: 80%;
 }
 
 /* Modal to show about & privacy */
