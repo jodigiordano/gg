@@ -392,10 +392,10 @@ button {
     display: flex;
     justify-content: center;
     align-items: center;
+  }
 
-    .hidden {
-      display: none;
-    }
+  .hidden {
+    display: none;
   }
 }
 
