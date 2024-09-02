@@ -100,3 +100,7 @@ export function getUrlParams(): UrlParams {
 
   return urlParams;
 }
+
+export function resetUrlParams(): void {
+  window.history.replaceState(null, "", document.location.pathname);
+}
