@@ -254,7 +254,7 @@ dialog {
   .content {
     display: flex;
     flex-direction: column;
-    gap: 1em;
+    gap: 1.5em;
     justify-content: space-between;
 
     h1 {
