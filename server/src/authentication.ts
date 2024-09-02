@@ -108,3 +108,15 @@ async function createStripeResources(user: User): Promise<void> {
     console.error(error);
   }
 }
+
+export function isReadOnlyMode(user: User): boolean {
+  return [
+    "paused",
+    "incomplete",
+    "incomplete_expired",
+    "unpaid",
+    "canceled",
+    null,
+    undefined,
+  ].includes(user.stripeSubscriptionStatus);
+}

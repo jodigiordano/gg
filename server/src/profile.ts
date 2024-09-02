@@ -2,6 +2,7 @@ import express from "express";
 import { HttpError } from "./errors.js";
 import {
   authenticateUser,
+  isReadOnlyMode,
   setAuthenticationCookie,
   unsetAuthenticationCookie,
 } from "./authentication.js";
@@ -15,7 +16,11 @@ router.get("/", async function (req: express.Request, res: express.Response) {
 
   setAuthenticationCookie(user.id, res);
 
-  res.status(200).json(user);
+  res.status(200).json({
+    id: user.id,
+    email: user.email,
+    readOnly: isReadOnlyMode(user),
+  });
 });
 
 router.post(
