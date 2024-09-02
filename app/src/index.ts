@@ -512,11 +512,7 @@ fileFromDisk.addEventListener("change", async function () {
     reader.addEventListener("load", function () {
       if (reader.result) {
         resetUrlParams();
-        loadSaveData(reader.result?.toString()).then(() => {
-          save(getJsonEditorValue())
-            .then(() => setConnectivity(isLocalFile() ? "local-file" : "ok"))
-            .catch(() => setConnectivity("save-failed"));
-        });
+        loadSaveData(reader.result?.toString());
       }
     });
   }
@@ -1229,6 +1225,10 @@ async function loadSaveData(saveData?: string): Promise<void> {
     redrawGrid();
     state.flowPlayer?.draw();
     tick();
+
+    save(json)
+      .then(() => setConnectivity(isLocalFile() ? "local-file" : "ok"))
+      .catch(() => setConnectivity("save-failed"));
   } catch {
     newFile().then(() => {
       saveDataIsLoading.classList.add("hidden");
@@ -1238,8 +1238,6 @@ async function loadSaveData(saveData?: string): Promise<void> {
   } finally {
     saveDataIsLoading.classList.add("hidden");
   }
-
-  setConnectivity(getUrlParams().file ? "local-file" : "ok");
 }
 
 function isModalOpen(): boolean {
