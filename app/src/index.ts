@@ -489,8 +489,12 @@ document
     const exportCanvas = document.createElement("canvas");
 
     const margin = 20;
-    const backlinkWidth = 150;
-    const backlinkHeight = 22;
+
+    const backlinkWidth =
+      state.profile.authenticated && !state.profile.readOnly ? 0 : 150;
+
+    const backlinkHeight =
+      state.profile.authenticated && !state.profile.readOnly ? 0 : 22;
 
     // Add margin around the graph.
     // Add some space at the bottom of the image for the backlink.
