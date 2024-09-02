@@ -3,11 +3,13 @@
   /* theme: light */
   --information-flow-step-title-background: #eee;
   --plus-color: #fff;
+  --privacy-section-background: #eee;
 }
 
 [theme="dark"] {
   --information-flow-step-title-background: #111;
   --plus-color: #000;
+  --privacy-section-background: #111;
 }
 
 /* Page-wide styles */
@@ -240,9 +242,16 @@ body {
 /* Modal to show about & privacy */
 #privacy {
   max-width: 30em;
-  max-height: 17em;
   width: 80%;
-  height: 80%;
+
+  .section {
+    background: var(--privacy-section-background);
+    padding: 1em;
+
+    display: flex;
+    flex-direction: column;
+    gap: 0.5em;
+  }
 }
 
 /* Modal to show the guide */
