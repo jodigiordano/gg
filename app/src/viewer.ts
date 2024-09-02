@@ -321,7 +321,7 @@ const saveDataIsLoading = document.getElementById(
 
 try {
   // Load the save.
-  const json = load();
+  const json = await load();
 
   // Start the simulation.
   await loadSimulation(json);

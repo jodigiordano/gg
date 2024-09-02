@@ -1,12 +1,22 @@
 // @ts-ignore
 import pako from "pako";
 
-export function load(): string {
+export async function load(): Promise<string> {
   const urlParams = getUrlParams();
 
   let value: string | null = null;
 
-  if (urlParams.file) {
+  if (urlParams.id) {
+    const response = await fetch(`/api/graphs/${urlParams.id}`);
+
+    if (!response.ok) {
+      throw new Error(`GET /api/graphs/${urlParams.id} failed`);
+    }
+
+    const graph = await response.json();
+
+    return JSON.stringify(graph.data, null, 2);
+  } else if (urlParams.file) {
     value = new TextDecoder().decode(
       pako.inflate(
         Uint8Array.from(window.atob(urlParams.file), c => c.codePointAt(0)!),
@@ -46,6 +56,7 @@ export function save(value: string): void {
 
 export interface UrlParams {
   file?: string;
+  id?: string;
   autoplay: boolean;
   speed: number;
 }

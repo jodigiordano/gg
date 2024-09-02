@@ -1120,13 +1120,13 @@ fetch("/api/profile")
 // Utility functions
 //
 
-function loadSaveData(saveData?: string): void {
+async function loadSaveData(saveData?: string): Promise<void> {
   saveDataIsLoading.classList.remove("hidden");
 
   let json: string;
 
   try {
-    json = saveData ?? load();
+    json = saveData ?? (await load());
   } catch {
     newFile().then(() => {
       saveDataIsLoading.classList.add("hidden");
