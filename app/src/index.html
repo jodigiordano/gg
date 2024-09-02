@@ -26,12 +26,12 @@
           <li id="operation-file-save">save to disk</li>
           <li id="operation-file-open">open from disk</li>
           <li id="operation-export-png">export to PNG</li>
-          <li id="operation-flow-options-open">flow options</li>
         </ul>
       </div>
       <div class="dropdown">
         <button>view</button>
         <ul class="content closed">
+          <li id="operation-file-properties-open">properties</li>
           <li id="operation-goto-viewer">presentation mode</li>
           <li id="operation-json-editor-open">json editor</li>
           <li id="operation-theme">theme</li>
@@ -537,9 +537,17 @@
         </form>
       </div>
     </dialog>
-    <dialog id="flow-options">
+    <dialog id="file-properties">
       <div class="content">
-        <h1>Flow Options</h1>
+        <h1>Properties</h1>
+        <h2>General</h2>
+        <p>
+          <label for="option-graph-title" title="The title of this graph">
+            Title</label
+          >
+          <input id="option-graph-title" />
+        </p>
+        <h2>Flow</h2>
         <p>
           <label
             for="option-autoplay"

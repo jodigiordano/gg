@@ -571,47 +571,69 @@ document
     window.location.replace(`/viewer.html${window.location.hash}`);
   });
 
-const flowOptions = document.getElementById(
-  "flow-options",
+const fileProperties = document.getElementById(
+  "file-properties",
 ) as HTMLDialogElement;
 
-document
-  .getElementById("operation-flow-options-open")
-  ?.addEventListener("click", function () {
-    flowOptions.inert = true;
-    flowOptions.showModal();
-    flowOptions.inert = false;
-  });
+const graphTitle = document.getElementById(
+  "option-graph-title",
+) as HTMLInputElement;
 
 const autoplay = document.getElementById("option-autoplay") as HTMLInputElement;
+const speed = document.getElementById("option-speed") as HTMLInputElement;
 
-autoplay.checked = state.flowPlay;
+document
+  .getElementById("operation-file-properties-open")
+  ?.addEventListener("click", function () {
+    graphTitle.value = JSON.parse(getJsonEditorValue()).title;
 
-autoplay.addEventListener("change", event => {
+    const params = getUrlParams();
+
+    autoplay.checked = params.autoplay;
+    speed.value = params.speed.toString();
+
+    fileProperties.inert = true;
+    fileProperties.showModal();
+    fileProperties.inert = false;
+  });
+
+graphTitle.addEventListener("change", function () {
+  const currentSpecification = JSON.parse(getJsonEditorValue());
+
+  const newTitle = graphTitle.value;
+
+  if (newTitle === currentSpecification.title) {
+    return;
+  }
+
+  currentSpecification.title = newTitle;
+
+  const newSpecification = JSON.stringify(currentSpecification, null, 2);
+
+  setJsonEditorValue(newSpecification);
+
+  pushChange(newSpecification);
+  save(newSpecification);
+});
+
+autoplay.addEventListener("change", function () {
   const urlParams = getUrlParams();
 
-  // @ts-ignore
-  urlParams.autoplay = event.currentTarget!.checked.toString();
+  urlParams.autoplay = autoplay.checked;
 
   setUrlParams(urlParams);
 });
 
-const speed = document.getElementById("option-speed") as HTMLInputElement;
-
-speed.value = state.flowSpeed.toString();
-
-speed.addEventListener("change", event => {
-  // @ts-ignore
-  state.flowSpeed = event.currentTarget!.value;
+speed.addEventListener("change", function () {
+  const value = Number(speed.value);
 
   const urlParams = getUrlParams();
-
-  // @ts-ignore
-  const value = Number(event.currentTarget!.value);
 
   urlParams.speed = !isNaN(value) ? Math.max(0.1, Math.min(5, value)) : 1;
 
   setUrlParams(urlParams);
+
+  state.flowSpeed = urlParams.speed;
 });
 
 //
@@ -1139,7 +1161,7 @@ function loadSaveData(saveData?: string): void {
 function isModalOpen(): boolean {
   return (
     isJsonEditorOpen() ||
-    flowOptions.open ||
+    fileProperties.open ||
     theme.open ||
     guide.open ||
     about.open ||

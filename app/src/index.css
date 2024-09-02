@@ -321,3 +321,9 @@ body {
     background-position: 0% 50%;
   }
 }
+
+#file-properties {
+  h2 {
+    font-weight: bold;
+  }
+}
