@@ -20,7 +20,7 @@ export function load(): string {
     value = JSON.stringify(
       {
         specificationVersion: "1.0.0",
-        title: "New system",
+        title: "Untitled graph",
       },
       null,
       2,
