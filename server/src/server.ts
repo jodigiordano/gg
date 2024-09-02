@@ -7,6 +7,7 @@ import githubAuthentication from "./authGithub.js";
 import passwordlessAuthentication from "./authPasswordless.js";
 import profile from "./profile.js";
 import subscription from "./subscription.js";
+import graphs from "./graphs.js";
 import { unsetAuthenticationCookie } from "./authentication.js";
 import { HttpError } from "./errors.js";
 
@@ -47,6 +48,7 @@ server.use("/api/sign-in/github", githubAuthentication);
 server.use("/api/sign-in/passwordless", passwordlessAuthentication);
 server.use("/api/profile", profile);
 server.use("/api/subscription", subscription);
+server.use("/api/graphs", graphs);
 
 //
 // Sign out

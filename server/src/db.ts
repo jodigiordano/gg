@@ -19,22 +19,31 @@ export interface User {
   stripeSubscriptionStatus?: string;
 }
 
+export interface Graph {
+  id: string;
+  userId?: string;
+  data?: Record<string, unknown>;
+  title?: string;
+}
+
 export async function getUserById(id: string): Promise<User | null> {
   const data = await pool.query(
     "SELECT DISTINCT ON (id) * FROM users WHERE id = $1 LIMIT 1",
     [id],
   );
 
-  if (!data.rows.length) {
+  const row = data.rows[0];
+
+  if (!row) {
     return null;
   }
 
   return {
-    id: data.rows[0].id,
-    email: data.rows[0].email,
-    stripeCustomerId: data.rows[0].stripe_customer_id,
-    stripeSubscriptionId: data.rows[0].stripe_subscription_id,
-    stripeSubscriptionStatus: data.rows[0].stripe_subscription_status,
+    id: row.id,
+    email: row.email,
+    stripeCustomerId: row.stripe_customer_id,
+    stripeSubscriptionId: row.stripe_subscription_id,
+    stripeSubscriptionStatus: row.stripe_subscription_status,
   };
 }
 
@@ -44,16 +53,18 @@ export async function getUserByEmail(id: string): Promise<User | null> {
     [id],
   );
 
-  if (!data.rows.length) {
+  const row = data.rows[0];
+
+  if (!row) {
     return null;
   }
 
   return {
-    id: data.rows[0].id,
-    email: data.rows[0].email,
-    stripeCustomerId: data.rows[0].stripe_customer_id,
-    stripeSubscriptionId: data.rows[0].stripe_subscription_id,
-    stripeSubscriptionStatus: data.rows[0].stripe_subscription_status,
+    id: row.id,
+    email: row.email,
+    stripeCustomerId: row.stripe_customer_id,
+    stripeSubscriptionId: row.stripe_subscription_id,
+    stripeSubscriptionStatus: row.stripe_subscription_status,
   };
 }
 
@@ -99,4 +110,71 @@ export async function setUserStripeSubscription(
     ].join(" "),
     [id, stripeSubscriptionId, stripeSubscriptionStatus],
   );
+}
+
+export async function getUserGraphs(userId: string): Promise<Graph[]> {
+  const data = await pool.query(
+    "SELECT DISTINCT ON (id) id, data->>'title' as title FROM graphs WHERE user_id = $1",
+    [userId],
+  );
+
+  return data.rows.map(
+    row =>
+      <Graph>{
+        id: row.id,
+        title: row.title,
+      },
+  );
+}
+
+export async function createGraph(userId: string): Promise<Graph> {
+  const id = randomUUID();
+
+  await pool.query(
+    "INSERT INTO graphs(id, user_id, data) VALUES ($1, $2, $3)",
+    [
+      id,
+      userId,
+      JSON.stringify({
+        specificationVersion: "1.0.0",
+        title: "Untitled graph",
+      }),
+    ],
+  );
+
+  const createdGraph = await getGraphById(id);
+
+  if (!createdGraph) {
+    throw new DatabaseError(`Graph ${id} not created in DB for user ${userId}`);
+  }
+
+  return createdGraph;
+}
+
+export async function getGraphById(id: string): Promise<Graph | null> {
+  const data = await pool.query(
+    "SELECT DISTINCT ON (id) *, data->>'title' as title FROM graphs WHERE id = $1 LIMIT 1",
+    [id],
+  );
+
+  const row = data.rows[0];
+
+  if (!row) {
+    return null;
+  }
+
+  return {
+    id: row.id,
+    userId: row.user_id,
+    data: row.data,
+    title: row.title,
+  };
+}
+
+export async function setGraphData(id: string, data: string): Promise<void> {
+  await pool.query("UPDATE graphs SET data = $2 WHERE id = $1", [id, data]);
+}
+
+export async function deleteGraph(id: string): Promise<void> {
+  await pool.query("DELETE FROM graphs WHERE id = $1", [id]);
 }
