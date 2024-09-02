@@ -11,7 +11,9 @@ import {
   getGraphById,
   getUserGraphs,
   getUserGraphsCount,
+  Graph,
   setGraphData,
+  User,
 } from "./db.js";
 import { HttpError } from "./errors.js";
 import { isUUID } from "./helpers.js";
@@ -76,10 +78,6 @@ router.post("/", async function (req: express.Request, res: express.Response) {
 router.get(
   "/:id",
   async function (req: express.Request, res: express.Response) {
-    const user = await authenticateUser(req);
-
-    setAuthenticationCookie(user.id, res);
-
     if (typeof req.params["id"] !== "string" || !isUUID(req.params["id"])) {
       throw new HttpError(400);
     }
@@ -89,6 +87,38 @@ router.get(
     if (!graph) {
       throw new HttpError(404);
     }
+
+    // Public graph.
+    if (graph.public) {
+      let user: User | null = null;
+      let view: Graph | Record<string, unknown>;
+
+      try {
+        user = await authenticateUser(req);
+
+        setAuthenticationCookie(user.id, res);
+      } catch {
+        /* NOOP */
+      }
+
+      if (user && graph.userId === user.id) {
+        view = graph;
+      } else {
+        view = {
+          id: graph.id,
+          title: graph.title,
+          data: graph.data,
+        };
+      }
+
+      res.status(200).json(view);
+      return;
+    }
+
+    // Private graph.
+    const user = await authenticateUser(req);
+
+    setAuthenticationCookie(user.id, res);
 
     if (graph.userId !== user.id) {
       throw new HttpError(403);

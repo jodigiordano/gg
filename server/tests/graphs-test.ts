@@ -7,6 +7,7 @@ import {
   createGraph,
   getGraphById,
   Graph,
+  setGraphPublic,
   setUserStripeSubscription,
   User,
 } from "../src/db.js";
@@ -35,6 +36,7 @@ describe("/api/graphs", function () {
           {
             id: graph.id,
             title: graph.title,
+            public: false,
           },
         ],
       });
@@ -128,6 +130,55 @@ describe("/api/graphs", function () {
         title: graph.title,
         data: graph.data,
         userId: user.id,
+        public: false,
+      });
+    });
+
+    it("200 - public - anonymous", async function () {
+      await setGraphPublic(graph.id, true);
+
+      const response = await request(server)
+        .get(`/api/graphs/${graph.id}`)
+        .expect(200);
+
+      assert.deepEqual(response.body, {
+        id: graph.id,
+        title: graph.title,
+        data: graph.data,
+      });
+    });
+
+    it("200 - public - authenticated owner", async function () {
+      await setGraphPublic(graph.id, true);
+
+      const response = await request(server)
+        .get(`/api/graphs/${graph.id}`)
+        .set("Cookie", [generateAuthenticationCookie(user.id)])
+        .expect(200);
+
+      assert.deepEqual(response.body, {
+        id: graph.id,
+        title: graph.title,
+        data: graph.data,
+        userId: user.id,
+        public: true,
+      });
+    });
+
+    it("200 - public - authenticated other", async function () {
+      const user2 = await createUser();
+
+      await setGraphPublic(graph.id, true);
+
+      const response = await request(server)
+        .get(`/api/graphs/${graph.id}`)
+        .set("Cookie", [generateAuthenticationCookie(user2.id)])
+        .expect(200);
+
+      assert.deepEqual(response.body, {
+        id: graph.id,
+        title: graph.title,
+        data: graph.data,
       });
     });
 
@@ -186,6 +237,7 @@ describe("/api/graphs", function () {
           title: "My graph",
         },
         userId: user.id,
+        public: false,
       });
     });
 

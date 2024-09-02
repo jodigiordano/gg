@@ -21,6 +21,7 @@ export interface User {
 
 export interface Graph {
   id: string;
+  public?: boolean;
   userId?: string;
   data?: Record<string, unknown>;
   title?: string;
@@ -123,7 +124,7 @@ export async function getUserGraphsCount(userId: string): Promise<number> {
 
 export async function getUserGraphs(userId: string): Promise<Graph[]> {
   const data = await pool.query(
-    "SELECT DISTINCT ON (id) id, data->>'title' as title FROM graphs WHERE user_id = $1",
+    "SELECT DISTINCT ON (id) id, public, data->>'title' as title FROM graphs WHERE user_id = $1",
     [userId],
   );
 
@@ -131,6 +132,7 @@ export async function getUserGraphs(userId: string): Promise<Graph[]> {
     row =>
       <Graph>{
         id: row.id,
+        public: row.public,
         title: row.title,
       },
   );
@@ -179,6 +181,7 @@ export async function getGraphById(id: string): Promise<Graph | null> {
   return {
     id: row.id,
     userId: row.user_id,
+    public: row.public,
     data: row.data,
     title: row.title,
   };
@@ -186,6 +189,16 @@ export async function getGraphById(id: string): Promise<Graph | null> {
 
 export async function setGraphData(id: string, data: string): Promise<void> {
   await pool.query("UPDATE graphs SET data = $2 WHERE id = $1", [id, data]);
+}
+
+export async function setGraphPublic(
+  id: string,
+  isPublic: boolean,
+): Promise<void> {
+  await pool.query("UPDATE graphs SET public = $2 WHERE id = $1", [
+    id,
+    isPublic,
+  ]);
 }
 
 export async function deleteGraph(id: string): Promise<void> {

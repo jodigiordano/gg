@@ -13,6 +13,7 @@ CREATE TABLE graphs(
   id UUID NOT NULL,
   user_id UUID,
   data json NOT NULL,
+  public boolean NOT NULL DEFAULT false,
   PRIMARY KEY(id),
   FOREIGN KEY(user_id) REFERENCES users(id)
 );
