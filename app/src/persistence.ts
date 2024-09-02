@@ -61,12 +61,15 @@ export function setUrlParams(urlParams: UrlParams): void {
     delete params.speed;
   }
 
+  const hash = Object.entries(params)
+    .filter(([key, value]) => key !== "" && value !== "")
+    .map(kvp => kvp.join("="))
+    .join("&");
+
   window.history.replaceState(
     null,
     "",
-    `${document.location.pathname}#${Object.entries(params)
-      .map(kvp => kvp.join("="))
-      .join("&")}`,
+    `${document.location.pathname}#${hash}`,
   );
 }
 
