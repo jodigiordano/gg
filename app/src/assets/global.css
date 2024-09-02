@@ -316,10 +316,9 @@ button {
   .content {
     position: absolute;
     left: 0.5em;
+    top: 1.75em;
     background: var(--dropdown-background);
     box-shadow: 0 0.5em 1em 0 rgba(0, 0, 0, 0.2);
-    padding-top: 0.5em;
-    padding-bottom: 0.5em;
     z-index: 1;
 
     &.closed {
