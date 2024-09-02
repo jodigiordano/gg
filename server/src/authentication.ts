@@ -17,6 +17,19 @@ import {
 } from "./stripe.js";
 
 export async function authenticateUser(req: express.Request): Promise<User> {
+  if (
+    process.env["NODE_ENV"] === "development" &&
+    process.env["IMPERSONATE_USER"]
+  ) {
+    const user = await getUserById(process.env["IMPERSONATE_USER"]);
+
+    if (!user) {
+      throw new HttpError(401);
+    }
+
+    return user;
+  }
+
   const cookie = req.signedCookies["auth"];
 
   if (!cookie) {
