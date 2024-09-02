@@ -1,7 +1,7 @@
 import { sanitizeHtml } from "./helpers.js";
 
-const loginContainer = document.getElementById(
-  "login-container",
+const mainContainer = document.getElementById(
+  "main-container",
 ) as HTMLDivElement;
 
 //
@@ -127,7 +127,7 @@ passwordlessForm.addEventListener("submit", function (event) {
 });
 
 if (window.location.hash.includes("passwordless-token=")) {
-  loginContainer.innerHTML = "Validating...";
+  mainContainer.innerHTML = "Validating...";
 
   const params = Object.fromEntries(
     window.location.hash
