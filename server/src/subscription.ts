@@ -22,7 +22,11 @@ router.get("/", async function (req: express.Request, res: express.Response) {
   }
 
   // Synchronize in DB.
-  setUserStripeSubscription(user.id, subscription.id, subscription.status);
+  await setUserStripeSubscription(
+    user.id,
+    subscription.id,
+    subscription.status,
+  );
 
   res.status(200).json({
     status: subscription.status,
