@@ -103,6 +103,17 @@ describe("/api/graphs", function () {
         .send({ data: JSON.stringify(data) })
         .expect(422);
     });
+
+    it("422 - max", async function () {
+      for (let i = 0; i < 100; i++) {
+        createGraph(user.id);
+      }
+
+      await request(server)
+        .post("/api/graphs")
+        .set("Cookie", [generateAuthenticationCookie(user.id)])
+        .expect(422);
+    });
   });
 
   describe("GET /:id", function () {

@@ -112,6 +112,15 @@ export async function setUserStripeSubscription(
   );
 }
 
+export async function getUserGraphsCount(userId: string): Promise<number> {
+  const data = await pool.query(
+    "SELECT COUNT(*) FROM graphs WHERE user_id = $1",
+    [userId],
+  );
+
+  return Number(data.rows[0].count);
+}
+
 export async function getUserGraphs(userId: string): Promise<Graph[]> {
   const data = await pool.query(
     "SELECT DISTINCT ON (id) id, data->>'title' as title FROM graphs WHERE user_id = $1",

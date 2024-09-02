@@ -10,6 +10,7 @@ import {
   deleteGraph,
   getGraphById,
   getUserGraphs,
+  getUserGraphsCount,
   setGraphData,
 } from "./db.js";
 import { HttpError } from "./errors.js";
@@ -59,6 +60,12 @@ router.post("/", async function (req: express.Request, res: express.Response) {
     }
 
     data = req.body.data;
+  }
+
+  const count = await getUserGraphsCount(user.id);
+
+  if (count > 100) {
+    throw new HttpError(422);
   }
 
   const graph = await createGraph(user.id, data);
