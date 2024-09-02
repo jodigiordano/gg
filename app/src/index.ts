@@ -590,7 +590,7 @@ document
     context.textAlign = "end";
 
     context.fillText(
-      "Made with gg-charts.com",
+      "made with gg-charts.com",
       exportCanvas.width - 6,
       exportCanvas.height - 6,
     );
