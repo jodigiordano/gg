@@ -81,6 +81,7 @@ export default {
         terms: "./src/terms.html",
         privacy: "./src/privacy.html",
         graphs: "./src/graphs.html",
+        export: "/src/export.html",
       },
     },
   },

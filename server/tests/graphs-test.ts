@@ -1,6 +1,8 @@
 import assert from "node:assert";
-import { randomUUID } from "node:crypto";
+import sinon from "sinon";
 import request from "supertest";
+import puppeteer from "puppeteer";
+import { randomUUID } from "node:crypto";
 import server from "../src/server.js";
 import { createUser, generateAuthenticationCookie } from "./helpers.js";
 import {
@@ -21,6 +23,12 @@ describe("/api/graphs", function () {
     graph = await createGraph(user.id);
 
     await setUserStripeSubscription(user.id, "notused", "active");
+  });
+
+  this.afterEach(function () {
+    sinon.restore();
+
+    delete process.env["EXPORT_GRAPH_TO_PNG"];
   });
 
   describe("GET /", function () {
@@ -210,6 +218,84 @@ describe("/api/graphs", function () {
         .get(`/api/graphs/${randomUUID()}`)
         .set("Cookie", [generateAuthenticationCookie(user.id)])
         .expect(404);
+    });
+  });
+
+  describe.only("GET /:id.png", function () {
+    it("200", async function () {
+      process.env["EXPORT_GRAPH_TO_PNG"] = [
+        import.meta.dirname,
+        "logo.png",
+      ].join("/");
+
+      const response = await request(server)
+        .get(`/api/graphs/${graph.id}.png`)
+        .set("Cookie", [generateAuthenticationCookie(user.id)])
+        .expect(200)
+        .expect("Content-Type", "image/png")
+        .expect("Cache-Control", "public, max-age=0");
+
+      assert(response.headers["etag"]);
+      assert(response.headers["content-length"]);
+      assert(response.headers["last-modified"]);
+    });
+
+    it("200 - public", async function () {
+      process.env["EXPORT_GRAPH_TO_PNG"] = [
+        import.meta.dirname,
+        "logo.png",
+      ].join("/");
+
+      await setGraphPublic(graph.id, true);
+
+      await request(server).get(`/api/graphs/${graph.id}.png`).expect(200);
+    });
+
+    it("400", async function () {
+      await request(server)
+        .get("/api/graphs/nope.png")
+        .set("Cookie", [generateAuthenticationCookie(user.id)])
+        .expect(400);
+    });
+
+    it("401", async function () {
+      request(server).get(`/api/graphs/${graph}.png`).expect(401);
+    });
+
+    it("403", async function () {
+      const user2 = await createUser();
+      const graph = await createGraph(user.id);
+
+      await setUserStripeSubscription(user2.id, "notused", "active");
+
+      await request(server)
+        .get(`/api/graphs/${graph.id}.png`)
+        .set("Cookie", [generateAuthenticationCookie(user2.id)])
+        .expect(403);
+    });
+
+    it("404", async function () {
+      await request(server)
+        .get(`/api/graphs/${randomUUID()}.png`)
+        .set("Cookie", [generateAuthenticationCookie(user.id)])
+        .expect(404);
+    });
+
+    it("503", async function () {
+      sinon.stub(puppeteer, "launch").rejects();
+
+      await request(server)
+        .get(`/api/graphs/${graph.id}.png`)
+        .set("Cookie", [generateAuthenticationCookie(user.id)])
+        .expect(503);
+    });
+
+    it("503 - public", async function () {
+      sinon.stub(puppeteer, "launch").rejects();
+
+      await setGraphPublic(graph.id, true);
+
+      await request(server).get(`/api/graphs/${graph.id}.png`).expect(503);
     });
   });
 

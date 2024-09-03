@@ -49,6 +49,7 @@
     "cors": "2.x",
     "express": "v5.0.0-beta.3",
     "jsonwebtoken": "9.x",
-    "pg": "8.x"
+    "pg": "8.x",
+    "puppeteer": "23.x"
   }
 }
