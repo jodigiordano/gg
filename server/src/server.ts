@@ -34,7 +34,7 @@ if (process.env["NODE_ENV"] !== "test") {
         const duration = Date.now() - start;
 
         console.log(
-          `${req.method} ${req.url} ${res.statusCode} ${duration.toFixed(0)}ms`,
+          `${req.method} ${req.originalUrl} ${res.statusCode} ${duration.toFixed(0)}ms`,
         );
       });
 
