@@ -50,7 +50,7 @@
             class="preview"
             width="100%"
             height="100%"
-            src="/viewer.html#autoplay=false&toolbox=false&id=GRAPH_ID"
+            src="/viewer.html#autoplay=false&editorButton=false&flowControls=false&zoomControls=false&id=GRAPH_ID"
           >
           </iframe>
         </div>
@@ -67,7 +67,82 @@
             <label for="option-graph-title" title="The title of this graph">
               Title:</label
             >
-            <input id="option-graph-title" />
+            <input type="text" id="option-graph-title" />
+          </p>
+        </div>
+        <h2>Public Sharing</h2>
+        <div class="section">
+          <p>
+            When you enable this feature, anyone on the internet will be able to
+            visualize your graph. They won't be able to modify it.
+          </p>
+          <p>
+            <label
+              for="option-graph-public"
+              title="Enable the public sharing of this graph"
+              >Enable</label
+            >
+            <input type="checkbox" id="option-graph-public" value="true" />
+          </p>
+          <p class="option-graph-public-enabled hidden">
+            <label
+              for="option-hide-flow-controls"
+              title="Whether to hide the flow controls"
+              >Hide flow controls</label
+            >
+            <input
+              type="checkbox"
+              id="option-hide-flow-controls"
+              value="true"
+            />
+          </p>
+          <p class="option-graph-public-enabled hidden">
+            <label
+              for="option-hide-zoom-controls"
+              title="Whether to hide the zoom controls"
+              >Hide zoom controls</label
+            >
+            <input
+              type="checkbox"
+              id="option-hide-zoom-controls"
+              value="true"
+            />
+          </p>
+          <p class="option-graph-public-enabled hidden">
+            <label
+              for="option-hide-editor-button"
+              title="Whether to hide the editor button"
+              >Hide editor button</label
+            >
+            <input
+              type="checkbox"
+              id="option-hide-editor-button"
+              value="true"
+            />
+          </p>
+          <p class="option-graph-public-enabled hidden">
+            <label
+              for="option-autoplay"
+              title="Whether to autoplay the flow animation"
+              >Autoplay flow animation</label
+            >
+            <input type="checkbox" id="option-autoplay" value="true" />
+          </p>
+          <p class="option-graph-public-enabled hidden">
+            <label for="public-url" title="The public URL of this graph"
+              >Public URL:</label
+            >
+            <input type="text" readonly id="public-url" />
+            <button id="public-url-copy">copy</button>
+          </p>
+          <p
+            id="file-properties-public-preview"
+            class="option-graph-public-enabled hidden"
+          >
+            <label for="public-preview" title="Preview of the public graph"
+              >Preview:</label
+            >
+            <iframe id="public-preview" width="100%" height="100%"> </iframe>
           </p>
         </div>
         <form method="dialog">

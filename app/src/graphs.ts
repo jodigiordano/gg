@@ -102,14 +102,47 @@ fetch("/api/graphs")
         graphDiv
           .querySelector(".operation-file-properties-open")
           ?.addEventListener("click", function () {
-            graphTitle.value = document
-              .getElementById(graph.id)!
-              .querySelector(".name")!.innerHTML;
+            fetch(`/api/graphs/${graph.id}`)
+              .then(async response => {
+                if (response.ok) {
+                  const graph = await response.json();
 
-            fileProperties.setAttribute("graph-id", graph.id);
-            fileProperties.inert = true;
-            fileProperties.showModal();
-            fileProperties.inert = false;
+                  graphTitle.value = graph.title;
+
+                  graphPublic.checked = graph.public;
+
+                  for (const option of additionalGraphPublicOptions) {
+                    if (graphPublic.checked) {
+                      option.classList.remove("hidden");
+                    } else {
+                      option.classList.add("hidden");
+                    }
+                  }
+
+                  graphPublicHideFlowControls.checked = false;
+                  graphPublicHideZoomControls.checked = false;
+                  graphPublicHideEditorButton.checked = false;
+                  graphPublicAutoplay.checked = false;
+
+                  graphPublicPreview.src = `/viewer.html#id=${graph.id}`;
+
+                  graphPublicUrl.value = [
+                    import.meta.env.VITE_PUBLIC_URL,
+                    `/viewer.html#id=${graph.id}`,
+                  ].join("");
+
+                  fileProperties.setAttribute("graph-id", graph.id);
+
+                  fileProperties.inert = true;
+                  fileProperties.showModal();
+                  fileProperties.inert = false;
+                } else {
+                  // TODO.
+                }
+              })
+              .catch(() => {
+                // TODO.
+              });
           });
 
         // Append to the dom.
@@ -209,6 +242,26 @@ const graphTitle = document.getElementById(
   "option-graph-title",
 ) as HTMLInputElement;
 
+const graphPublic = document.getElementById(
+  "option-graph-public",
+) as HTMLInputElement;
+
+const graphPublicUrl = document.getElementById(
+  "public-url",
+) as HTMLInputElement;
+
+const graphPublicUrlCopy = document.getElementById(
+  "public-url-copy",
+) as HTMLButtonElement;
+
+const graphPublicPreview = document.getElementById(
+  "public-preview",
+) as HTMLIFrameElement;
+
+const additionalGraphPublicOptions = fileProperties.querySelectorAll(
+  ".option-graph-public-enabled",
+);
+
 graphTitle.addEventListener("change", () => {
   const id = fileProperties.getAttribute("graph-id")!;
 
@@ -244,4 +297,102 @@ graphTitle.addEventListener("change", () => {
     .catch(() => {
       // TODO
     });
+});
+
+graphPublic.addEventListener("change", () => {
+  const id = fileProperties.getAttribute("graph-id")!;
+
+  fetch(`/api/graphs/${id}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ public: graphPublic.checked }),
+  })
+    .then(async response => {
+      if (response.status === 204) {
+        for (const option of additionalGraphPublicOptions) {
+          if (graphPublic.checked) {
+            option.classList.remove("hidden");
+          } else {
+            option.classList.add("hidden");
+          }
+        }
+      } else {
+        // TODO
+      }
+    })
+    .catch(() => {
+      // TODO
+    });
+});
+
+const graphPublicHideFlowControls = document.getElementById(
+  "option-hide-flow-controls",
+) as HTMLInputElement;
+
+const graphPublicHideZoomControls = document.getElementById(
+  "option-hide-zoom-controls",
+) as HTMLInputElement;
+
+const graphPublicHideEditorButton = document.getElementById(
+  "option-hide-editor-button",
+) as HTMLInputElement;
+
+const graphPublicAutoplay = document.getElementById(
+  "option-autoplay",
+) as HTMLInputElement;
+
+graphPublicHideFlowControls.addEventListener("change", setGraphPublicUrlHash);
+graphPublicHideZoomControls.addEventListener("change", setGraphPublicUrlHash);
+graphPublicHideEditorButton.addEventListener("change", setGraphPublicUrlHash);
+graphPublicAutoplay.addEventListener("change", setGraphPublicUrlHash);
+
+function setGraphPublicUrlHash(): void {
+  const url = graphPublicUrl.value;
+  const urlParts = url.split("#");
+
+  const urlParams = Object.fromEntries(
+    urlParts
+      .at(-1)!
+      .split("&")
+      .map(entry => entry.split("=")),
+  );
+
+  const newUrlParams: Record<string, unknown> = {
+    id: urlParams.id,
+  };
+
+  if (graphPublicHideFlowControls.checked) {
+    newUrlParams.flowControls = false;
+  }
+
+  if (graphPublicHideZoomControls.checked) {
+    newUrlParams.zoomControls = false;
+  }
+
+  if (graphPublicHideEditorButton.checked) {
+    newUrlParams.editorButton = false;
+  }
+
+  if (graphPublicAutoplay.checked) {
+    newUrlParams.autoplay = true;
+  }
+
+  const hash = Object.entries(newUrlParams)
+    .map(kvp => kvp.join("="))
+    .join("&");
+
+  graphPublicPreview.src = [
+    "/viewer.html",
+    `?rnd=${(Math.random() + 1).toString(36).substring(7)}`,
+    `#${hash}`,
+  ].join("");
+
+  graphPublicUrl.value = [
+    import.meta.env.VITE_PUBLIC_URL,
+    `/viewer.html#${hash}`,
+  ].join("");
+}
+
+graphPublicUrlCopy.addEventListener("click", function () {
+  navigator.clipboard.writeText(graphPublicUrl.value);
 });

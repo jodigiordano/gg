@@ -24,11 +24,17 @@ body {
 }
 
 #toolbox {
+  visibility: hidden;
+
   margin: 0.2em 0.2em 0 0.2em;
 
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 1em;
+
+  &.hidden {
+    display: none;
+  }
 
   .operations {
     display: flex;
@@ -48,6 +54,10 @@ body {
 
     &.right {
       justify-content: right;
+    }
+
+    &.hidden {
+      visibility: hidden;
     }
 
     button {

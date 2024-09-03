@@ -232,6 +232,9 @@ window.addEventListener("hashchange", () => {
 
   state.flowPlay = urlParams.autoplay;
   state.flowSpeed = urlParams.speed;
+  state.zoomControls = urlParams.zoomControls;
+  state.flowControls = urlParams.flowControls;
+  state.editorButton = urlParams.editorButton;
 
   loadSaveData();
 });

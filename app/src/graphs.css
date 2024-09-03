@@ -90,6 +90,29 @@ h2 {
       font-weight: bold;
       text-align: left;
     }
+
+    p {
+      display: flex;
+      gap: 1em;
+
+      input[type="text"] {
+        flex: 1;
+      }
+    }
+  }
+
+  .option-graph-public-enabled {
+    &.hidden {
+      display: none;
+    }
+  }
+
+  #file-properties-public-preview {
+    flex-direction: column;
+
+    #public-preview {
+      height: 20em;
+    }
   }
 }
 

@@ -87,6 +87,9 @@ export interface UrlParams {
   id?: string;
   autoplay: boolean;
   speed: number;
+  zoomControls: boolean;
+  flowControls: boolean;
+  editorButton: boolean;
 }
 
 export function setUrlParams(urlParams: UrlParams): void {
@@ -94,6 +97,18 @@ export function setUrlParams(urlParams: UrlParams): void {
 
   if (!params.autoplay) {
     delete params.autoplay;
+  }
+
+  if (params.zoomControls) {
+    delete params.zoomControls;
+  }
+
+  if (params.flowControls) {
+    delete params.flowControls;
+  }
+
+  if (params.editorButton) {
+    delete params.editorButton;
   }
 
   if (params.speed === 1) {
@@ -121,6 +136,10 @@ export function getUrlParams(): UrlParams {
   );
 
   urlParams.autoplay = urlParams.autoplay === "true";
+
+  urlParams.zoomControls = urlParams.zoomControls === "false" ? false : true;
+  urlParams.flowControls = urlParams.flowControls === "false" ? false : true;
+  urlParams.editorButton = urlParams.editorButton === "false" ? false : true;
 
   const speed = Number(urlParams.speed);
 

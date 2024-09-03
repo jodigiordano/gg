@@ -22,6 +22,9 @@ export interface State {
   flowSpeed: number;
   linkPattern: PathPattern;
   theme: "light" | "dark";
+  zoomControls: boolean;
+  flowControls: boolean;
+  editorButton: boolean;
   profile: {
     authenticated: boolean;
     readOnly: boolean;
@@ -55,6 +58,9 @@ export const state: State = {
   flowSpeed: urlParams.speed,
   linkPattern: "pipe",
   theme: getThemeOnLoad(),
+  zoomControls: urlParams.zoomControls,
+  flowControls: urlParams.flowControls,
+  editorButton: urlParams.editorButton,
   profile: {
     authenticated: false,
     readOnly: true,

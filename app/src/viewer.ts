@@ -299,9 +299,32 @@ function resizeCanvas(): void {
 //
 // Toolbox
 //
+const toolbox = document.getElementById("toolbox") as HTMLDivElement;
 
-const toolboxButtons = document.querySelectorAll(
-  "#toolbox button",
+const editorButton = document.getElementById("editor-button") as HTMLDivElement;
+const flowControls = document.getElementById("flow-controls") as HTMLDivElement;
+const zoomControls = document.getElementById("zoom-controls") as HTMLDivElement;
+
+if (state.editorButton || state.flowControls || state.zoomControls) {
+  toolbox.style.visibility = "visible";
+
+  if (!state.editorButton) {
+    editorButton.classList.add("hidden");
+  }
+
+  if (!state.flowControls) {
+    flowControls.classList.add("hidden");
+  }
+
+  if (!state.zoomControls) {
+    zoomControls.classList.add("hidden");
+  }
+} else {
+  toolbox.classList.add("hidden");
+}
+
+const toolboxButtons = toolbox.querySelectorAll(
+  "button",
 ) as unknown as HTMLButtonElement[];
 
 for (const button of toolboxButtons) {
