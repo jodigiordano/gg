@@ -3,7 +3,12 @@ import request from "supertest";
 import sinon from "sinon";
 import server from "../src/server.js";
 import { createUser, generateAuthenticationCookie } from "./helpers.js";
-import { getUserById, setUserStripeSubscription } from "../src/db.js";
+import {
+  createGraph,
+  getGraphById,
+  getUserById,
+  setUserStripeSubscription,
+} from "../src/db.js";
 
 describe("/api/profile", function () {
   this.afterEach(function () {
@@ -28,6 +33,7 @@ describe("/api/profile", function () {
   describe("POST /close", function () {
     it("302", async function () {
       const user = await createUser();
+      const graph = await createGraph(user.id);
 
       await setUserStripeSubscription(user.id, "a", "b");
 
@@ -46,6 +52,7 @@ describe("/api/profile", function () {
         .expect("Location", "/");
 
       assert.equal(await getUserById(user.id), null);
+      assert.equal(await getGraphById(graph.id), null);
     });
 
     it("400", async function () {
