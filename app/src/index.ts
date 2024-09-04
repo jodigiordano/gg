@@ -533,14 +533,15 @@ document
     // Hide the grid.
     setGridVisible(false);
 
-    // Hide flow animations.
-    state.flowPlayer?.hide();
-
     // Set light theme.
     state.theme = "light";
 
     // Draw the simulation with the right theme.
     drawSimulation();
+
+    // Hide flow animations.
+    // Must be done after drawSimulation, as that step re-create a flow player.
+    state.flowPlayer?.hide();
 
     // Extract the viewport on an HTML canvas.
     // @ts-ignore
@@ -614,7 +615,9 @@ document
     setGridVisible(true);
 
     // Show the flow animations.
-    state.flowPlayer?.draw();
+    // Kept for documentation, not needed,
+    // as the flow player is recreated in drawSimulation below.
+    // state.flowPlayer?.draw();
 
     // Set user theme.
     state.theme = getThemeOnLoad();
