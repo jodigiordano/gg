@@ -650,9 +650,14 @@ const speed = document.getElementById("option-speed") as HTMLInputElement;
 document
   .getElementById("operation-file-properties-open")
   ?.addEventListener("click", function () {
-    graphTitle.value = JSON.parse(getJsonEditorValue()).title;
-
     const params = getUrlParams();
+
+    if (params.id) {
+      window.location.href = `/graph.html#id=${params.id}`;
+      return;
+    }
+
+    graphTitle.value = JSON.parse(getJsonEditorValue()).title;
 
     autoplay.checked = params.autoplay;
     speed.value = params.speed.toString();

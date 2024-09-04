@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=0.75" />
+    <meta
+      name="description"
+      content="gg is a free online diagram editor for flowcharts, process diagrams and network diagrams. It is also a light software architecture simulator."
+    />
+    <partial>favicon</partial>
+    <link rel="stylesheet" href="assets/global.css" />
+    <link rel="stylesheet" href="graph.css" />
+    <title>charts - graph properties</title>
+    <partial>theme</partial>
+  </head>
+  <body>
+    <div id="header">
+      <button title="Go to editor" id="operation-goto-editor">
+        <inline-svg>icon-edit</inline-svg>
+      </button>
+    </div>
+    <div id="content">
+      <h1>Graph</h1>
+      <div id="loading-container">Loading...</div>
+      <div id="main-container" class="hidden">
+        <div id="preview-overlay">
+          <iframe
+            class="preview"
+            width="100%"
+            height="100%"
+            src="/viewer.html#autoplay=false&editorButton=false&flowControls=false&zoomControls=false&id=GRAPH_ID"
+          >
+          </iframe>
+        </div>
+        <h2>General</h2>
+        <div class="section">
+          <p>
+            <label for="option-graph-title" title="The title of this graph">
+              Title:</label
+            >
+            <input type="text" id="option-graph-title" />
+          </p>
+        </div>
+        <h2>Public Sharing</h2>
+        <div class="section">
+          <p>Enable this feature to:</p>
+          <ul>
+            <li>- Share or embed a <b>read-only</b> link to your graph.</li>
+            <li>- Copy & paste an image link of your graph into any app.</li>
+          </ul>
+          <p>
+            <label
+              for="option-graph-public"
+              title="Enable the public sharing of this graph"
+              >Enable</label
+            >
+            <input type="checkbox" id="option-graph-public" value="true" />
+          </p>
+          <p class="option-graph-public-enabled hidden">
+            <label for="public-image" title="The public image of this graph"
+              >Image Link:</label
+            >
+            <input type="text" readonly id="public-image" />
+            <button id="public-image-copy">copy</button>
+          </p>
+          <p class="option-graph-public-enabled hidden">
+            <label for="public-url" title="The public URL of this graph"
+              >Presentation Link:</label
+            >
+            <input type="text" readonly id="public-url" />
+            <button id="public-url-copy">copy</button>
+          </p>
+          <p class="option-graph-public-enabled hidden">
+            <label
+              for="public-embed"
+              title="The public iframe URL of this graph"
+              >Embed Link:</label
+            >
+            <textarea readonly id="public-embed"></textarea>
+            <button id="public-embed-copy">copy</button>
+          </p>
+          <p
+            id="file-properties-public-preview"
+            class="option-graph-public-enabled hidden"
+          >
+            <label for="public-preview" title="Preview of the public graph"
+              >Preview:</label
+            >
+            <iframe id="public-preview" width="100%" height="100%"> </iframe>
+          </p>
+          <p class="option-graph-public-enabled hidden">Extra options:</p>
+          <p class="option-graph-public-enabled hidden">
+            <label
+              for="option-hide-flow-controls"
+              title="Whether to hide the flow controls"
+              >Hide flow controls</label
+            >
+            <input
+              type="checkbox"
+              id="option-hide-flow-controls"
+              value="true"
+            />
+          </p>
+          <p class="option-graph-public-enabled hidden">
+            <label
+              for="option-hide-zoom-controls"
+              title="Whether to hide the zoom controls"
+              >Hide zoom controls</label
+            >
+            <input
+              type="checkbox"
+              id="option-hide-zoom-controls"
+              value="true"
+            />
+          </p>
+          <p class="option-graph-public-enabled hidden">
+            <label
+              for="option-hide-editor-button"
+              title="Whether to hide the editor button"
+              >Hide editor button</label
+            >
+            <input
+              type="checkbox"
+              id="option-hide-editor-button"
+              value="true"
+            />
+          </p>
+          <p class="option-graph-public-enabled hidden">
+            <label
+              for="option-autoplay"
+              title="Whether to autoplay the flow animation"
+              >Autoplay flow animation</label
+            >
+            <input type="checkbox" id="option-autoplay" value="true" />
+          </p>
+        </div>
+      </div>
+    </div>
+    <script type="module" src="./graph.ts"></script>
+  </body>
+</html>

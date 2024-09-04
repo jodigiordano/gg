@@ -68,54 +68,6 @@ h2 {
   }
 }
 
-#file-properties {
-  max-width: 40em;
-  width: 80%;
-
-  h1 {
-    font-size: 1.2em;
-    text-align: left;
-  }
-
-  .section {
-    background: var(--main-container-background);
-    padding: 1em;
-
-    display: flex;
-    flex-direction: column;
-    gap: 1em;
-
-    h2 {
-      font-size: 1em;
-      font-weight: bold;
-      text-align: left;
-    }
-
-    p {
-      display: flex;
-      gap: 1em;
-
-      input[type="text"] {
-        flex: 1;
-      }
-    }
-  }
-
-  .option-graph-public-enabled {
-    &.hidden {
-      display: none;
-    }
-  }
-
-  #file-properties-public-preview {
-    flex-direction: column;
-
-    #public-preview {
-      height: 20em;
-    }
-  }
-}
-
 #create-graph-container {
   display: flex;
   justify-content: right;
