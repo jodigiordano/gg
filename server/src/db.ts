@@ -17,6 +17,8 @@ export interface User {
   stripeCustomerId?: string;
   stripeSubscriptionId?: string;
   stripeSubscriptionStatus?: string;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 export interface Graph {
@@ -25,6 +27,8 @@ export interface Graph {
   userId?: string;
   data?: Record<string, unknown>;
   title?: string;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 export async function getUserById(id: string): Promise<User | null> {
@@ -45,6 +49,8 @@ export async function getUserById(id: string): Promise<User | null> {
     stripeCustomerId: row.stripe_customer_id,
     stripeSubscriptionId: row.stripe_subscription_id,
     stripeSubscriptionStatus: row.stripe_subscription_status,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
   };
 }
 
@@ -66,13 +72,18 @@ export async function getUserByEmail(id: string): Promise<User | null> {
     stripeCustomerId: row.stripe_customer_id,
     stripeSubscriptionId: row.stripe_subscription_id,
     stripeSubscriptionStatus: row.stripe_subscription_status,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
   };
 }
 
 export async function createUser(email: string): Promise<User> {
   const id = randomUUID();
 
-  await pool.query("INSERT INTO users(id, email) VALUES ($1, $2)", [id, email]);
+  await pool.query(
+    "INSERT INTO users(id, email, created_at, updated_at) VALUES ($1, $2, now(), now())",
+    [id, email],
+  );
 
   const createdUser = await getUserById(id);
 
@@ -91,10 +102,10 @@ export async function setUserStripeCustomerId(
   id: string,
   stripeCustomerId: string,
 ): Promise<void> {
-  await pool.query("UPDATE users SET stripe_customer_id = $2 WHERE id = $1", [
-    id,
-    stripeCustomerId,
-  ]);
+  await pool.query(
+    "UPDATE users SET stripe_customer_id = $2, updated_at = now() WHERE id = $1",
+    [id, stripeCustomerId],
+  );
 }
 
 export async function setUserStripeSubscription(
@@ -106,7 +117,8 @@ export async function setUserStripeSubscription(
     [
       "UPDATE users SET",
       "stripe_subscription_id = $2,",
-      "stripe_subscription_status = $3",
+      "stripe_subscription_status = $3,",
+      "updated_at = now()",
       "WHERE id = $1",
     ].join(" "),
     [id, stripeSubscriptionId, stripeSubscriptionStatus],
@@ -145,7 +157,7 @@ export async function createGraph(
   const id = randomUUID();
 
   await pool.query(
-    "INSERT INTO graphs(id, user_id, data) VALUES ($1, $2, $3)",
+    "INSERT INTO graphs(id, user_id, data, created_at, updated_at) VALUES ($1, $2, $3, now(), now())",
     [
       id,
       userId,
@@ -184,21 +196,26 @@ export async function getGraphById(id: string): Promise<Graph | null> {
     public: row.public,
     data: row.data,
     title: row.title,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
   };
 }
 
 export async function setGraphData(id: string, data: string): Promise<void> {
-  await pool.query("UPDATE graphs SET data = $2 WHERE id = $1", [id, data]);
+  await pool.query(
+    "UPDATE graphs SET data = $2, updated_at = now() WHERE id = $1",
+    [id, data],
+  );
 }
 
 export async function setGraphPublic(
   id: string,
   isPublic: boolean,
 ): Promise<void> {
-  await pool.query("UPDATE graphs SET public = $2 WHERE id = $1", [
-    id,
-    isPublic,
-  ]);
+  await pool.query(
+    "UPDATE graphs SET public = $2, updated_at = now() WHERE id = $1",
+    [id, isPublic],
+  );
 }
 
 export async function deleteGraph(id: string): Promise<void> {

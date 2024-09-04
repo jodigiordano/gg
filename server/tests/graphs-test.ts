@@ -133,6 +133,9 @@ describe("/api/graphs", function () {
         .set("Cookie", [generateAuthenticationCookie(user.id)])
         .expect(200);
 
+      delete response.body.createdAt;
+      delete response.body.updatedAt;
+
       assert.deepEqual(response.body, {
         id: graph.id,
         title: graph.title,
@@ -163,6 +166,9 @@ describe("/api/graphs", function () {
         .get(`/api/graphs/${graph.id}`)
         .set("Cookie", [generateAuthenticationCookie(user.id)])
         .expect(200);
+
+      delete response.body.createdAt;
+      delete response.body.updatedAt;
 
       assert.deepEqual(response.body, {
         id: graph.id,
@@ -221,7 +227,7 @@ describe("/api/graphs", function () {
     });
   });
 
-  describe.only("GET /:id.png", function () {
+  describe("GET /:id.png", function () {
     it("200", async function () {
       process.env["EXPORT_GRAPH_TO_PNG"] = [
         import.meta.dirname,
@@ -324,6 +330,8 @@ describe("/api/graphs", function () {
         },
         userId: user.id,
         public: false,
+        createdAt: updatedGraph!.createdAt,
+        updatedAt: updatedGraph!.updatedAt,
       });
     });
 
