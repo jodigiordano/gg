@@ -226,7 +226,7 @@ document
 document
   .getElementById("operation-goto-editor")
   ?.addEventListener("click", function () {
-    window.location.replace(`/${window.location.hash}`);
+    window.location.href = `/${window.location.hash}`;
   });
 
 //

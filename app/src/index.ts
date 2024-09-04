@@ -633,7 +633,7 @@ document
 document
   .getElementById("operation-goto-viewer")
   ?.addEventListener("click", function () {
-    window.location.replace(`/viewer.html${window.location.hash}`);
+    window.location.href = `/viewer.html${window.location.hash}`;
   });
 
 const fileProperties = document.getElementById(
