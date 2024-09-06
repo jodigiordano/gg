@@ -1,0 +1,15 @@
+{
+  "name": "@gg/infra",
+  "version": "0.1.0",
+  "type": "module",
+  "license": "See LICENSE.md",
+  "scripts": {
+    "staging:provision:sync": "ENV=staging ./copyInfra.sh",
+    "staging:provision:db:init": "ENV=staging ./setupDb.sh",
+    "staging:provision:nginx": "ENV=staging ./setupNginx.sh",
+    "staging:provision:systemd": "ENV=staging ./setupSystemd.sh",
+    "staging:deploy": "ENV=staging ./deploy.sh",
+    "dev:provision:db:init": "ENV=dev ./setupDb.sh",
+    "test:provision:db:init": "ENV=test ./setupDb.sh"
+  }
+}

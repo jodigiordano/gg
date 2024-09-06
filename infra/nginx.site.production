@@ -1,0 +1,42 @@
+upstream api_servers {
+  server 127.0.0.1:3000;
+  server 127.0.0.1:3001;
+  server 127.0.0.1:3002;
+  server 127.0.0.1:3003;
+}
+
+server {
+  server_name gg-charts.com;
+
+  root /var/www/gg/app/dist;
+  index index.html;
+
+  location / {
+    try_files $uri $uri/ =404;
+  }
+
+  location /api {
+    proxy_pass http://api_servers;
+    proxy_set_header Host $host;
+  }
+
+  listen [::]:443 ssl ipv6only=on; # managed by Certbot
+  listen 443 ssl; # managed by Certbot
+  ssl_certificate /etc/letsencrypt/live/gg-charts.com/fullchain.pem; # managed by Certbot
+  ssl_certificate_key /etc/letsencrypt/live/gg-charts.com/privkey.pem; # managed by Certbot
+  include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot
+  ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
+}
+
+server {
+  if ($host = gg-charts.com) {
+    return 301 https://$host$request_uri;
+  } # managed by Certbot
+
+  listen 80;
+  listen [::]:80;
+
+  server_name gg-charts.com;
+
+  return 404; # managed by Certbot
+}

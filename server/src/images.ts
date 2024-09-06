@@ -61,6 +61,7 @@ export async function exportGraphToPNG(
     // Fallback: no image produced.
     return null;
   } catch (error) {
+    console.error(error);
     return null;
   } finally {
     // Close the browser.

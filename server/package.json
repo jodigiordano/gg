@@ -16,8 +16,6 @@
     "dev": "tsc-watch --onSuccess \"node --env-file=.env ./dist/index.js\"",
     "test": "tsc --project tsconfig.test.json && NODE_OPTIONS='--import tsx' node --env-file=.env.test ../node_modules/mocha/bin/mocha.js --exit tests/**/*.ts",
     "test:debug": "tsc --project tsconfig.test.json && NODE_OPTIONS='--import tsx' node --env-file=.env.test ../node_modules/mocha/bin/mocha.js --inspect-brk --exit tests/**/*.ts",
-    "test:db:setup": "ENV_FILE=../.env.test ./infra/setup.sh",
-    "db:setup": "ENV_FILE=../.env ./infra/setup.sh",
     "compile": "rm -rf dist && tsc",
     "ci:test": "c8 npm run test"
   },
