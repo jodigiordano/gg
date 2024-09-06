@@ -82,7 +82,7 @@ export default {
         privacy: "./src/privacy.html",
         graphs: "./src/graphs.html",
         graph: "./src/graph.html",
-        export: "/src/export.html",
+        export: "./src/export.html",
       },
     },
   },
