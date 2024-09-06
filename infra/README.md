@@ -99,6 +99,7 @@ GRANT ALL ON SCHEMA public TO gg;
 ```sh
 rm /etc/nginx/sites-available/default
 rm /etc/nginx/sites-enabled/default
+rm -rf/var/www/html
 ```
 
 ## Let's Encrypt

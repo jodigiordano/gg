@@ -9,7 +9,13 @@
     "staging:provision:nginx": "ENV=staging ./setupNginx.sh",
     "staging:provision:systemd": "ENV=staging ./setupSystemd.sh",
     "staging:deploy": "ENV=staging ./deploy.sh",
+    "production:provision:sync": "ENV=production ./copyInfra.sh",
+    "production:provision:db:init": "ENV=production ./setupDb.sh",
+    "production:provision:nginx": "ENV=production ./setupNginx.sh",
+    "production:provision:systemd": "ENV=production ./setupSystemd.sh",
+    "production:deploy": "ENV=production ./deploy.sh",
     "dev:provision:db:init": "ENV=dev ./setupDb.sh",
-    "test:provision:db:init": "ENV=test ./setupDb.sh"
+    "test:provision:db:init": "ENV=test ./setupDb.sh",
+    "compile": ""
   }
 }
