@@ -12,7 +12,7 @@
     "prepublishOnly": "npm run lint && npm run compile",
     "lint": "prettier . --write",
     "dev": "vite",
-    "compile": "tsc && vite build",
+    "compile": "rm -rf dist && tsc && vite build --mode $ENV",
     "preview": "vite preview"
   },
   "devDependencies": {
