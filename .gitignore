@@ -6,3 +6,9 @@ node_modules
 # Ignore VIM files
 *~
 .*.sw?
+
+# Ignore env files
+.env
+.env.dev
+.env.staging
+.env.production
