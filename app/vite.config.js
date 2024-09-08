@@ -1,6 +1,6 @@
-import { defineConfig, loadEnv } from 'vite';
+import { defineConfig, loadEnv } from "vite";
 import checker from "vite-plugin-checker";
-import sitemap from 'vite-plugin-sitemap'
+import sitemap from "vite-plugin-sitemap";
 import browserslistToEsbuild from "browserslist-to-esbuild";
 import fs from "node:fs";
 
@@ -46,7 +46,7 @@ function partialHtmlLoader() {
 }
 
 export default ({ mode }) => {
-  process.env = {...process.env, ...loadEnv(mode, process.cwd())};
+  process.env = { ...process.env, ...loadEnv(mode, process.cwd()) };
 
   return defineConfig({
     root: "src",
@@ -71,7 +71,14 @@ export default ({ mode }) => {
       partialHtmlLoader(),
       sitemap({
         hostname: process.env["VITE_PUBLIC_URL"],
-        exclude: ["/viewer", "/profile", "/graphs", "/graph", "/export"],
+        exclude: [
+          "/viewer",
+          "/profile",
+          "/graphs",
+          "/graph",
+          "/export",
+          "/404",
+        ],
         changefreq: "weekly",
         priority: {
           "/editor": 1.0,
@@ -88,7 +95,7 @@ export default ({ mode }) => {
       emptyOutDir: true,
       target: browserslistToEsbuild(),
       sourcemap: true,
-      assetsInlineLimit: 1024 * 1024, // 1MB.
+      assetsInlineLimit: 1024 * 25, // 25kb.
       rollupOptions: {
         input: {
           editor: "./src/index.html",
@@ -101,8 +108,9 @@ export default ({ mode }) => {
           graphs: "./src/graphs.html",
           graph: "./src/graph.html",
           export: "./src/export.html",
+          404: "./src/404.html",
         },
       },
-    }
+    },
   });
- };
+};

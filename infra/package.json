@@ -16,6 +16,7 @@
     "production:deploy": "ENV=production ./deploy.sh",
     "dev:provision:db:init": "ENV=dev ./setupDb.sh",
     "test:provision:db:init": "ENV=test ./setupDb.sh",
-    "compile": ""
+    "compile": "",
+    "lint": ""
   }
 }

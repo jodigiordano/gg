@@ -1,0 +1,14 @@
+@import "assets/global.css";
+
+#content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4em;
+
+  margin: 2em;
+}
+
+h1 {
+  font-size: 2em;
+}
