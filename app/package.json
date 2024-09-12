@@ -27,6 +27,7 @@
   "dependencies": {
     "@gg/core": "0.x",
     "pako": "2.x",
+    "pixi-tagged-text": "3.x",
     "pixi.js": "7.x"
   }
 }
