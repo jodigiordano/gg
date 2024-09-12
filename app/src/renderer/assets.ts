@@ -5,25 +5,33 @@ import {
   Spritesheet,
   WRAP_MODES,
 } from "pixi.js";
-import textFont from "../assets/arimo.ttf?base64";
-import sketchFont from "../assets/monaspace.radon.ttf?base64";
-import codeFont from "../assets/roboto.ttf?base64";
+import spritesheetData from "../assets/spritesheet.png?base64";
 
-for (const [name, font, type] of [
-  ["text", textFont, "ttf"],
-  ["sketch", sketchFont, "ttf"],
-  ["code", codeFont, "ttf"],
+//
+// Fonts.
+//
+
+const fonts: Promise<any>[] = [];
+
+for (const [name, font] of [
+  ["text", 'arimo.ttf'],
+  ["sketch", 'monaspace.radon.ttf'],
+  ["code", 'roboto.ttf'],
 ]) {
-  await Assets.load({
+  fonts.push(Assets.load({
     name,
-    src: `data:font/${type};base64,${font}`,
+    src: font,
     data: {
       family: name,
     },
-  });
+  }));
 }
 
-import spritesheetData from "../assets/spritesheet.png?base64";
+await Promise.all(fonts);
+
+//
+// gg spritesheet.
+//
 
 await Assets.load({
   name: "spritesheet",
