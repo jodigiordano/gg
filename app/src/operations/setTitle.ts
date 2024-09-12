@@ -8,10 +8,7 @@ import {
 } from "@gg/core";
 import Operation from "../operation.js";
 import SystemSelector from "../renderer/systemSelector.js";
-import {
-  initializeText,
-  modifySpecification,
-} from "../simulator/api.js";
+import { initializeText, modifySpecification } from "../simulator/api.js";
 // @ts-ignore
 import TaggedText from "pixi-tagged-text";
 import { State } from "../state.js";
@@ -130,7 +127,6 @@ function getAlign(): TextAlign {
 
   return "right";
 }
-
 
 styleAlignLeft.addEventListener("click", function () {
   setAlign("left");
