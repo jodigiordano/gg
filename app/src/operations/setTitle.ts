@@ -184,7 +184,6 @@ document
 
         width /= BlockSize;
         height /= BlockSize;
-        console.log(width, height);
 
         width =
           width - Math.floor(width) > 0.5
