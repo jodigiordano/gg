@@ -9,6 +9,8 @@ import {
   SimulatorDirectionType,
   SimulatorLinkTitle,
   SimulatorLinkPathPosition,
+  SystemMinSize,
+  TitlePadding,
 } from "@gg/core";
 import { Sprite, SCALE_MODES, Container, Texture } from "pixi.js";
 // @ts-ignore
@@ -526,6 +528,11 @@ export function initializeText(
         width = x + token.bounds.width;
       }
     }
+
+    width = Math.max(
+      width!,
+      (SystemMinSize.width - TitlePadding * 2) * BlockSize,
+    );
   }
 
   const wordWrap = width !== null;
