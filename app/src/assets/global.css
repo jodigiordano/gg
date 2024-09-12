@@ -231,7 +231,8 @@ a:visited {
 }
 
 textarea,
-input {
+input,
+.content-editable {
   border-radius: 3px;
   border: 1px solid var(--input-border-color);
 
