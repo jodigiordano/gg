@@ -294,6 +294,10 @@ button {
     content: "oops";
   }
 
+  &.pressed {
+    background: var(--button-active-background);
+  }
+
   &.primary {
     font-weight: bold;
 
@@ -305,6 +309,10 @@ button {
     }
 
     &:active {
+      background: var(--button-primary-active-background);
+    }
+
+    &.pressed {
       background: var(--button-primary-active-background);
     }
   }
