@@ -16,6 +16,38 @@
       "type": "string",
       "description": "The title of the sub-system."
     },
+    "titleFont": {
+      "description": "The font of the title",
+      "allOf": [
+        {
+          "$ref": "definitions#/$defs/textFont"
+        }
+      ]
+    },
+    "titleAlign": {
+      "description": "The alignment of the title",
+      "allOf": [
+        {
+          "$ref": "definitions#/$defs/textAlign"
+        }
+      ]
+    },
+    "titleSize": {
+      "type": "object",
+      "description": "The size of the title.",
+      "required": ["width", "height"],
+      "additionalProperties": false,
+      "properties": {
+        "width": {
+          "type": "integer",
+          "description": "The width of the title."
+        },
+        "height": {
+          "type": "integer",
+          "description": "The height of the title."
+        }
+      }
+    },
     "description": {
       "type": "string",
       "description": "The description of the sub-system, in markdown format."

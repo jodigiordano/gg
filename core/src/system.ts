@@ -31,7 +31,13 @@ export function initSystem(
   system.title = sanitizeTitle(system.title ?? system.id);
 
   // Set the title size.
-  system.titleSize = getTitleLength(system.title);
+  system.titleSize ??= getTitleLength(system.title);
+
+  // Set the title font.
+  system.titleFont ??= "text";
+
+  // Set the title alignment.
+  system.titleAlign ??= "left";
 
   // Set the title position.
   system.titlePosition = {

@@ -71,7 +71,13 @@ function enhanceLinks(system: RuntimeSystem): void {
     link.title = sanitizeTitle(link.title ?? "");
 
     // Set the title size.
-    link.titleSize = getTitleLength(link.title);
+    link.titleSize ??= getTitleLength(link.title);
+
+    // Set the title font.
+    link.titleFont ??= "text";
+
+    // Set the title alignment.
+    link.titleAlign ??= "left";
 
     // Set the title position.
     // This property is set later on by the simulator.

@@ -1,3 +1,5 @@
+export type TextFont = "text" | "sketch" | "code";
+export type TextAlign = "left" | "center" | "right";
 export type PathEndingPattern = "none" | "solid-arrow";
 export type PathPattern = "solid-line" | "dotted-line" | "pipe";
 
@@ -42,6 +44,27 @@ export interface Subsystem {
    * The title of the sub-system.
    */
   title?: string;
+  /**
+   * The font of the title
+   */
+  titleFont?: TextFont;
+  /**
+   * The alignment of the title
+   */
+  titleAlign?: TextAlign;
+  /**
+   * The size of the title.
+   */
+  titleSize?: {
+    /**
+     * The width of the title.
+     */
+    width: number;
+    /**
+     * The height of the title.
+     */
+    height: number;
+  };
   /**
    * The description of the sub-system, in markdown format.
    */
@@ -89,6 +112,27 @@ export interface Link {
    * The background color of the link title.
    */
   titleBackgroundColor?: string;
+  /**
+   * The font of the title
+   */
+  titleFont?: TextFont;
+  /**
+   * The alignment of the title
+   */
+  titleAlign?: TextAlign;
+  /**
+   * The size of the title.
+   */
+  titleSize?: {
+    /**
+     * The width of the title.
+     */
+    width: number;
+    /**
+     * The height of the title.
+     */
+    height: number;
+  };
   /**
    * The background color of the link.
    */
@@ -159,6 +203,21 @@ export interface FlowStep {
 }
 
 const schemas = [
+  {
+    $id: "definitions",
+    $defs: {
+      textFont: {
+        $id: "TextFont",
+        type: "string",
+        enum: ["text", "sketch", "code"],
+      },
+      textAlign: {
+        $id: "TextAlign",
+        type: "string",
+        enum: ["left", "center", "right"],
+      },
+    },
+  },
   {
     $id: "flow",
     title: "Flow",
@@ -236,6 +295,38 @@ const schemas = [
         type: "string",
         description: "The background color of the link title.",
       },
+      titleFont: {
+        description: "The font of the title",
+        allOf: [
+          {
+            $ref: "definitions#/$defs/textFont",
+          },
+        ],
+      },
+      titleAlign: {
+        description: "The alignment of the title",
+        allOf: [
+          {
+            $ref: "definitions#/$defs/textAlign",
+          },
+        ],
+      },
+      titleSize: {
+        type: "object",
+        description: "The size of the title.",
+        required: ["width", "height"],
+        additionalProperties: false,
+        properties: {
+          width: {
+            type: "integer",
+            description: "The width of the title.",
+          },
+          height: {
+            type: "integer",
+            description: "The height of the title.",
+          },
+        },
+      },
       backgroundColor: {
         type: "string",
         description: "The background color of the link.",
@@ -306,6 +397,38 @@ const schemas = [
       title: {
         type: "string",
         description: "The title of the sub-system.",
+      },
+      titleFont: {
+        description: "The font of the title",
+        allOf: [
+          {
+            $ref: "definitions#/$defs/textFont",
+          },
+        ],
+      },
+      titleAlign: {
+        description: "The alignment of the title",
+        allOf: [
+          {
+            $ref: "definitions#/$defs/textAlign",
+          },
+        ],
+      },
+      titleSize: {
+        type: "object",
+        description: "The size of the title.",
+        required: ["width", "height"],
+        additionalProperties: false,
+        properties: {
+          width: {
+            type: "integer",
+            description: "The width of the title.",
+          },
+          height: {
+            type: "integer",
+            description: "The height of the title.",
+          },
+        },
       },
       description: {
         type: "string",

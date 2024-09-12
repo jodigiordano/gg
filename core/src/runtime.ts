@@ -6,6 +6,8 @@ import {
   FlowStep,
   PathEndingPattern,
   PathPattern,
+  TextFont,
+  TextAlign,
 } from "./specification.js";
 
 export interface RuntimeSize {
@@ -24,6 +26,8 @@ export interface RuntimeLink extends Link {
   title: string;
   titlePosition: RuntimePosition;
   titleSize: RuntimeSize;
+  titleFont: TextFont;
+  titleAlign: TextAlign;
   startPattern: PathEndingPattern;
   endPattern: PathEndingPattern;
   middlePattern: PathPattern;
@@ -36,6 +40,8 @@ export interface RuntimeSubsystem extends Subsystem {
   title: string;
   titlePosition: RuntimePosition;
   titleSize: RuntimeSize;
+  titleFont: TextFont;
+  titleAlign: TextAlign;
   index: number;
   size: RuntimeSize;
   position: RuntimePosition;

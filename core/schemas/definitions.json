@@ -1,0 +1,15 @@
+{
+  "$id": "definitions",
+  "$defs": {
+    "textFont": {
+      "$id": "TextFont",
+      "type": "string",
+      "enum": ["text", "sketch", "code"]
+    },
+    "textAlign": {
+      "$id": "TextAlign",
+      "type": "string",
+      "enum": ["left", "center", "right"]
+    }
+  }
+}
