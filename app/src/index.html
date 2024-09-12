@@ -481,7 +481,32 @@
     <dialog id="input-set-title-dialog">
       <div class="content">
         <h1></h1>
-        <textarea autocomplete="off"></textarea>
+        <div class="editor-container">
+          <div class="styling">
+            <p>font</p>
+            <ul class="styling-fonts">
+              <li><button class="styling-font-text">text</button></li>
+              <li><button class="styling-font-sketch">sketch</button></li>
+              <li><button class="styling-font-code">code</button></li>
+            </ul>
+            <p>align</p>
+            <ul class="styling-aligns">
+              <li><button class="styling-align-left">left</button></li>
+              <li><button class="styling-align-center">center</button></li>
+              <li><button class="styling-align-right">right</button></li>
+            </ul>
+            <p>decoration</p>
+            <ul class="styling-decoration">
+              <li>&lt;b&gt;bold&lt;/b&gt;</li>
+              <li>&lt;i&gt;italic&lt;/i&gt;</li>
+              <li>&lt;u&gt;underline&lt;/u&gt;</li>
+              <li>&lt;s&gt;strike&lt;/s&gt;</li>
+              <li>&lt;h1&gt;title&lt;/h1&gt;</li>
+              <li>&lt;h2&gt;subtitle&lt;/h2&gt;</li>
+            </ul>
+          </div>
+          <div class="editor content-editable" contenteditable></div>
+        </div>
         <form method="dialog">
           <button id="operation-set-title-apply">apply</button>
           <button>cancel</button>

@@ -10,7 +10,9 @@ import {
   SimulatorLinkTitle,
   SimulatorLinkPathPosition,
 } from "@gg/core";
-import { Sprite, Text, SCALE_MODES, Container, Texture } from "pixi.js";
+import { Sprite, SCALE_MODES, Container, Texture } from "pixi.js";
+// @ts-ignore
+import TaggedText from "pixi-tagged-text";
 import { spritesheet } from "../renderer/assets.js";
 import { BlockSize, getForegroundColor } from "../helpers.js";
 import { app, tick } from "../renderer/pixi.js";
@@ -21,6 +23,8 @@ import { setJsonEditorValue } from "../jsonEditor.js";
 import FlowPlayer from "./flowPlayer.js";
 import WebWorker from "../worker.js";
 import { setConnectivity } from "../connectivity.js";
+import { TextFont } from "@gg/core";
+import { TextAlign } from "@gg/core";
 
 //
 // Load the simulation.
@@ -120,31 +124,31 @@ app.ticker.add<void>(deltaTime => {
 
 const defaultColors = {
   light: {
-    system1: "3d348b",
-    system2: "ced4da",
-    system3: "dee2e6",
-    system4: "e9ecef",
-    link: "000000",
-    linkTitleBackground: "ced4da",
-    linkTitle: "000000",
-    systemTitleBlackbox: "ffffff",
-    systemTitleWhitebox: "000000",
+    system1: "#3d348b",
+    system2: "#ced4da",
+    system3: "#dee2e6",
+    system4: "#e9ecef",
+    link: "#000000",
+    linkTitleBackground: "#ced4da",
+    linkTitle: "#000000",
+    systemTitleBlackbox: "#ffffff",
+    systemTitleWhitebox: "#000000",
   },
   dark: {
-    system1: "4363d8",
-    system2: "2b2b2b",
-    system3: "1b1b1b",
-    system4: "000000",
-    link: "dddddd",
-    linkTitleBackground: "4b4b4b",
-    linkTitle: "ffffff",
-    systemTitleBlackbox: "ffffff",
-    systemTitleWhitebox: "ffffff",
+    system1: "#4363d8",
+    system2: "#2b2b2b",
+    system3: "#1b1b1b",
+    system4: "#000000",
+    link: "#dddddd",
+    linkTitleBackground: "#4b4b4b",
+    linkTitle: "#ffffff",
+    systemTitleBlackbox: "#ffffff",
+    systemTitleWhitebox: "#ffffff",
   },
 };
 
-function getObjectsToRender(): (Sprite | Text)[] {
-  const toDraw: (Sprite | Text)[] = [];
+function getObjectsToRender(): (Sprite | TaggedText)[] {
+  const toDraw: (Sprite | TaggedText)[] = [];
   const layout = state.simulator.getLayout();
   const boundaries = state.simulator.getBoundaries();
 
@@ -419,17 +423,17 @@ function getObjectsToRender(): (Sprite | Text)[] {
         } else if (obj.type === SimulatorObjectType.SystemTitle) {
           const { system, blackbox } = obj as SimulatorSubsystem;
 
-          const title = new Text(
+          const color = system.backgroundColor
+            ? getForegroundColor(system.backgroundColor)
+            : blackbox
+              ? defaultColors[state.theme].systemTitleBlackbox
+              : defaultColors[state.theme].systemTitleWhitebox;
+
+          const title = initializeText(
             (obj as SimulatorSystemTitle).chars.replaceAll("\\n", "\n"),
-            {
-              fontFamily: "ibm",
-              fontSize: BlockSize,
-              fill: system.backgroundColor
-                ? getForegroundColor(system.backgroundColor)
-                : blackbox
-                  ? defaultColors[state.theme].systemTitleBlackbox
-                  : defaultColors[state.theme].systemTitleWhitebox,
-            },
+            color,
+            system.titleFont,
+            system.titleAlign,
           );
 
           title.zIndex = obj.zIndex;
@@ -437,19 +441,19 @@ function getObjectsToRender(): (Sprite | Text)[] {
           title.y = (j - boundaries.translateY) * BlockSize;
 
           title.resolution = 2;
-          title.texture.baseTexture.scaleMode = SCALE_MODES.LINEAR;
 
           toDraw.push(title);
         } else if (obj.type === SimulatorObjectType.LinkTitle) {
           const { link, chars } = obj as SimulatorLinkTitle;
 
-          const title = new Text(chars.replaceAll("\\n", "\n"), {
-            fontFamily: "ibm",
-            fontSize: BlockSize,
-            fill: link.titleBackgroundColor
+          const title = initializeText(
+            chars.replaceAll("\\n", "\n"),
+            link.titleBackgroundColor
               ? getForegroundColor(link.titleBackgroundColor)
               : defaultColors[state.theme].linkTitle,
-          });
+            link.titleFont,
+            link.titleAlign,
+          );
 
           title.zIndex = obj.zIndex;
           title.x = (i - boundaries.translateX) * BlockSize;
@@ -470,6 +474,70 @@ function getObjectsToRender(): (Sprite | Text)[] {
 //
 // Helpers
 //
+
+export function initializeText(
+  text: string,
+  color: string,
+  font: TextFont,
+  align: TextAlign,
+): TaggedText {
+  let width: number | null = null;
+
+  const configuration: Record<string, Record<string, unknown>> = {
+    default: {
+      fontFamily: font,
+      fontSize: BlockSize,
+      fill: `${color}`,
+      wordWrap: false,
+    },
+    h1: {
+      fontSize: BlockSize * 2,
+    },
+    h2: {
+      fontSize: BlockSize * 1.5,
+    },
+    b: {
+      fontWeight: "bold",
+    },
+    i: {
+      fontStyle: "italic",
+    },
+    u: {
+      textDecoration: "underline",
+    },
+    s: {
+      textDecoration: "line-through",
+    },
+    a: {
+      textDecoration: "underline",
+      underlineThickness: 2,
+    },
+  };
+
+  if (align === "center" || align === "right") {
+    const unalignedText = new TaggedText(text, configuration);
+
+    width = 0;
+
+    for (const token of unalignedText.tokensFlat) {
+      const x = token.bounds.x === Infinity ? 0 : token.bounds.x;
+
+      if (x + token.bounds.width > width!) {
+        width = x + token.bounds.width;
+      }
+    }
+  }
+
+  const wordWrap = width !== null;
+
+  configuration.default.wordWrap = wordWrap;
+  configuration.default.wordWrapWidth = wordWrap ? width : undefined;
+  configuration.default.align = wordWrap ? align : undefined;
+
+  return new TaggedText(text, configuration, {
+    drawWhitespace: text.includes('<a href='),
+  });
+}
 
 // Modifies the specification transactionally.
 export async function modifySpecification(modifier: () => void): Promise<void> {

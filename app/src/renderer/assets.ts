@@ -5,15 +5,23 @@ import {
   Spritesheet,
   WRAP_MODES,
 } from "pixi.js";
-import fontData from "../assets/ibm.woff?base64";
+import textFont from "../assets/monaspace.neon.ttf?base64";
+import sketchFont from "../assets/monaspace.radon.ttf?base64";
+import codeFont from "../assets/roboto.ttf?base64";
 
-await Assets.load({
-  name: "ibm",
-  src: `data:font/woff;base64,${fontData}`,
-  data: {
-    family: "ibm",
-  },
-});
+for (const [name, font, type] of [
+  ["text", textFont, "ttf"],
+  ["sketch", sketchFont, "ttf"],
+  ["code", codeFont, "ttf"],
+]) {
+  await Assets.load({
+    name,
+    src: `data:font/${type};base64,${font}`,
+    data: {
+      family: name,
+    },
+  });
+}
 
 import spritesheetData from "../assets/spritesheet.png?base64";
 

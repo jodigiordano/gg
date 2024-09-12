@@ -3,14 +3,22 @@ import {
   RuntimeSubsystem,
   setSubsystemTitle,
   setLinkTitle,
+  TextFont,
+  TextAlign,
 } from "@gg/core";
 import Operation from "../operation.js";
 import SystemSelector from "../renderer/systemSelector.js";
-import { modifySpecification } from "../simulator/api.js";
+import {
+  initializeText,
+  modifySpecification,
+} from "../simulator/api.js";
+// @ts-ignore
+import TaggedText from "pixi-tagged-text";
 import { State } from "../state.js";
 import viewport from "../renderer/viewport.js";
 import { tick } from "../renderer/pixi.js";
 import { state } from "../state.js";
+import { BlockSize } from "../helpers.js";
 
 const dialog = document.getElementById(
   "input-set-title-dialog",
@@ -21,22 +29,197 @@ dialog.addEventListener("keydown", event => {
 });
 
 const title = dialog.querySelector("h1") as HTMLElement;
-const editor = dialog.querySelector("textarea") as HTMLTextAreaElement;
+const editor = dialog.querySelector(".editor") as HTMLDivElement;
+
+//
+// Font
+//
+
+const styleFontText = dialog.querySelector(
+  ".styling-font-text",
+) as HTMLButtonElement;
+
+const styleFontSketch = dialog.querySelector(
+  ".styling-font-sketch",
+) as HTMLButtonElement;
+
+const styleFontCode = dialog.querySelector(
+  ".styling-font-code",
+) as HTMLButtonElement;
+
+function setFont(font: TextFont): void {
+  editor.style.fontFamily = font;
+
+  styleFontText.classList.remove("pressed");
+  styleFontSketch.classList.remove("pressed");
+  styleFontCode.classList.remove("pressed");
+
+  if (font === "text") {
+    styleFontText.classList.add("pressed");
+  } else if (font === "sketch") {
+    styleFontSketch.classList.add("pressed");
+  } else {
+    styleFontCode.classList.add("pressed");
+  }
+}
+
+function getFont(): TextFont {
+  if (styleFontText.classList.contains("pressed")) {
+    return "text";
+  }
+
+  if (styleFontSketch.classList.contains("pressed")) {
+    return "sketch";
+  }
+
+  return "code";
+}
+
+styleFontText.addEventListener("click", function () {
+  setFont("text");
+});
+
+styleFontSketch.addEventListener("click", function () {
+  setFont("sketch");
+});
+
+styleFontCode.addEventListener("click", function () {
+  setFont("code");
+});
+
+//
+// Align
+//
+
+const styleAlignLeft = dialog.querySelector(
+  ".styling-align-left",
+) as HTMLButtonElement;
+
+const styleAlignCenter = dialog.querySelector(
+  ".styling-align-center",
+) as HTMLButtonElement;
+
+const styleAlignRight = dialog.querySelector(
+  ".styling-align-right",
+) as HTMLButtonElement;
+
+function setAlign(align: TextAlign): void {
+  editor.style.textAlign = align;
+
+  styleAlignLeft.classList.remove("pressed");
+  styleAlignCenter.classList.remove("pressed");
+  styleAlignRight.classList.remove("pressed");
+
+  if (align === "left") {
+    styleAlignLeft.classList.add("pressed");
+  } else if (align === "center") {
+    styleAlignCenter.classList.add("pressed");
+  } else {
+    styleAlignRight.classList.add("pressed");
+  }
+}
+
+function getAlign(): TextAlign {
+  if (styleAlignLeft.classList.contains("pressed")) {
+    return "left";
+  }
+
+  if (styleAlignCenter.classList.contains("pressed")) {
+    return "center";
+  }
+
+  return "right";
+}
+
+
+styleAlignLeft.addEventListener("click", function () {
+  setAlign("left");
+});
+
+styleAlignCenter.addEventListener("click", function () {
+  setAlign("center");
+});
+
+styleAlignRight.addEventListener("click", function () {
+  setAlign("right");
+});
+
+//
+// Apply
+//
 
 document
   .getElementById("operation-set-title-apply")
   ?.addEventListener("click", function () {
     // Apply operation.
-    modifySpecification(() => {
-      if (subsystem) {
-        setSubsystemTitle(subsystem, editor.value.replace(/\n/g, "\\n"));
-      } else if (link) {
-        setLinkTitle(link, editor.value.replace(/\n/g, "\\n"));
-      }
-    }).then(() => {
-      onPointerMove(state);
-      tick();
-    });
+    if (subsystem || link) {
+      modifySpecification(() => {
+        const title = initializeText(
+          editor.innerText,
+          "#000000",
+          "text",
+          "left",
+        );
+
+        let width = 0;
+        let height = 0;
+
+        if (title.tokensFlat) {
+          for (const token of title.tokensFlat) {
+            const x = token.bounds.x === Infinity ? 0 : token.bounds.x;
+            const y = token.bounds.y === Infinity ? 0 : token.bounds.y;
+
+            if (x + token.bounds.width > width) {
+              width = x + token.bounds.width;
+            }
+
+            if (y + token.bounds.height > height) {
+              height = y + token.bounds.height;
+            }
+          }
+        } else {
+          width = title.width;
+          height = title.height;
+        }
+
+        width /= BlockSize;
+        height /= BlockSize;
+        console.log(width, height);
+
+        width =
+          width - Math.floor(width) > 0.5
+            ? Math.ceil(width)
+            : Math.floor(width);
+
+        height =
+          height - Math.floor(height) > 0.5
+            ? Math.ceil(height)
+            : Math.floor(height);
+
+        if (subsystem) {
+          setSubsystemTitle(
+            subsystem,
+            editor.innerText.replace(/\n/g, "\\n"),
+            getFont(),
+            getAlign(),
+            width,
+            height,
+          );
+        } else if (link) {
+          setLinkTitle(
+            link,
+            editor.innerText.replace(/\n/g, "\\n"),
+            getFont(),
+            getAlign(),
+            width,
+            height,
+          );
+        }
+      }).then(() => {
+        onPointerMove(state);
+        tick();
+      });
+    }
 
     // Reset operation.
     dialog.close();
@@ -163,9 +346,13 @@ const operation: Operation = {
       link = linkToEdit;
 
       title.innerHTML = link.title ? "Edit title" : "Add title";
-      editor.value = link.title.replace(/\\n/g, "\n");
+      editor.innerText = link.title.replace(/\\n/g, "\n");
+
+      setFont(link.titleFont);
+      setAlign(link.titleAlign);
 
       dialog.showModal();
+      editor.focus();
 
       return;
     }
@@ -176,9 +363,13 @@ const operation: Operation = {
       subsystem = systemToEdit;
 
       title.innerHTML = subsystem.title ? "Edit title" : "Add title";
-      editor.value = subsystem.title.replace(/\\n/g, "\n");
+      editor.innerText = subsystem.title.replace(/\\n/g, "\n");
+
+      setFont(subsystem.titleFont);
+      setAlign(subsystem.titleAlign);
 
       dialog.showModal();
+      editor.focus();
     }
   },
 };

@@ -140,18 +140,49 @@ body {
 
 /* Modal to edit the title of a system */
 #input-set-title-dialog {
-  max-width: 30em;
-  max-height: 20em;
-  width: 80%;
-  height: 80%;
+  min-width: 30em;
+  min-height: 10em;
+
+  max-width: 90%;
+  max-height: 90%;
 
   .content {
     height: 100%;
 
-    textarea {
-      flex: 1;
-      resize: none;
-      font-size: 2em;
+    .editor-container {
+      display: flex;
+      gap: 0.5em;
+
+      .editor {
+        white-space: pre;
+        padding: 0.5em;
+        flex: 1;
+        overflow: auto;
+      }
+
+      .styling {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5em;
+
+        .styling-fonts {
+          display: flex;
+          gap: 0.25em;
+
+          label {
+            cursor: pointer;
+          }
+        }
+
+        .styling-aligns {
+          display: flex;
+          gap: 0.25em;
+        }
+
+        .styling-decoration {
+          font-size: 0.75em;
+        }
+      }
     }
   }
 }

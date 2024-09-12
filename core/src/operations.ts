@@ -11,6 +11,8 @@ import {
   Subsystem,
   PathPattern,
   PathEndingPattern,
+  TextFont,
+  TextAlign,
 } from "./specification.js";
 import { computeSystemSize, getRootSystem, initSystem } from "./system.js";
 
@@ -139,9 +141,20 @@ export function removeSubsystem(subsystem: RuntimeSubsystem): void {
 export function setSubsystemTitle(
   subsystem: RuntimeSubsystem,
   newTitle: string,
+  font: TextFont,
+  align: TextAlign,
+  width: number,
+  height: number,
 ): void {
   subsystem.specification.title = newTitle;
+  subsystem.specification.titleFont = font;
+  subsystem.specification.titleAlign = align;
+  subsystem.specification.titleSize = { width, height };
+
   subsystem.title = newTitle;
+  subsystem.titleFont = font;
+  subsystem.titleAlign = align;
+  subsystem.titleSize = { width, height };
 
   const rootSystem = getRootSystem(subsystem);
 
@@ -274,9 +287,19 @@ export function removeLink(rootSystem: RuntimeSystem, link: RuntimeLink): void {
   }
 }
 
-export function setLinkTitle(link: RuntimeLink, newTitle: string): void {
+export function setLinkTitle(
+  link: RuntimeLink,
+  newTitle: string,
+  font: TextFont,
+  align: TextAlign,
+  width: number,
+  height: number,
+): void {
   if (newTitle.length) {
     link.specification.title = newTitle;
+    link.specification.titleFont = font;
+    link.specification.titleAlign = align;
+    link.specification.titleSize = { width, height };
   } else {
     delete link.specification.title;
   }
