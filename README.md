@@ -89,6 +89,7 @@ As a software architecture simulator, it helps you define any kind of software a
   - [Colors](https://gg-charts.com/#id=bf442e5c-2689-4953-b228-593e4648ccb7&autoplay=true)
   - [Labels on links](https://gg-charts.com/#id=5aba2725-ec43-4107-899f-4cbd05666735)
   - [Various link styles and directions](https://gg-charts.com/#id=cea38700-8656-4b21-872b-af4d4ed7c050)
+  - [Fonts, Alignment, Emojis, Unicode, etc.](https://gg-charts.com/#id=8125ea14-b289-4186-b3b4-b842216db5e2)
 - Simulator
   - [Data flow & descriptions](https://gg-charts.com/viewer.html#id=1392f86b-6593-4f33-990b-1f39f112d1e7&autoplay=true)
   - [The architecture of this app](https://gg-charts.com/viewer.html#id=1e6f6c63-3e63-4c61-93c2-1edefb8ef97a&autoplay=true).
