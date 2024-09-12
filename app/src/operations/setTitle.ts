@@ -157,8 +157,8 @@ document
         const title = initializeText(
           editor.innerText,
           "#000000",
-          "text",
-          "left",
+          getFont(),
+          getAlign(),
         );
 
         let width = 0;

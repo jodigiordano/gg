@@ -5,7 +5,7 @@ import {
   Spritesheet,
   WRAP_MODES,
 } from "pixi.js";
-import textFont from "../assets/monaspace.neon.ttf?base64";
+import textFont from "../assets/arimo.ttf?base64";
 import sketchFont from "../assets/monaspace.radon.ttf?base64";
 import codeFont from "../assets/roboto.ttf?base64";
 
