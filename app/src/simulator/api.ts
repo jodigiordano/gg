@@ -542,7 +542,7 @@ export function initializeText(
   configuration.default.align = wordWrap ? align : undefined;
 
   return new TaggedText(text, configuration, {
-    drawWhitespace: text.includes('<a href='),
+    drawWhitespace: text.includes("<a href="),
   });
 }
 

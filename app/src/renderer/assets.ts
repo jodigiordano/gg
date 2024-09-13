@@ -14,17 +14,19 @@ import spritesheetData from "../assets/spritesheet.png?base64";
 const fonts: Promise<any>[] = [];
 
 for (const [name, font] of [
-  ["text", 'arimo.ttf'],
-  ["sketch", 'monaspace.radon.ttf'],
-  ["code", 'roboto.ttf'],
+  ["text", "arimo.ttf"],
+  ["sketch", "monaspace.radon.ttf"],
+  ["code", "roboto.ttf"],
 ]) {
-  fonts.push(Assets.load({
-    name,
-    src: font,
-    data: {
-      family: name,
-    },
-  }));
+  fonts.push(
+    Assets.load({
+      name,
+      src: font,
+      data: {
+        family: name,
+      },
+    }),
+  );
 }
 
 await Promise.all(fonts);
