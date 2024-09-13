@@ -12,9 +12,8 @@ import {
   SystemMinSize,
   TitlePadding,
 } from "@gg/core";
-import { Sprite, SCALE_MODES, Container, Texture } from "pixi.js";
-// @ts-ignore
-import TaggedText from "pixi-tagged-text";
+import { Sprite, Container, Texture } from "pixi.js";
+import TaggedText from "../pixi-tagged-text/TaggedText.js";
 import { spritesheet } from "../renderer/assets.js";
 import { BlockSize, getForegroundColor } from "../helpers.js";
 import { app, tick } from "../renderer/pixi.js";
@@ -442,8 +441,6 @@ function getObjectsToRender(): (Sprite | TaggedText)[] {
           title.x = (i - boundaries.translateX) * BlockSize;
           title.y = (j - boundaries.translateY) * BlockSize;
 
-          title.resolution = 2;
-
           toDraw.push(title);
         } else if (obj.type === SimulatorObjectType.LinkTitle) {
           const { link, chars } = obj as SimulatorLinkTitle;
@@ -460,9 +457,6 @@ function getObjectsToRender(): (Sprite | TaggedText)[] {
           title.zIndex = obj.zIndex;
           title.x = (i - boundaries.translateX) * BlockSize;
           title.y = (j - boundaries.translateY) * BlockSize;
-
-          title.resolution = 2;
-          title.texture.baseTexture.scaleMode = SCALE_MODES.LINEAR;
 
           toDraw.push(title);
         }
@@ -506,9 +500,11 @@ export function initializeText(
     },
     u: {
       textDecoration: "underline",
+      underlineThickness: 2,
     },
     s: {
       textDecoration: "line-through",
+      lineThroughThickness: 2,
     },
     a: {
       textDecoration: "underline",
