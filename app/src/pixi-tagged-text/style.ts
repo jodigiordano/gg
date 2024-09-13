@@ -27,7 +27,7 @@ import {
   AlignClassic,
 } from "./types.js";
 import { cloneSprite } from "./pixiUtils.js";
-import * as PIXI from "pixi.js";
+import { Sprite } from "pixi.js";
 import DEFAULT_STYLE from "./defaultStyle.js";
 
 /**
@@ -216,9 +216,9 @@ export const mapTagsToStyles = (
           `An image tag with ${IMG_REFERENCE_PROPERTY}="${imgKey}" was encountered, but there was no matching sprite in the sprite map. Please include a valid Sprite in the imgMap property in the options in your TaggedText constructor.`,
         );
       }
-      if (sprite instanceof PIXI.Sprite === false) {
+      if (sprite instanceof Sprite === false) {
         throw new Error(
-          `The image reference you provided for "${imgKey}" is not a Sprite. The imgMap can only accept PIXI.Sprite instances.`,
+          `The image reference you provided for "${imgKey}" is not a Sprite. The imgMap can only accept Sprite instances.`,
         );
       }
 

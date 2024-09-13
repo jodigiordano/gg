@@ -1,9 +1,9 @@
-import * as PIXI from "pixi.js";
+import { Sprite } from "pixi.js";
 import { ErrorHandler, ErrorMessage, ErrorMessageType } from "./types.js";
 
 const log =
   (type: ErrorMessageType) =>
-  (handler?: ErrorHandler, supressConsole = false, target?: PIXI.Sprite) =>
+  (handler?: ErrorHandler, supressConsole = false, target?: Sprite) =>
   (code: string, message: string): void => {
     if (supressConsole !== true) {
       const method = type === "warning" ? console.warn : console.error;

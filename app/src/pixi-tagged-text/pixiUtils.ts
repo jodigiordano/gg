@@ -1,4 +1,4 @@
-import * as PIXI from "pixi.js";
+import { Sprite, TextMetrics, Text, DisplayObject, Container } from "pixi.js";
 import { IFontMetrics } from "./types.js";
 
 const PX_PER_EM = 16;
@@ -6,7 +6,7 @@ const PX_PER_PERCENT = 16 / 100;
 const PX_PER_PT = 1.3281472327365;
 
 export const measureFont = (context: { font: string }): IFontMetrics =>
-  PIXI.TextMetrics.measureFont(context.font);
+  TextMetrics.measureFont(context.font);
 
 export const INITIAL_FONT_PROPS: IFontMetrics = {
   ascent: 10,
@@ -16,7 +16,7 @@ export const INITIAL_FONT_PROPS: IFontMetrics = {
 
 // TODO: Memoize
 export const getFontPropertiesOfText = (
-  textField: PIXI.Text,
+  textField: Text,
   forceUpdate = false,
 ): IFontMetrics => {
   if (forceUpdate) {
@@ -39,12 +39,18 @@ export const getFontPropertiesOfText = (
 };
 
 export const addChildrenToContainer = (
-  children: PIXI.DisplayObject[],
-  container: PIXI.Container,
+  children: DisplayObject[],
+  container: Container,
 ): void => children.forEach(child => container.addChild(child));
 
-export const cloneSprite = (sprite: PIXI.Sprite): PIXI.Sprite =>
-  new PIXI.Sprite(sprite.texture);
+export const cloneSprite = (sprite: Sprite): Sprite => {
+  const clone = new Sprite(sprite.texture);
+
+  clone.width = sprite.width;
+  clone.height = sprite.height;
+
+  return clone;
+};
 
 export const fontSizeStringToNumber = (size: string): number => {
   const [valueString, unit] = size.split(/(%|pt|px|r?em)/);

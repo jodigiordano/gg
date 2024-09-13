@@ -1,4 +1,14 @@
-import * as PIXI from "pixi.js";
+import {
+  Text,
+  Texture,
+  BaseTexture,
+  BitmapText,
+  Sprite,
+  IBitmapTextStyle,
+  ITextStyle,
+  TextStyleFill,
+  Rectangle as PixiRectangle,
+} from "pixi.js";
 import TaggedText from "./TaggedText.js";
 import { complement, flatEvery } from "./functionalUtils.js";
 import { logWarning } from "./errorMessaging.js";
@@ -18,13 +28,13 @@ export type Bounds = Rectangle;
 
 export type Nested<T> = T | Array<Nested<T>>;
 
-export type PixiTextTypes = PIXI.Text | PIXI.BitmapText;
+export type PixiTextTypes = Text | BitmapText;
 
 ///// OPTIONS
 
 export type SpriteSource =
   | string
-  | PIXI.Texture
+  | Texture
   | HTMLCanvasElement
   | HTMLVideoElement;
 
@@ -33,17 +43,17 @@ export type TextureSource =
   | HTMLImageElement
   | HTMLCanvasElement
   | HTMLVideoElement
-  | PIXI.BaseTexture;
+  | BaseTexture;
 
-export type ImageSource = PIXI.Sprite | SpriteSource | TextureSource;
+export type ImageSource = Sprite | SpriteSource | TextureSource;
 
 export const isSpriteSource = (s: ImageSource): s is SpriteSource =>
   typeof s === "string" ||
-  s instanceof PIXI.Texture ||
+  s instanceof Texture ||
   s instanceof HTMLCanvasElement ||
   s instanceof HTMLVideoElement;
-export const isBaseTexture = (s: ImageSource): s is PIXI.BaseTexture =>
-  s instanceof PIXI.BaseTexture;
+export const isBaseTexture = (s: ImageSource): s is BaseTexture =>
+  s instanceof BaseTexture;
 export const isImageElement = (s: ImageSource): s is HTMLImageElement =>
   s instanceof HTMLImageElement;
 export const isTextureSource = (s: ImageSource): s is TextureSource =>
@@ -53,7 +63,7 @@ export type FontProperty = string | number;
 export type FontMap = Record<string, FontProperty>;
 
 export type ImageSourceMap = Record<string, ImageSource>;
-export type ImageMap = Record<string, PIXI.Sprite>;
+export type ImageMap = Record<string, Sprite>;
 
 export type SplitStyle = "words" | "characters";
 
@@ -203,8 +213,8 @@ export interface LineBreakStyles {
 
 export interface TextStyleExtended
   extends Record<string, unknown>,
-    Partial<Omit<Omit<PIXI.IBitmapTextStyle, "align">, "fontSize">>,
-    Partial<Omit<PIXI.ITextStyle, "align">>,
+    Partial<Omit<Omit<IBitmapTextStyle, "align">, "fontSize">>,
+    Partial<Omit<ITextStyle, "align">>,
     ImageStyles,
     TextDecorationStyles,
     VerticalAlignStyles,
@@ -217,7 +227,7 @@ export interface TextStyleExtended
   fontStyle?: FontStyle;
   fontSize?: FontSize;
   // alias for `fill`
-  color?: PIXI.TextStyleFill;
+  color?: TextStyleFill;
 }
 
 export interface TextDecorationMetrics {
@@ -250,7 +260,7 @@ export type TagStack = TagMatchData[];
 export type NewlineToken = "\n";
 export type WhitespaceToken = " " | "\t" | NewlineToken;
 export type TextToken = string;
-export type SpriteToken = PIXI.Sprite;
+export type SpriteToken = Sprite;
 
 export interface CompositeToken<T extends Token = Token> {
   children: T[];
@@ -310,7 +320,7 @@ export type ParagraphToken = LineToken[];
 
 export const createEmptySegmentToken = (): SegmentToken => ({
   content: "",
-  bounds: new PIXI.Rectangle(),
+  bounds: new PixiRectangle(),
   fontProperties: { ascent: 0, descent: 0, fontSize: 0 },
   style: {},
   tags: "",
@@ -338,7 +348,7 @@ export const isNewline = (s: string): s is NewlineToken =>
   isWhitespace(s) && s === "\n";
 
 export const _isSpriteToken = (t: SegmentToken): t is SpriteSegmentToken =>
-  t.content instanceof PIXI.Sprite;
+  t.content instanceof Sprite;
 export const isSpriteToken = flatEvery(_isSpriteToken);
 
 export const _isTextToken = (t: SegmentToken): t is TextSegmentToken =>

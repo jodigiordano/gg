@@ -9,7 +9,13 @@ import {
   Unary,
 } from "./functionalUtils.js";
 import { getFontPropertiesOfText } from "./pixiUtils.js";
-import * as PIXI from "pixi.js";
+import {
+  Sprite,
+  Text,
+  Point as PixiPoint,
+  Container,
+  Rectangle,
+} from "pixi.js";
 import {
   Align,
   Bounds,
@@ -38,7 +44,7 @@ import {
 
 const ICON_SCALE_BASE = 0.8;
 
-const sizer = new PIXI.Text("");
+const sizer = new Text("");
 
 /**
  * Translates the current location point to the beginning of the next line.
@@ -51,10 +57,10 @@ export const updateOffsetForNewLine = (
   offset: Point,
   largestLineHeight: number,
   lineSpacing: number,
-): Point => new PIXI.Point(0, offset.y + largestLineHeight + lineSpacing);
+): Point => new PixiPoint(0, offset.y + largestLineHeight + lineSpacing);
 
 const rectFromContainer = (
-  container: PIXI.Container,
+  container: Container,
   offset: Point = { x: 0, y: 0 },
 ): Bounds => {
   const w = container.width;
@@ -62,7 +68,7 @@ const rectFromContainer = (
   const x = offset.x + container.x;
   const y = offset.y + container.y;
 
-  return new PIXI.Rectangle(x, y, w, h);
+  return new Rectangle(x, y, w, h);
 };
 
 /**
@@ -734,7 +740,7 @@ export const calculateTokens = (
         });
 
         output = output.concat(textTokens);
-      } else if (token instanceof PIXI.Sprite) {
+      } else if (token instanceof Sprite) {
         const sprite = token;
         const imgDisplay = style[IMG_DISPLAY_PROPERTY];
         // const isBlockImage = imgDisplay === "block";
