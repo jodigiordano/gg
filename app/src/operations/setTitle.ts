@@ -9,8 +9,6 @@ import {
 import Operation from "../operation.js";
 import SystemSelector from "../renderer/systemSelector.js";
 import { initializeText, modifySpecification } from "../simulator/api.js";
-// @ts-ignore
-import TaggedText from "pixi-tagged-text";
 import { State } from "../state.js";
 import viewport from "../renderer/viewport.js";
 import { tick } from "../renderer/pixi.js";
