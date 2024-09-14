@@ -185,6 +185,8 @@ body {
 
         .styling-icons {
           display: flex;
+          flex-wrap: wrap;
+          max-width: 10em;
           gap: 0.25em;
         }
       }

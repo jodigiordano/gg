@@ -15,6 +15,8 @@ import azureSpritesheetAtlas from "@gg/icons/dist/azure.json";
 import azureSpritesheetUrl from "@gg/icons/dist/azure.png";
 import k8sSpritesheetAtlas from "@gg/icons/dist/k8s.json";
 import k8sSpritesheetUrl from "@gg/icons/dist/k8s.png";
+import devSpritesheetAtlas from "@gg/icons/dist/dev.json";
+import devSpritesheetUrl from "@gg/icons/dist/dev.png";
 
 //
 // Assets to load.
@@ -28,6 +30,7 @@ const toLoad: { name: string; url: string; data: Record<string, unknown> }[] = [
   { name: "icons-gcp", url: gcpSpritesheetUrl, data: {} },
   { name: "icons-azure", url: azureSpritesheetUrl, data: {} },
   { name: "icons-k8s", url: k8sSpritesheetUrl, data: {} },
+  { name: "icons-dev", url: devSpritesheetUrl, data: {} },
 ];
 
 const assets: Promise<any>[] = [];
@@ -62,6 +65,7 @@ const packs: { name: string; atlas: Record<string, Icon> }[] = [
   { name: "icons-gcp", atlas: gcpSpritesheetAtlas },
   { name: "icons-azure", atlas: azureSpritesheetAtlas },
   { name: "icons-k8s", atlas: k8sSpritesheetAtlas },
+  { name: "icons-dev", atlas: devSpritesheetAtlas },
 ];
 
 for (const pack of packs) {

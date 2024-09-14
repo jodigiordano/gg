@@ -11,7 +11,8 @@
     "compile:gcp": "bin/spreet --retina src/gcp dist/gcp",
     "compile:azure": "bin/spreet --retina src/azure dist/azure",
     "compile:k8s": "bin/spreet --retina src/k8s dist/k8s",
-    "compile": "rm -rf dist && mkdir -p dist && npm run compile:aws && npm run compile:gcp && npm run compile:azure && npm run compile:k8s",
+    "compile:dev": "bin/spreet src/dev dist/dev",
+    "compile": "rm -rf dist && mkdir -p dist && npm run compile:aws && npm run compile:gcp && npm run compile:azure && npm run compile:k8s && npm run compile:dev",
     "lint": ""
   },
   "devDependencies": {
