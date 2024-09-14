@@ -45,25 +45,8 @@ export type TextureSource =
   | HTMLVideoElement
   | BaseTexture;
 
-export type ImageSource = Sprite | SpriteSource | TextureSource;
-
-export const isSpriteSource = (s: ImageSource): s is SpriteSource =>
-  typeof s === "string" ||
-  s instanceof Texture ||
-  s instanceof HTMLCanvasElement ||
-  s instanceof HTMLVideoElement;
-export const isBaseTexture = (s: ImageSource): s is BaseTexture =>
-  s instanceof BaseTexture;
-export const isImageElement = (s: ImageSource): s is HTMLImageElement =>
-  s instanceof HTMLImageElement;
-export const isTextureSource = (s: ImageSource): s is TextureSource =>
-  isImageElement(s) || isBaseTexture(s);
-
 export type FontProperty = string | number;
 export type FontMap = Record<string, FontProperty>;
-
-export type ImageSourceMap = Record<string, ImageSource>;
-export type ImageMap = Record<string, Sprite>;
 
 export type SplitStyle = "words" | "characters";
 
@@ -87,7 +70,7 @@ export interface TaggedTextOptions {
   debugConsole?: boolean;
   splitStyle?: SplitStyle;
   adjustFontBaseline?: FontMap;
-  imgMap?: ImageSourceMap;
+  imgMap?: Record<string, Sprite>;
   scaleIcons?: boolean;
   skipUpdates?: boolean;
   skipDraw?: boolean;

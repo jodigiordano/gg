@@ -7,7 +7,6 @@ import {
   TextStyleSet,
   IFontMetrics,
   IMG_REFERENCE_PROPERTY,
-  ImageMap,
   TextToken,
   TagToken,
   TagTokens,
@@ -147,7 +146,7 @@ export const interpretFontSize = (
 export const mapTagsToStyles = (
   tokens: TagTokens,
   styles: TextStyleSet,
-  spriteTemplates?: ImageMap,
+  spriteTemplates?: Record<string, Sprite>,
 ): StyledTokens => {
   const defaultStyle: TextStyleExtended = styles.default ?? {};
   const tagStack: TagWithAttributes[] = [];

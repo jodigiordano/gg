@@ -7,7 +7,6 @@ import {
   Graphics,
   Container,
   Texture,
-  BaseTexture,
 } from "pixi.js";
 import {
   TaggedTextOptions,
@@ -15,8 +14,6 @@ import {
   TextStyleExtended,
   TagWithAttributes,
   AttributesList,
-  ImageMap,
-  ImageSourceMap,
   IMG_REFERENCE_PROPERTY,
   SegmentToken,
   isSpriteToken,
@@ -28,8 +25,6 @@ import {
   Point,
   ParagraphToken,
   TextDecorationMetrics,
-  isSpriteSource,
-  isTextureSource,
   DEFAULT_KEY,
 } from "./types.js";
 
@@ -221,9 +216,6 @@ export default class TaggedText extends Sprite {
   ): boolean {
     this.tagStyles[tag] = styles;
 
-    // TODO: warn user when trying to set styles on a tag that doesn't support it...
-    // e.g. wordWrapWidth on a styel other than default.
-
     // Override some settings on default styles.
     if (tag === DEFAULT_KEY && this.defaultStyle[IMG_REFERENCE_PROPERTY]) {
       // prevents accidentally setting all text to images.
@@ -296,8 +288,8 @@ export default class TaggedText extends Sprite {
   public get decorations(): Graphics[] {
     return this._decorations;
   }
-  private _spriteTemplates: ImageMap = {};
-  public get spriteTemplates(): ImageMap {
+  private _spriteTemplates: Record<string, Sprite> = {};
+  public get spriteTemplates(): Record<string, Sprite> {
     return this._spriteTemplates;
   }
   private _debugGraphics: Graphics;
@@ -357,12 +349,15 @@ export default class TaggedText extends Sprite {
         ...userStyles,
       };
     }
+
     const mergedDefaultStyles = { ...DEFAULT_STYLE, ...tagStyles.default };
+
     tagStyles.default = mergedDefaultStyles;
+
     this.tagStyles = tagStyles;
 
     if (this.options.imgMap) {
-      this.createSpriteTemplatesFromSourceMap(this.options.imgMap);
+      this._spriteTemplates = this.options.imgMap;
     }
 
     this.text = text;
@@ -445,86 +440,6 @@ export default class TaggedText extends Sprite {
   }
 
   /**
-   * Creates associations between string-based keys like "img" and
-   * image Sprite objects which are included in the text.
-   * @param imgMap
-   */
-  protected createSpriteTemplatesFromSourceMap(imgMap: ImageSourceMap) {
-    this._spriteTemplates = {};
-
-    Object.entries(imgMap).forEach(([key, spriteSource]) => {
-      const wrongFormatError = new TypeError(
-        `The spriteSource provided for key ${key} was not in a valid format. Please use a Sprite, Texture, BaseTexture, string, HTMLImageElement, HTMLVideoElement, HTMLCanvasElement, or SVGElement`,
-      );
-      const destroyedError = new Error(
-        `The spriteSource provided for key ${key} appears to be a Sprite or Texture that has been destroyed or removed from TextureCache probably using \`destroy()\` with aggressive options or \`destroyImgMap()\`.`,
-      );
-      let error: Error | null = null;
-
-      let sprite: Sprite = new Sprite();
-
-      try {
-        if (spriteSource instanceof Sprite) {
-          sprite = spriteSource;
-        }
-        // if the entry is not a sprite, attempt to load the sprite as if it is a reference to the sprite source (e.g. an Image element, url, or texture).
-        else if (isSpriteSource(spriteSource)) {
-          sprite = Sprite.from(spriteSource);
-        } else if (isTextureSource(spriteSource)) {
-          sprite = Sprite.from(Texture.from(spriteSource));
-        } else {
-          error = wrongFormatError;
-          console.log(error);
-        }
-      } catch (e) {
-        error = e as Error;
-        console.log(error);
-      }
-
-      if (
-        (isSpriteSource(spriteSource) &&
-          (spriteSource as Texture).baseTexture === null) ||
-        (sprite !== undefined &&
-          (sprite.destroyed || sprite.texture?.baseTexture === null))
-      ) {
-        error = destroyedError;
-        console.log(error);
-      }
-
-      if (error) {
-        throw error;
-      }
-
-      // Listen for changes to sprites (e.g. when they load.)
-      const texture = sprite.texture;
-
-      const onTextureUpdate = (baseTexture: BaseTexture) => {
-        this.onImageTextureUpdate(baseTexture);
-        baseTexture.removeListener("update", onTextureUpdate);
-      };
-
-      texture.baseTexture.addListener("update", onTextureUpdate);
-
-      // Set rendering options.
-      texture.baseTexture.scaleMode = SCALE_MODES.LINEAR;
-      texture.baseTexture.mipmap = MIPMAP_MODES.OFF;
-
-      this.spriteTemplates[key] = sprite;
-
-      // create a style for each of these by default.
-      const existingStyle = this.getStyleForTag(key) ?? {};
-      const style = { [IMG_REFERENCE_PROPERTY]: key, ...existingStyle };
-      this.setStyleForTag(key, style);
-    });
-  }
-
-  private onImageTextureUpdate(_baseTexture: BaseTexture): void {
-    this._needsUpdate = true;
-    this._needsDraw = true;
-    this.updateIfShould();
-  }
-
-  /**
    * Determines whether to call update based on the parameter and the options set then calls it or sets needsUpdate to true.
    * @param forcedSkipUpdate This is the parameter provided to some functions that allow you to skip the update.
    * It's factored in along with the defaults to figure out what to do.
@@ -554,17 +469,11 @@ export default class TaggedText extends Sprite {
     const tagStyles = this.tagStyles;
     const { splitStyle, scaleIcons } = this.options;
     const spriteTemplates = this.options.imgMap && this.spriteTemplates;
-    // const wordWrapWidth = this.defaultStyle.wordWrap
-    //   ? this.defaultStyle.wordWrapWidth
-    //   : Number.POSITIVE_INFINITY;
-    // const align = this.defaultStyle.align;
-    // const lineSpacing = this.defaultStyle.lineSpacing;
 
     // Pre-process text.
     // Parse tags in the text.
     const tagTokensNew = parseTagsNew(
       this.text,
-      Object.keys(this.tagStyles),
       this.options.wrapEmoji,
       this.logWarning,
     );
@@ -640,7 +549,6 @@ export default class TaggedText extends Sprite {
       : // remove any tokens that are purely whitespace unless drawWhitespace is specified
         this.tokensFlat.filter(isNotWhitespaceToken);
 
-    let drewDecorations = false;
     let displayObject: Container;
 
     tokens.forEach(t => {
@@ -655,7 +563,6 @@ export default class TaggedText extends Sprite {
             displayObject.addChild(drawing as DisplayObject);
             this._decorations.push(drawing);
           }
-          drewDecorations = true;
         }
       }
       if (isSpriteToken(t)) {
@@ -669,13 +576,6 @@ export default class TaggedText extends Sprite {
       displayObject.x = bounds.x;
       displayObject.y = bounds.y;
     });
-
-    if (drawWhitespace === false && drewDecorations) {
-      this.logWarning(
-        "text-decoration-and-whitespace",
-        "Text decorations, such as underlines, will not appear under whitespace unless the `drawWhitespace` option is set to `true`.",
-      );
-    }
 
     if (this.options.debug) {
       this.drawDebug();
@@ -847,19 +747,6 @@ export default class TaggedText extends Sprite {
     const g = this._debugGraphics;
     g.clear();
 
-    // const { width, height } = this.getBounds();
-    // // frame shadow
-    // g.lineStyle(2, DEBUG.OUTLINE_SHADOW_COLOR, 0.5);
-    // // g.beginFill();
-    // g.drawRect(1, 1, width, height);
-    // // g.endFill();
-
-    // // frame
-    // g.lineStyle(2, DEBUG.OUTLINE_COLOR, 1);
-    // // g.beginFill();
-    // g.drawRect(0, 0, width - 1, height - 1);
-    // // g.endFill();
-
     function createInfoText(text: string, position: Point): Text {
       const info = new Text(text, DEBUG.TEXT_STYLE);
       info.x = position.x + 1;
@@ -939,14 +826,6 @@ export default class TaggedText extends Sprite {
         }
       }
     }
-    // }
-
-    // Show the outlines of the actual text fields,
-    // not just where the tokens say they should be
-    // const fields: Text[] = this.textFields;
-    // for (const text of fields) {
-    //   g.lineStyle(1, DEBUG.TEXT_FIELD_STROKE_COLOR, 1);
-    //   g.drawRect(text.x, text.y, text.width, text.height);
     // }
   }
 }
