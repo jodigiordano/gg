@@ -13,10 +13,10 @@
     "concurrently": "8.x"
   },
   "workspaces": [
+    "icons",
     "core",
     "app",
     "server",
-    "infra",
-    "icons"
+    "infra"
   ]
 }
