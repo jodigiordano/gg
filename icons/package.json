@@ -1,0 +1,20 @@
+{
+  "name": "@gg/icons",
+  "version": "0.1.0",
+  "type": "module",
+  "license": "See LICENSE.md",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "compile:aws": "bin/spreet --retina src/aws dist/aws",
+    "compile:gcp": "bin/spreet --retina src/gcp dist/gcp",
+    "compile:azure": "bin/spreet --retina src/azure dist/azure",
+    "compile:k8s": "bin/spreet --retina src/k8s dist/k8s",
+    "compile": "rm -rf dist && mkdir -p dist && npm run compile:aws && npm run compile:gcp && npm run compile:azure && npm run compile:k8s",
+    "lint": ""
+  },
+  "devDependencies": {
+    "devicon": "2.x"
+  }
+}

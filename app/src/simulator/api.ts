@@ -14,7 +14,7 @@ import {
 } from "@gg/core";
 import { Sprite, Container, Texture } from "pixi.js";
 import TaggedText from "../pixi-tagged-text/TaggedText.js";
-import { spritesheet } from "../renderer/assets.js";
+import { spritesheet, iconPacks } from "../renderer/assets.js";
 import { BlockSize, getForegroundColor } from "../helpers.js";
 import { app, tick } from "../renderer/pixi.js";
 import viewport from "../renderer/viewport.js";
@@ -26,6 +26,7 @@ import WebWorker from "../worker.js";
 import { setConnectivity } from "../connectivity.js";
 import { TextFont } from "@gg/core";
 import { TextAlign } from "@gg/core";
+import { setFullTagRegex } from "../pixi-tagged-text/tags.js";
 
 //
 // Load the simulation.
@@ -471,6 +472,63 @@ function getObjectsToRender(): (Sprite | TaggedText)[] {
 // Helpers
 //
 
+// Initialize options for text I.
+const textBaseConfiguration: Record<string, Record<string, unknown>> = {
+  default: {
+    fontSize: BlockSize,
+    wordWrap: false,
+  },
+  __EMOJI__: {},
+  h1: {
+    fontSize: BlockSize * 2,
+  },
+  h2: {
+    fontSize: BlockSize * 1.5,
+  },
+  b: {
+    fontWeight: "bold",
+  },
+  i: {
+    fontStyle: "italic",
+  },
+  u: {
+    textDecoration: "underline",
+    underlineThickness: 2,
+  },
+  s: {
+    textDecoration: "line-through",
+    lineThroughThickness: 2,
+  },
+  a: {
+    textDecoration: "underline",
+    underlineThickness: 2,
+  },
+};
+
+// Initialize options for text II.
+const textImageMap: Record<string, Sprite> = {};
+
+for (const [_name, spritesheet] of Object.entries(iconPacks)) {
+  for (const [tag, texture] of Object.entries(spritesheet.textures)) {
+    // Add to the images map.
+    const sprite = new Sprite(texture);
+
+    sprite.width = BlockSize * 2;
+    sprite.height = BlockSize * 2;
+
+    textImageMap[tag] = sprite;
+
+    // Add to the configuration.
+    textBaseConfiguration[tag] = {
+      imgSrc: tag,
+      valign: "middle",
+    };
+  }
+}
+
+// Initialize options for text III.
+setFullTagRegex(Object.keys(textBaseConfiguration));
+
 export function initializeText(
   text: string,
   color: string,
@@ -480,40 +538,22 @@ export function initializeText(
   let width: number | null = null;
 
   const configuration: Record<string, Record<string, unknown>> = {
+    ...textBaseConfiguration,
     default: {
       fontFamily: font,
       fontSize: BlockSize,
       fill: `${color}`,
       wordWrap: false,
     },
-    h1: {
-      fontSize: BlockSize * 2,
-    },
-    h2: {
-      fontSize: BlockSize * 1.5,
-    },
-    b: {
-      fontWeight: "bold",
-    },
-    i: {
-      fontStyle: "italic",
-    },
-    u: {
-      textDecoration: "underline",
-      underlineThickness: 2,
-    },
-    s: {
-      textDecoration: "line-through",
-      lineThroughThickness: 2,
-    },
-    a: {
-      textDecoration: "underline",
-      underlineThickness: 2,
-    },
+  };
+
+  const options = {
+    drawWhitespace: text.includes("<u>") || text.includes("<a href="),
+    imgMap: textImageMap,
   };
 
   if (align === "center" || align === "right") {
-    const unalignedText = new TaggedText(text, configuration);
+    const unalignedText = new TaggedText(text, configuration, options);
 
     width = 0;
 
@@ -537,9 +577,7 @@ export function initializeText(
   configuration.default.wordWrapWidth = wordWrap ? width : undefined;
   configuration.default.align = wordWrap ? align : undefined;
 
-  return new TaggedText(text, configuration, {
-    drawWhitespace: text.includes("<a href="),
-  });
+  return new TaggedText(text, configuration, options);
 }
 
 // Modifies the specification transactionally.

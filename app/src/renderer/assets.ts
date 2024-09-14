@@ -1,35 +1,98 @@
 import {
   Assets,
+  ISpritesheetFrameData,
   MIPMAP_MODES,
   SCALE_MODES,
   Spritesheet,
   WRAP_MODES,
 } from "pixi.js";
 import spritesheetData from "../assets/spritesheet.png?base64";
+import awsSpritesheetAtlas from "@gg/icons/dist/aws.json";
+import awsSpritesheetDataUrl from "@gg/icons/dist/aws.png";
+import gcpSpritesheetAtlas from "@gg/icons/dist/gcp.json";
+import gcpSpritesheetUrl from "@gg/icons/dist/gcp.png";
+import azureSpritesheetAtlas from "@gg/icons/dist/azure.json";
+import azureSpritesheetUrl from "@gg/icons/dist/azure.png";
+import k8sSpritesheetAtlas from "@gg/icons/dist/k8s.json";
+import k8sSpritesheetUrl from "@gg/icons/dist/k8s.png";
 
 //
-// Fonts.
+// Assets to load.
 //
 
-const fonts: Promise<any>[] = [];
+const toLoad: { name: string; url: string; data: Record<string, unknown> }[] = [
+  { name: "text", url: "arimo.ttf", data: { family: "text" } },
+  { name: "sketch", url: "monaspace.radon.ttf", data: { family: "sketch" } },
+  { name: "code", url: "roboto.ttf", data: { family: "code" } },
+  { name: "icons-aws", url: awsSpritesheetDataUrl, data: {} },
+  { name: "icons-gcp", url: gcpSpritesheetUrl, data: {} },
+  { name: "icons-azure", url: azureSpritesheetUrl, data: {} },
+  { name: "icons-k8s", url: k8sSpritesheetUrl, data: {} },
+];
 
-for (const [name, font] of [
-  ["text", "arimo.ttf"],
-  ["sketch", "monaspace.radon.ttf"],
-  ["code", "roboto.ttf"],
-]) {
-  fonts.push(
+const assets: Promise<any>[] = [];
+
+for (const asset of toLoad) {
+  assets.push(
     Assets.load({
-      name,
-      src: font,
-      data: {
-        family: name,
-      },
+      name: asset.name,
+      src: asset.url,
+      data: asset.data,
     }),
   );
 }
 
-await Promise.all(fonts);
+await Promise.all(assets);
+
+//
+// Icons.
+//
+
+export const iconPacks: Record<string, Spritesheet> = {};
+
+interface Icon {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
+const packs: { name: string; atlas: Record<string, Icon> }[] = [
+  { name: "icons-aws", atlas: awsSpritesheetAtlas },
+  { name: "icons-gcp", atlas: gcpSpritesheetAtlas },
+  { name: "icons-azure", atlas: azureSpritesheetAtlas },
+  { name: "icons-k8s", atlas: k8sSpritesheetAtlas },
+];
+
+for (const pack of packs) {
+  const frames: Record<string, ISpritesheetFrameData> = {};
+
+  for (const [key, icon] of Object.entries(pack.atlas)) {
+    frames[key] = {
+      frame: {
+        x: icon.x,
+        y: icon.y,
+        w: icon.width,
+        h: icon.height,
+      },
+    };
+  }
+
+  const spritesheet = new Spritesheet(Assets.get(pack.name), {
+    frames,
+    meta: {
+      scale: 1,
+    },
+  });
+
+  await spritesheet.parse();
+
+  spritesheet.baseTexture.wrapMode = WRAP_MODES.REPEAT;
+  spritesheet.baseTexture.scaleMode = SCALE_MODES.LINEAR;
+  spritesheet.baseTexture.mipmap = MIPMAP_MODES.OFF;
+
+  iconPacks[pack.name] = spritesheet;
+}
 
 //
 // gg spritesheet.

@@ -26,6 +26,7 @@
   },
   "dependencies": {
     "@gg/core": "0.x",
+    "@gg/icons": "0.x",
     "pako": "2.x",
     "pixi.js": "7.x"
   }

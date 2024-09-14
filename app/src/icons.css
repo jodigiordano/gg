@@ -1,0 +1,45 @@
+@import "assets/global.css";
+
+/* Constants */
+:root {
+  /* theme: light */
+  --main-container-background: #eee;
+}
+
+[theme="dark"] {
+  --main-container-background: #111;
+}
+
+h1 {
+  font-size: 2em;
+}
+
+#content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1em;
+
+  margin-top: 1em;
+}
+
+#main-container {
+  width: 80%;
+
+  background: var(--main-container-background);
+  padding: 2em;
+
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-rows: repeat(auto-fill, minmax(0, 1fr));
+  gap: 1em;
+
+  .icon {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5em;
+    align-items: center;
+    text-align: center;
+  }
+}

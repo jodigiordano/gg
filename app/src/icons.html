@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=0.75" />
+    <meta
+      name="description"
+      content="gg is a free online diagram editor for flowcharts, process diagrams and network diagrams. It is also a light software architecture simulator."
+    />
+    <partial>favicon</partial>
+    <link rel="stylesheet" href="icons.css" />
+    <title>charts - icons</title>
+    <partial>theme</partial>
+  </head>
+  <body>
+    <div id="header">
+      <a href="/">
+        <button title="Go to editor">
+          <inline-svg>icon-edit</inline-svg>
+        </button>
+      </a>
+    </div>
+    <div id="content">
+      <h1 id="pack-title"></h1>
+      <div id="main-container"></div>
+    </div>
+    <template id="icon-template">
+      <div class="icon">
+        <img class="icon-image" src="/pixel.png" />
+        <p class="icon-tag"></p>
+        <button class="icon-copy">copy</button>
+      </div>
+    </template>
+    <script type="module" src="./icons.ts"></script>
+  </body>
+</html>

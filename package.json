@@ -16,6 +16,7 @@
     "core",
     "app",
     "server",
-    "infra"
+    "infra",
+    "icons"
   ]
 }

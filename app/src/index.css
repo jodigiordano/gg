@@ -182,6 +182,11 @@ body {
         .styling-decoration {
           font-size: 0.75em;
         }
+
+        .styling-icons {
+          display: flex;
+          gap: 0.25em;
+        }
       }
     }
   }

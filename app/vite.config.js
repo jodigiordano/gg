@@ -109,6 +109,7 @@ export default ({ mode }) => {
           graph: "./src/graph.html",
           export: "./src/export.html",
           404: "./src/404.html",
+          icons: "./src/icons.html",
         },
       },
     },
