@@ -78,6 +78,7 @@ export default ({ mode }) => {
           "/graph",
           "/export",
           "/404",
+          "/icons",
         ],
         changefreq: "weekly",
         priority: {

@@ -103,9 +103,6 @@ Do not hesitate to [create an issue](https://github.com/jodigiordano/gg/issues) 
 
 ## Usage
 
-> [!IMPORTANT]
-> More ways to use `gg` are in the work.
-
 ### Embed in a `iframe`
 
 You can embed `gg` as follow:

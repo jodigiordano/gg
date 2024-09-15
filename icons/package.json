@@ -7,12 +7,13 @@
     "dist"
   ],
   "scripts": {
-    "compile:aws": "bin/spreet --retina src/aws dist/aws",
-    "compile:gcp": "bin/spreet --retina src/gcp dist/gcp",
-    "compile:azure": "bin/spreet --retina src/azure dist/azure",
-    "compile:k8s": "bin/spreet --retina src/k8s dist/k8s",
-    "compile:dev": "bin/spreet src/dev dist/dev",
-    "compile": "rm -rf dist && mkdir -p dist && npm run compile:aws && npm run compile:gcp && npm run compile:azure && npm run compile:k8s && npm run compile:dev",
+    "compile:aws": "bin/spreet --ratio 2 src/aws dist/aws",
+    "compile:gcp": "bin/spreet --ratio 2 src/gcp dist/gcp",
+    "compile:azure": "bin/spreet --ratio 2 src/azure dist/azure",
+    "compile:k8s": "bin/spreet --ratio 2 src/k8s dist/k8s",
+    "compile:dev": "bin/spreet --ratio 1 src/dev dist/dev",
+    "compile:network": "bin/spreet --ratio 1 src/network dist/network",
+    "compile": "rm -rf dist && mkdir -p dist && npm run compile:aws && npm run compile:gcp && npm run compile:azure && npm run compile:k8s && npm run compile:dev && npm run compile:network",
     "lint": ""
   },
   "devDependencies": {
