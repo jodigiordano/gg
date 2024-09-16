@@ -126,7 +126,7 @@ app.ticker.add<void>(deltaTime => {
 
 const defaultColors = {
   light: {
-    system1: "#3d348b",
+    system1: "#000075",
     system2: "#ced4da",
     system3: "#dee2e6",
     system4: "#e9ecef",
