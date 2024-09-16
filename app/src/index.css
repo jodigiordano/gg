@@ -155,6 +155,7 @@ body {
 
       .editor-wrapper {
         display: grid;
+        width: 100%;
 
         &::after {
           content: attr(data-replicated-value) " ";
