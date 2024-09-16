@@ -24,7 +24,12 @@ dialog.addEventListener("keydown", event => {
 });
 
 const title = dialog.querySelector("h1") as HTMLElement;
-const editor = dialog.querySelector(".editor") as HTMLDivElement;
+const editorWrapper = dialog.querySelector(".editor-wrapper") as HTMLDivElement;
+const editor = dialog.querySelector(".editor") as HTMLTextAreaElement;
+
+editor.addEventListener("input", function () {
+  editorWrapper.dataset.replicatedValue = editor.value;
+});
 
 //
 // Font
@@ -149,7 +154,7 @@ document
     if (subsystem || link) {
       modifySpecification(() => {
         const title = initializeText(
-          editor.innerText,
+          editor.value,
           "#000000",
           getFont(),
           getAlign(),
@@ -192,7 +197,7 @@ document
         if (subsystem) {
           setSubsystemTitle(
             subsystem,
-            editor.innerText.replace(/\n/g, "\\n"),
+            editor.value.replace(/\n/g, "\\n"),
             getFont(),
             getAlign(),
             width,
@@ -201,7 +206,7 @@ document
         } else if (link) {
           setLinkTitle(
             link,
-            editor.innerText.replace(/\n/g, "\\n"),
+            editor.value.replace(/\n/g, "\\n"),
             getFont(),
             getAlign(),
             width,
@@ -339,7 +344,8 @@ const operation: Operation = {
       link = linkToEdit;
 
       title.innerHTML = link.title ? "Edit title" : "Add title";
-      editor.innerText = link.title.replace(/\\n/g, "\n");
+      editor.value = link.title.replace(/\\n/g, "\n");
+      editorWrapper.dataset.replicatedValue = editor.value;
 
       setFont(link.titleFont);
       setAlign(link.titleAlign);
@@ -356,7 +362,8 @@ const operation: Operation = {
       subsystem = systemToEdit;
 
       title.innerHTML = subsystem.title ? "Edit title" : "Add title";
-      editor.innerText = subsystem.title.replace(/\\n/g, "\n");
+      editor.value = subsystem.title.replace(/\\n/g, "\n");
+      editorWrapper.dataset.replicatedValue = editor.value;
 
       setFont(subsystem.titleFont);
       setAlign(subsystem.titleAlign);

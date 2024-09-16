@@ -153,11 +153,27 @@ body {
       display: flex;
       gap: 0.5em;
 
-      .editor {
-        white-space: pre;
-        padding: 0.5em;
-        flex: 1;
-        overflow: auto;
+      .editor-wrapper {
+        display: grid;
+
+        &::after {
+          content: attr(data-replicated-value) " ";
+          white-space: pre-wrap;
+          visibility: hidden;
+        }
+
+        .editor {
+          resize: none;
+          overflow: hidden;
+        }
+
+        .editor,
+        &::after {
+          border: 1px solid black;
+          padding: 0.5em;
+          font: inherit;
+          grid-area: 1 / 1 / 2 / 2;
+        }
       }
 
       .styling {
