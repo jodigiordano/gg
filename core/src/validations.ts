@@ -35,13 +35,11 @@ export function validate(
   const whiteBoxBoundaryErrors = validateWhiteboxBoundaries(runtime);
   const systemErrors = validateSystems(runtime, []);
   const linkErrors = validateLinks(runtime);
-  const flowErrors = validateFlows(runtime);
 
   return systemOverlapErrors
     .concat(systemErrors)
     .concat(whiteBoxBoundaryErrors)
-    .concat(linkErrors)
-    .concat(flowErrors);
+    .concat(linkErrors);
 }
 
 function validateSystemOverlaps(
@@ -191,49 +189,6 @@ function validateLinks(
         path: [getLinkPath(link), "b"].join("/"),
         message: "inaccurate",
       });
-    }
-  }
-
-  return errors;
-}
-
-function validateFlows(system: RuntimeSystem): ValidationError[] {
-  const errors: ValidationError[] = [];
-
-  for (const [flowIndex, flow] of system.flows.entries()) {
-    for (const [stepIndex, step] of flow.steps.entries()) {
-      if (!step.systemFrom) {
-        errors.push({
-          path: `/flows/${flowIndex}/steps/${stepIndex}/from`,
-          message: "missing",
-        });
-      }
-
-      if (!step.systemTo) {
-        errors.push({
-          path: `/flows/${flowIndex}/steps/${stepIndex}/to`,
-          message: "missing",
-        });
-      }
-
-      if (step.systemFrom && step.systemTo) {
-        if (step.systemFrom.systems.length) {
-          errors.push({
-            path: `/flows/${flowIndex}/steps/${stepIndex}/from`,
-            message: "inaccurate",
-          });
-        } else if (step.systemTo.systems.length) {
-          errors.push({
-            path: `/flows/${flowIndex}/steps/${stepIndex}/to`,
-            message: "inaccurate",
-          });
-        } else if (!step.links.length) {
-          errors.push({
-            path: `/flows/${flowIndex}/steps/${stepIndex}`,
-            message: "no path",
-          });
-        }
-      }
     }
   }
 

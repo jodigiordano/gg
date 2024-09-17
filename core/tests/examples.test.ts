@@ -2,7 +2,7 @@ import assert from "node:assert";
 import { loadExample } from "./helpers";
 
 describe("examples", () => {
-  for (const name of ["minimal", "basic", "subsystems", "flows", "complex"]) {
+  for (const name of ["minimal", "basic", "subsystems", "complex"]) {
     it(name, () => {
       const example = loadExample(name);
 

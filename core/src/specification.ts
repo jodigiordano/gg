@@ -27,10 +27,6 @@ export interface System {
    * The links of the system and sub-systems.
    */
   links?: Link[];
-  /**
-   * The flows of the system.
-   */
-  flows?: Flow[];
 }
 /**
  * A sub-system
@@ -158,49 +154,6 @@ export interface Link {
    */
   b: string;
 }
-/**
- * A flow
- */
-export interface Flow {
-  /**
-   * The title of the flow.
-   */
-  title?: string;
-  /**
-   * The description of the flow, in markdown format.
-   */
-  description?: string;
-  /**
-   * The steps of the flow.
-   */
-  steps: FlowStep[];
-}
-export interface FlowStep {
-  /**
-   * The description of the step, in markdown format.
-   */
-  description?: string;
-  /**
-   * The keyframe of the step.
-   */
-  keyframe: number;
-  /**
-   * Side where the data originates from.
-   */
-  from: string;
-  /**
-   * Side where the data goes to.
-   */
-  to: string;
-  /**
-   * The data of the step.
-   */
-  data?: string;
-  /**
-   * The background color of the data of the step.
-   */
-  dataBackgroundColor?: string;
-}
 
 const schemas = [
   {
@@ -215,63 +168,6 @@ const schemas = [
         $id: "TextAlign",
         type: "string",
         enum: ["left", "center", "right"],
-      },
-    },
-  },
-  {
-    $id: "flow",
-    title: "Flow",
-    description: "A flow",
-    type: "object",
-    required: ["steps"],
-    additionalProperties: false,
-    properties: {
-      title: {
-        type: "string",
-        description: "The title of the flow.",
-      },
-      description: {
-        type: "string",
-        description: "The description of the flow, in markdown format.",
-      },
-      steps: {
-        type: "array",
-        description: "The steps of the flow.",
-        items: {
-          title: "FlowStep",
-          type: "object",
-          required: ["from", "to", "keyframe"],
-          additionalProperties: false,
-          properties: {
-            description: {
-              type: "string",
-              description: "The description of the step, in markdown format.",
-            },
-            keyframe: {
-              type: "integer",
-              minimum: 0,
-              description: "The keyframe of the step.",
-            },
-            from: {
-              type: "string",
-              pattern: "^[a-z0-9_-]+$",
-              description: "Side where the data originates from.",
-            },
-            to: {
-              type: "string",
-              pattern: "^[a-z0-9_-]+$",
-              description: "Side where the data goes to.",
-            },
-            data: {
-              type: "string",
-              description: "The data of the step.",
-            },
-            dataBackgroundColor: {
-              type: "string",
-              description: "The background color of the data of the step.",
-            },
-          },
-        },
       },
     },
   },
@@ -504,13 +400,6 @@ const schemas = [
         description: "The links of the system and sub-systems.",
         items: {
           $ref: "link",
-        },
-      },
-      flows: {
-        type: "array",
-        description: "The flows of the system.",
-        items: {
-          $ref: "flow",
         },
       },
     },

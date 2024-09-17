@@ -1198,7 +1198,7 @@ export class SystemSimulator {
         path.splice(0, insideACount);
         path.splice(path.length - insideBCount, insideBCount);
 
-        // The path and its reverse sibling are kept for future use (ie. flows).
+        // The path and its reverse sibling are kept for future use.
         this.paths[link.a] ??= {};
         this.paths[link.a]![link.b] = path;
 

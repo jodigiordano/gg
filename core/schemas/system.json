@@ -32,13 +32,6 @@
       "items": {
         "$ref": "link"
       }
-    },
-    "flows": {
-      "type": "array",
-      "description": "The flows of the system.",
-      "items": {
-        "$ref": "flow"
-      }
     }
   }
 }

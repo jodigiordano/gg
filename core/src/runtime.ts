@@ -2,8 +2,6 @@ import {
   Link,
   System,
   Subsystem,
-  Flow,
-  FlowStep,
   PathEndingPattern,
   PathPattern,
   TextFont,
@@ -61,20 +59,5 @@ export interface RuntimeSystem extends System {
   parent?: undefined;
   systems: RuntimeSubsystem[];
   links: RuntimeLink[];
-  flows: RuntimeFlow[];
   depth: 0;
-}
-
-export interface RuntimeFlowStep extends FlowStep {
-  specification: FlowStep;
-  index: number;
-  systemFrom: RuntimeSubsystem;
-  systemTo: RuntimeSubsystem;
-  links: RuntimeLink[];
-}
-
-export interface RuntimeFlow extends Flow {
-  specification: Flow;
-  index: number;
-  steps: RuntimeFlowStep[];
 }

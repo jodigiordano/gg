@@ -1,13 +1,7 @@
-import {
-  RuntimeSystem,
-  RuntimeSubsystem,
-  RuntimeLink,
-  RuntimeFlowStep,
-} from "./runtime.js";
+import { RuntimeSystem, RuntimeSubsystem, RuntimeLink } from "./runtime.js";
 import { SystemMargin } from "./helpers.js";
 import {
   Link,
-  FlowStep,
   Subsystem,
   PathPattern,
   PathEndingPattern,
@@ -61,17 +55,6 @@ export function addSubsystem(
         link.b = newRuntimeSystem.id;
       }
     }
-
-    // Move flows of the parent.
-    for (const flow of rootSystem.specification.flows ?? []) {
-      for (const step of flow.steps) {
-        if (step.from === parent.id) {
-          step.from = newRuntimeSystem.id;
-        } else if (step.to === parent.id) {
-          step.to = newRuntimeSystem.id;
-        }
-      }
-    }
   }
 
   computeSystemSize(newRuntimeSystem, rootSystem.links);
@@ -115,26 +98,6 @@ export function removeSubsystem(subsystem: RuntimeSubsystem): void {
     if (rootSystem.specification.links) {
       rootSystem.specification.links.length = linkWriteIndex;
     }
-  }
-
-  // Remove flow steps.
-  for (const flow of rootSystem.specification.flows ?? []) {
-    let stepReadIndex = 0;
-    let stepWriteIndex = 0;
-
-    while (stepReadIndex < flow.steps.length) {
-      const step = flow.steps[stepReadIndex]!;
-
-      if (step.from !== subsystem.id && step.to !== subsystem.id) {
-        flow.steps[stepWriteIndex] = step;
-
-        stepWriteIndex++;
-      }
-
-      stepReadIndex++;
-    }
-
-    flow.steps.length = stepWriteIndex;
   }
 }
 
@@ -233,25 +196,6 @@ export function moveLink(
     endPattern: link.endPattern,
   });
 
-  // Transfer flow steps.
-  for (const flow of rootSystem.specification.flows ?? []) {
-    for (const step of flow.steps) {
-      const goThroughLink =
-        (step.from === link.a && step.to === link.b) ||
-        (step.from === link.b && step.to === link.a);
-
-      if (goThroughLink) {
-        if (step.from === idToReplace) {
-          step.from = idToReplaceWith;
-        }
-
-        if (step.to === idToReplace) {
-          step.to = idToReplaceWith;
-        }
-      }
-    }
-  }
-
   removeLink(rootSystem, link);
 }
 
@@ -261,30 +205,6 @@ export function moveLink(
  */
 export function removeLink(rootSystem: RuntimeSystem, link: RuntimeLink): void {
   rootSystem.specification.links!.splice(link.index, 1);
-
-  // Remove flow steps.
-  for (const flow of rootSystem.specification.flows ?? []) {
-    let stepReadIndex = 0;
-    let stepWriteIndex = 0;
-
-    while (stepReadIndex < flow.steps.length) {
-      const step = flow.steps[stepReadIndex]!;
-
-      const goThroughLink =
-        (step.from === link.a && step.to === link.b) ||
-        (step.from === link.b && step.to === link.a);
-
-      if (!goThroughLink) {
-        flow.steps[stepWriteIndex] = step;
-
-        stepWriteIndex++;
-      }
-
-      stepReadIndex++;
-    }
-
-    flow.steps.length = stepWriteIndex;
-  }
 }
 
 export function setLinkTitle(
@@ -372,33 +292,6 @@ export function moveSubsystemToParent(
         [other.a, other.b].sort().join("") === [link.a, link.b].sort().join("")
       ) {
         links.splice(i, 1);
-      }
-    }
-  }
-
-  // Move flows of the subsystem.
-  const flows = rootSystem.specification.flows ?? [];
-
-  if (parentWasBlackbox) {
-    for (const flow of flows) {
-      for (const step of flow.steps) {
-        if (step.from === parent.id) {
-          step.from = subsystem.id;
-        } else if (step.to === parent.id) {
-          step.to = subsystem.id;
-        }
-      }
-    }
-  }
-
-  // Remove self-referenced steps.
-  // Happens when there is a step between the new parent and the subsystem.
-  for (const flow of flows) {
-    for (let i = flow.steps.length - 1; i >= 0; i--) {
-      const step = flow.steps[i]!;
-
-      if (step.from === step.to) {
-        flow.steps.splice(i, 1);
       }
     }
   }
@@ -716,48 +609,4 @@ export function moveSystem(
       moveSystem(system.parent, 0, 0);
     }
   }
-}
-
-/*
- * Remove a flow step from the system.
- * The resulting system is not validated and may be invalid.
- */
-export function removeFlowStep(
-  system: RuntimeSystem,
-  step: RuntimeFlowStep,
-): void {
-  system.specification.flows ??= [
-    {
-      steps: [],
-    },
-  ];
-
-  system.specification.flows?.at(0)?.steps?.splice(step.index, 1);
-}
-
-/*
- * Add a flow step in the system.
- * The resulting system is not validated and may be invalid.
- */
-export function addFlowStep(
-  system: RuntimeSystem,
-  keyframe: number,
-  from: string,
-  to: string,
-) {
-  const newStep: FlowStep = {
-    keyframe,
-    from,
-    to,
-  };
-
-  system.specification.flows ??= [
-    {
-      steps: [],
-    },
-  ];
-
-  system.specification.flows[0]!.steps.push(structuredClone(newStep));
-
-  return newStep;
 }
