@@ -545,6 +545,10 @@ export function initializeText(
       fill: `${color}`,
       wordWrap: false,
     },
+    b: {
+      fontFamily: `${font}-bold`,
+      fontWeight: "bold",
+    },
   };
 
   const options = {
