@@ -104,8 +104,9 @@ class Viewport extends Container {
 
     const center = this.getWorldCenter();
 
-    const scaleX = this.screenWidth / width;
-    const scaleY = this.screenHeight / height;
+    // Do not zoom in more than 1.0.
+    const scaleX = Math.min(1, this.screenWidth / width);
+    const scaleY = Math.min(1, this.screenHeight / height);
 
     const scale = this.clampScale(scaleX < scaleY ? scaleX : scaleY);
 
