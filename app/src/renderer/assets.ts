@@ -25,8 +25,8 @@ import networkSpritesheetUrl from "@gg/icons/dist/network.png";
 //
 
 const toLoad: { name: string; url: string; data: Record<string, unknown> }[] = [
-  { name: "text", url: "arimo-regular.ttf", data: { family: "text" } },
-  { name: "text-bold", url: "arimo-bold.ttf", data: { family: "text-bold" } },
+  { name: "text", url: "arimo-regular.woff2", data: { family: "text" } },
+  { name: "text-bold", url: "arimo-bold.woff2", data: { family: "text-bold" } },
   {
     name: "sketch",
     url: "monaspace-radon-regular.woff2",
@@ -37,8 +37,8 @@ const toLoad: { name: string; url: string; data: Record<string, unknown> }[] = [
     url: "monaspace-radon-bold.woff2",
     data: { family: "sketch-bold" },
   },
-  { name: "code", url: "roboto-regular.ttf", data: { family: "code" } },
-  { name: "code-bold", url: "roboto-bold.ttf", data: { family: "code-bold" } },
+  { name: "code", url: "roboto-regular.woff2", data: { family: "code" } },
+  { name: "code-bold", url: "roboto-bold.woff2", data: { family: "code-bold" } },
   { name: "icons-aws", url: awsSpritesheetDataUrl, data: {} },
   { name: "icons-gcp", url: gcpSpritesheetUrl, data: {} },
   { name: "icons-azure", url: azureSpritesheetUrl, data: {} },
