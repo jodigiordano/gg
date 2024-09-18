@@ -579,6 +579,26 @@ export class SystemSimulator {
     }
   }
 
+  private setSystemTitleWeights(
+    gridSS: GridSystem,
+    finderGrid: PathFinderGrid,
+    weight: number,
+  ): void {
+    for (
+      let x = gridSS.title.x - 1;
+      x < gridSS.title.x + gridSS.title.width + 1;
+      x++
+    ) {
+      for (
+        let y = gridSS.title.y - 1;
+        y < gridSS.title.y + gridSS.title.height + 1;
+        y++
+      ) {
+        finderGrid.setWeightAt(x, y, weight);
+      }
+    }
+  }
+
   private setSystemPerimeterWeightsForRouting(
     gridSS: GridSystem,
     finderGrid: PathFinderGrid,
@@ -730,19 +750,11 @@ export class SystemSimulator {
 
       // Title padding.
       if (ss.systems.length && ss.title.trim().length > 0) {
-        for (
-          let x = gridSS.title.x - 1;
-          x < gridSS.title.x + gridSS.title.width + 1;
-          x++
-        ) {
-          for (
-            let y = gridSS.title.y - 1;
-            y < gridSS.title.y + gridSS.title.height + 1;
-            y++
-          ) {
-            finderGrid.setWeightAt(x, y, PathfindingWeights.Impenetrable);
-          }
-        }
+        this.setSystemTitleWeights(
+          gridSS,
+          finderGrid,
+          PathfindingWeights.Impenetrable,
+        );
       }
 
       // Title.
@@ -776,7 +788,7 @@ export class SystemSimulator {
 
       // Allowed systems to be traversed by the path from A to B. Part I.
       //
-      // The path from A to B may needs to traverse whiteboxes.
+      // The path from A to B may need to traverse whiteboxes.
       // Here we say that only certain whiteboxes can be traversed.
       //
       // For example, for the path A.X to B,
@@ -785,6 +797,15 @@ export class SystemSimulator {
       // To deny traversing systems, we momentarily set an impenetrable
       // perimeter around them.
       const allowedSystems: string[] = [link.a, link.b];
+
+      // When A or B is a whitebox, we need to allow traversing the titles
+      // of their children whiteboxes (!), which are impenetrable by default.
+      //
+      // For example, if A is a whitebox with A.X, which is also a whitebox, it
+      // is possible that A.X is traversed to find the link between A and B
+      // (as we find the link from center to center). When A.X is traversed, we
+      // also want to traverse its title.
+      const disabledWhiteboxTitles: string[] = [];
 
       // Allow the parents of A.
       let parent: RuntimeSystem | RuntimeSubsystem | undefined =
@@ -797,10 +818,15 @@ export class SystemSimulator {
       }
 
       // Allow the children of A.
+      // This is necessary when A is a whitebox.
       let children = [...link.systemA.systems];
 
       while (children.length) {
         const child = children.pop()!;
+
+        if (child.systems.length && child.title.length) {
+          disabledWhiteboxTitles.push(child.id);
+        }
 
         children.push(...child.systems);
 
@@ -817,19 +843,32 @@ export class SystemSimulator {
       }
 
       // Allow the children of B.
+      // This is necessary when B is a whitebox.
       children = [...link.systemB.systems];
 
       while (children.length) {
         const child = children.pop()!;
+
+        if (child.systems.length && child.title.length) {
+          disabledWhiteboxTitles.push(child.id);
+        }
 
         children.push(...child.systems);
 
         allowedSystems.push(child.id);
       }
 
-      const allowedSystemPerimeters = [];
+      if (link.systemA.systems.length && link.systemA.title.length) {
+        disabledWhiteboxTitles.push(link.systemA.id);
+      }
 
-      // Set the perimeters for parents.
+      if (link.systemB.systems.length && link.systemB.title.length) {
+        disabledWhiteboxTitles.push(link.systemB.id);
+      }
+
+      const allowedSystemPerimeters: number[][][] = [];
+
+      // Set the perimeters for parents & childrens.
       for (const gridSS of Object.values(this.gridSystems)) {
         if (!allowedSystems.includes(gridSS.id)) {
           allowedSystemPerimeters.push(
@@ -840,6 +879,14 @@ export class SystemSimulator {
             gridSS,
             finderGrid,
             PathfindingWeights.Impenetrable,
+          );
+        }
+
+        if (disabledWhiteboxTitles.includes(gridSS.id)) {
+          this.setSystemTitleWeights(
+            gridSS,
+            finderGrid,
+            PathfindingWeights.EmptySpace,
           );
         }
       }
@@ -1402,11 +1449,20 @@ export class SystemSimulator {
       // Allowed systems to be traversed by the path from A to B. Part II.
       //
       // After a path from A to B is found (or not), we remove the
-      // impenetrable perimeters around traversable parents...
+      // impenetrable perimeters around traversable parents & children...
       for (const perimeter of allowedSystemPerimeters) {
         for (const [x, y, weight] of perimeter) {
           finderGrid.setWeightAt(x!, y!, weight!);
         }
+      }
+
+      // ... and we set back some system titles as impenetrable.
+      for (const systemId of disabledWhiteboxTitles) {
+        this.setSystemTitleWeights(
+          this.gridSystems[systemId]!,
+          finderGrid,
+          PathfindingWeights.Impenetrable,
+        );
       }
 
       // A path is still considered walkable but it has a higher cost
