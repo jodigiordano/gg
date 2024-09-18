@@ -83,11 +83,6 @@ export interface Subsystem {
    */
   backgroundColor?: string;
   /**
-   * @deprecated
-   * Whether to show or hide the sub-systems of the system. Since deprecation, this property has no effect
-   */
-  hideSystems?: boolean;
-  /**
    * The sub-systems of the system.
    */
   systems?: Subsystem[];
@@ -351,12 +346,6 @@ const schemas = [
       backgroundColor: {
         type: "string",
         description: "The background color of the sub-system.",
-      },
-      hideSystems: {
-        type: "boolean",
-        deprecated: true,
-        description:
-          "Whether to show or hide the sub-systems of the system. Since deprecation, this property has no effect",
       },
       systems: {
         type: "array",
