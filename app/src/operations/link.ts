@@ -56,7 +56,7 @@ function onPointerMove(state: State) {
     state.simulator.getLinkByTitleAt(state.x, state.y);
 
   if (link) {
-    const path = state.simulator.getPath(link.a, link.b)!;
+    const path = state.simulator.getPath(link)!;
     const boundaries = state.simulator.getBoundaries();
 
     const [startX, startY] = path.at(1)!;

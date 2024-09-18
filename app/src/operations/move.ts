@@ -37,7 +37,7 @@ function onPointerMove(state: State) {
 
   // Moving a link.
   if (link && linkSystemIdToReplace) {
-    const path = state.simulator.getPath(link.a, link.b)!;
+    const path = state.simulator.getPath(link)!;
     const boundaries = state.simulator.getBoundaries();
 
     const [startX, startY] =
@@ -88,7 +88,7 @@ function onPointerMove(state: State) {
   const linkToMove = state.simulator.getLinkAt(state.x, state.y);
 
   if (linkToMove) {
-    const path = state.simulator.getPath(linkToMove.a, linkToMove.b)!;
+    const path = state.simulator.getPath(linkToMove)!;
     const boundaries = state.simulator.getBoundaries();
 
     const pathIndex = path.findIndex(
@@ -165,7 +165,7 @@ const operation: Operation = {
     if (linkToMove) {
       viewport.pause = true;
 
-      const path = state.simulator.getPath(linkToMove.a, linkToMove.b)!;
+      const path = state.simulator.getPath(linkToMove)!;
       const boundaries = state.simulator.getBoundaries();
 
       const pathIndex = path.findIndex(

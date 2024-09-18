@@ -142,20 +142,20 @@ interface GridSystem {
 
 export class SystemSimulator {
   private system: RuntimeSystem;
-  private paths: Record<string, Record<string, number[][]>>;
+  private paths: number[][][];
   private gridSystems: Record<string, GridSystem>;
   private grid: SimulatorObject[][][];
   private boundaries: SimulatorBoundaries;
 
   constructor(options: {
     system: RuntimeSystem;
-    paths?: Record<string, Record<string, number[][]>>;
+    paths?: number[][][];
     gridSystems?: Record<string, GridSystem>;
     grid?: SimulatorObject[][][];
     boundaries?: SimulatorBoundaries;
   }) {
     this.system = options.system;
-    this.paths = options.paths ?? {};
+    this.paths = options.paths ?? Array(options.system.links.length);
     this.gridSystems = options.gridSystems ?? {};
     this.grid = options.grid ?? [];
     this.boundaries = options.boundaries ?? this.computeBoundaries();
@@ -336,8 +336,8 @@ export class SystemSimulator {
     return null;
   }
 
-  getPath(fromSystemId: string, toSystemId: string): number[][] | undefined {
-    return this.paths[fromSystemId]?.[toSystemId];
+  getPath(link: RuntimeLink): number[][] | undefined {
+    return this.paths[link.index];
   }
 
   // Child systems in a parent system are offset
@@ -1249,12 +1249,8 @@ export class SystemSimulator {
         path.splice(0, insideACount);
         path.splice(path.length - insideBCount, insideBCount);
 
-        // The path and its reverse sibling are kept for future use.
-        this.paths[link.a] ??= {};
-        this.paths[link.a]![link.b] = path;
-
-        this.paths[link.b] ??= {};
-        this.paths[link.b]![link.a] = path.slice().reverse();
+        // The path is kept for future use.
+        this.paths[link.index] = path;
 
         // Draw the link title.
         if (link.title.length > 0) {
