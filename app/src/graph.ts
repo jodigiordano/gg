@@ -75,10 +75,8 @@ fetch(`/api/graphs/${params.id}`)
         }
       }
 
-      graphPublicHideFlowControls.checked = false;
       graphPublicHideZoomControls.checked = false;
       graphPublicHideEditorButton.checked = false;
-      graphPublicAutoplay.checked = false;
 
       graphPublicPreview.src = `/viewer.html#id=${graph.id}`;
 
@@ -191,10 +189,6 @@ graphPublic.addEventListener("change", () => {
     });
 });
 
-const graphPublicHideFlowControls = document.getElementById(
-  "option-hide-flow-controls",
-) as HTMLInputElement;
-
 const graphPublicHideZoomControls = document.getElementById(
   "option-hide-zoom-controls",
 ) as HTMLInputElement;
@@ -203,14 +197,8 @@ const graphPublicHideEditorButton = document.getElementById(
   "option-hide-editor-button",
 ) as HTMLInputElement;
 
-const graphPublicAutoplay = document.getElementById(
-  "option-autoplay",
-) as HTMLInputElement;
-
-graphPublicHideFlowControls.addEventListener("change", setGraphPublicUrlHash);
 graphPublicHideZoomControls.addEventListener("change", setGraphPublicUrlHash);
 graphPublicHideEditorButton.addEventListener("change", setGraphPublicUrlHash);
-graphPublicAutoplay.addEventListener("change", setGraphPublicUrlHash);
 
 function setGraphPublicUrlHash(): void {
   const url = graphPublicUrl.value;
@@ -227,20 +215,12 @@ function setGraphPublicUrlHash(): void {
     id: urlParams.id,
   };
 
-  if (graphPublicHideFlowControls.checked) {
-    newUrlParams.flowControls = false;
-  }
-
   if (graphPublicHideZoomControls.checked) {
     newUrlParams.zoomControls = false;
   }
 
   if (graphPublicHideEditorButton.checked) {
     newUrlParams.editorButton = false;
-  }
-
-  if (graphPublicAutoplay.checked) {
-    newUrlParams.autoplay = true;
   }
 
   const hash = Object.entries(newUrlParams)

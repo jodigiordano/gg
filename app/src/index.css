@@ -3,13 +3,11 @@
 /* Constants */
 :root {
   /* theme: light */
-  --information-flow-step-title-background: #eee;
   --plus-color: #fff;
   --privacy-section-background: #eee;
 }
 
 [theme="dark"] {
-  --information-flow-step-title-background: #111;
   --plus-color: #000;
   --privacy-section-background: #111;
 }
@@ -102,27 +100,6 @@ body {
   overflow: hidden;
 }
 
-/* Display the title of the current keyframe, if any. */
-#information-flow-step-title {
-  position: absolute;
-  top: 0.5em;
-  width: 60%;
-  text-align: center;
-  padding: 0.5em;
-  left: 0;
-  right: 0;
-  margin-left: auto;
-  margin-right: auto;
-  min-height: 1em;
-  border: 1px solid #888;
-
-  background: var(--information-flow-step-title-background);
-
-  &.hidden {
-    display: none;
-  }
-}
-
 /* Modal showing the JSON of the chart */
 #json-editor {
   width: 80%;
@@ -209,11 +186,6 @@ body {
       }
     }
   }
-}
-
-/* Modal to edit the title of a step */
-#input-flow-step-set-title-dialog {
-  width: 60%;
 }
 
 /* Modal to choose a color to paint */

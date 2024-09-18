@@ -14,41 +14,10 @@
   </head>
   <body>
     <div id="toolbox">
-      <div id="editor-button" class="operations left">
+      <div id="editor-button" class="operations">
         <button id="operation-goto-editor" title="Go to editor">
           <inline-svg>icon-edit</inline-svg>
         </button>
-      </div>
-      <div id="flow-controls" class="operations center">
-        <button id="operation-flow-rewind" title="Rewind the flow animation">
-          <inline-svg>icon-flow-rewind</inline-svg>
-        </button>
-        <button id="operation-flow-play" title="Play the flow animation">
-          <inline-svg>icon-flow-play</inline-svg>
-        </button>
-        <button
-          id="operation-flow-pause"
-          class="hidden"
-          title="Pause the flow animation"
-        >
-          <inline-svg>icon-flow-pause</inline-svg>
-        </button>
-        <button id="operation-flow-previous-keyframe" title="Previous keyframe">
-          <inline-svg>icon-flow-previous</inline-svg>
-        </button>
-        <button id="operation-flow-next-keyframe" title="Next keyframe">
-          <inline-svg>icon-flow-next</inline-svg>
-        </button>
-        <div id="information-flow-progression" title="Progression of the flow">
-          <input
-            id="information-flow-progression-current"
-            type="text"
-            inputmode="numeric"
-            value="0"
-          />
-          /
-          <span id="information-flow-progression-total">0</span>
-        </div>
       </div>
       <div id="zoom-controls" class="operations right">
         <button id="operation-camera-fit" title="Fit to screen">
@@ -62,11 +31,6 @@
         </button>
       </div>
     </div>
-    <div
-      id="information-flow-step-title"
-      title="Title of the current keyframe"
-      class="hidden"
-    ></div>
     <div id="canvas"></div>
     <div id="save-data-is-loading">Loading...</div>
     <script type="module" src="/viewer.ts"></script>

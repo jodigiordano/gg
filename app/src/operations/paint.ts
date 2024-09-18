@@ -45,20 +45,6 @@ function onPointerMove(state: State) {
   selectVisual1.visible = false;
   selectVisual2.visible = false;
 
-  const data = state.flowPlayer?.getDataAt(state.preciseX, state.preciseY);
-
-  if (data) {
-    selectVisual1.visible = true;
-    selectVisual1.setPositionRect(
-      data.x - 0.5,
-      data.y - 0.5,
-      data.x + 0.5,
-      data.y + 0.5,
-    );
-
-    return;
-  }
-
   const linkByTitle = state.simulator.getLinkByTitleAt(state.x, state.y);
 
   if (linkByTitle && linkByTitle.title.length > 0) {
@@ -138,19 +124,6 @@ const operation: Operation = {
   onPointerMove,
   onPointerDown() {},
   onPointerUp(state) {
-    const data = state.flowPlayer?.getDataAt(state.preciseX, state.preciseY);
-
-    if (data) {
-      modifySpecification(() => {
-        data.step.specification.dataBackgroundColor = fillColor;
-      }).then(() => {
-        onPointerMove(state);
-        tick();
-      });
-
-      return;
-    }
-
     const linkByTitle = state.simulator.getLinkByTitleAt(state.x, state.y);
 
     if (linkByTitle) {

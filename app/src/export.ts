@@ -24,10 +24,6 @@ state.theme = "light";
 // Draw the simulation with the right theme.
 drawSimulation();
 
-// Hide flow animations.
-// Must be done after drawSimulation, as that step re-create a flow player.
-state.flowPlayer?.hide();
-
 // Extract the viewport on an HTML canvas.
 // @ts-ignore
 const viewportCanvas = app.renderer.extract.canvas(viewport);

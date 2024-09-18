@@ -3,11 +3,9 @@ import viewport from "./renderer/viewport.js";
 import {
   loadSimulation,
   fitSimulation,
-  modifySpecification,
-  getKeyframesCount,
   drawSimulation,
 } from "./simulator/api.js";
-import { BlockSize, debounce, sanitizeHtml } from "./helpers.js";
+import { BlockSize, debounce } from "./helpers.js";
 import { initializeDropdowns } from "./dropdown.js";
 import { state, resetState, pushChange } from "./state.js";
 import { redrawGrid, setGridTheme, setGridVisible } from "./renderer/grid.js";
@@ -18,7 +16,6 @@ import moveOperation from "./operations/move.js";
 import setSystemParentOperation from "./operations/systemSetParent.js";
 import linkOperation from "./operations/link.js";
 import eraseOperation from "./operations/erase.js";
-import transferDataOperation from "./operations/flowTransferData.js";
 import paintOperation from "./operations/paint.js";
 import {
   getJsonEditorValue,
@@ -185,22 +182,8 @@ window.addEventListener("keydown", event => {
     switchOperation(setSystemParentOperation);
   } else if (event.key === "2") {
     switchOperation(eraseOperation);
-  } else if (event.key === "a") {
-    switchOperation(transferDataOperation);
   } else if (event.key === "r") {
     switchOperation(paintOperation);
-  } else if (event.key === " ") {
-    if (state.flowPlay) {
-      pauseFlow();
-    } else {
-      playFlow();
-    }
-
-    event.preventDefault();
-  } else if (event.key === "ArrowLeft" || event.key === "ArrowDown") {
-    goToPreviousKeyframe();
-  } else if (event.key === "ArrowRight" || event.key === "ArrowUp") {
-    goToNextKeyframe();
   } else if (event.key === "[") {
     undo();
   } else if (event.key === "]") {
@@ -230,10 +213,7 @@ window.addEventListener("hashchange", () => {
 
   const urlParams = getUrlParams();
 
-  state.flowPlay = urlParams.autoplay;
-  state.flowSpeed = urlParams.speed;
   state.zoomControls = urlParams.zoomControls;
-  state.flowControls = urlParams.flowControls;
   state.editorButton = urlParams.editorButton;
 
   loadSaveData();
@@ -275,7 +255,6 @@ document
       .then(() => setConnectivity(isLocalFile() ? "local-file" : "ok"))
       .catch(() => setConnectivity("save-failed"));
 
-    updateFlowProgression();
     tick();
   });
 
@@ -433,7 +412,6 @@ async function newFile(): Promise<void> {
 
   await loadSimulation(json);
 
-  updateFlowProgression();
   pushChange(json);
 
   save(json)
@@ -539,10 +517,6 @@ document
     // Draw the simulation with the right theme.
     drawSimulation();
 
-    // Hide flow animations.
-    // Must be done after drawSimulation, as that step re-create a flow player.
-    state.flowPlayer?.hide();
-
     // Extract the viewport on an HTML canvas.
     // @ts-ignore
     const viewportCanvas = app.renderer.extract.canvas(viewport);
@@ -614,11 +588,6 @@ document
     // Show the grid.
     setGridVisible(true);
 
-    // Show the flow animations.
-    // Kept for documentation, not needed,
-    // as the flow player is recreated in drawSimulation below.
-    // state.flowPlayer?.draw();
-
     // Set user theme.
     state.theme = getThemeOnLoad();
 
@@ -647,9 +616,6 @@ const graphTitle = document.getElementById(
   "option-graph-title",
 ) as HTMLInputElement;
 
-const autoplay = document.getElementById("option-autoplay") as HTMLInputElement;
-const speed = document.getElementById("option-speed") as HTMLInputElement;
-
 document
   .getElementById("operation-file-properties-open")
   ?.addEventListener("click", function () {
@@ -661,9 +627,6 @@ document
     }
 
     graphTitle.value = JSON.parse(getJsonEditorValue()).title;
-
-    autoplay.checked = params.autoplay;
-    speed.value = params.speed.toString();
 
     fileProperties.inert = true;
     fileProperties.showModal();
@@ -692,26 +655,6 @@ graphTitle.addEventListener("change", function () {
     .catch(() => setConnectivity("save-failed"));
 });
 
-autoplay.addEventListener("change", function () {
-  const urlParams = getUrlParams();
-
-  urlParams.autoplay = autoplay.checked;
-
-  setUrlParams(urlParams);
-});
-
-speed.addEventListener("change", function () {
-  const value = Number(speed.value);
-
-  const urlParams = getUrlParams();
-
-  urlParams.speed = !isNaN(value) ? Math.max(0.1, Math.min(5, value)) : 1;
-
-  setUrlParams(urlParams);
-
-  state.flowSpeed = urlParams.speed;
-});
-
 //
 // Undo / Redo operations.
 //
@@ -727,7 +670,6 @@ function undo(): void {
 
     loadSimulation(json)
       .then(() => {
-        updateFlowProgression();
         tick();
 
         save(json)
@@ -751,7 +693,6 @@ function redo(): void {
 
     loadSimulation(json)
       .then(() => {
-        updateFlowProgression();
         tick();
 
         save(json)
@@ -802,201 +743,6 @@ document
 document
   .getElementById("operation-camera-zoom-out")
   ?.addEventListener("click", cameraZoomOut);
-
-//
-// Flow operations
-//
-
-const flowPlay = document.getElementById("operation-flow-play")!;
-const flowPause = document.getElementById("operation-flow-pause")!;
-const flowRepeatOne = document.getElementById("operation-flow-repeat-one")!;
-const flowRepeatAll = document.getElementById("operation-flow-repeat-all")!;
-
-const flowPreviousKeyframe = document.getElementById(
-  "operation-flow-previous-keyframe",
-)!;
-
-const flowNextKeyframe = document.getElementById(
-  "operation-flow-next-keyframe",
-)!;
-
-function playFlow(): void {
-  state.flowPlay = true;
-  app.ticker.start();
-
-  flowPlay.classList.add("hidden");
-  flowPause.classList.remove("hidden");
-}
-
-function pauseFlow(): void {
-  state.flowPlay = false;
-  app.ticker.stop();
-
-  flowPlay.classList.remove("hidden");
-  flowPause.classList.add("hidden");
-}
-
-function goToPreviousKeyframe(): void {
-  const keyframe = state.flowKeyframe | 0;
-  const keyframeProgress = state.flowKeyframe - keyframe;
-
-  if (keyframeProgress === 0) {
-    if (keyframe === 0) {
-      state.flowKeyframe = getKeyframesCount();
-    } else {
-      state.flowKeyframe = Math.max(0, keyframe - 1);
-    }
-  } else {
-    state.flowKeyframe = keyframe;
-  }
-
-  updateFlowProgression();
-
-  if (state.flowPlayer) {
-    state.flowPlayer.setTargetKeyframe(state.flowKeyframe);
-    state.flowPlayer.setKeyframe(state.flowKeyframe);
-    state.flowPlayer.draw();
-    tick();
-  }
-}
-
-function goToNextKeyframe(): void {
-  state.flowKeyframe = (state.flowKeyframe | 0) + 1;
-
-  updateFlowProgression();
-
-  if (state.flowPlayer) {
-    state.flowPlayer.setTargetKeyframe(state.flowKeyframe);
-    state.flowPlayer.setKeyframe(state.flowKeyframe);
-    state.flowPlayer.draw();
-    tick();
-  }
-}
-
-// Initialization.
-if (state.flowPlay) {
-  flowPlay.classList.add("hidden");
-  flowPause.classList.remove("hidden");
-}
-
-flowPlay.addEventListener("click", playFlow);
-flowPause.addEventListener("click", pauseFlow);
-flowPreviousKeyframe.addEventListener("click", goToPreviousKeyframe);
-flowNextKeyframe.addEventListener("click", goToNextKeyframe);
-
-flowRepeatOne.addEventListener("click", function () {
-  state.flowPlayMode = "repeatAll";
-
-  flowRepeatOne.classList.add("hidden");
-  flowRepeatAll.classList.remove("hidden");
-});
-
-flowRepeatAll.addEventListener("click", function () {
-  state.flowPlayMode = "repeatOne";
-
-  flowRepeatOne.classList.remove("hidden");
-  flowRepeatAll.classList.add("hidden");
-});
-
-const flowStepSetTitle = document.getElementById(
-  "input-flow-step-set-title-dialog",
-) as HTMLDialogElement;
-
-flowStepSetTitle.addEventListener("keydown", event => {
-  event.stopPropagation();
-});
-
-const flowStepSetTitleTitle = flowStepSetTitle.querySelector(
-  "h1",
-) as HTMLElement;
-
-const flowStepSetTitleEditor = flowStepSetTitle.querySelector(
-  "input",
-) as HTMLInputElement;
-
-document
-  .getElementById("operation-flow-edit-step-title")
-  ?.addEventListener("click", function () {
-    state.operation.onMute(state);
-
-    const keyframe = state.flowKeyframe | 0;
-
-    flowStepSetTitleTitle.innerHTML = `Set title for keyframe ${keyframe}`;
-
-    const steps =
-      state.simulator
-        .getSystem()
-        .flows.at(0)
-        ?.steps?.filter(step => step.keyframe === keyframe) ?? [];
-
-    const title = steps.find(step => step.description)?.description ?? "";
-
-    flowStepSetTitleEditor.value = title;
-
-    flowStepSetTitle.showModal();
-  });
-
-document
-  .getElementById("operation-flow-step-set-title-apply")
-  ?.addEventListener("click", function () {
-    let value: string | undefined = flowStepSetTitleEditor.value.trim();
-
-    if (value === "") {
-      value = undefined;
-    }
-
-    const keyframe = state.flowKeyframe | 0;
-
-    // Apply operation.
-    modifySpecification(() => {
-      const steps =
-        state.simulator
-          .getSystem()
-          .flows.at(0)
-          ?.steps?.filter(step => step.keyframe === keyframe) ?? [];
-
-      for (const step of steps) {
-        step.specification.description = value;
-      }
-    });
-
-    updateFlowProgression();
-  });
-
-const currentKeyframe = document.getElementById("information-flow-keyframe")!;
-
-const currentKeyframeTitle = document.getElementById(
-  "information-flow-step-title",
-)!;
-
-app.ticker.add<void>(() => {
-  if (state.flowPlay && state.flowPlayer) {
-    updateFlowProgression();
-  }
-});
-
-function updateFlowProgression(): void {
-  const keyframe = state.flowKeyframe | 0;
-  const system = state.simulator.getSystem();
-
-  // Set number.
-  currentKeyframe.innerHTML = keyframe.toString();
-
-  // Set title.
-  if (system.flows.at(0)?.steps.some(step => step.description)) {
-    const steps =
-      system.flows.at(0)?.steps?.filter(step => step.keyframe === keyframe) ??
-      [];
-
-    const title = steps.find(step => step.description)?.description ?? "";
-
-    currentKeyframeTitle.innerHTML = sanitizeHtml(title);
-
-    currentKeyframeTitle.classList.remove("hidden");
-  } else {
-    currentKeyframeTitle.classList.add("hidden");
-  }
-}
 
 //
 // Link operations
@@ -1093,7 +839,6 @@ moveOperation.setup(state);
 setSystemParentOperation.setup(state);
 linkOperation.setup(state);
 eraseOperation.setup(state);
-transferDataOperation.setup(state);
 paintOperation.setup(state);
 
 // Initialize buttons.
@@ -1123,8 +868,6 @@ for (const button of singleChoiceButtons) {
       state.operation = setSystemParentOperation;
     } else if (button.id === "operation-set-title") {
       state.operation = setTitleOperation;
-    } else if (button.id === "operation-flow-data-transfer") {
-      state.operation = transferDataOperation;
     } else if (button.id === "operation-set-color") {
       state.operation = paintOperation;
     }
@@ -1230,11 +973,9 @@ async function loadSaveData(saveData?: string): Promise<void> {
   try {
     await loadSimulation(json);
 
-    updateFlowProgression();
     pushChange(json);
     fitSimulation();
     redrawGrid();
-    state.flowPlayer?.draw();
     tick();
 
     save(json)
@@ -1259,8 +1000,7 @@ function isModalOpen(): boolean {
     guide.open ||
     about.open ||
     privacy.open ||
-    connectivityStatus.open ||
-    flowStepSetTitle.open
+    connectivityStatus.open
   );
 }
 

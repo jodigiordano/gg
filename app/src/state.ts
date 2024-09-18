@@ -1,5 +1,4 @@
 import { load, PathPattern, SystemSimulator } from "@gg/core";
-import FlowPlayer from "./simulator/flowPlayer.js";
 import Operation from "./operation.js";
 import moveOperation from "./operations/move.js";
 import { getUrlParams } from "./persistence.js";
@@ -15,15 +14,9 @@ export interface State {
   preciseY: number;
   simulator: SystemSimulator;
   simulatorInitialized: boolean;
-  flowPlayer: FlowPlayer | null;
-  flowKeyframe: number;
-  flowPlay: boolean;
-  flowPlayMode: "playOne" | "repeatAll" | "repeatOne";
-  flowSpeed: number;
   linkPattern: PathPattern;
   theme: "light" | "dark";
   zoomControls: boolean;
-  flowControls: boolean;
   editorButton: boolean;
   profile: {
     authenticated: boolean;
@@ -51,15 +44,9 @@ export const state: State = {
   preciseY: -999999,
   simulator: defaultSimulator,
   simulatorInitialized: false,
-  flowPlayer: null,
-  flowKeyframe: 0,
-  flowPlay: urlParams.autoplay,
-  flowPlayMode: "repeatAll",
-  flowSpeed: urlParams.speed,
   linkPattern: "pipe",
   theme: getThemeOnLoad(),
   zoomControls: urlParams.zoomControls,
-  flowControls: urlParams.flowControls,
   editorButton: urlParams.editorButton,
   profile: {
     authenticated: false,
@@ -85,7 +72,4 @@ export function resetState(): void {
 
   state.operation.onEnd(state);
   defaultOperation.onBegin(state);
-
-  state.flowPlay = false;
-  state.flowKeyframe = 0;
 }

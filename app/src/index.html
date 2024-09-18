@@ -78,11 +78,6 @@
       </div>
     </div>
     <div id="content">
-      <div
-        id="information-flow-step-title"
-        title="Title of the current keyframe"
-        class="hidden"
-      ></div>
       <div id="toolbox">
         <div class="operations">
           <button id="operation-undo" title="Undo">
@@ -173,58 +168,6 @@
             <div class="keyboard">r</div>
           </button>
         </div>
-        <div class="separator-with-title">flows</div>
-        <div class="operations">
-          <button
-            id="operation-flow-data-transfer"
-            title="Transfer data"
-            class="single-choice"
-          >
-            <inline-svg>icon-flow-data</inline-svg>
-            <div class="keyboard">a</div>
-          </button>
-          <div></div>
-          <button id="operation-flow-play" title="Play the flow animation">
-            <inline-svg>icon-flow-play</inline-svg>
-            <div class="keyboard">␣</div>
-          </button>
-          <button
-            id="operation-flow-pause"
-            class="hidden"
-            title="Pause the flow animation"
-          >
-            <inline-svg>icon-flow-pause</inline-svg>
-            <div class="keyboard">␣</div>
-          </button>
-          <button
-            id="operation-flow-repeat-one"
-            class="hidden"
-            title="Repeat current keyframe"
-          >
-            <inline-svg>icon-flow-repeat-one</inline-svg>
-          </button>
-          <button id="operation-flow-repeat-all" title="Repeat all keyframes">
-            <inline-svg>icon-flow-repeat-all</inline-svg>
-          </button>
-          <div id="information-flow-keyframe" title="Current keyframe">0</div>
-          <button
-            id="operation-flow-edit-step-title"
-            title="Add or edit the title of the current keyframe"
-          >
-            <inline-svg>icon-flow-step-title</inline-svg>
-          </button>
-          <button
-            id="operation-flow-previous-keyframe"
-            title="Previous keyframe"
-          >
-            <inline-svg>icon-flow-previous</inline-svg>
-            <div class="keyboard">←</div>
-          </button>
-          <button id="operation-flow-next-keyframe" title="Next keyframe">
-            <inline-svg>icon-flow-next</inline-svg>
-            <div class="keyboard">→</div>
-          </button>
-        </div>
         <div class="separator"></div>
         <div class="operations">
           <button id="operation-camera-fit" title="Fit to screen">
@@ -269,11 +212,6 @@
           <br />
           you <b>create links</b> (<inline-svg>icon-link</inline-svg>) between
           them.
-        </p>
-        <p>
-          You can then <b>make data flow</b> between your systems (
-          <inline-svg>icon-flow-data</inline-svg>
-          ) !
         </p>
         <table>
           <caption>
@@ -367,50 +305,6 @@
             </tr>
           </tbody>
         </table>
-        <table>
-          <caption>
-            Operations on flows
-          </caption>
-          <tbody>
-            <tr>
-              <td><inline-svg>icon-flow-data</inline-svg></td>
-              <td>
-                <p>Make data flow between two systems.</p>
-                <p>Click once on a link to make data flow from A to B.</p>
-                <p>Click twice on a link to make data flow from B to A.</p>
-                <p>Click 3 times on a link to stop the data flow.</p>
-              </td>
-            </tr>
-            <tr>
-              <td><inline-svg>icon-flow-play</inline-svg></td>
-              <td>Play the flow animation in a continuous loop.</td>
-            </tr>
-            <tr>
-              <td><inline-svg>icon-flow-pause</inline-svg></td>
-              <td>Pause the flow animation.</td>
-            </tr>
-            <tr>
-              <td><inline-svg>icon-flow-repeat-one</inline-svg></td>
-              <td>Play the current keyframe of the flow animation.</td>
-            </tr>
-            <tr>
-              <td><inline-svg>icon-flow-repeat-all</inline-svg></td>
-              <td>Play all the keyframes of the flow animation.</td>
-            </tr>
-            <tr>
-              <td><inline-svg>icon-flow-step-title</inline-svg></td>
-              <td>Add or edit the title of the current keyframe.</td>
-            </tr>
-            <tr>
-              <td><inline-svg>icon-flow-previous</inline-svg></td>
-              <td>Go to the previous keyframe of the flow.</td>
-            </tr>
-            <tr>
-              <td><inline-svg>icon-flow-next</inline-svg></td>
-              <td>Go to the next keyframe of the flow.</td>
-            </tr>
-          </tbody>
-        </table>
         <form method="dialog">
           <button>close</button>
         </form>
@@ -422,11 +316,6 @@
         <p>
           gg aims to help you quickly produce stunning diagrams, by letting you
           focus on its components instead of fiddling with its layout.
-        </p>
-        <p>
-          When building a diagram to explain a dynamic system, like a software
-          architecture, you can go a step further and display data flowing in
-          it.
         </p>
         <p>
           For any question, you can contact me at
@@ -545,16 +434,6 @@
         </form>
       </div>
     </dialog>
-    <dialog id="input-flow-step-set-title-dialog">
-      <div class="content">
-        <h1></h1>
-        <input />
-        <form method="dialog">
-          <button id="operation-flow-step-set-title-apply">apply</button>
-          <button>cancel</button>
-        </form>
-      </div>
-    </dialog>
     <dialog id="theme">
       <div class="content">
         <h1>Theme</h1>
@@ -633,29 +512,6 @@
             Title</label
           >
           <input id="option-graph-title" />
-        </p>
-        <h2>Flow</h2>
-        <p>
-          <label
-            for="option-autoplay"
-            title="Start playing the flow animation when opening the editor or presentation mode"
-          >
-            Autoplay</label
-          >
-          <input type="checkbox" id="option-autoplay" value="true" />
-        </p>
-        <p>
-          <label for="option-speed" title="Speed of the flow animation">
-            Playback speed</label
-          >
-          <input
-            id="option-speed"
-            type="number"
-            value="1"
-            step="0.5"
-            min="0.5"
-            max="10"
-          />
         </p>
         <form method="dialog">
           <button>close</button>

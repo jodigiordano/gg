@@ -16,12 +16,11 @@ import { Sprite, Container, Texture } from "pixi.js";
 import TaggedText from "../pixi-tagged-text/TaggedText.js";
 import { spritesheet, iconPacks } from "../renderer/assets.js";
 import { BlockSize, getForegroundColor } from "../helpers.js";
-import { app, tick } from "../renderer/pixi.js";
+import { tick } from "../renderer/pixi.js";
 import viewport from "../renderer/viewport.js";
 import { state, pushChange } from "../state.js";
 import { getUrlParams, save } from "../persistence.js";
 import { setJsonEditorValue } from "../jsonEditor.js";
-import FlowPlayer from "./flowPlayer.js";
 import WebWorker from "../worker.js";
 import { setConnectivity } from "../connectivity.js";
 import { TextFont } from "@gg/core";
@@ -82,24 +81,6 @@ export function drawSimulation(): void {
     container.addChild(objectToRender);
   }
 
-  if (state.simulator.getSystem().flows.length) {
-    state.flowPlayer = new FlowPlayer(
-      state.simulator,
-      state.simulator.getSystem().flows[0]!,
-      state.flowKeyframe,
-    );
-
-    for (const objectToRender of state.flowPlayer.getObjectsToRender()) {
-      // @ts-ignore
-      container.addChild(objectToRender);
-    }
-  }
-
-  // Play the flow, if needed.
-  if (state.flowPlay && state.flowPlayer) {
-    app.ticker.start();
-  }
-
   tick();
 }
 
@@ -111,18 +92,6 @@ container.zIndex = 0;
 
 // @ts-ignore
 viewport.addChild(container);
-
-// Ticker to execute a step of the simulation.
-app.ticker.add<void>(deltaTime => {
-  if (state.flowPlayer) {
-    if (state.flowPlay) {
-      state.flowPlayer.update(deltaTime, state.flowPlayMode, state.flowSpeed);
-      state.flowKeyframe = Math.max(0, state.flowPlayer.getKeyframe());
-    }
-
-    state.flowPlayer.draw();
-  }
-});
 
 const defaultColors = {
   light: {
@@ -631,17 +600,4 @@ export function fitSimulation() {
     boundaryBottom - boundaryTop + BlockSize + BlockSize * 2; /* margin */
 
   viewport.fit(left + width / 2, top + height / 2, width, height);
-}
-
-// Get the number of keyframes in the flow.
-export function getKeyframesCount(): number {
-  return Math.max(
-    0,
-    new Set(
-      state.simulator
-        .getSystem()
-        .flows.at(0)
-        ?.steps?.map(step => step.keyframe) ?? [],
-    ).size - 1,
-  );
 }

@@ -6,12 +6,10 @@
 
   /* theme: light */
   --background: #dfdfdf;
-  --information-flow-step-title-background: #eee;
 }
 
 [theme="dark"] {
   --background: #222;
-  --information-flow-step-title-background: #111;
 }
 
 /* Page-wide styles */
@@ -26,13 +24,15 @@ body {
 }
 
 #toolbox {
+  position: absolute;
+  top: 0.2em;
+  left: 0.2em;
+  width: 100%;
   visibility: hidden;
 
-  margin: 0.2em 0.2em 0 0.2em;
-
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1em;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
 
   &.hidden {
     display: none;
@@ -46,16 +46,9 @@ body {
     text-wrap: nowrap;
     gap: 0.2em;
 
-    &.left {
-      justify-content: left;
-    }
-
-    &.center {
-      justify-content: center;
-    }
-
     &.right {
-      justify-content: right;
+      margin-left: auto;
+      margin-right: 0.4em;
     }
 
     &.hidden {
@@ -76,31 +69,6 @@ body {
         color: #888;
       }
     }
-  }
-}
-
-#information-flow-progression-current {
-  width: 2em;
-}
-
-#information-flow-step-title {
-  min-height: 1.2em;
-  border: 1px solid #888;
-  background: #eee;
-  padding: 0.3em;
-  margin: 0 0.2em 0 0.2em;
-
-  background: var(--information-flow-step-title-background);
-
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: center;
-  flex-wrap: nowrap;
-  text-wrap: nowrap;
-
-  &.hidden {
-    display: none;
   }
 }
 

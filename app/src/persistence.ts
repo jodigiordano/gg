@@ -85,34 +85,19 @@ export async function save(value: string): Promise<void> {
 export interface UrlParams {
   file?: string;
   id?: string;
-  autoplay: boolean;
-  speed: number;
   zoomControls: boolean;
-  flowControls: boolean;
   editorButton: boolean;
 }
 
 export function setUrlParams(urlParams: UrlParams): void {
   const params: Record<string, unknown> = { ...urlParams };
 
-  if (!params.autoplay) {
-    delete params.autoplay;
-  }
-
   if (params.zoomControls) {
     delete params.zoomControls;
   }
 
-  if (params.flowControls) {
-    delete params.flowControls;
-  }
-
   if (params.editorButton) {
     delete params.editorButton;
-  }
-
-  if (params.speed === 1) {
-    delete params.speed;
   }
 
   const hash = Object.entries(params)
@@ -135,15 +120,8 @@ export function getUrlParams(): UrlParams {
       .map(entry => entry.split("=")),
   );
 
-  urlParams.autoplay = urlParams.autoplay === "true";
-
   urlParams.zoomControls = urlParams.zoomControls === "false" ? false : true;
-  urlParams.flowControls = urlParams.flowControls === "false" ? false : true;
   urlParams.editorButton = urlParams.editorButton === "false" ? false : true;
-
-  const speed = Number(urlParams.speed);
-
-  urlParams.speed = !isNaN(speed) ? Math.max(0.1, Math.min(5, speed)) : 1;
 
   return urlParams;
 }
