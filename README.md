@@ -15,7 +15,7 @@
 </p>
 
 <p align="center">
-  (<a href="https://gg-charts.com/#id=bf84c3fa-33b2-4407-95ac-e09e8c4eea89">edit me</a>)
+  (<a href="https://gg-charts.com/#id=bebd9fad-7846-4769-bbd5-7d0fcadd2c7b">edit me</a>)
 </p>
 
 ## Features
