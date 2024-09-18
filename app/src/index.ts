@@ -670,6 +670,7 @@ function undo(): void {
 
     loadSimulation(json)
       .then(() => {
+        state.operation.onBegin(state);
         tick();
 
         save(json)
@@ -693,6 +694,7 @@ function redo(): void {
 
     loadSimulation(json)
       .then(() => {
+        state.operation.onBegin(state);
         tick();
 
         save(json)
