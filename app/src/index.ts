@@ -982,10 +982,6 @@ async function loadSaveData(saveData?: string): Promise<void> {
       .then(() => setConnectivity(isLocalFile() ? "local-file" : "ok"))
       .catch(() => setConnectivity("save-failed"));
   } catch {
-    newFile().then(() => {
-      saveDataIsLoading.classList.add("hidden");
-    });
-
     loadFileFailed.showModal();
   } finally {
     saveDataIsLoading.classList.add("hidden");
