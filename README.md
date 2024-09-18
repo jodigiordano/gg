@@ -85,12 +85,6 @@
 - [Various link styles and directions](https://gg-charts.com/#id=cea38700-8656-4b21-872b-af4d4ed7c050)
 - [Fonts, Alignment, Emojis, Unicode, etc.](https://gg-charts.com/#id=8125ea14-b289-4186-b3b4-b842216db5e2)
 
-## Roadmap
-
-The upcoming features of `gg` are available in **[the roadmap to v1](https://github.com/jodigiordano/gg/milestone/1)**.
-
-Do not hesitate to [create an issue](https://github.com/jodigiordano/gg/issues) for feature requests, bugs, etc.
-
 ## Usage
 
 ### Embed in a `iframe`
