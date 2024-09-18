@@ -1,4 +1,4 @@
-import { addLink, RuntimeSubsystem } from "@gg/core";
+import { addLink, isSubsystemOf, RuntimeSubsystem } from "@gg/core";
 import SystemSelector from "../renderer/systemSelector.js";
 import SystemLinker from "../renderer/systemLinker.js";
 import { modifySpecification } from "../simulator/api.js";
@@ -24,7 +24,11 @@ function onPointerMove(state: State) {
     selectAVisual.visible = true;
     selectAVisual.setPosition(a, { x: 0, y: 0 });
 
-    if (subsystem && !subsystem.systems.length) {
+    if (
+      subsystem &&
+      !isSubsystemOf(a, subsystem) &&
+      !isSubsystemOf(subsystem, a)
+    ) {
       selectBVisual.visible = true;
       selectBVisual.setPosition(subsystem, { x: 0, y: 0 });
     }
@@ -40,7 +44,7 @@ function onPointerMove(state: State) {
     return;
   }
 
-  if (subsystem && !subsystem.systems.length) {
+  if (subsystem) {
     selectAVisual.visible = true;
     selectAVisual.setPosition(subsystem, { x: 0, y: 0 });
 
@@ -107,7 +111,7 @@ const operation: Operation = {
       // Apply operation.
       const b = state.simulator.getSubsystemAt(state.x, state.y);
 
-      if (b && b.id !== a.id && !b.systems.length) {
+      if (b && b.id !== a.id) {
         modifySpecification(() => {
           addLink(state.simulator.getSystem(), a!.id, b!.id, {
             middlePattern: state.linkPattern,
@@ -173,7 +177,7 @@ const operation: Operation = {
   onPointerDown: state => {
     const subsystem = state.simulator.getSubsystemAt(state.x, state.y);
 
-    if (!subsystem || subsystem.systems.length) {
+    if (!subsystem) {
       onPointerMove(state);
       return;
     }

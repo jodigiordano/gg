@@ -26,16 +26,7 @@ describe("links", () => {
 
       const { errors } = load(system);
 
-      assert.deepEqual(errors, [
-        {
-          message: "duplicate",
-          path: "/links/0",
-        },
-        {
-          message: "duplicate",
-          path: "/links/1",
-        },
-      ]);
+      assert.deepEqual(errors, []);
     });
 
     it("A <> B && B <> A - subsystem", () => {
@@ -66,16 +57,7 @@ describe("links", () => {
 
       const { errors } = load(system);
 
-      assert.deepEqual(errors, [
-        {
-          message: "duplicate",
-          path: "/links/0",
-        },
-        {
-          message: "duplicate",
-          path: "/links/1",
-        },
-      ]);
+      assert.deepEqual(errors, []);
     });
 
     it("A.Y <> B && B <> A.Y", () => {
@@ -107,16 +89,7 @@ describe("links", () => {
 
       const { errors } = load(system);
 
-      assert.deepEqual(errors, [
-        {
-          message: "duplicate",
-          path: "/links/0",
-        },
-        {
-          message: "duplicate",
-          path: "/links/1",
-        },
-      ]);
+      assert.deepEqual(errors, []);
     });
 
     it("A.Y <> B.Y && B.Y <> A.Y", () => {
@@ -149,16 +122,7 @@ describe("links", () => {
 
       const { errors } = load(system);
 
-      assert.deepEqual(errors, [
-        {
-          message: "duplicate",
-          path: "/links/0",
-        },
-        {
-          message: "duplicate",
-          path: "/links/1",
-        },
-      ]);
+      assert.deepEqual(errors, []);
     });
 
     it("missing A", () => {
@@ -207,7 +171,7 @@ describe("links", () => {
       ]);
     });
 
-    it("inaccurate A", () => {
+    it("parent A", () => {
       const system: System = {
         specificationVersion: "1.0.0",
         title: "test",
@@ -229,15 +193,10 @@ describe("links", () => {
 
       const { errors } = load(system);
 
-      assert.deepEqual(errors, [
-        {
-          message: "inaccurate",
-          path: "/links/0/a",
-        },
-      ]);
+      assert.deepEqual(errors, []);
     });
 
-    it("inaccurate B", () => {
+    it("parent B", () => {
       const system: System = {
         specificationVersion: "1.0.0",
         title: "test",
@@ -259,12 +218,7 @@ describe("links", () => {
 
       const { errors } = load(system);
 
-      assert.deepEqual(errors, [
-        {
-          message: "inaccurate",
-          path: "/links/0/b",
-        },
-      ]);
+      assert.deepEqual(errors, []);
     });
 
     it("A <> A", () => {
@@ -310,6 +264,74 @@ describe("links", () => {
           {
             a: "bar",
             b: "bar",
+          },
+        ],
+      };
+
+      const { errors } = load(system);
+
+      assert.deepEqual(errors, [
+        {
+          message: "self-reference",
+          path: "/links/0",
+        },
+      ]);
+    });
+
+    it("A <> A.X", () => {
+      const system: System = {
+        specificationVersion: "1.0.0",
+        title: "test",
+        systems: [
+          {
+            id: "foo",
+            position: { x: 0, y: 0 },
+            systems: [
+              {
+                id: "bar",
+                position: { x: 0, y: 0 },
+              },
+            ],
+          },
+        ],
+        links: [
+          {
+            a: "foo",
+            b: "bar",
+          },
+        ],
+      };
+
+      const { errors } = load(system);
+
+      assert.deepEqual(errors, [
+        {
+          message: "self-reference",
+          path: "/links/0",
+        },
+      ]);
+    });
+
+    it("A.X <> A", () => {
+      const system: System = {
+        specificationVersion: "1.0.0",
+        title: "test",
+        systems: [
+          {
+            id: "foo",
+            position: { x: 0, y: 0 },
+            systems: [
+              {
+                id: "bar",
+                position: { x: 0, y: 0 },
+              },
+            ],
+          },
+        ],
+        links: [
+          {
+            a: "bar",
+            b: "foo",
           },
         ],
       };

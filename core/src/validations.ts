@@ -1,5 +1,5 @@
 import { RuntimeLink, RuntimeSubsystem, RuntimeSystem } from "./runtime.js";
-import { SystemMargin } from "./helpers.js";
+import { isSubsystemOf, SystemMargin } from "./helpers.js";
 import { System, specification } from "./specification.js";
 
 export class InvalidSystemError extends Error {
@@ -147,19 +147,14 @@ function validateLinks(
       });
     }
 
-    // A <> B && B <> A
-    // A.Y <> B.Y && B.Y <> A.Y
+    // A.X <> A or A <> A.X
     if (
-      system.links.some(
-        other =>
-          other.index !== link.index &&
-          [other.a, other.b].sort().join("") ===
-            [link.a, link.b].sort().join(""),
-      )
+      isSubsystemOf(link.systemA, link.systemB) ||
+      isSubsystemOf(link.systemB, link.systemA)
     ) {
       errors.push({
         path: getLinkPath(link),
-        message: "duplicate",
+        message: "self-reference",
       });
     }
 
@@ -174,20 +169,6 @@ function validateLinks(
       errors.push({
         path: [getLinkPath(link), "b"].join("/"),
         message: "missing",
-      });
-    }
-
-    if (link.systemA && link.systemA.systems.length) {
-      errors.push({
-        path: [getLinkPath(link), "a"].join("/"),
-        message: "inaccurate",
-      });
-    }
-
-    if (link.systemB && link.systemB.systems.length) {
-      errors.push({
-        path: [getLinkPath(link), "b"].join("/"),
-        message: "inaccurate",
       });
     }
   }

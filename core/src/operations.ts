@@ -26,9 +26,6 @@ export function addSubsystem(
     title,
   };
 
-  // Add subsystem to new parent.
-  const parentWasBlackbox = parent.systems.length === 0;
-
   parent.specification.systems ??= [];
   parent.specification.systems.push(newSpecSystem);
 
@@ -45,17 +42,6 @@ export function addSubsystem(
   );
 
   const rootSystem = getRootSystem(parent as RuntimeSubsystem);
-
-  if (parentWasBlackbox) {
-    // Move links of the parent.
-    for (const link of rootSystem.specification.links ?? []) {
-      if (link.a === parent.id) {
-        link.a = newRuntimeSystem.id;
-      } else if (link.b === parent.id) {
-        link.b = newRuntimeSystem.id;
-      }
-    }
-  }
 
   computeSystemSize(newRuntimeSystem, rootSystem.links);
   moveSystem(newRuntimeSystem, 0, 0);
@@ -237,9 +223,6 @@ export function moveSubsystemToParent(
   subsystem.parent!.specification.systems?.splice(subsystem.index, 1);
   subsystem.parent!.systems.splice(subsystem.index, 1);
 
-  // Add subsystem to new parent.
-  const parentWasBlackbox = parent.systems.length === 0;
-
   parent.specification.systems ??= [];
   parent.specification.systems!.push(subsystem.specification);
 
@@ -257,17 +240,6 @@ export function moveSubsystemToParent(
   // TODO: size calculation uses runtime links.
   // TODO Either use spec links instead or modify both spec & runtime links here.
 
-  // Move links of the parent.
-  if (parentWasBlackbox) {
-    for (const link of links) {
-      if (link.a === parent.id) {
-        link.a = subsystem.id;
-      } else if (link.b === parent.id) {
-        link.b = subsystem.id;
-      }
-    }
-  }
-
   // Remove self-referenced links.
   // Happens when there is a link between the new parent and the subsystem.
   for (let i = links.length - 1; i >= 0; i--) {
@@ -275,24 +247,6 @@ export function moveSubsystemToParent(
 
     if (link.a === link.b) {
       links.splice(i, 1);
-    }
-  }
-
-  // Remove duplicated links.
-  // Happens when both the new parent and the subsystem have
-  // a link with another subsystem.
-  for (let i = links.length - 1; i >= 0; i--) {
-    const link = links[i]!;
-
-    for (let j = links.length - 1; j >= 0; j--) {
-      const other = links[j]!;
-
-      if (
-        i !== j &&
-        [other.a, other.b].sort().join("") === [link.a, link.b].sort().join("")
-      ) {
-        links.splice(i, 1);
-      }
     }
   }
 

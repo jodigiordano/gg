@@ -629,12 +629,6 @@ export class SystemSimulator {
     for (const ss of system.systems) {
       const gridSS = this.gridSystems[ss.id]!;
 
-      this.setSystemPerimeterWeights(
-        gridSS,
-        finderGrid,
-        PathfindingWeights.Impenetrable,
-      );
-
       // Sub-systems.
       const blackbox = !ss.systems.length;
 
@@ -709,20 +703,6 @@ export class SystemSimulator {
         direction: SimulatorDirectionType.BottomCenter,
         zIndex: SimulatorObjectZIndex.System + ss.depth,
       });
-
-      if (ss.systems.length) {
-        this.setSystemPerimeterWeights(
-          gridSS,
-          finderGrid,
-          PathfindingWeights.EmptySpace,
-        );
-      } else {
-        this.setSystemPerimeterWeights(
-          gridSS,
-          finderGrid,
-          PathfindingWeights.Impenetrable,
-        );
-      }
 
       for (let x = gridSS.x1; x <= gridSS.x2; x++) {
         for (let y = gridSS.y1; y <= gridSS.y2; y++) {
@@ -816,6 +796,17 @@ export class SystemSimulator {
         parent = parent.parent;
       }
 
+      // Allow the children of A.
+      let children = [...link.systemA.systems];
+
+      while (children.length) {
+        const child = children.pop()!;
+
+        children.push(...child.systems);
+
+        allowedSystems.push(child.id);
+      }
+
       // Allow the parents of B.
       parent = link.systemB.parent;
 
@@ -823,6 +814,17 @@ export class SystemSimulator {
         allowedSystems.push(parent.id);
 
         parent = parent.parent;
+      }
+
+      // Allow the children of B.
+      children = [...link.systemB.systems];
+
+      while (children.length) {
+        const child = children.pop()!;
+
+        children.push(...child.systems);
+
+        allowedSystems.push(child.id);
       }
 
       const allowedSystemPerimeters = [];
@@ -868,6 +870,8 @@ export class SystemSimulator {
         x: subsystemB.x1 + ((subsystemB.width / 2) | 0),
         y: subsystemB.y1 + ((subsystemB.height / 2) | 0),
       };
+
+      //this.debugDraw(finderGrid);
 
       const path = findPath(
         centerA.x,
@@ -1448,7 +1452,7 @@ export class SystemSimulator {
         const debugInfo: SimulatorSystemTitle = {
           type: SimulatorObjectType.SystemTitle,
           // @ts-ignore
-          system: undefined,
+          system: { titleFont: "text" },
           blackbox: false,
           chars:
             finderGrid.getWeightAt(x, y) === PathfindingWeights.Impenetrable

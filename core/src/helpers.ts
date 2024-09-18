@@ -1,4 +1,4 @@
-import { RuntimeSize } from "./runtime";
+import { RuntimeSize, RuntimeSubsystem, RuntimeSystem } from "./runtime";
 
 // Each system has a margin to make room for ports & routing.
 export const SystemMargin = 1;
@@ -56,4 +56,27 @@ export function getTitleLength(title: string): RuntimeSize {
     width: Math.ceil(Math.max(...titleLengths) / TitleCharsPerSquare) | 0,
     height: titleLengths.length,
   };
+}
+
+export function isSubsystemOf(
+  parentSystem: RuntimeSystem | RuntimeSubsystem,
+  childSystem: RuntimeSystem | RuntimeSubsystem,
+): boolean {
+  if (!parentSystem || !childSystem) {
+    return false;
+  }
+
+  const toVisit = [...parentSystem.systems];
+
+  while (toVisit.length) {
+    const candidate = toVisit.pop()!;
+
+    if (candidate.id === childSystem.id) {
+      return true;
+    }
+
+    toVisit.push(...candidate.systems);
+  }
+
+  return false;
 }
