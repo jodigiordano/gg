@@ -20,6 +20,7 @@ function onPointerMove(state: State) {
 
   const subsystem = state.simulator.getSubsystemAt(state.x, state.y);
 
+  // The user is linking a system.
   if (a) {
     selectAVisual.visible = true;
     selectAVisual.setPosition(a, { x: 0, y: 0 });
@@ -44,17 +45,11 @@ function onPointerMove(state: State) {
     return;
   }
 
-  if (subsystem) {
-    selectAVisual.visible = true;
-    selectAVisual.setPosition(subsystem, { x: 0, y: 0 });
-
-    return;
-  }
-
   const link =
     state.simulator.getLinkAt(state.x, state.y) ??
     state.simulator.getLinkByTitleAt(state.x, state.y);
 
+  // The user is hovering a link.
   if (link) {
     const path = state.simulator.getPath(link)!;
     const boundaries = state.simulator.getBoundaries();
@@ -78,6 +73,16 @@ function onPointerMove(state: State) {
       endX - boundaries.translateX,
       endY - boundaries.translateY,
     );
+
+    return;
+  }
+
+  // The user is hovering a system.
+  if (subsystem) {
+    selectAVisual.visible = true;
+    selectAVisual.setPosition(subsystem, { x: 0, y: 0 });
+
+    return;
   }
 }
 
@@ -175,16 +180,25 @@ const operation: Operation = {
     onPointerMove(state);
   },
   onPointerDown: state => {
-    const subsystem = state.simulator.getSubsystemAt(state.x, state.y);
+    const link =
+      state.simulator.getLinkAt(state.x, state.y) ??
+      state.simulator.getLinkByTitleAt(state.x, state.y);
 
-    if (!subsystem) {
+    // The user clicks on a link.
+    if (link) {
       onPointerMove(state);
       return;
     }
 
-    a = subsystem;
+    const subsystem = state.simulator.getSubsystemAt(state.x, state.y);
 
-    viewport.pause = true;
+    // The user clicks on a system.
+    if (subsystem) {
+      a = subsystem;
+      viewport.pause = true;
+      onPointerMove(state);
+      return;
+    }
 
     onPointerMove(state);
   },
