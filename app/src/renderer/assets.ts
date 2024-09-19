@@ -38,7 +38,11 @@ const toLoad: { name: string; url: string; data: Record<string, unknown> }[] = [
     data: { family: "sketch-bold" },
   },
   { name: "code", url: "roboto-regular.woff2", data: { family: "code" } },
-  { name: "code-bold", url: "roboto-bold.woff2", data: { family: "code-bold" } },
+  {
+    name: "code-bold",
+    url: "roboto-bold.woff2",
+    data: { family: "code-bold" },
+  },
   { name: "icons-aws", url: awsSpritesheetDataUrl, data: {} },
   { name: "icons-gcp", url: gcpSpritesheetUrl, data: {} },
   { name: "icons-azure", url: azureSpritesheetUrl, data: {} },
@@ -159,6 +163,8 @@ function loadRectangle(
 const box = loadRectangle(2, 2);
 const systemSelector = loadRectangle(2, 28);
 const linkLabel = loadRectangle(2, 54);
+const boxDotted = loadRectangle(2, 80);
+const boxSolid = loadRectangle(28, 54);
 
 export const spritesheet = new Spritesheet(Assets.get("spritesheet"), {
   frames: {
@@ -171,6 +177,24 @@ export const spritesheet = new Spritesheet(Assets.get("spritesheet"), {
     boxTopCenter: { frame: box.topCenter },
     boxBottomCenter: { frame: box.bottomCenter },
     boxCenterCenter: { frame: box.centerCenter },
+    boxDottedTopLeft: { frame: boxDotted.topLeft },
+    boxDottedTopRight: { frame: boxDotted.topRight },
+    boxDottedBottomLeft: { frame: boxDotted.bottomLeft },
+    boxDottedBottomRight: { frame: boxDotted.bottomRight },
+    boxDottedCenterLeft: { frame: boxDotted.centerLeft },
+    boxDottedCenterRight: { frame: boxDotted.centerRight },
+    boxDottedTopCenter: { frame: boxDotted.topCenter },
+    boxDottedBottomCenter: { frame: boxDotted.bottomCenter },
+    boxDottedCenterCenter: { frame: boxDotted.centerCenter },
+    boxSolidTopLeft: { frame: boxSolid.topLeft },
+    boxSolidTopRight: { frame: boxSolid.topRight },
+    boxSolidBottomLeft: { frame: boxSolid.bottomLeft },
+    boxSolidBottomRight: { frame: boxSolid.bottomRight },
+    boxSolidCenterLeft: { frame: boxSolid.centerLeft },
+    boxSolidCenterRight: { frame: boxSolid.centerRight },
+    boxSolidTopCenter: { frame: boxSolid.topCenter },
+    boxSolidBottomCenter: { frame: boxSolid.bottomCenter },
+    boxSolidCenterCenter: { frame: boxSolid.centerCenter },
     systemSelectorTopLeft: { frame: systemSelector.topLeft },
     systemSelectorTopRight: { frame: systemSelector.topRight },
     systemSelectorBottomLeft: { frame: systemSelector.bottomLeft },
@@ -199,7 +223,6 @@ export const spritesheet = new Spritesheet(Assets.get("spritesheet"), {
     linkDottedLineCorner: { frame: { x: 68, y: 12, w: 8, h: 8 } },
     linkDottedLineSolidArrow: { frame: { x: 58, y: 22, w: 8, h: 8 } },
     linkDottedLineSolidArrowCorner: { frame: { x: 68, y: 22, w: 8, h: 8 } },
-    data: { frame: { x: 28, y: 2, w: 8, h: 8 } },
   },
   meta: {
     image: "spritesheet.png",

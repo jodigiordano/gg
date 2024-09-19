@@ -48,6 +48,14 @@
         }
       }
     },
+    "borderPattern": {
+      "description": "The pattern of the border of the system",
+      "allOf": [
+        {
+          "$ref": "#/$defs/borderPattern"
+        }
+      ]
+    },
     "description": {
       "type": "string",
       "description": "The description of the sub-system, in markdown format."
@@ -78,6 +86,13 @@
       "items": {
         "$ref": "subsystem"
       }
+    }
+  },
+  "$defs": {
+    "borderPattern": {
+      "$id": "BorderPattern",
+      "type": "string",
+      "enum": ["none", "solid", "dotted"]
     }
   }
 }

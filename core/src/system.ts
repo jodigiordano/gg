@@ -47,6 +47,9 @@ export function initSystem(
 
   // Set the depth.
   system.depth = depth;
+
+  // Set the border.
+  system.borderPattern ??= "none";
 }
 
 export function getRootSystem(system: RuntimeSubsystem): RuntimeSystem {

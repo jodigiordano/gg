@@ -123,16 +123,6 @@ function getObjectsToRender(): (Sprite | TaggedText)[] {
   const layout = state.simulator.getLayout();
   const boundaries = state.simulator.getBoundaries();
 
-  const systemTopLeft = spritesheet.textures.boxTopLeft;
-  const systemTopCenter = spritesheet.textures.boxTopCenter;
-  const systemTopRight = spritesheet.textures.boxTopRight;
-  const systemCenterLeft = spritesheet.textures.boxCenterLeft;
-  const systemCenterCenter = spritesheet.textures.boxCenterCenter;
-  const systemCenterRight = spritesheet.textures.boxCenterRight;
-  const systemBottomLeft = spritesheet.textures.boxBottomLeft;
-  const systemBottomCenter = spritesheet.textures.boxBottomCenter;
-  const systemBottomRight = spritesheet.textures.boxBottomRight;
-
   for (let i = 0; i < boundaries.width; i++) {
     for (let j = 0; j < boundaries.height; j++) {
       for (let k = 0; k < layout[i]![j]!.length; k++) {
@@ -148,6 +138,48 @@ function getObjectsToRender(): (Sprite | TaggedText)[] {
           sprite.height = BlockSize;
 
           const { system, blackbox, direction } = obj as SimulatorSubsystem;
+
+          let systemTopLeft;
+          let systemTopCenter;
+          let systemTopRight;
+          let systemCenterLeft;
+          let systemCenterCenter;
+          let systemCenterRight;
+          let systemBottomLeft;
+          let systemBottomCenter;
+          let systemBottomRight;
+
+          if (system.borderPattern === "solid") {
+            systemTopLeft = spritesheet.textures.boxSolidTopLeft;
+            systemTopCenter = spritesheet.textures.boxSolidTopCenter;
+            systemTopRight = spritesheet.textures.boxSolidTopRight;
+            systemCenterLeft = spritesheet.textures.boxSolidCenterLeft;
+            systemCenterCenter = spritesheet.textures.boxSolidCenterCenter;
+            systemCenterRight = spritesheet.textures.boxSolidCenterRight;
+            systemBottomLeft = spritesheet.textures.boxSolidBottomLeft;
+            systemBottomCenter = spritesheet.textures.boxSolidBottomCenter;
+            systemBottomRight = spritesheet.textures.boxSolidBottomRight;
+          } else if (system.borderPattern === "dotted") {
+            systemTopLeft = spritesheet.textures.boxDottedTopLeft;
+            systemTopCenter = spritesheet.textures.boxDottedTopCenter;
+            systemTopRight = spritesheet.textures.boxDottedTopRight;
+            systemCenterLeft = spritesheet.textures.boxDottedCenterLeft;
+            systemCenterCenter = spritesheet.textures.boxDottedCenterCenter;
+            systemCenterRight = spritesheet.textures.boxDottedCenterRight;
+            systemBottomLeft = spritesheet.textures.boxDottedBottomLeft;
+            systemBottomCenter = spritesheet.textures.boxDottedBottomCenter;
+            systemBottomRight = spritesheet.textures.boxDottedBottomRight;
+          } /* none */ else {
+            systemTopLeft = spritesheet.textures.boxTopLeft;
+            systemTopCenter = spritesheet.textures.boxTopCenter;
+            systemTopRight = spritesheet.textures.boxTopRight;
+            systemCenterLeft = spritesheet.textures.boxCenterLeft;
+            systemCenterCenter = spritesheet.textures.boxCenterCenter;
+            systemCenterRight = spritesheet.textures.boxCenterRight;
+            systemBottomLeft = spritesheet.textures.boxBottomLeft;
+            systemBottomCenter = spritesheet.textures.boxBottomCenter;
+            systemBottomRight = spritesheet.textures.boxBottomRight;
+          }
 
           if (blackbox) {
             sprite.tint =

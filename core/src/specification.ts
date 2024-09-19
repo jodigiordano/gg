@@ -1,5 +1,6 @@
 export type TextFont = "text" | "sketch" | "code";
 export type TextAlign = "left" | "center" | "right";
+export type BorderPattern = "none" | "solid" | "dotted";
 export type PathEndingPattern = "none" | "solid-arrow";
 export type PathPattern = "solid-line" | "dotted-line" | "pipe";
 
@@ -61,6 +62,10 @@ export interface Subsystem {
      */
     height: number;
   };
+  /**
+   * The pattern of the border of the system
+   */
+  borderPattern?: BorderPattern;
   /**
    * The description of the sub-system, in markdown format.
    */
@@ -321,6 +326,14 @@ const schemas = [
           },
         },
       },
+      borderPattern: {
+        description: "The pattern of the border of the system",
+        allOf: [
+          {
+            $ref: "#/$defs/borderPattern",
+          },
+        ],
+      },
       description: {
         type: "string",
         description: "The description of the sub-system, in markdown format.",
@@ -353,6 +366,13 @@ const schemas = [
         items: {
           $ref: "subsystem",
         },
+      },
+    },
+    $defs: {
+      borderPattern: {
+        $id: "BorderPattern",
+        type: "string",
+        enum: ["none", "solid", "dotted"],
       },
     },
   },

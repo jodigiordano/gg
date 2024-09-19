@@ -6,6 +6,7 @@ import {
   PathPattern,
   TextFont,
   TextAlign,
+  BorderPattern,
 } from "./specification.js";
 
 export interface RuntimeSize {
@@ -47,6 +48,7 @@ export interface RuntimeSubsystem extends Subsystem {
   systems: RuntimeSubsystem[];
   links: RuntimeLink[];
   depth: number;
+  borderPattern: BorderPattern;
 }
 
 export interface RuntimeSystem extends System {
