@@ -95,18 +95,18 @@ viewport.addChild(container);
 
 const defaultColors = {
   light: {
-    system1: "#000075",
+    system1: "#eeeeee",
     system2: "#ced4da",
     system3: "#dee2e6",
     system4: "#e9ecef",
     link: "#000000",
     linkTitleBackground: "#ced4da",
     linkTitle: "#000000",
-    systemTitleBlackbox: "#ffffff",
+    systemTitleBlackbox: "#000000",
     systemTitleWhitebox: "#000000",
   },
   dark: {
-    system1: "#4363d8",
+    system1: "#666666",
     system2: "#2b2b2b",
     system3: "#1b1b1b",
     system4: "#000000",
