@@ -665,12 +665,12 @@ function undo(): void {
 
     const json = state.changes[state.changeIndex];
 
-    state.operation.onEnd(state);
+    state.operation.onMute(state);
     setJsonEditorValue(json);
 
     loadSimulation(json)
       .then(() => {
-        state.operation.onBegin(state);
+        state.operation.onUnmute(state);
         tick();
 
         save(json)
@@ -689,12 +689,12 @@ function redo(): void {
 
     const json = state.changes[state.changeIndex];
 
-    state.operation.onEnd(state);
+    state.operation.onMute(state);
     setJsonEditorValue(json);
 
     loadSimulation(json)
       .then(() => {
-        state.operation.onBegin(state);
+        state.operation.onUnmute(state);
         tick();
 
         save(json)
