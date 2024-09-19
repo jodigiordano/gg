@@ -56,6 +56,8 @@ export async function save(value: string): Promise<void> {
         }),
       });
 
+      // When we can't save the chart in the cloud,
+      // we fallback to save it locally.
       if (response.status !== 204) {
         window.localStorage.setItem(urlParams.id, value);
 
@@ -80,6 +82,22 @@ export async function save(value: string): Promise<void> {
   urlParams.file = encodedValue;
 
   setUrlParams(urlParams);
+}
+
+export function isNewUser(): boolean {
+  const hasLocalSave = window.localStorage.getItem("file");
+  const hasCloudSave = !!getUrlParams().file;
+
+  const hasSeenWelcomeMessage =
+    window.localStorage.getItem("welcomed") === "true";
+
+  const isNewUser = !hasLocalSave && !hasCloudSave && !hasSeenWelcomeMessage;
+
+  if (isNewUser) {
+    window.localStorage.setItem("welcomed", "true");
+  }
+
+  return isNewUser;
 }
 
 export interface UrlParams {

@@ -29,6 +29,7 @@ import {
   load,
   save,
   resetUrlParams,
+  isNewUser,
 } from "./persistence.js";
 import { getThemeOnLoad } from "./theme.js";
 import { setConnectivity, connectivityStatus } from "./connectivity.js";
@@ -216,7 +217,7 @@ window.addEventListener("hashchange", () => {
   state.zoomControls = urlParams.zoomControls;
   state.editorButton = urlParams.editorButton;
 
-  loadSaveData();
+  loadSaveData({ newUser: false });
 });
 
 //
@@ -493,7 +494,7 @@ fileFromDisk.addEventListener("change", async function () {
     reader.addEventListener("load", function () {
       if (reader.result) {
         resetUrlParams();
-        loadSaveData(reader.result?.toString());
+        loadSaveData({ newUser: false, saveData: reader.result?.toString() });
       }
     });
   }
@@ -909,8 +910,21 @@ function switchOperation(operation: Operation): void {
 // Initialize dropdowns.
 initializeDropdowns();
 
-// Load saved data.
-loadSaveData();
+//
+// Initial load.
+//
+
+const newUser = isNewUser();
+
+if (newUser) {
+  const params = getUrlParams();
+
+  params.id = import.meta.env.VITE_WELCOME_CHART;
+
+  setUrlParams(params);
+}
+
+loadSaveData({ newUser });
 
 //
 // Load profile.
@@ -951,19 +965,24 @@ fetch("/api/profile")
 // Utility functions
 //
 
-async function loadSaveData(saveData?: string): Promise<void> {
+async function loadSaveData(options: {
+  newUser: boolean;
+  saveData?: string;
+}): Promise<void> {
   saveDataIsLoading.classList.remove("hidden");
 
   let json: string;
 
   try {
-    json = saveData ?? (await load());
+    json = options.saveData ?? (await load());
   } catch {
     newFile().then(() => {
       saveDataIsLoading.classList.add("hidden");
     });
 
-    loadFileFailed.showModal();
+    if (!options.newUser) {
+      loadFileFailed.showModal();
+    }
 
     return;
   } finally {
@@ -984,7 +1003,9 @@ async function loadSaveData(saveData?: string): Promise<void> {
       .then(() => setConnectivity(isLocalFile() ? "local-file" : "ok"))
       .catch(() => setConnectivity("save-failed"));
   } catch {
-    loadFileFailed.showModal();
+    if (!options.newUser) {
+      loadFileFailed.showModal();
+    }
   } finally {
     saveDataIsLoading.classList.add("hidden");
   }
