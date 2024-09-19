@@ -37,10 +37,10 @@ const toLoad: { name: string; url: string; data: Record<string, unknown> }[] = [
     url: "monaspace-radon-bold.woff2",
     data: { family: "sketch-bold" },
   },
-  { name: "code", url: "roboto-regular.woff2", data: { family: "code" } },
+  { name: "code", url: "jetbrains-regular.woff2", data: { family: "code" } },
   {
     name: "code-bold",
-    url: "roboto-bold.woff2",
+    url: "jetbrains-bold.woff2",
     data: { family: "code-bold" },
   },
   { name: "icons-aws", url: awsSpritesheetDataUrl, data: {} },

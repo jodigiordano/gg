@@ -150,7 +150,7 @@ table {
   font-family: JetBrains Mono;
   font-style: normal;
   font-weight: 400;
-  src: url("../public/jetbrains.woff2") format("woff2");
+  src: url("../public/jetbrains-regular.woff2") format("woff2");
 }
 
 /* Constants */
