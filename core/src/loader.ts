@@ -87,8 +87,8 @@ function enhanceLinks(system: RuntimeSystem): void {
 
     // Set the patterns.
     link.startPattern ??= "none";
-    link.middlePattern ??= "pipe";
-    link.endPattern ??= "none";
+    link.middlePattern ??= "solid-line";
+    link.endPattern ??= "solid-arrow";
 
     // Set system A.
     link.systemA = getSubsystemById(system, link.a)!;

@@ -44,7 +44,7 @@ export const state: State = {
   preciseY: -999999,
   simulator: defaultSimulator,
   simulatorInitialized: false,
-  linkPattern: "pipe",
+  linkPattern: "solid-line",
   theme: getThemeOnLoad(),
   zoomControls: urlParams.zoomControls,
   editorButton: urlParams.editorButton,
