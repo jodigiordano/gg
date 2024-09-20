@@ -933,6 +933,8 @@ for (const button of singleChoiceButtons) {
       state.operation = setTitleOperation;
     } else if (button.id === "operation-set-color") {
       state.operation = paintOperation;
+    } else {
+      state.operation = moveOperation;
     }
 
     state.operation.onBegin(state);
