@@ -1,5 +1,5 @@
 import { RuntimeSystem, RuntimeSubsystem, RuntimeLink } from "./runtime.js";
-import { SystemMargin } from "./helpers.js";
+import { isSubsystemOf, SystemMargin } from "./helpers.js";
 import {
   Link,
   Subsystem,
@@ -235,18 +235,21 @@ export function moveSubsystemToParent(
   const rootSystem = getRootSystem(subsystem);
 
   // Move links of the subsystem.
-  const links = rootSystem.specification.links ?? [];
-
-  // TODO: size calculation uses runtime links.
-  // TODO Either use spec links instead or modify both spec & runtime links here.
+  const speclinks = rootSystem.specification.links ?? [];
+  const links = rootSystem.links ?? [];
 
   // Remove self-referenced links.
   // Happens when there is a link between the new parent and the subsystem.
   for (let i = links.length - 1; i >= 0; i--) {
     const link = links[i]!;
 
-    if (link.a === link.b) {
+    if (
+      link.a === link.b ||
+      isSubsystemOf(link.systemA, link.systemB) ||
+      isSubsystemOf(link.systemB, link.systemA)
+    ) {
       links.splice(i, 1);
+      speclinks.splice(i, 1);
     }
   }
 
