@@ -262,6 +262,22 @@ body {
   width: 80%;
 }
 
+/* Modal to show feedback */
+#feedback {
+  max-width: 30em;
+  width: 80%;
+
+  #feedback-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5em;
+  }
+
+  textarea {
+    min-height: 10em;
+  }
+}
+
 /* Modal to show about & privacy */
 #privacy {
   max-width: 30em;

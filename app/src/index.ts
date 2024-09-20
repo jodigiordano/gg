@@ -260,6 +260,66 @@ document
   });
 
 //
+// Feedback operations
+//
+
+const feedback = document.getElementById("feedback") as HTMLDialogElement;
+
+const feedbackEmail = document.getElementById(
+  "feedback-email",
+) as HTMLInputElement;
+
+const feedbackMessage = document.getElementById(
+  "feedback-message",
+) as HTMLInputElement;
+
+const feedbackIncludeGraph = document.getElementById(
+  "feedback-include-graph",
+) as HTMLInputElement;
+
+feedback.addEventListener("keydown", event => {
+  event.stopPropagation();
+});
+
+const feedbackSent = document.getElementById(
+  "feedback-sent-dialog",
+) as HTMLDialogElement;
+
+document
+  .getElementById("operation-feedback-open")
+  ?.addEventListener("click", function () {
+    feedback.inert = true;
+    feedback.showModal();
+    feedback.inert = false;
+  });
+
+document
+  .getElementById("operation-feedback-send")
+  ?.addEventListener("click", async function () {
+    fetch("/api/feedback", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        email: feedbackEmail.value,
+        message: feedbackMessage.value,
+        graph: feedbackIncludeGraph.checked ? getJsonEditorValue() : undefined,
+      }),
+    })
+      .then(async response => {
+        if (response.ok) {
+          feedbackSent.showModal();
+        } else {
+          // TODO: handle error.
+        }
+      })
+      .catch(() => {
+        /* TODO: handle error */
+      });
+  });
+
+//
 // Help operations
 //
 

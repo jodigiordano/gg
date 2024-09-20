@@ -6,6 +6,7 @@ import googleAuthentication from "./authGoogle.js";
 import githubAuthentication from "./authGithub.js";
 import passwordlessAuthentication from "./authPasswordless.js";
 import profile from "./profile.js";
+import feedback from "./feedback.js";
 import subscription from "./subscription.js";
 import graphs from "./graphs.js";
 import { unsetAuthenticationCookie } from "./authentication.js";
@@ -48,6 +49,7 @@ server.use("/api/sign-in/github", githubAuthentication);
 server.use("/api/sign-in/passwordless", passwordlessAuthentication);
 server.use("/api/profile", profile);
 server.use("/api/subscription", subscription);
+server.use("/api/feedback", feedback);
 server.use("/api/graphs", graphs);
 
 //

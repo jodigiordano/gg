@@ -52,6 +52,7 @@
           </a>
         </ul>
       </div>
+      <button id="operation-feedback-open" title="Feedback">feedback</button>
       <button
         id="operation-connectivity-status-open"
         class="authenticated hidden"
@@ -200,6 +201,49 @@
             apply changes
           </button>
           <button>cancel</button>
+        </form>
+      </div>
+    </dialog>
+    <dialog id="feedback">
+      <div class="content">
+        <h1>Feedback</h1>
+        <p>
+          Are you experiencing issues? Are features missing? Send me a message
+          and receive a response quickly!
+        </p>
+        <div id="feedback-content">
+          <label for="feedback-email"
+            >Email (optional, if you want a response)</label
+          >
+          <input id="feedback-email" name="feedback-email" autocomplete="off" />
+          <label for="feedback-message">Message</label>
+          <textarea
+            id="feedback-message"
+            name="feedback-message"
+            autocomplete="off"
+          ></textarea>
+          <div>
+            <input
+              type="checkbox"
+              id="feedback-include-graph"
+              name="feedback-include-graph"
+              value="true"
+            />
+            <label for="feedback-include-graph"> Include your chart</label>
+          </div>
+        </div>
+        <form method="dialog">
+          <button id="operation-feedback-send">send</button>
+          <button>cancel</button>
+        </form>
+      </div>
+    </dialog>
+    <dialog id="feedback-sent-dialog">
+      <div class="content">
+        <h1>Feedback sent</h1>
+        <p>Thank you for making gg better!</p>
+        <form method="dialog">
+          <button>ok</button>
         </form>
       </div>
     </dialog>
