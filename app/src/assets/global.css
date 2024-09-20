@@ -179,7 +179,6 @@ table {
   --input-color: #000;
   --input-background: #fff;
   --input-border-color: #8f8f9d;
-  --dialog-backdrop-background: rgba(0, 0, 0, 0.4);
   --github-background: #000;
 }
 
@@ -203,7 +202,6 @@ table {
   --input-color: #ddd;
   --input-background: #000;
   --input-border-color: #8f8f9d;
-  --dialog-backdrop-background: rgba(0, 0, 0, 0.6);
   --github-background: #fff;
 }
 
@@ -246,7 +244,7 @@ dialog {
   max-height: 80%;
 
   &::backdrop {
-    background: var(--dialog-backdrop-background);
+    background: rgba(0, 0, 0, 0.5);
   }
 
   color: var(--color);
