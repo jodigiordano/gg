@@ -1,15 +1,15 @@
 import puppeteer, { CDPSession, Browser, Page } from "puppeteer";
 import { hash } from "node:crypto";
 import fs from "node:fs";
-import { Graph } from "./db";
+import { Chart } from "./db";
 
-export async function exportGraphToPNG(
-  graph: Graph,
+export async function exportChartToPNG(
+  chart: Chart,
   cookie: any | null | undefined,
 ): Promise<string | null> {
   // Serve the image from the cache.
-  const fingerprint = hash("md5", JSON.stringify(graph.data ?? ""), "hex");
-  const filename = ["gg", graph.id, fingerprint, "png"].join(".");
+  const fingerprint = hash("md5", JSON.stringify(chart.data ?? ""), "hex");
+  const filename = ["gg", chart.id, fingerprint, "png"].join(".");
 
   const cachePath = [process.env["CACHE_PATH"], filename].join("/");
 
@@ -20,9 +20,9 @@ export async function exportGraphToPNG(
   // In tests, we skip using puppeteer.
   if (
     process.env["NODE_ENV"] === "test" &&
-    process.env["EXPORT_GRAPH_TO_PNG"]
+    process.env["EXPORT_CHART_TO_PNG"]
   ) {
-    return process.env["EXPORT_GRAPH_TO_PNG"];
+    return process.env["EXPORT_CHART_TO_PNG"];
   }
 
   let browser: Browser | null = null;
@@ -56,7 +56,7 @@ export async function exportGraphToPNG(
     }
 
     // Navigate to the page.
-    await page.goto(`${process.env["PUBLIC_URL"]}/export.html#id=${graph.id}`);
+    await page.goto(`${process.env["PUBLIC_URL"]}/export.html#id=${chart.id}`);
 
     // Download the image.
     await waitUntilDownload(page, session);
@@ -64,7 +64,7 @@ export async function exportGraphToPNG(
     // Validate the presence of the file on disk.
     const downloadPath = [
       process.env["DOWNLOADS_PATH"],
-      `gg.${graph.id}.png`,
+      `gg.${chart.id}.png`,
     ].join("/");
 
     // Return the path to the file on disk.

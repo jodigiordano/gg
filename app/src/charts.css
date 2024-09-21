@@ -42,13 +42,13 @@ h2 {
   gap: 1em;
 }
 
-#graphs-index {
+#charts-index {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 1em;
   align-items: start;
 
-  .graph {
+  .chart {
     display: flex;
     flex-direction: column;
     gap: 0.5em;
@@ -66,16 +66,16 @@ h2 {
   }
 }
 
-#create-graph-container {
+#create-chart-container {
   display: flex;
   justify-content: right;
 }
 
-#create-graph {
+#create-chart {
   padding: 0.5em;
 }
 
-#create-first-graph {
+#create-first-chart {
   margin-top: 1em;
   padding: 0.5em;
 }

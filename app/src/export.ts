@@ -33,7 +33,7 @@ const exportCanvas = document.createElement("canvas");
 
 const margin = 20;
 
-// Add margin around the graph.
+// Add margin around the chart.
 // Add some space at the bottom of the image for the backlink.
 exportCanvas.width = viewportCanvas.width + margin * 2;
 

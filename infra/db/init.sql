@@ -1,4 +1,5 @@
-DROP TABLE IF EXISTS users, graphs;
+DROP TABLE IF EXISTS charts CASCADE;
+DROP TABLE IF EXISTS users CASCADE;
 
 CREATE TABLE users(
   id UUID NOT NULL,
@@ -11,7 +12,7 @@ CREATE TABLE users(
   PRIMARY KEY(id)
 );
 
-CREATE TABLE graphs(
+CREATE TABLE charts(
   id UUID NOT NULL,
   user_id UUID,
   data json NOT NULL,

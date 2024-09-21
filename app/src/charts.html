@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=0.75" />
     <partial>description</partial>
     <partial>favicon</partial>
-    <link rel="stylesheet" href="graphs.css" />
-    <title>charts - manage graphs</title>
+    <link rel="stylesheet" href="charts.css" />
+    <title>charts - manage charts</title>
     <partial>theme</partial>
   </head>
   <body>
@@ -18,42 +18,42 @@
       </a>
     </div>
     <div id="content">
-      <h1>Graphs</h1>
+      <h1>Charts</h1>
       <div id="main-container">
-        <p id="create-graph-container">
-          <button id="create-graph" class="primary">create a graph</button>
+        <p id="create-chart-container">
+          <button id="create-chart" class="primary">create a chart</button>
         </p>
-        <div id="graphs-index">Loading...</div>
+        <div id="charts-index">Loading...</div>
       </div>
     </div>
-    <template id="cant-load-graphs-template">
-      <p>Could not load graphs from the server.</p>
+    <template id="cant-load-charts-template">
+      <p>Could not load charts from the server.</p>
       <p>Reload the page to retry.</p>
     </template>
-    <template id="no-graphs-template">
-      <p>You don't have graphs yet.</p>
+    <template id="no-charts-template">
+      <p>You don't have charts yet.</p>
       <p>
-        <button id="create-first-graph" class="primary">
-          create your first graph
+        <button id="create-first-chart" class="primary">
+          create your first chart
         </button>
       </p>
     </template>
-    <template id="graph-template">
-      <div class="graph">
+    <template id="chart-template">
+      <div class="chart">
         <div class="name"></div>
         <div class="preview">
-          <img width="100%" src="/api/graphs/GRAPH_ID.png" />
+          <img width="100%" src="/api/charts/CHART_ID.png" />
         </div>
         <button class="operation-file-properties-open">properties</button>
         <button class="operation-delete">delete</button>
       </div>
     </template>
-    <dialog id="delete-graph">
+    <dialog id="delete-chart">
       <div class="content">
-        <p><b>Are you sure you want to delete this graph?</b></p>
-        <p id="delete-graph-name"></p>
+        <p><b>Are you sure you want to delete this chart?</b></p>
+        <p id="delete-chart-name"></p>
         <form method="dialog">
-          <button id="operation-delete-graph-apply">yes</button>
+          <button id="operation-delete-chart-apply">yes</button>
           <button>no</button>
         </form>
       </div>
@@ -72,6 +72,6 @@
         </form>
       </div>
     </dialog>
-    <script type="module" src="./graphs.ts"></script>
+    <script type="module" src="./charts.ts"></script>
   </body>
 </html>

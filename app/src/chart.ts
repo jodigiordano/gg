@@ -10,15 +10,15 @@ document
     window.location.href = `/${window.location.hash}`;
   });
 
-// Preview the graph.
+// Preview the chart.
 
 const previewImg = document.getElementById("preview") as HTMLImageElement;
 
 //
-// Load graph
+// Load chart
 //
 
-let graph: {
+let chart: {
   id: string;
   public: boolean;
   data: Record<string, unknown>;
@@ -38,7 +38,7 @@ const mainContainer = document.getElementById(
   "main-container",
 ) as HTMLDivElement;
 
-fetch(`/api/graphs/${params.id}`)
+fetch(`/api/charts/${params.id}`)
   .then(async response => {
     if (response.ok) {
       // Switch container.
@@ -46,74 +46,74 @@ fetch(`/api/graphs/${params.id}`)
       mainContainer.classList.remove("hidden");
 
       // Parse the JSON response.
-      graph = await response.json();
+      chart = await response.json();
 
       // Set the preview.
-      previewImg.src = previewImg.src.replace("GRAPH_ID", graph.id);
+      previewImg.src = previewImg.src.replace("CHART_ID", chart.id);
 
       previewImg.addEventListener("click", function () {
         window.location.href = `/${window.location.hash}`;
       });
 
       // Set the title.
-      graphTitle.value = graph.title;
+      chartTitle.value = chart.title;
 
       // Set the public options.
-      graphPublic.checked = graph.public;
+      chartPublic.checked = chart.public;
 
-      for (const option of additionalGraphPublicOptions) {
-        if (graphPublic.checked) {
+      for (const option of additionalChartPublicOptions) {
+        if (chartPublic.checked) {
           option.classList.remove("hidden");
         } else {
           option.classList.add("hidden");
         }
       }
 
-      graphPublicHideZoomControls.checked = false;
-      graphPublicHideEditorButton.checked = false;
+      chartPublicHideZoomControls.checked = false;
+      chartPublicHideEditorButton.checked = false;
 
-      graphPublicPreview.src = `/viewer.html#id=${graph.id}`;
+      chartPublicPreview.src = `/viewer.html#id=${chart.id}`;
 
-      graphPublicUrl.value = [
+      chartPublicUrl.value = [
         import.meta.env.VITE_PUBLIC_URL,
-        `/viewer.html#id=${graph.id}`,
+        `/viewer.html#id=${chart.id}`,
       ].join("");
 
-      graphPublicEmbedUrl.value = [
+      chartPublicEmbedUrl.value = [
         "<iframe",
         '  width="100%"',
         '  height="100%"',
-        `  src="${graphPublicUrl.value}"`,
+        `  src="${chartPublicUrl.value}"`,
         "</iframe>",
       ].join("\n");
 
-      graphPublicImageUrl.value = [
+      chartPublicImageUrl.value = [
         import.meta.env.VITE_PUBLIC_URL,
-        `/api/graphs/${graph.id}.png`,
+        `/api/charts/${chart.id}.png`,
       ].join("");
     } else {
-      loadingContainer.innerHTML = "Could not load the graph. Please retry.";
+      loadingContainer.innerHTML = "Could not load the chart. Please retry.";
     }
   })
   .catch(() => {
-    loadingContainer.innerHTML = "Could not load the graph. Please retry.";
+    loadingContainer.innerHTML = "Could not load the chart. Please retry.";
   });
 
 //
 // Edit title.
 //
 
-const graphTitle = document.getElementById(
-  "option-graph-title",
+const chartTitle = document.getElementById(
+  "option-chart-title",
 ) as HTMLInputElement;
 
-graphTitle.addEventListener("change", () => {
-  graph.data.title = graphTitle.value;
+chartTitle.addEventListener("change", () => {
+  chart.data.title = chartTitle.value;
 
-  fetch(`/api/graphs/${params.id}`, {
+  fetch(`/api/charts/${params.id}`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ data: JSON.stringify(graph.data, null, 2) }),
+    body: JSON.stringify({ data: JSON.stringify(chart.data, null, 2) }),
   }).catch(() => {
     // TODO
   });
@@ -123,52 +123,52 @@ graphTitle.addEventListener("change", () => {
 // Edit public
 //
 
-const graphPublic = document.getElementById(
-  "option-graph-public",
+const chartPublic = document.getElementById(
+  "option-chart-public",
 ) as HTMLInputElement;
 
-const graphPublicUrl = document.getElementById(
+const chartPublicUrl = document.getElementById(
   "public-url",
 ) as HTMLInputElement;
 
-const graphPublicUrlCopy = document.getElementById(
+const chartPublicUrlCopy = document.getElementById(
   "public-url-copy",
 ) as HTMLButtonElement;
 
-const graphPublicImageUrl = document.getElementById(
+const chartPublicImageUrl = document.getElementById(
   "public-image",
 ) as HTMLInputElement;
 
-const graphPublicImageCopy = document.getElementById(
+const chartPublicImageCopy = document.getElementById(
   "public-image-copy",
 ) as HTMLButtonElement;
 
-const graphPublicEmbedUrl = document.getElementById(
+const chartPublicEmbedUrl = document.getElementById(
   "public-embed",
 ) as HTMLTextAreaElement;
 
-const graphPublicEmbedCopy = document.getElementById(
+const chartPublicEmbedCopy = document.getElementById(
   "public-embed-copy",
 ) as HTMLButtonElement;
 
-const graphPublicPreview = document.getElementById(
+const chartPublicPreview = document.getElementById(
   "public-preview",
 ) as HTMLIFrameElement;
 
-const additionalGraphPublicOptions = document.querySelectorAll(
-  ".option-graph-public-enabled",
+const additionalChartPublicOptions = document.querySelectorAll(
+  ".option-chart-public-enabled",
 );
 
-graphPublic.addEventListener("change", () => {
-  fetch(`/api/graphs/${params.id}`, {
+chartPublic.addEventListener("change", () => {
+  fetch(`/api/charts/${params.id}`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ public: graphPublic.checked }),
+    body: JSON.stringify({ public: chartPublic.checked }),
   })
     .then(async response => {
       if (response.status === 204) {
-        for (const option of additionalGraphPublicOptions) {
-          if (graphPublic.checked) {
+        for (const option of additionalChartPublicOptions) {
+          if (chartPublic.checked) {
             option.classList.remove("hidden");
           } else {
             option.classList.add("hidden");
@@ -183,19 +183,19 @@ graphPublic.addEventListener("change", () => {
     });
 });
 
-const graphPublicHideZoomControls = document.getElementById(
+const chartPublicHideZoomControls = document.getElementById(
   "option-hide-zoom-controls",
 ) as HTMLInputElement;
 
-const graphPublicHideEditorButton = document.getElementById(
+const chartPublicHideEditorButton = document.getElementById(
   "option-hide-editor-button",
 ) as HTMLInputElement;
 
-graphPublicHideZoomControls.addEventListener("change", setGraphPublicUrlHash);
-graphPublicHideEditorButton.addEventListener("change", setGraphPublicUrlHash);
+chartPublicHideZoomControls.addEventListener("change", setChartPublicUrlHash);
+chartPublicHideEditorButton.addEventListener("change", setChartPublicUrlHash);
 
-function setGraphPublicUrlHash(): void {
-  const url = graphPublicUrl.value;
+function setChartPublicUrlHash(): void {
+  const url = chartPublicUrl.value;
   const urlParts = url.split("#");
 
   const urlParams = Object.fromEntries(
@@ -209,11 +209,11 @@ function setGraphPublicUrlHash(): void {
     id: urlParams.id,
   };
 
-  if (graphPublicHideZoomControls.checked) {
+  if (chartPublicHideZoomControls.checked) {
     newUrlParams.zoomControls = false;
   }
 
-  if (graphPublicHideEditorButton.checked) {
+  if (chartPublicHideEditorButton.checked) {
     newUrlParams.editorButton = false;
   }
 
@@ -221,34 +221,34 @@ function setGraphPublicUrlHash(): void {
     .map(kvp => kvp.join("="))
     .join("&");
 
-  graphPublicPreview.src = [
+  chartPublicPreview.src = [
     "/viewer.html",
     `?rnd=${(Math.random() + 1).toString(36).substring(7)}`,
     `#${hash}`,
   ].join("");
 
-  graphPublicUrl.value = [
+  chartPublicUrl.value = [
     import.meta.env.VITE_PUBLIC_URL,
     `/viewer.html#${hash}`,
   ].join("");
 
-  graphPublicEmbedUrl.value = [
+  chartPublicEmbedUrl.value = [
     "<iframe",
     '  width="100%"',
     '  height="100%"',
-    `  src="${graphPublicUrl.value}"`,
+    `  src="${chartPublicUrl.value}"`,
     "</iframe>",
   ].join("\n");
 }
 
-graphPublicUrlCopy.addEventListener("click", function () {
-  navigator.clipboard.writeText(graphPublicUrl.value);
+chartPublicUrlCopy.addEventListener("click", function () {
+  navigator.clipboard.writeText(chartPublicUrl.value);
 });
 
-graphPublicImageCopy.addEventListener("click", function () {
-  navigator.clipboard.writeText(graphPublicImageUrl.value);
+chartPublicImageCopy.addEventListener("click", function () {
+  navigator.clipboard.writeText(chartPublicImageUrl.value);
 });
 
-graphPublicEmbedCopy.addEventListener("click", function () {
-  navigator.clipboard.writeText(graphPublicEmbedUrl.value);
+chartPublicEmbedCopy.addEventListener("click", function () {
+  navigator.clipboard.writeText(chartPublicEmbedUrl.value);
 });

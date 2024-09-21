@@ -8,7 +8,7 @@ import passwordlessAuthentication from "./authPasswordless.js";
 import profile from "./profile.js";
 import feedback from "./feedback.js";
 import subscription from "./subscription.js";
-import graphs from "./graphs.js";
+import charts from "./charts.js";
 import { unsetAuthenticationCookie } from "./authentication.js";
 import { HttpError } from "./errors.js";
 
@@ -50,7 +50,7 @@ server.use("/api/sign-in/passwordless", passwordlessAuthentication);
 server.use("/api/profile", profile);
 server.use("/api/subscription", subscription);
 server.use("/api/feedback", feedback);
-server.use("/api/graphs", graphs);
+server.use("/api/charts", charts);
 
 //
 // Sign out
@@ -87,6 +87,7 @@ server.use(
     const stack = (error.stack ?? "").split("\n").at(1);
 
     if (process.env["NODE_ENV"] !== "test" || status >= 500) {
+      console.log(error.stack);
       console.log(
         `${req.method} ${req.url} ${status} ${error.message} ${stack}`,
       );

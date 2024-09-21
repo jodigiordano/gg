@@ -87,7 +87,7 @@ export function setConnectivity(
     details
       .querySelector(".convert-to-cloud")!
       .addEventListener("click", function () {
-        fetch("/api/graphs", {
+        fetch("/api/charts", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -96,9 +96,9 @@ export function setConnectivity(
         })
           .then(async response => {
             if (response.ok) {
-              const graph = await response.json();
+              const chart = await response.json();
 
-              window.location.href = `/#id=${graph.id}`;
+              window.location.href = `/#id=${chart.id}`;
 
               connectivityStatus.close();
             } else {

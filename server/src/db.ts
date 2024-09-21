@@ -21,7 +21,7 @@ export interface User {
   updatedAt?: Date;
 }
 
-export interface Graph {
+export interface Chart {
   id: string;
   public?: boolean;
   userId?: string;
@@ -125,24 +125,24 @@ export async function setUserStripeSubscription(
   );
 }
 
-export async function getUserGraphsCount(userId: string): Promise<number> {
+export async function getUserChartsCount(userId: string): Promise<number> {
   const data = await pool.query(
-    "SELECT COUNT(*) FROM graphs WHERE user_id = $1",
+    "SELECT COUNT(*) FROM charts WHERE user_id = $1",
     [userId],
   );
 
   return Number(data.rows[0].count);
 }
 
-export async function getUserGraphs(userId: string): Promise<Graph[]> {
+export async function getUserCharts(userId: string): Promise<Chart[]> {
   const data = await pool.query(
-    "SELECT DISTINCT ON (id) id, public, data->>'title' as title FROM graphs WHERE user_id = $1",
+    "SELECT DISTINCT ON (id) id, public, data->>'title' as title FROM charts WHERE user_id = $1",
     [userId],
   );
 
   return data.rows.map(
     row =>
-      <Graph>{
+      <Chart>{
         id: row.id,
         public: row.public,
         title: row.title,
@@ -150,37 +150,37 @@ export async function getUserGraphs(userId: string): Promise<Graph[]> {
   );
 }
 
-export async function createGraph(
+export async function createChart(
   userId: string,
   data?: string,
-): Promise<Graph> {
+): Promise<Chart> {
   const id = randomUUID();
 
   await pool.query(
-    "INSERT INTO graphs(id, user_id, data, created_at, updated_at) VALUES ($1, $2, $3, now(), now())",
+    "INSERT INTO charts(id, user_id, data, created_at, updated_at) VALUES ($1, $2, $3, now(), now())",
     [
       id,
       userId,
       data ??
         JSON.stringify({
           specificationVersion: "1.0.0",
-          title: "Untitled graph",
+          title: "Untitled chart",
         }),
     ],
   );
 
-  const createdGraph = await getGraphById(id);
+  const createdChart = await getChartById(id);
 
-  if (!createdGraph) {
-    throw new DatabaseError(`Graph ${id} not created in DB for user ${userId}`);
+  if (!createdChart) {
+    throw new DatabaseError(`Chart ${id} not created in DB for user ${userId}`);
   }
 
-  return createdGraph;
+  return createdChart;
 }
 
-export async function getGraphById(id: string): Promise<Graph | null> {
+export async function getChartById(id: string): Promise<Chart | null> {
   const data = await pool.query(
-    "SELECT DISTINCT ON (id) *, data->>'title' as title FROM graphs WHERE id = $1 LIMIT 1",
+    "SELECT DISTINCT ON (id) *, data->>'title' as title FROM charts WHERE id = $1 LIMIT 1",
     [id],
   );
 
@@ -201,23 +201,23 @@ export async function getGraphById(id: string): Promise<Graph | null> {
   };
 }
 
-export async function setGraphData(id: string, data: string): Promise<void> {
+export async function setChartData(id: string, data: string): Promise<void> {
   await pool.query(
-    "UPDATE graphs SET data = $2, updated_at = now() WHERE id = $1",
+    "UPDATE charts SET data = $2, updated_at = now() WHERE id = $1",
     [id, data],
   );
 }
 
-export async function setGraphPublic(
+export async function setChartPublic(
   id: string,
   isPublic: boolean,
 ): Promise<void> {
   await pool.query(
-    "UPDATE graphs SET public = $2, updated_at = now() WHERE id = $1",
+    "UPDATE charts SET public = $2, updated_at = now() WHERE id = $1",
     [id, isPublic],
   );
 }
 
-export async function deleteGraph(id: string): Promise<void> {
-  await pool.query("DELETE FROM graphs WHERE id = $1", [id]);
+export async function deleteChart(id: string): Promise<void> {
+  await pool.query("DELETE FROM charts WHERE id = $1", [id]);
 }

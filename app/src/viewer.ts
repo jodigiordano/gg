@@ -166,5 +166,5 @@ try {
   // Remove the loading banner.
   saveDataIsLoading.classList.add("hidden");
 } catch {
-  saveDataIsLoading.innerHTML = "Loading the graph failed.";
+  saveDataIsLoading.innerHTML = "Loading the chart failed.";
 }

@@ -18,8 +18,8 @@
       <div class="dropdown">
         <button>file</button>
         <ul class="content closed">
-          <li id="operation-file-new">new graph</li>
-          <a href="/graphs.html" class="authenticated hidden">
+          <li id="operation-file-new">new chart</li>
+          <a href="/charts.html" class="authenticated hidden">
             <li>open from cloud</li>
           </a>
           <li id="operation-file-save-to-cloud" class="authenticated hidden">
@@ -35,7 +35,7 @@
       <div class="dropdown">
         <button>view</button>
         <ul class="content closed">
-          <li id="operation-file-properties-open">graph properties</li>
+          <li id="operation-file-properties-open">chart properties</li>
           <li id="operation-goto-viewer">presentation mode</li>
           <li id="operation-json-editor-open">json editor</li>
           <li id="operation-theme">switch theme</li>
@@ -225,11 +225,11 @@
           <div>
             <input
               type="checkbox"
-              id="feedback-include-graph"
-              name="feedback-include-graph"
+              id="feedback-include-chart"
+              name="feedback-include-chart"
               value="true"
             />
-            <label for="feedback-include-graph"> Include your chart</label>
+            <label for="feedback-include-chart"> Include your chart</label>
           </div>
         </div>
         <form method="dialog">
@@ -552,10 +552,10 @@
         <h1>Properties</h1>
         <h2>General</h2>
         <p>
-          <label for="option-graph-title" title="The title of this graph">
+          <label for="option-chart-title" title="The title of this chart">
             Title</label
           >
-          <input id="option-graph-title" />
+          <input id="option-chart-title" />
         </p>
         <form method="dialog">
           <button>close</button>
@@ -565,7 +565,7 @@
     <dialog id="load-file-failed-dialog">
       <div class="content">
         <h1>Operation failed</h1>
-        <p>Loading the graph failed.</p>
+        <p>Loading the chart failed.</p>
         <form method="dialog">
           <button>ok</button>
         </form>
@@ -581,30 +581,30 @@
       </div>
       <template id="connectivity-status-ok">
         <p><b>You are online!</b></p>
-        <p>Changes to your graphs will be synchronized with the server.</p>
+        <p>Changes to your charts will be synchronized with the server.</p>
         <p>
-          <a href="graphs.html">
-            <button>manage your graphs</button>
+          <a href="charts.html">
+            <button>manage your charts</button>
           </a>
         </p>
       </template>
       <template id="connectivity-status-read-only">
         <p><b>Your account is in read-only mode.</b></p>
-        <p>Changes to your graphs won't be synchronized with the server.</p>
+        <p>Changes to your charts won't be synchronized with the server.</p>
         <p>
           Go to <a href="profile.html">your profile</a> for more information.
         </p>
       </template>
       <template id="connectivity-status-local-file">
         <p><b>You are working with a local file.</b></p>
-        <p>Changes to your graphs won't be synchronized with the server.</p>
+        <p>Changes to your charts won't be synchronized with the server.</p>
         <p>
           <button class="convert-to-cloud">save to cloud</button>
         </p>
       </template>
       <template id="connectivity-status-save-failed">
         <p>
-          <b>The last synchronization of your graph with the server failed.</b>
+          <b>The last synchronization of your chart with the server failed.</b>
         </p>
         <p>
           To avoid loosing your work, make sure the synchronization succeed

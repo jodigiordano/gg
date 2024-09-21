@@ -273,8 +273,8 @@ const feedbackMessage = document.getElementById(
   "feedback-message",
 ) as HTMLInputElement;
 
-const feedbackIncludeGraph = document.getElementById(
-  "feedback-include-graph",
+const feedbackIncludeChart = document.getElementById(
+  "feedback-include-chart",
 ) as HTMLInputElement;
 
 feedback.addEventListener("keydown", event => {
@@ -304,7 +304,7 @@ document
       body: JSON.stringify({
         email: feedbackEmail.value,
         message: feedbackMessage.value,
-        graph: feedbackIncludeGraph.checked ? getJsonEditorValue() : undefined,
+        chart: feedbackIncludeChart.checked ? getJsonEditorValue() : undefined,
       }),
     })
       .then(async response => {
@@ -430,7 +430,7 @@ async function newFile(): Promise<void> {
   let json = JSON.stringify(
     {
       specificationVersion: "1.0.0",
-      title: "Untitled graph",
+      title: "Untitled chart",
     },
     null,
     2,
@@ -443,16 +443,16 @@ async function newFile(): Promise<void> {
       setConnectivity("read-only");
     } else {
       try {
-        const response = await fetch("/api/graphs", { method: "POST" });
+        const response = await fetch("/api/charts", { method: "POST" });
 
         if (response.ok) {
-          const graph = await response.json();
+          const chart = await response.json();
 
-          json = JSON.stringify(graph.data, null, 2);
+          json = JSON.stringify(chart.data, null, 2);
 
           const urlParams = getUrlParams();
 
-          urlParams.id = graph.id;
+          urlParams.id = chart.id;
 
           setUrlParams(urlParams);
 
@@ -593,7 +593,7 @@ document
     const backlinkHeight =
       state.profile.authenticated && !state.profile.readOnly ? 0 : 22;
 
-    // Add margin around the graph.
+    // Add margin around the chart.
     // Add some space at the bottom of the image for the backlink.
     exportCanvas.width =
       Math.max(backlinkWidth, viewportCanvas.width) + margin * 2;
@@ -673,8 +673,8 @@ const fileProperties = document.getElementById(
   "file-properties",
 ) as HTMLDialogElement;
 
-const graphTitle = document.getElementById(
-  "option-graph-title",
+const chartTitle = document.getElementById(
+  "option-chart-title",
 ) as HTMLInputElement;
 
 document
@@ -683,21 +683,21 @@ document
     const params = getUrlParams();
 
     if (params.id) {
-      window.location.href = `/graph.html#id=${params.id}`;
+      window.location.href = `/chart.html#id=${params.id}`;
       return;
     }
 
-    graphTitle.value = JSON.parse(getJsonEditorValue()).title;
+    chartTitle.value = JSON.parse(getJsonEditorValue()).title;
 
     fileProperties.inert = true;
     fileProperties.showModal();
     fileProperties.inert = false;
   });
 
-graphTitle.addEventListener("change", function () {
+chartTitle.addEventListener("change", function () {
   const currentSpecification = JSON.parse(getJsonEditorValue());
 
-  const newTitle = graphTitle.value;
+  const newTitle = chartTitle.value;
 
   if (newTitle === currentSpecification.title) {
     return;

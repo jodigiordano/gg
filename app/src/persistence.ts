@@ -7,15 +7,15 @@ export async function load(): Promise<string> {
   let value: string | null = null;
 
   if (urlParams.id) {
-    const response = await fetch(`/api/graphs/${urlParams.id}`);
+    const response = await fetch(`/api/charts/${urlParams.id}`);
 
     if (!response.ok) {
-      throw new Error(`GET /api/graphs/${urlParams.id} failed`);
+      throw new Error(`GET /api/charts/${urlParams.id} failed`);
     }
 
-    const graph = await response.json();
+    const chart = await response.json();
 
-    return JSON.stringify(graph.data, null, 2);
+    return JSON.stringify(chart.data, null, 2);
   } else if (urlParams.file) {
     value = new TextDecoder().decode(
       pako.inflate(
@@ -30,7 +30,7 @@ export async function load(): Promise<string> {
     value = JSON.stringify(
       {
         specificationVersion: "1.0.0",
-        title: "Untitled graph",
+        title: "Untitled chart",
       },
       null,
       2,
@@ -46,7 +46,7 @@ export async function save(value: string): Promise<void> {
   // Cloud save.
   if (urlParams.id) {
     try {
-      const response = await fetch(`/api/graphs/${urlParams.id}`, {
+      const response = await fetch(`/api/charts/${urlParams.id}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -61,12 +61,12 @@ export async function save(value: string): Promise<void> {
       if (response.status !== 204) {
         window.localStorage.setItem(urlParams.id, value);
 
-        throw new Error(`PATCH /api/graphs/${urlParams.id} failed`);
+        throw new Error(`PATCH /api/charts/${urlParams.id} failed`);
       }
     } catch {
       window.localStorage.setItem(urlParams.id, value);
 
-      throw new Error(`PATCH /api/graphs/${urlParams.id} failed`);
+      throw new Error(`PATCH /api/charts/${urlParams.id} failed`);
     }
 
     return;

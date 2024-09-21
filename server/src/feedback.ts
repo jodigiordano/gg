@@ -14,7 +14,7 @@ router.post("/", async function (req: express.Request, res: express.Response) {
 
   const from = req.body.email;
   const message = req.body.message;
-  const graph = req.body.graph;
+  const chart = req.body.chart;
 
   const mailgunAuth = Buffer.from(
     `api:${process.env["MAILGUN_API_KEY"]}`,
@@ -25,7 +25,7 @@ router.post("/", async function (req: express.Request, res: express.Response) {
   email.append("from", "gg-charts <no-reply@gg-charts.com>");
   email.append("to", "feedback@gg-charts.com");
   email.append("subject", `Feedback from ${from}`);
-  email.append("text", [message, "---", graph].join("\n"));
+  email.append("text", [message, "---", chart].join("\n"));
 
   const response = await fetch(
     [process.env["MAILGUN_API_ENDPOINT"], "messages"].join("/"),

@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=0.75" />
     <partial>description</partial>
     <partial>favicon</partial>
-    <link rel="stylesheet" href="graph.css" />
-    <title>charts - graph properties</title>
+    <link rel="stylesheet" href="chart.css" />
+    <title>charts - chart properties</title>
     <partial>theme</partial>
   </head>
   <body>
@@ -16,52 +16,52 @@
       </button>
     </div>
     <div id="content">
-      <h1>Graph</h1>
+      <h1>Chart</h1>
       <div id="loading-container">Loading...</div>
       <div id="main-container" class="hidden">
-        <img id="preview" width="100%" src="/api/graphs/GRAPH_ID.png" />
+        <img id="preview" width="100%" src="/api/charts/CHART_ID.png" />
         <h2>General</h2>
         <div class="section">
           <p>
-            <label for="option-graph-title" title="The title of this graph">
+            <label for="option-chart-title" title="The title of this chart">
               Title:</label
             >
-            <input type="text" id="option-graph-title" />
+            <input type="text" id="option-chart-title" />
           </p>
         </div>
         <h2>Public Sharing</h2>
         <div class="section">
           <p>Enable this feature to:</p>
           <ul>
-            <li>- Share or embed a <b>read-only</b> link to your graph.</li>
-            <li>- Copy & paste an image link of your graph into any app.</li>
+            <li>- Share or embed a <b>read-only</b> link to your chart.</li>
+            <li>- Copy & paste an image link of your chart into any app.</li>
           </ul>
           <p>
             <label
-              for="option-graph-public"
-              title="Enable the public sharing of this graph"
+              for="option-chart-public"
+              title="Enable the public sharing of this chart"
               >Enable</label
             >
-            <input type="checkbox" id="option-graph-public" value="true" />
+            <input type="checkbox" id="option-chart-public" value="true" />
           </p>
-          <p class="option-graph-public-enabled hidden">
-            <label for="public-image" title="The public image of this graph"
+          <p class="option-chart-public-enabled hidden">
+            <label for="public-image" title="The public image of this chart"
               >Image Link:</label
             >
             <input type="text" readonly id="public-image" />
             <button id="public-image-copy">copy</button>
           </p>
-          <p class="option-graph-public-enabled hidden">
-            <label for="public-url" title="The public URL of this graph"
+          <p class="option-chart-public-enabled hidden">
+            <label for="public-url" title="The public URL of this chart"
               >Presentation Link:</label
             >
             <input type="text" readonly id="public-url" />
             <button id="public-url-copy">copy</button>
           </p>
-          <p class="option-graph-public-enabled hidden">
+          <p class="option-chart-public-enabled hidden">
             <label
               for="public-embed"
-              title="The public iframe URL of this graph"
+              title="The public iframe URL of this chart"
               >Embed Link:</label
             >
             <textarea readonly id="public-embed"></textarea>
@@ -69,15 +69,15 @@
           </p>
           <p
             id="file-properties-public-preview"
-            class="option-graph-public-enabled hidden"
+            class="option-chart-public-enabled hidden"
           >
-            <label for="public-preview" title="Preview of the public graph"
+            <label for="public-preview" title="Preview of the public chart"
               >Preview:</label
             >
             <iframe id="public-preview" width="100%" height="100%"> </iframe>
           </p>
-          <p class="option-graph-public-enabled hidden">Extra options:</p>
-          <p class="option-graph-public-enabled hidden">
+          <p class="option-chart-public-enabled hidden">Extra options:</p>
+          <p class="option-chart-public-enabled hidden">
             <label
               for="option-hide-zoom-controls"
               title="Whether to hide the zoom controls"
@@ -89,7 +89,7 @@
               value="true"
             />
           </p>
-          <p class="option-graph-public-enabled hidden">
+          <p class="option-chart-public-enabled hidden">
             <label
               for="option-hide-editor-button"
               title="Whether to hide the editor button"
@@ -104,6 +104,6 @@
         </div>
       </div>
     </div>
-    <script type="module" src="./graph.ts"></script>
+    <script type="module" src="./chart.ts"></script>
   </body>
 </html>

@@ -8,7 +8,7 @@ SCRIPT_DIRECTORY=$(cd "$(dirname "$0")" ; pwd -P)
 cd "$SCRIPT_DIRECTORY"
 
 if [ -z "$ENV" ]; then
-  echo Missing ENV=./.env
+  echo Missing ENV variable
   exit 1
 fi
 

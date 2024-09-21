@@ -6,19 +6,19 @@ import {
   setAuthenticationCookie,
 } from "./authentication.js";
 import {
-  createGraph,
-  deleteGraph,
-  getGraphById,
-  getUserGraphs,
-  getUserGraphsCount,
-  Graph,
-  setGraphData,
-  setGraphPublic,
+  createChart,
+  deleteChart,
+  getChartById,
+  getUserCharts,
+  getUserChartsCount,
+  Chart,
+  setChartData,
+  setChartPublic,
   User,
 } from "./db.js";
 import { HttpError } from "./errors.js";
 import { isUUID } from "./helpers.js";
-import { exportGraphToPNG } from "./images.js";
+import { exportChartToPNG } from "./images.js";
 
 const router = express.Router();
 
@@ -27,11 +27,11 @@ router.get("/", async function (req: express.Request, res: express.Response) {
 
   setAuthenticationCookie(user.id, res);
 
-  const graphs = await getUserGraphs(user.id);
+  const charts = await getUserCharts(user.id);
 
   res.status(200).json({
-    total: graphs.length,
-    data: graphs,
+    total: charts.length,
+    data: charts,
   });
 });
 
@@ -66,15 +66,15 @@ router.post("/", async function (req: express.Request, res: express.Response) {
     data = req.body.data;
   }
 
-  const count = await getUserGraphsCount(user.id);
+  const count = await getUserChartsCount(user.id);
 
   if (count > 100) {
     throw new HttpError(422);
   }
 
-  const graph = await createGraph(user.id, data);
+  const chart = await createChart(user.id, data);
 
-  res.status(200).json(graph);
+  res.status(200).json(chart);
 });
 
 router.get(
@@ -84,9 +84,9 @@ router.get(
       throw new HttpError(400);
     }
 
-    const graph = await getGraphById(req.params["id"]);
+    const chart = await getChartById(req.params["id"]);
 
-    if (!graph) {
+    if (!chart) {
       throw new HttpError(404);
     }
 
@@ -96,9 +96,9 @@ router.get(
       ?.find(c => c.startsWith("auth="))
       ?.replace("auth=", "");
 
-    // Public graph.
-    if (graph.public) {
-      const filename = await exportGraphToPNG(graph, cookie);
+    // Public chart.
+    if (chart.public) {
+      const filename = await exportChartToPNG(chart, cookie);
 
       if (!filename) {
         throw new HttpError(503);
@@ -109,16 +109,16 @@ router.get(
       return;
     }
 
-    // Private graph.
+    // Private chart.
     const user = await authenticateUser(req);
 
     setAuthenticationCookie(user.id, res);
 
-    if (graph.userId !== user.id) {
+    if (chart.userId !== user.id) {
       throw new HttpError(403);
     }
 
-    const filename = await exportGraphToPNG(graph, cookie);
+    const filename = await exportChartToPNG(chart, cookie);
 
     if (!filename) {
       throw new HttpError(503);
@@ -136,16 +136,16 @@ router.get(
       throw new HttpError(400);
     }
 
-    const graph = await getGraphById(req.params["id"]);
+    const chart = await getChartById(req.params["id"]);
 
-    if (!graph) {
+    if (!chart) {
       throw new HttpError(404);
     }
 
-    // Public graph.
-    if (graph.public) {
+    // Public chart.
+    if (chart.public) {
       let user: User | null = null;
-      let view: Graph | Record<string, unknown>;
+      let view: Chart | Record<string, unknown>;
 
       try {
         user = await authenticateUser(req);
@@ -155,13 +155,13 @@ router.get(
         /* NOOP */
       }
 
-      if (user && graph.userId === user.id) {
-        view = graph;
+      if (user && chart.userId === user.id) {
+        view = chart;
       } else {
         view = {
-          id: graph.id,
-          title: graph.title,
-          data: graph.data,
+          id: chart.id,
+          title: chart.title,
+          data: chart.data,
         };
       }
 
@@ -169,16 +169,16 @@ router.get(
       return;
     }
 
-    // Private graph.
+    // Private chart.
     const user = await authenticateUser(req);
 
     setAuthenticationCookie(user.id, res);
 
-    if (graph.userId !== user.id) {
+    if (chart.userId !== user.id) {
       throw new HttpError(403);
     }
 
-    res.status(200).json(graph);
+    res.status(200).json(chart);
   },
 );
 
@@ -223,22 +223,22 @@ router.patch(
       }
     }
 
-    const graph = await getGraphById(req.params["id"]);
+    const chart = await getChartById(req.params["id"]);
 
-    if (!graph) {
+    if (!chart) {
       throw new HttpError(404);
     }
 
-    if (graph.userId !== user.id) {
+    if (chart.userId !== user.id) {
       throw new HttpError(403);
     }
 
     if (req.body.data) {
-      await setGraphData(graph.id, req.body.data);
+      await setChartData(chart.id, req.body.data);
     }
 
     if ("public" in req.body) {
-      await setGraphPublic(graph.id, req.body.public);
+      await setChartPublic(chart.id, req.body.public);
     }
 
     res.sendStatus(204);
@@ -260,17 +260,17 @@ router.delete(
       throw new HttpError(400);
     }
 
-    const graph = await getGraphById(req.params["id"]);
+    const chart = await getChartById(req.params["id"]);
 
-    if (!graph) {
+    if (!chart) {
       throw new HttpError(404);
     }
 
-    if (graph.userId !== user.id) {
+    if (chart.userId !== user.id) {
       throw new HttpError(403);
     }
 
-    await deleteGraph(graph.id);
+    await deleteChart(chart.id);
 
     res.sendStatus(204);
   },

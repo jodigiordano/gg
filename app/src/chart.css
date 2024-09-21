@@ -87,7 +87,7 @@ h2 {
     }
   }
 
-  .option-graph-public-enabled {
+  .option-chart-public-enabled {
     &.hidden {
       display: none;
     }
