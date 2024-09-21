@@ -46,7 +46,7 @@ h2 {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 1em;
-  align-items: end;
+  align-items: start;
 
   .graph {
     display: flex;
@@ -60,12 +60,8 @@ h2 {
     }
 
     .name,
-    .preview-overlay {
-      cursor: pointer;
-    }
-
     .preview {
-      pointer-events: none;
+      cursor: pointer;
     }
   }
 }

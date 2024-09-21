@@ -72,19 +72,15 @@ fetch("/api/graphs")
         nameDiv.innerHTML = sanitizeHtml(graph.title ?? "New graph");
 
         // Set the preview.
-        const previewOverlayDiv = graphDiv.querySelector(
-          ".preview-overlay",
-        ) as HTMLDivElement;
+        const previewImg = graphDiv.querySelector(
+          ".preview img",
+        ) as HTMLImageElement;
 
-        previewOverlayDiv.addEventListener("click", function () {
+        previewImg.src = previewImg.src.replace("GRAPH_ID", graph.id);
+
+        previewImg.addEventListener("click", function () {
           window.location.href = `/#id=${graph.id}`;
         });
-
-        const previewDiv = graphDiv.querySelector(
-          ".preview",
-        ) as HTMLIFrameElement;
-
-        previewDiv.src = previewDiv.src.replace("GRAPH_ID", graph.id);
 
         // Set the "delete" operation.
         graphDiv

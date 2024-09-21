@@ -41,14 +41,8 @@
     <template id="graph-template">
       <div class="graph">
         <div class="name"></div>
-        <div class="preview-overlay">
-          <iframe
-            class="preview"
-            width="100%"
-            height="100%"
-            src="/viewer.html#editorButton=false&zoomControls=false&id=GRAPH_ID"
-          >
-          </iframe>
+        <div class="preview">
+          <img width="100%" src="/api/graphs/GRAPH_ID.png" />
         </div>
         <button class="operation-file-properties-open">properties</button>
         <button class="operation-delete">delete</button>

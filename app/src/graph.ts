@@ -12,9 +12,7 @@ document
 
 // Preview the graph.
 
-const previewOverlayDiv = document.getElementById(
-  "preview-overlay",
-) as HTMLDivElement;
+const previewImg = document.getElementById("preview") as HTMLImageElement;
 
 //
 // Load graph
@@ -51,15 +49,11 @@ fetch(`/api/graphs/${params.id}`)
       graph = await response.json();
 
       // Set the preview.
-      previewOverlayDiv.addEventListener("click", function () {
+      previewImg.src = previewImg.src.replace("GRAPH_ID", graph.id);
+
+      previewImg.addEventListener("click", function () {
         window.location.href = `/${window.location.hash}`;
       });
-
-      const previewDiv = previewOverlayDiv.querySelector(
-        ".preview",
-      ) as HTMLIFrameElement;
-
-      previewDiv.src = previewDiv.src.replace("GRAPH_ID", graph.id);
 
       // Set the title.
       graphTitle.value = graph.title;

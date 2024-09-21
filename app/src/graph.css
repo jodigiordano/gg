@@ -102,11 +102,6 @@ h2 {
   height: 20em;
 }
 
-#preview-overlay {
-  height: 20em;
+#preview {
   cursor: pointer;
-
-  .preview {
-    pointer-events: none;
-  }
 }

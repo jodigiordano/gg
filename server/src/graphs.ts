@@ -80,8 +80,6 @@ router.post("/", async function (req: express.Request, res: express.Response) {
 router.get(
   "/:id.png",
   async function (req: express.Request, res: express.Response) {
-    res.setHeader("Content-Type", "image/png");
-
     if (typeof req.params["id"] !== "string" || !isUUID(req.params["id"])) {
       throw new HttpError(400);
     }
@@ -92,17 +90,21 @@ router.get(
       throw new HttpError(404);
     }
 
+    const cookie = req
+      .header("Cookie")
+      ?.split("; ")
+      ?.find(c => c.startsWith("auth="))
+      ?.replace("auth=", "");
+
     // Public graph.
     if (graph.public) {
-      const filename = await exportGraphToPNG(
-        graph.id,
-        req.signedCookies["auth"],
-      );
+      const filename = await exportGraphToPNG(graph, cookie);
 
       if (!filename) {
         throw new HttpError(503);
       }
 
+      res.setHeader("Content-Type", "image/png");
       res.sendFile(filename);
       return;
     }
@@ -116,15 +118,13 @@ router.get(
       throw new HttpError(403);
     }
 
-    const filename = await exportGraphToPNG(
-      graph.id,
-      req.signedCookies["auth"],
-    );
+    const filename = await exportGraphToPNG(graph, cookie);
 
     if (!filename) {
       throw new HttpError(503);
     }
 
+    res.setHeader("Content-Type", "image/png");
     res.sendFile(filename);
   },
 );

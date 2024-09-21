@@ -1,10 +1,23 @@
-import puppeteer, { CDPSession, Browser } from "puppeteer";
+import puppeteer, { CDPSession, Browser, Page } from "puppeteer";
+import { hash } from "node:crypto";
 import fs from "node:fs";
+import { Graph } from "./db";
 
 export async function exportGraphToPNG(
-  graphId: string,
+  graph: Graph,
   cookie: any | null | undefined,
 ): Promise<string | null> {
+  // Serve the image from the cache.
+  const fingerprint = hash("md5", JSON.stringify(graph.data ?? ""), "hex");
+  const filename = ["gg", graph.id, fingerprint, "png"].join(".");
+
+  const cachePath = [process.env["CACHE_PATH"], filename].join("/");
+
+  if (fs.existsSync(cachePath)) {
+    return cachePath;
+  }
+
+  // In tests, we skip using puppeteer.
   if (
     process.env["NODE_ENV"] === "test" &&
     process.env["EXPORT_GRAPH_TO_PNG"]
@@ -21,17 +34,6 @@ export async function exportGraphToPNG(
     // Open a new tab.
     const page = await browser.newPage();
 
-    if (cookie) {
-      await page.setCookie({
-        name: "auth",
-        value: cookie,
-        domain: new URL(process.env["PUBLIC_URL"]!).hostname,
-        path: "/",
-        httpOnly: true,
-        secure: true,
-      });
-    }
-
     // Open a CDP session.
     const session = await page.createCDPSession();
 
@@ -41,21 +43,35 @@ export async function exportGraphToPNG(
       eventsEnabled: true,
     });
 
+    // Set cookies.
+    if (cookie) {
+      await page.setCookie({
+        name: "auth",
+        value: cookie,
+        domain: new URL(process.env["PUBLIC_URL"]!).hostname,
+        path: "/",
+        httpOnly: true,
+        secure: process.env["NODE_ENV"] === "production",
+      });
+    }
+
     // Navigate to the page.
-    await page.goto(`${process.env["PUBLIC_URL"]}/export.html#id=${graphId}`);
+    await page.goto(`${process.env["PUBLIC_URL"]}/export.html#id=${graph.id}`);
 
     // Download the image.
-    await waitUntilDownload(session);
+    await waitUntilDownload(page, session);
 
     // Validate the presence of the file on disk.
-    const localImagePath = [
+    const downloadPath = [
       process.env["DOWNLOADS_PATH"],
-      `gg.${graphId}.png`,
+      `gg.${graph.id}.png`,
     ].join("/");
 
     // Return the path to the file on disk.
-    if (fs.existsSync(localImagePath)) {
-      return localImagePath;
+    if (fs.existsSync(downloadPath)) {
+      fs.copyFileSync(downloadPath, cachePath);
+
+      return cachePath;
     }
 
     // Fallback: no image produced.
@@ -69,8 +85,15 @@ export async function exportGraphToPNG(
   }
 }
 
-async function waitUntilDownload(session: CDPSession): Promise<void> {
+async function waitUntilDownload(
+  page: Page,
+  session: CDPSession,
+): Promise<void> {
   return new Promise((resolve, reject) => {
+    page.on("pageerror", function (error) {
+      reject(error);
+    });
+
     session.on("Browser.downloadProgress", function (event) {
       if (event.state === "completed") {
         resolve();
