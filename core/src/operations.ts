@@ -129,6 +129,10 @@ export function addLink(
   bId: string,
   options: {
     title?: string;
+    titleBackgroundColor?: string;
+    titleFont?: TextFont;
+    titleAlign?: TextAlign;
+    backgroundColor?: string;
     startPattern?: PathEndingPattern;
     middlePattern?: PathPattern;
     endPattern?: PathEndingPattern;
@@ -141,6 +145,22 @@ export function addLink(
 
   if (options.title) {
     newLink.title = options.title;
+  }
+
+  if (options.titleBackgroundColor) {
+    newLink.titleBackgroundColor = options.titleBackgroundColor;
+  }
+
+  if (options.titleFont) {
+    newLink.titleFont = options.titleFont;
+  }
+
+  if (options.titleAlign) {
+    newLink.titleAlign = options.titleAlign;
+  }
+
+  if (options.backgroundColor) {
+    newLink.backgroundColor = options.backgroundColor;
   }
 
   if (options.startPattern) {
@@ -175,12 +195,24 @@ export function moveLink(
   const aId = link.a === idToReplace ? idToReplaceWith : link.a;
   const bId = link.b === idToReplace ? idToReplaceWith : link.b;
 
-  addLink(rootSystem, aId, bId, {
+  const options: Record<string, unknown> = {
     title: link.title,
+    titleFont: link.titleFont,
+    titleAlign: link.titleAlign,
     startPattern: link.startPattern,
     middlePattern: link.middlePattern,
     endPattern: link.endPattern,
-  });
+  };
+
+  if (link.titleBackgroundColor) {
+    options["titleBackgroundColor"] = link.titleBackgroundColor;
+  }
+
+  if (link.backgroundColor) {
+    options["backgroundColor"] = link.backgroundColor;
+  }
+
+  addLink(rootSystem, aId, bId, options);
 
   removeLink(rootSystem, link);
 }
