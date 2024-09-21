@@ -4,8 +4,8 @@ import sinon from "sinon";
 import server from "../src/server.js";
 import { createUser, generateAuthenticationCookie } from "./helpers.js";
 import {
-  createGraph,
-  getGraphById,
+  createChart,
+  getChartById,
   getUserById,
   setUserStripeSubscription,
 } from "../src/db.js";
@@ -33,7 +33,7 @@ describe("/api/profile", function () {
   describe("POST /close", function () {
     it("302", async function () {
       const user = await createUser();
-      const graph = await createGraph(user.id);
+      const chart = await createChart(user.id);
 
       await setUserStripeSubscription(user.id, "a", "b");
 
@@ -52,7 +52,7 @@ describe("/api/profile", function () {
         .expect("Location", "/");
 
       assert.equal(await getUserById(user.id), null);
-      assert.equal(await getGraphById(graph.id), null);
+      assert.equal(await getChartById(chart.id), null);
     });
 
     it("400", async function () {

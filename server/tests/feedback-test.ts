@@ -37,7 +37,7 @@ describe("/api/feedback", function () {
         .expect(204);
     });
 
-    it("204 - graph", async function () {
+    it("204 - chart", async function () {
       sinon
         .stub(global, "fetch")
         .resolves(new Response(JSON.stringify({}), { status: 200 }));
@@ -47,7 +47,7 @@ describe("/api/feedback", function () {
         .set("Content-Type", "application/json")
         .send({
           message: "a",
-          graph: "b",
+          chart: "b",
         })
         .expect(204);
     });
@@ -79,7 +79,7 @@ describe("/api/feedback", function () {
         .send({
           email: "a@b.com",
           message: "a",
-          graph: "b",
+          chart: "b",
         })
         .expect(422);
     });

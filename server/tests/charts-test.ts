@@ -6,21 +6,21 @@ import { randomUUID } from "node:crypto";
 import server from "../src/server.js";
 import { createUser, generateAuthenticationCookie } from "./helpers.js";
 import {
-  createGraph,
-  getGraphById,
-  Graph,
-  setGraphPublic,
+  createChart,
+  getChartById,
+  Chart,
+  setChartPublic,
   setUserStripeSubscription,
   User,
 } from "../src/db.js";
 
-describe("/api/graphs", function () {
+describe("/api/charts", function () {
   let user: User;
-  let graph: Graph;
+  let chart: Chart;
 
   this.beforeEach(async function () {
     user = await createUser();
-    graph = await createGraph(user.id);
+    chart = await createChart(user.id);
 
     await setUserStripeSubscription(user.id, "notused", "active");
   });
@@ -28,13 +28,13 @@ describe("/api/graphs", function () {
   this.afterEach(function () {
     sinon.restore();
 
-    delete process.env["EXPORT_GRAPH_TO_PNG"];
+    delete process.env["EXPORT_CHART_TO_PNG"];
   });
 
   describe("GET /", function () {
     it("200", async function () {
       const response = await request(server)
-        .get("/api/graphs")
+        .get("/api/charts")
         .set("Cookie", [generateAuthenticationCookie(user.id)])
         .expect(200);
 
@@ -42,8 +42,8 @@ describe("/api/graphs", function () {
         total: 1,
         data: [
           {
-            id: graph.id,
-            title: graph.title,
+            id: chart.id,
+            title: chart.title,
             public: false,
           },
         ],
@@ -51,14 +51,14 @@ describe("/api/graphs", function () {
     });
 
     it("401", async function () {
-      request(server).get("/api/graphs").expect(401);
+      request(server).get("/api/charts").expect(401);
     });
   });
 
   describe("POST /", function () {
     it("200", async function () {
       await request(server)
-        .post("/api/graphs")
+        .post("/api/charts")
         .set("Cookie", [generateAuthenticationCookie(user.id)])
         .expect(200);
     });
@@ -66,11 +66,11 @@ describe("/api/graphs", function () {
     it("200 - data", async function () {
       const data = {
         specificationVersion: "1.0.0",
-        title: "My graph",
+        title: "My chart",
       };
 
       await request(server)
-        .post("/api/graphs")
+        .post("/api/charts")
         .set("Cookie", [generateAuthenticationCookie(user.id)])
         .set("Content-Type", "application/json")
         .send({ data: JSON.stringify(data) })
@@ -79,7 +79,7 @@ describe("/api/graphs", function () {
 
     it("400", async function () {
       await request(server)
-        .post("/api/graphs")
+        .post("/api/charts")
         .set("Cookie", [generateAuthenticationCookie(user.id)])
         .set("Content-Type", "application/json")
         .send({ data: "nope" })
@@ -90,24 +90,24 @@ describe("/api/graphs", function () {
       await setUserStripeSubscription(user.id, "notused", "paused");
 
       await request(server)
-        .post("/api/graphs")
+        .post("/api/charts")
         .set("Cookie", [generateAuthenticationCookie(user.id)])
         .expect(402);
     });
 
     it("401", async function () {
-      request(server).post("/api/graphs").expect(401);
+      request(server).post("/api/charts").expect(401);
     });
 
     it("422", async function () {
       const data = {
         specificationVersion: "1.0.0",
-        title: "My graph",
+        title: "My chart",
         extraProperty: "oops",
       };
 
       await request(server)
-        .post("/api/graphs")
+        .post("/api/charts")
         .set("Cookie", [generateAuthenticationCookie(user.id)])
         .set("Content-Type", "application/json")
         .send({ data: JSON.stringify(data) })
@@ -116,11 +116,11 @@ describe("/api/graphs", function () {
 
     it("422 - max", async function () {
       for (let i = 0; i < 100; i++) {
-        createGraph(user.id);
+        createChart(user.id);
       }
 
       await request(server)
-        .post("/api/graphs")
+        .post("/api/charts")
         .set("Cookie", [generateAuthenticationCookie(user.id)])
         .expect(422);
     });
@@ -129,7 +129,7 @@ describe("/api/graphs", function () {
   describe("GET /:id", function () {
     it("200", async function () {
       const response = await request(server)
-        .get(`/api/graphs/${graph.id}`)
+        .get(`/api/charts/${chart.id}`)
         .set("Cookie", [generateAuthenticationCookie(user.id)])
         .expect(200);
 
@@ -137,33 +137,33 @@ describe("/api/graphs", function () {
       delete response.body.updatedAt;
 
       assert.deepEqual(response.body, {
-        id: graph.id,
-        title: graph.title,
-        data: graph.data,
+        id: chart.id,
+        title: chart.title,
+        data: chart.data,
         userId: user.id,
         public: false,
       });
     });
 
     it("200 - public - anonymous", async function () {
-      await setGraphPublic(graph.id, true);
+      await setChartPublic(chart.id, true);
 
       const response = await request(server)
-        .get(`/api/graphs/${graph.id}`)
+        .get(`/api/charts/${chart.id}`)
         .expect(200);
 
       assert.deepEqual(response.body, {
-        id: graph.id,
-        title: graph.title,
-        data: graph.data,
+        id: chart.id,
+        title: chart.title,
+        data: chart.data,
       });
     });
 
     it("200 - public - authenticated owner", async function () {
-      await setGraphPublic(graph.id, true);
+      await setChartPublic(chart.id, true);
 
       const response = await request(server)
-        .get(`/api/graphs/${graph.id}`)
+        .get(`/api/charts/${chart.id}`)
         .set("Cookie", [generateAuthenticationCookie(user.id)])
         .expect(200);
 
@@ -171,9 +171,9 @@ describe("/api/graphs", function () {
       delete response.body.updatedAt;
 
       assert.deepEqual(response.body, {
-        id: graph.id,
-        title: graph.title,
-        data: graph.data,
+        id: chart.id,
+        title: chart.title,
+        data: chart.data,
         userId: user.id,
         public: true,
       });
@@ -182,46 +182,46 @@ describe("/api/graphs", function () {
     it("200 - public - authenticated other", async function () {
       const user2 = await createUser();
 
-      await setGraphPublic(graph.id, true);
+      await setChartPublic(chart.id, true);
 
       const response = await request(server)
-        .get(`/api/graphs/${graph.id}`)
+        .get(`/api/charts/${chart.id}`)
         .set("Cookie", [generateAuthenticationCookie(user2.id)])
         .expect(200);
 
       assert.deepEqual(response.body, {
-        id: graph.id,
-        title: graph.title,
-        data: graph.data,
+        id: chart.id,
+        title: chart.title,
+        data: chart.data,
       });
     });
 
     it("400", async function () {
       await request(server)
-        .get("/api/graphs/nope")
+        .get("/api/charts/nope")
         .set("Cookie", [generateAuthenticationCookie(user.id)])
         .expect(400);
     });
 
     it("401", async function () {
-      request(server).get(`/api/graphs/${graph}`).expect(401);
+      request(server).get(`/api/charts/${chart}`).expect(401);
     });
 
     it("403", async function () {
       const user2 = await createUser();
-      const graph = await createGraph(user.id);
+      const chart = await createChart(user.id);
 
       await setUserStripeSubscription(user2.id, "notused", "active");
 
       await request(server)
-        .get(`/api/graphs/${graph.id}`)
+        .get(`/api/charts/${chart.id}`)
         .set("Cookie", [generateAuthenticationCookie(user2.id)])
         .expect(403);
     });
 
     it("404", async function () {
       await request(server)
-        .get(`/api/graphs/${randomUUID()}`)
+        .get(`/api/charts/${randomUUID()}`)
         .set("Cookie", [generateAuthenticationCookie(user.id)])
         .expect(404);
     });
@@ -229,13 +229,13 @@ describe("/api/graphs", function () {
 
   describe("GET /:id.png", function () {
     it("200", async function () {
-      process.env["EXPORT_GRAPH_TO_PNG"] = [
+      process.env["EXPORT_CHART_TO_PNG"] = [
         import.meta.dirname,
         "logo.png",
       ].join("/");
 
       const response = await request(server)
-        .get(`/api/graphs/${graph.id}.png`)
+        .get(`/api/charts/${chart.id}.png`)
         .set("Cookie", [generateAuthenticationCookie(user.id)])
         .expect(200)
         .expect("Content-Type", "image/png")
@@ -247,42 +247,42 @@ describe("/api/graphs", function () {
     });
 
     it("200 - public", async function () {
-      process.env["EXPORT_GRAPH_TO_PNG"] = [
+      process.env["EXPORT_CHART_TO_PNG"] = [
         import.meta.dirname,
         "logo.png",
       ].join("/");
 
-      await setGraphPublic(graph.id, true);
+      await setChartPublic(chart.id, true);
 
-      await request(server).get(`/api/graphs/${graph.id}.png`).expect(200);
+      await request(server).get(`/api/charts/${chart.id}.png`).expect(200);
     });
 
     it("400", async function () {
       await request(server)
-        .get("/api/graphs/nope.png")
+        .get("/api/charts/nope.png")
         .set("Cookie", [generateAuthenticationCookie(user.id)])
         .expect(400);
     });
 
     it("401", async function () {
-      request(server).get(`/api/graphs/${graph}.png`).expect(401);
+      request(server).get(`/api/charts/${chart}.png`).expect(401);
     });
 
     it("403", async function () {
       const user2 = await createUser();
-      const graph = await createGraph(user.id);
+      const chart = await createChart(user.id);
 
       await setUserStripeSubscription(user2.id, "notused", "active");
 
       await request(server)
-        .get(`/api/graphs/${graph.id}.png`)
+        .get(`/api/charts/${chart.id}.png`)
         .set("Cookie", [generateAuthenticationCookie(user2.id)])
         .expect(403);
     });
 
     it("404", async function () {
       await request(server)
-        .get(`/api/graphs/${randomUUID()}.png`)
+        .get(`/api/charts/${randomUUID()}.png`)
         .set("Cookie", [generateAuthenticationCookie(user.id)])
         .expect(404);
     });
@@ -291,7 +291,7 @@ describe("/api/graphs", function () {
       sinon.stub(puppeteer, "launch").rejects();
 
       await request(server)
-        .get(`/api/graphs/${graph.id}.png`)
+        .get(`/api/charts/${chart.id}.png`)
         .set("Cookie", [generateAuthenticationCookie(user.id)])
         .expect(503);
     });
@@ -299,45 +299,45 @@ describe("/api/graphs", function () {
     it("503 - public", async function () {
       sinon.stub(puppeteer, "launch").rejects();
 
-      await setGraphPublic(graph.id, true);
+      await setChartPublic(chart.id, true);
 
-      await request(server).get(`/api/graphs/${graph.id}.png`).expect(503);
+      await request(server).get(`/api/charts/${chart.id}.png`).expect(503);
     });
   });
 
   describe("PATCH /:id", function () {
     it("204 - data", async function () {
       await request(server)
-        .patch(`/api/graphs/${graph.id}`)
+        .patch(`/api/charts/${chart.id}`)
         .set("Cookie", [generateAuthenticationCookie(user.id)])
         .set("Content-Type", "application/json")
         .send({
           data: JSON.stringify({
             specificationVersion: "1.0.0",
-            title: "My graph",
+            title: "My chart",
           }),
         })
         .expect(204);
 
-      const updatedGraph = await getGraphById(graph.id);
+      const updatedChart = await getChartById(chart.id);
 
-      assert.deepEqual(updatedGraph, {
-        id: graph.id,
-        title: "My graph",
+      assert.deepEqual(updatedChart, {
+        id: chart.id,
+        title: "My chart",
         data: {
           specificationVersion: "1.0.0",
-          title: "My graph",
+          title: "My chart",
         },
         userId: user.id,
         public: false,
-        createdAt: updatedGraph!.createdAt,
-        updatedAt: updatedGraph!.updatedAt,
+        createdAt: updatedChart!.createdAt,
+        updatedAt: updatedChart!.updatedAt,
       });
     });
 
     it("204 - public", async function () {
       await request(server)
-        .patch(`/api/graphs/${graph.id}`)
+        .patch(`/api/charts/${chart.id}`)
         .set("Cookie", [generateAuthenticationCookie(user.id)])
         .set("Content-Type", "application/json")
         .send({
@@ -345,20 +345,20 @@ describe("/api/graphs", function () {
         })
         .expect(204);
 
-      const updatedGraph = await getGraphById(graph.id);
+      const updatedChart = await getChartById(chart.id);
 
-      assert(updatedGraph!.public);
+      assert(updatedChart!.public);
     });
 
-    it("400 - graph id", async function () {
+    it("400 - chart id", async function () {
       await request(server)
-        .patch("/api/graphs/nope")
+        .patch("/api/charts/nope")
         .set("Cookie", [generateAuthenticationCookie(user.id)])
         .set("Content-Type", "application/json")
         .send({
           data: JSON.stringify({
             specificationVersion: "1.0.0",
-            title: "My graph",
+            title: "My chart",
           }),
         })
         .expect(400);
@@ -366,7 +366,7 @@ describe("/api/graphs", function () {
 
     it("400 - public", async function () {
       await request(server)
-        .patch(`/api/graphs/${graph.id}`)
+        .patch(`/api/charts/${chart.id}`)
         .set("Cookie", [generateAuthenticationCookie(user.id)])
         .set("Content-Type", "application/json")
         .send({
@@ -377,7 +377,7 @@ describe("/api/graphs", function () {
 
     it("400 - data", async function () {
       await request(server)
-        .patch(`/api/graphs/${graph.id}`)
+        .patch(`/api/charts/${chart.id}`)
         .set("Cookie", [generateAuthenticationCookie(user.id)])
         .set("Content-Type", "application/json")
         .send({
@@ -388,7 +388,7 @@ describe("/api/graphs", function () {
 
     it("400 - data not string", async function () {
       await request(server)
-        .patch(`/api/graphs/${graph.id}`)
+        .patch(`/api/charts/${chart.id}`)
         .set("Cookie", [generateAuthenticationCookie(user.id)])
         .set("Content-Type", "application/json")
         .send({
@@ -399,12 +399,12 @@ describe("/api/graphs", function () {
 
     it("401", async function () {
       await request(server)
-        .patch(`/api/graphs/${graph.id}`)
+        .patch(`/api/charts/${chart.id}`)
         .set("Content-Type", "application/json")
         .send({
           data: JSON.stringify({
             specificationVersion: "1.0.0",
-            title: "My graph",
+            title: "My chart",
           }),
         })
         .expect(401);
@@ -414,13 +414,13 @@ describe("/api/graphs", function () {
       await setUserStripeSubscription(user.id, "notused", "paused");
 
       await request(server)
-        .patch(`/api/graphs/${graph.id}`)
+        .patch(`/api/charts/${chart.id}`)
         .set("Cookie", [generateAuthenticationCookie(user.id)])
         .set("Content-Type", "application/json")
         .send({
           data: JSON.stringify({
             specificationVersion: "1.0.0",
-            title: "My graph",
+            title: "My chart",
           }),
         })
         .expect(402);
@@ -428,18 +428,18 @@ describe("/api/graphs", function () {
 
     it("403", async function () {
       const user2 = await createUser();
-      const graph = await createGraph(user.id);
+      const chart = await createChart(user.id);
 
       await setUserStripeSubscription(user2.id, "notused", "active");
 
       await request(server)
-        .patch(`/api/graphs/${graph.id}`)
+        .patch(`/api/charts/${chart.id}`)
         .set("Cookie", [generateAuthenticationCookie(user2.id)])
         .set("Content-Type", "application/json")
         .send({
           data: JSON.stringify({
             specificationVersion: "1.0.0",
-            title: "My graph",
+            title: "My chart",
           }),
         })
         .expect(403);
@@ -447,13 +447,13 @@ describe("/api/graphs", function () {
 
     it("404", async function () {
       await request(server)
-        .patch(`/api/graphs/${randomUUID()}`)
+        .patch(`/api/charts/${randomUUID()}`)
         .set("Cookie", [generateAuthenticationCookie(user.id)])
         .set("Content-Type", "application/json")
         .send({
           data: JSON.stringify({
             specificationVersion: "1.0.0",
-            title: "My graph",
+            title: "My chart",
           }),
         })
         .expect(404);
@@ -461,13 +461,13 @@ describe("/api/graphs", function () {
 
     it("422 - invalid spec", async function () {
       await request(server)
-        .patch(`/api/graphs/${graph.id}`)
+        .patch(`/api/charts/${chart.id}`)
         .set("Cookie", [generateAuthenticationCookie(user.id)])
         .set("Content-Type", "application/json")
         .send({
           data: JSON.stringify({
             specificationVersion: "1.0.0",
-            title: "My graph",
+            title: "My chart",
             extraProperty: "should not exist",
           }),
         })
@@ -478,48 +478,48 @@ describe("/api/graphs", function () {
   describe("DELETE /:id", function () {
     it("204", async function () {
       await request(server)
-        .delete(`/api/graphs/${graph.id}`)
+        .delete(`/api/charts/${chart.id}`)
         .set("Cookie", [generateAuthenticationCookie(user.id)])
         .expect(204);
 
-      assert.equal(await getGraphById(graph.id), null);
+      assert.equal(await getChartById(chart.id), null);
     });
 
     it("400", async function () {
       await request(server)
-        .delete("/api/graphs/nope")
+        .delete("/api/charts/nope")
         .set("Cookie", [generateAuthenticationCookie(user.id)])
         .expect(400);
     });
 
     it("401", async function () {
-      request(server).delete(`/api/graphs/${graph}`).expect(401);
+      request(server).delete(`/api/charts/${chart}`).expect(401);
     });
 
     it("402", async function () {
       await setUserStripeSubscription(user.id, "notused", "paused");
 
       await request(server)
-        .delete(`/api/graphs/${graph.id}`)
+        .delete(`/api/charts/${chart.id}`)
         .set("Cookie", [generateAuthenticationCookie(user.id)])
         .expect(402);
     });
 
     it("403", async function () {
       const user2 = await createUser();
-      const graph = await createGraph(user.id);
+      const chart = await createChart(user.id);
 
       await setUserStripeSubscription(user2.id, "notused", "active");
 
       await request(server)
-        .delete(`/api/graphs/${graph.id}`)
+        .delete(`/api/charts/${chart.id}`)
         .set("Cookie", [generateAuthenticationCookie(user2.id)])
         .expect(403);
     });
 
     it("404", async function () {
       await request(server)
-        .delete(`/api/graphs/${randomUUID()}`)
+        .delete(`/api/charts/${randomUUID()}`)
         .set("Cookie", [generateAuthenticationCookie(user.id)])
         .expect(404);
     });
