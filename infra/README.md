@@ -107,3 +107,10 @@ rm -rf/var/www/html
 ```sh
 certbot --nginx -d gg-charts.com
 ```
+
+## Directories
+
+```sh
+mkdir -p /cache
+chmod ugo+w /cache
+```
