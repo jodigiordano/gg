@@ -87,7 +87,6 @@ server.use(
     const stack = (error.stack ?? "").split("\n").at(1);
 
     if (process.env["NODE_ENV"] !== "test" || status >= 500) {
-      console.log(error.stack);
       console.log(
         `${req.method} ${req.url} ${status} ${error.message} ${stack}`,
       );
