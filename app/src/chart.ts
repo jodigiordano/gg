@@ -49,7 +49,7 @@ fetch(`/api/charts/${params.id}`)
       chart = await response.json();
 
       // Set the preview.
-      previewImg.src = previewImg.src.replace("CHART_ID", chart.id);
+      previewImg.src = `/api/charts/${chart.id}.png`;
 
       previewImg.addEventListener("click", function () {
         window.location.href = `/${window.location.hash}`;

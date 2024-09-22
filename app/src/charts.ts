@@ -76,7 +76,7 @@ fetch("/api/charts")
           ".preview img",
         ) as HTMLImageElement;
 
-        previewImg.src = previewImg.src.replace("CHART_ID", chart.id);
+        previewImg.src = `/api/charts/${chart.id}.png`;
 
         previewImg.addEventListener("click", function () {
           window.location.href = `/#id=${chart.id}`;
