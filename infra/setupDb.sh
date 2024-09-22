@@ -12,17 +12,22 @@ if [ -z "$ENV" ]; then
   exit 1
 fi
 
+if [ -z "$SCRIPT" ]; then
+  echo Missing SCRIPT variable
+  exit 1
+fi
+
 . ./.env.$ENV
 
 export PGPASSWORD=$DATABASE_PASSWORD
 
-echo Initializing database $DATABASE_NAME...
+echo Modifying database $DATABASE_NAME with $SCRIPT...
 
 psql \
   --host=$DATABASE_HOST \
   --port=$DATABASE_PORT \
   --username=$DATABASE_USERNAME \
   --dbname=$DATABASE_NAME \
-  --file=./db/init.sql
+  --file=./$SCRIPT
 
 echo Done!
