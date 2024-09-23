@@ -1392,10 +1392,12 @@ export class SystemSimulator {
                 if (link.titleSize.width >= safeLength) {
                   initialPosition = safeEnd;
                 } else {
-                  initialPosition = Math.max(safeStart,
+                  initialPosition = Math.max(
+                    safeStart,
                     safeEnd -
-                    Math.ceil(safeLength / 2 - link.titleSize.width / 2) +
-                    1);
+                      Math.ceil(safeLength / 2 - link.titleSize.width / 2) +
+                      1,
+                  );
                 }
               }
             } /* vertical line */ else if (
@@ -1434,8 +1436,9 @@ export class SystemSimulator {
                   initialPosition = Math.max(
                     safeStart,
                     safeEnd -
-                    Math.ceil(safeLength / 2 - link.titleSize.height / 2) +
-                    1);
+                      Math.ceil(safeLength / 2 - link.titleSize.height / 2) +
+                      1,
+                  );
                 }
               }
             } /* diagonal or square line */ else {
