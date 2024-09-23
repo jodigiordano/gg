@@ -5,6 +5,8 @@ import {
   setLinkTitle,
   TextFont,
   TextAlign,
+  SystemMinSize,
+  TitlePadding,
 } from "@gg/core";
 import Operation from "../operation.js";
 import SystemSelector from "../renderer/systemSelector.js";
@@ -158,6 +160,7 @@ document
           "#000000",
           getFont(),
           getAlign(),
+          subsystem ? SystemMinSize.width - TitlePadding * 2 : 1,
         );
 
         let width = 0;
@@ -184,13 +187,19 @@ document
         width /= BlockSize;
         height /= BlockSize;
 
+        let minOverflowToAddOneMoreBlock = 0.5;
+
+        if (link) {
+          minOverflowToAddOneMoreBlock = 0.25;
+        }
+
         width =
-          width - Math.floor(width) > 0.5
+          width - Math.floor(width) > minOverflowToAddOneMoreBlock
             ? Math.ceil(width)
             : Math.floor(width);
 
         height =
-          height - Math.floor(height) > 0.5
+          height - Math.floor(height) > minOverflowToAddOneMoreBlock
             ? Math.ceil(height)
             : Math.floor(height);
 

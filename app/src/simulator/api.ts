@@ -437,6 +437,7 @@ function getObjectsToRender(): (Sprite | TaggedText)[] {
             color,
             system.titleFont,
             system.titleAlign,
+            SystemMinSize.width - TitlePadding * 2,
           );
 
           title.zIndex = obj.zIndex;
@@ -454,6 +455,7 @@ function getObjectsToRender(): (Sprite | TaggedText)[] {
               : defaultColors[state.theme].linkTitle,
             link.titleFont,
             link.titleAlign,
+            1,
           );
 
           title.zIndex = obj.zIndex;
@@ -476,15 +478,14 @@ function getObjectsToRender(): (Sprite | TaggedText)[] {
 // Initialize options for text I.
 const textBaseConfiguration: Record<string, Record<string, unknown>> = {
   default: {
-    fontSize: BlockSize,
-    wordWrap: false,
+    /* defined per font but key needed for regex */
   },
   __EMOJI__: {},
   h1: {
-    fontSize: BlockSize * 2,
+    /* defined per font but key needed for regex */
   },
   h2: {
-    fontSize: BlockSize * 1.5,
+    /* defined per font but key needed for regex */
   },
   b: {
     fontWeight: "bold",
@@ -535,6 +536,7 @@ export function initializeText(
   color: string,
   font: TextFont,
   align: TextAlign,
+  minWidthForCentering: number,
 ): TaggedText {
   let width: number | null = null;
 
@@ -542,9 +544,18 @@ export function initializeText(
     ...textBaseConfiguration,
     default: {
       fontFamily: font,
-      fontSize: BlockSize,
+      fontSize: BlockSize - BlockSize / 8,
       fill: `${color}`,
       wordWrap: false,
+      paragraphSpacing: font === "text" ? 0 : font === "sketch" ? 1 : 4,
+    },
+    h1: {
+      fontSize: BlockSize * 2 - BlockSize / 4,
+      paragraphSpacing: font === "text" ? -1 : font === "sketch" ? 3 : 8,
+    },
+    h2: {
+      fontSize: BlockSize * 1.5 - BlockSize / 4,
+      paragraphSpacing: font === "text" ? 0 : font === "sketch" ? 1 : 5,
     },
     b: {
       fontFamily: `${font}-bold`,
@@ -555,6 +566,7 @@ export function initializeText(
   const options = {
     drawWhitespace: text.includes("<u>") || text.includes("<a href="),
     imgMap: textImageMap,
+    //debug: true,
   };
 
   if (align === "center" || align === "right") {
@@ -570,10 +582,7 @@ export function initializeText(
       }
     }
 
-    width = Math.max(
-      width!,
-      (SystemMinSize.width - TitlePadding * 2) * BlockSize,
-    );
+    width = Math.max(width!, minWidthForCentering * BlockSize);
   }
 
   const wordWrap = width !== null;
