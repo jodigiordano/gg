@@ -1334,58 +1334,124 @@ export class SystemSimulator {
           // the collisions detection system, and then route the link
           // from A to Z, then Z to B but... the results were horrendous.
           //
-          // Anyway, here's the cheap solution:
-          //
-          // We place the link title in the middle of the path. We then spend a
-          // small amount of CPU cycles to detect collisions with subsystems.
-          // When we find a collision, we move the link title a little bit
-          // alongside the link path.
-          //
           let pathSegment: number[] | undefined;
           let x1: number = 0;
           let y1: number = 0;
           let x2: number = 0;
           let y2: number = 0;
 
-          let iterations = 0;
-          let offset = 0;
-          let colliding = false;
+          // Determine the initial position of the title.
+          let initialPosition: number;
+          let offsetX: number;
+          let offsetY: number;
 
-          do {
-            pathSegment = path.at(Math.floor(path.length / 2) + offset);
+          if (path.length < 2) {
+            offsetX = Math.ceil(link.titleSize.width / 2);
+            offsetY = Math.ceil(link.titleSize.height / 2);
+            initialPosition = Math.floor(path.length / 2);
+          } else {
+            // Horizontal line.
+            //
+            // Consider the following horizontal line:
+            //
+            //   ---A1--B1---B2--A2---
+            //
+            // 1. The segment [A1, A2] is the "safe zone", which means it
+            //    excludes path terminations.
+            // 2. the segment [B1, B2] is the title, which is placed in the
+            //    middle of the safe zone.
+            //
+            if (path.every(([_, y]) => y === path[0]![1])) {
+              offsetX = 0;
+              offsetY = Math.ceil(link.titleSize.height / 2);
 
-            if (pathSegment) {
-              x1 = pathSegment[0]! - Math.ceil(link.titleSize.width / 2);
-              y1 = pathSegment[1]! - Math.ceil(link.titleSize.height / 2);
-              x2 = x1 + link.titleSize.width + 1;
-              y2 = y1 + link.titleSize.height + 1;
+              // Left to right.
+              if (path[1]![0]! > path[0]![0]!) {
+                const safeStart = 0;
 
-              colliding = false;
+                const safeEnd =
+                  link.endPattern === "none"
+                    ? path.length - 1
+                    : path.length - 2;
 
-              for (let x = x1; x <= x2; x++) {
-                if (colliding) {
-                  break;
+                const safeLength = safeEnd - safeStart + 1;
+
+                if (link.titleSize.width >= safeLength) {
+                  initialPosition = safeStart;
+                } else {
+                  initialPosition = Math.max(
+                    safeStart,
+                    Math.ceil(safeLength / 2 - link.titleSize.width / 2) - 1,
+                  );
                 }
+              } /* right to left */ else {
+                const safeStart = link.startPattern === "none" ? 0 : 1;
+                const safeEnd = path.length - 1;
+                const safeLength = safeEnd - safeStart + 1;
 
-                for (let y = y1; y <= y2; y++) {
-                  if (
-                    this.grid[x]![y]!.some(
-                      obj =>
-                        obj.type === SimulatorObjectType.System &&
-                        (obj as SimulatorSubsystem).blackbox,
-                    )
-                  ) {
-                    colliding = true;
-
-                    break;
-                  }
+                if (link.titleSize.width >= safeLength) {
+                  initialPosition = safeEnd;
+                } else {
+                  initialPosition = Math.max(safeStart,
+                    safeEnd -
+                    Math.ceil(safeLength / 2 - link.titleSize.width / 2) +
+                    1);
                 }
               }
-            }
+            } /* vertical line */ else if (
+              path.every(([x, _]) => x === path[0]![0])
+            ) {
+              offsetX = Math.ceil(link.titleSize.width / 2);
+              offsetY = 0;
 
-            // 0, 1, -1, 2, -2, 3, -3, ...
-            offset = offset > 0 ? -offset : Math.abs(offset) + 1;
-          } while (pathSegment && colliding && iterations < 20);
+              // Top to bottom.
+              if (path[1]![1]! > path[0]![1]!) {
+                const safeStart = 0;
+
+                const safeEnd =
+                  link.endPattern === "none"
+                    ? path.length - 1
+                    : path.length - 2;
+
+                const safeLength = safeEnd - safeStart + 1;
+
+                if (link.titleSize.height >= safeLength) {
+                  initialPosition = safeStart;
+                } else {
+                  initialPosition = Math.max(
+                    safeStart,
+                    Math.ceil(safeLength / 2 - link.titleSize.height / 2) - 1,
+                  );
+                }
+              } /* bottom to top */ else {
+                const safeStart = link.startPattern === "none" ? 0 : 1;
+                const safeEnd = path.length - 1;
+                const safeLength = safeEnd - safeStart + 1;
+
+                if (link.titleSize.height >= safeLength) {
+                  initialPosition = safeEnd;
+                } else {
+                  initialPosition = Math.max(
+                    safeStart,
+                    safeEnd -
+                    Math.ceil(safeLength / 2 - link.titleSize.height / 2) +
+                    1);
+                }
+              }
+            } /* diagonal or square line */ else {
+              offsetX = Math.ceil(link.titleSize.width / 2);
+              offsetY = Math.ceil(link.titleSize.height / 2);
+
+              initialPosition = Math.floor(path.length / 2);
+            }
+          }
+
+          pathSegment = path.at(initialPosition)!;
+
+          x1 = pathSegment[0]! - offsetX;
+          y1 = pathSegment[1]! - offsetY;
+          x2 = x1 + link.titleSize.width + 1;
+          y2 = y1 + link.titleSize.height + 1;
 
           this.gridSystems[this.getGridLinkId(link)] = {
             id: this.getGridLinkId(link),
