@@ -106,7 +106,7 @@
           </button>
           <button
             id="operation-system-add"
-            title="Add system"
+            title="Add box"
             class="single-choice"
           >
             <inline-svg>icon-system</inline-svg>
@@ -114,7 +114,7 @@
           </button>
           <button
             id="operation-system-set-parent"
-            title="Set system parent"
+            title="Move box inside or outside another box"
             class="single-choice"
           >
             <inline-svg>icon-parent</inline-svg>
@@ -122,7 +122,7 @@
           </button>
           <button
             id="operation-link"
-            title="Add or modify a link"
+            title="Add or modify a line"
             class="single-choice"
           >
             <inline-svg>icon-link</inline-svg>
@@ -131,7 +131,7 @@
           <button
             id="operation-set-link-pattern-dotted"
             class="hidden single-choice"
-            title="Dotted link"
+            title="Dotted line"
           >
             <inline-svg>icon-link-pattern-dotted</inline-svg>
             <div class="keyboard">w</div>
@@ -139,14 +139,14 @@
           <button
             id="operation-set-link-pattern-solid"
             class="single-choice"
-            title="Solid link"
+            title="Solid line"
           >
             <inline-svg>icon-link-pattern-solid</inline-svg>
             <div class="keyboard">w</div>
           </button>
           <button
             id="operation-set-link-pattern-pipe"
-            title="Pipe link"
+            title="Pipe line"
             class="hidden single-choice"
           >
             <inline-svg>icon-link-pattern-pipe</inline-svg>
@@ -154,7 +154,7 @@
           </button>
           <button
             id="operation-set-title"
-            title="Name systems & links"
+            title="Name boxes & lines"
             class="single-choice"
           >
             <inline-svg>icon-text</inline-svg>
@@ -162,7 +162,7 @@
           </button>
           <button
             id="operation-set-color"
-            title="Color systems & links"
+            title="Color boxes & lines"
             class="single-choice"
           >
             <inline-svg>icon-paint</inline-svg>
@@ -251,11 +251,9 @@
       <div class="content">
         <h1>Guide</h1>
         <p>
-          In gg, you <b>add systems</b> (<inline-svg>icon-system</inline-svg>)
-          to the canvas and then
-          <br />
-          you <b>create links</b> (<inline-svg>icon-link</inline-svg>) between
-          them.
+          In gg, you <b>add boxes</b> <inline-svg>icon-system</inline-svg> to
+          the canvas and then you create links between them with <b>lines</b>
+          <inline-svg>icon-link</inline-svg>.
         </p>
         <table>
           <caption>
@@ -284,67 +282,67 @@
             </tr>
             <tr>
               <td><inline-svg>icon-move</inline-svg></td>
-              <td>Move a system or a link in the canvas.</td>
+              <td>Move a box or a line in the canvas.</td>
             </tr>
             <tr>
               <td><inline-svg>icon-eraser</inline-svg></td>
-              <td>Remove a system or a link from the canvas.</td>
+              <td>Remove a box or a line from the canvas.</td>
             </tr>
             <tr>
               <td><inline-svg>icon-text</inline-svg></td>
-              <td>Add or modify the title of a system or a link.</td>
+              <td>Add or modify the title of a box or a line.</td>
             </tr>
             <tr>
               <td><inline-svg>icon-paint</inline-svg></td>
-              <td>Paint a system or a link.</td>
+              <td>Paint a box or a line.</td>
             </tr>
           </tbody>
         </table>
         <table>
           <caption>
-            Operations on systems
+            Operations on boxes
           </caption>
           <tbody>
             <tr>
               <td><inline-svg>icon-system</inline-svg></td>
-              <td>Add a system to the canvas.</td>
+              <td>Add a box to the canvas.</td>
             </tr>
             <tr>
               <td><inline-svg>icon-parent</inline-svg></td>
-              <td>Move a system inside or outside another system.</td>
+              <td>Move a box inside or outside another box.</td>
             </tr>
           </tbody>
         </table>
         <table>
           <caption>
-            Operations on links
+            Operations on lines
           </caption>
           <tbody>
             <tr>
               <td><inline-svg>icon-link</inline-svg></td>
               <td>
-                <p>Add or modify a link between two systems.</p>
+                <p>Add or modify a line between two boxes.</p>
                 <p>
-                  Hold your pointer on the first system then drag your pointer
-                  to the second system to create the link.
+                  Hold your pointer on the first box then drag your pointer to
+                  the second box to create the line.
                 </p>
-                <p>Click on an existing link to modify its style.</p>
+                <p>Click on an existing line to modify its style.</p>
               </td>
             </tr>
             <tr>
               <td><inline-svg>icon-link-pattern-pipe</inline-svg></td>
-              <td>Draw a pipe link using <inline-svg>icon-link</inline-svg></td>
+              <td>Draw a pipe line using <inline-svg>icon-link</inline-svg></td>
             </tr>
             <tr>
               <td><inline-svg>icon-link-pattern-solid</inline-svg></td>
               <td>
-                Draw a solid link using <inline-svg>icon-link</inline-svg>
+                Draw a solid line using <inline-svg>icon-link</inline-svg>
               </td>
             </tr>
             <tr>
               <td><inline-svg>icon-link-pattern-dotted</inline-svg></td>
               <td>
-                Draw a dotted link using <inline-svg>icon-link</inline-svg>
+                Draw a dotted line using <inline-svg>icon-link</inline-svg>
               </td>
             </tr>
           </tbody>
