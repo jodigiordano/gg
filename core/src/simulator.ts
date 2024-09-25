@@ -280,6 +280,37 @@ export class SystemSimulator {
     return this.grid[gridX]?.[gridY] ?? [];
   }
 
+  getSubsystemsAt(
+    parentSystem: RuntimeSystem | RuntimeSubsystem,
+    worldX1: number,
+    worldY1: number,
+    worldX2: number,
+    worldY2: number,
+  ): RuntimeSubsystem[] {
+    const selectionX1 = worldX1 + this.boundaries.translateX;
+    const selectionY1 = worldY1 + this.boundaries.translateY;
+    const selectionX2 = worldX2 + this.boundaries.translateX;
+    const selectionY2 = worldY2 + this.boundaries.translateY;
+
+    const systems: RuntimeSubsystem[] = [];
+
+    for (const ss of parentSystem.systems) {
+      const gridSS = this.gridSystems[ss.id]!;
+
+      const overlaps =
+        selectionX1 <= gridSS.x2 &&
+        selectionX2 >= gridSS.x1 &&
+        selectionY1 <= gridSS.y2 &&
+        selectionY2 >= gridSS.y1;
+
+      if (overlaps) {
+        systems.push(ss);
+      }
+    }
+
+    return systems;
+  }
+
   getSubsystemAt(worldX: number, worldY: number): RuntimeSubsystem | null {
     const objects = this.getObjectsAt(worldX, worldY);
 
@@ -298,6 +329,20 @@ export class SystemSimulator {
         obj.type === SimulatorObjectType.System ||
         obj.type === SimulatorObjectType.SystemTitle
       ) {
+        return (obj as SimulatorSubsystem).system;
+      }
+    }
+
+    return null;
+  }
+
+  getWhiteboxAt(worldX: number, worldY: number): RuntimeSubsystem | null {
+    const objects = this.getObjectsAt(worldX, worldY);
+
+    for (let i = objects.length - 1; i >= 0; i--) {
+      const obj = objects[i]!;
+
+      if ("blackbox" in obj && !obj.blackbox) {
         return (obj as SimulatorSubsystem).system;
       }
     }
