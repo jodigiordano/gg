@@ -51,7 +51,7 @@
   </tr>
   <tr>
     <td>
-      <img src="./readme/icon-flow.png" /> Data flow simulation
+      <img src="./readme/icon-batch.png" /> Batch operations
     </td>
     <td>
       <img src="./readme/icon-image.png" /> Export to PNG
@@ -68,10 +68,9 @@
       <img src="./readme/icon-undo.png" /> Undo / Redo
     </td>
     <td>
-      <img src="./readme/icon-batch.png" /> Batch operations
+      <img src="./readme/icon-more.png" /> ...and more!
     </td>
     <td>
-      <img src="./readme/icon-more.png" /> ...and more!
     </td>
     <td>
     </td>
