@@ -72,7 +72,7 @@ function onPointerMove(state: State) {
   multiMovingVisuals.visible = false;
 
   //
-  // Move multiple systems - Stage 2.
+  // Move multiple systems - Stage 2.1
   //
   if (multiPickedUpAt) {
     multiSelectedVisuals.visible = true;
@@ -181,6 +181,13 @@ function onPointerMove(state: State) {
       }
     }
 
+    return;
+  }
+
+  //
+  // Move multiple systems - Stage 2.2
+  //
+  if (multiSelected.length) {
     return;
   }
 
