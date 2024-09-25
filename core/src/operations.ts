@@ -44,7 +44,7 @@ export function addSubsystem(
   const rootSystem = getRootSystem(parent as RuntimeSubsystem);
 
   computeSystemSize(newRuntimeSystem, rootSystem.links);
-  moveSystem(newRuntimeSystem, 0, 0);
+  moveSystems([newRuntimeSystem], 0, 0);
 }
 
 /*
@@ -116,7 +116,7 @@ export function setSubsystemTitle(
   );
 
   computeSystemSize(subsystem, rootSystem.links);
-  moveSystem(subsystem, 0, 0);
+  moveSystems([subsystem], 0, 0);
 }
 
 /*
@@ -293,34 +293,44 @@ export function moveSubsystemToParent(
     parent.depth + 1,
   );
 
-  moveSystem(subsystem, 0, 0);
+  moveSystems([subsystem], 0, 0);
 }
 
 /*
- * Move a system.
+ * Move many systems of the same parent.
+ * This function assumes that all systems are from the same parent.
+ * This function assumes at least one system.
  * The resulting system is not validated and may be invalid.
  */
-export function moveSystem(
-  system: RuntimeSubsystem,
+export function moveSystems(
+  systems: RuntimeSubsystem[],
   deltaX: number,
   deltaY: number,
 ): void {
-  // Move the ss.
-  const ssPosition = system.specification.position;
+  // Move the systems.
+  for (const system of systems) {
+    const position = system.specification.position;
 
-  ssPosition.x += deltaX;
-  ssPosition.y += deltaY;
+    position.x += deltaX;
+    position.y += deltaY;
+  }
+
+  // Create a pseudo-system that encompass all moved systems.
+  const pseudoSystem = createPseudoSystem(systems);
 
   const centerSS = {
-    x: ssPosition.x + system.size.width / 2,
-    y: ssPosition.y + system.size.height / 2,
+    x: pseudoSystem.position.x + pseudoSystem.size.width / 2,
+    y: pseudoSystem.position.y + pseudoSystem.size.height / 2,
   };
 
   // Retrieve sibling subsystems.
-  const subsystems = system.parent?.systems ?? [];
+  // Replace moved systems in the siblings collection with the pseudo-system.
+  const parent = systems[0]!.parent;
+  const allSubsystems = (parent?.systems ?? []);
+  const subsystemsInCollision = allSubsystems.filter(ss => !systems.some(s => s.id === ss.id));
+  subsystemsInCollision.push(pseudoSystem);
 
   // Resolve collisions.
-
   let iterations = 0;
   const displacers: Record<string, string[]> = {};
   const displacedThisIteration: string[] = [];
@@ -329,8 +339,8 @@ export function moveSystem(
     displacedThisIteration.length = 0;
     iterations += 1;
 
-    for (const ssACandidate of subsystems) {
-      for (const ssBCandidate of subsystems) {
+    for (const ssACandidate of subsystemsInCollision) {
+      for (const ssBCandidate of subsystemsInCollision) {
         if (
           displacedThisIteration.includes(
             [ssACandidate.id, ssBCandidate.id].join("."),
@@ -388,7 +398,7 @@ export function moveSystem(
 
           // Subsystem displacing.
           ssA =
-            ssACandidate.id === system.id ||
+            ssACandidate.id === pseudoSystem.id ||
             ssACandidateDistance < ssBCandidateDistance
               ? ssACandidate
               : ssBCandidate;
@@ -495,7 +505,7 @@ export function moveSystem(
 
   console.debug("iterations to resolve collisions", iterations);
 
-  for (const system of subsystems) {
+  for (const system of allSubsystems) {
     const ssPosition = system.specification.position;
 
     // For a subsystem inside a parent subsystem,
@@ -542,7 +552,7 @@ export function moveSystem(
 
       // Sibling systems need to stay at their relative position while the
       // parent system is being moved.
-      for (const siblingSystem of subsystems) {
+      for (const siblingSystem of allSubsystems) {
         if (siblingSystem.id !== system.id) {
           const siblingPosition = siblingSystem.specification.position;
 
@@ -582,20 +592,79 @@ export function moveSystem(
   // When a subsystem is part of a parent subsystem,
   // it may make that parent subsystem grows and potentially displaces
   // other subsystems.
-  if (system.parent && system.parent.id) {
-    const rootSystem = getRootSystem(system);
+  if (parent && parent.id) {
+    const rootSystem = getRootSystem(pseudoSystem);
 
-    const sizeBefore = structuredClone(system.parent.size);
+    const sizeBefore = structuredClone(parent.size);
 
-    computeSystemSize(system.parent, rootSystem.links);
+    computeSystemSize(parent, rootSystem.links);
 
     // Optimization: when the parent subsystem shrinks,
     // it won't create collisions.
     if (
-      system.parent.size.width > sizeBefore.width ||
-      system.parent.size.height > sizeBefore.height
+      parent.size.width > sizeBefore.width ||
+      parent.size.height > sizeBefore.height
     ) {
-      moveSystem(system.parent, 0, 0);
+      moveSystems([parent], 0, 0);
     }
+  }
+}
+
+function createPseudoSystem(systems: RuntimeSubsystem[]): RuntimeSubsystem {
+  let left = Number.MAX_SAFE_INTEGER;
+  let right = -Number.MAX_SAFE_INTEGER;
+  let top = Number.MAX_SAFE_INTEGER;
+  let bottom = -Number.MAX_SAFE_INTEGER;
+
+  for (const system of systems) {
+    if (system.specification.position.x < left) {
+      left = system.specification.position.x;
+    }
+
+    if (system.specification.position.x + system.size.width > right) {
+      right = system.specification.position.x + system.size.width;
+    }
+
+    if (system.specification.position.y < top) {
+      top = system.specification.position.y;
+    }
+
+    if (system.specification.position.y + system.size.height > bottom) {
+      bottom = system.specification.position.y + system.size.height;
+    }
+  }
+
+  // Happens when there are no subsystems.
+  if (left > right) {
+    left = right;
+  }
+
+  if (top > bottom) {
+    top = bottom;
+  }
+
+  return {
+    /* Important */
+    id: 'gg-pseudo-system',
+    parent: systems[0]!.parent!,
+    depth: systems[0]!.depth,
+    position: { x: left, y: top },
+    size: { width: right - left, height: bottom - top },
+    specification: {
+      id: 'gg-pseudo-system',
+      position: {
+        x: left,
+        y: top,
+      },
+    },
+    /* Irrelevant */
+    title: '',
+    titlePosition: { x: 0, y: 0 },
+    titleSize: { width: 0, height: 0 },
+    titleFont: "text",
+    titleAlign: "left",
+    index: -1,
+    systems: [],
+    borderPattern: "none",
   }
 }

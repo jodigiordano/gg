@@ -2,7 +2,7 @@ import {
   RuntimeSubsystem,
   RuntimePosition,
   moveSubsystemToParent,
-  moveSystem,
+  moveSystems,
 } from "@gg/core";
 import SystemSelector from "../renderer/systemSelector.js";
 import { modifySpecification } from "../simulator/api.js";
@@ -109,8 +109,8 @@ const operation: Operation = {
         // User moves the ss inside a child ss.
         (parent.id && isChildOf(subsystem!, parent.id))
       ) {
-        moveSystem(
-          subsystem!,
+        moveSystems(
+          [subsystem!],
           state.x - pickedUpAt!.x,
           state.y - pickedUpAt!.y,
         );
