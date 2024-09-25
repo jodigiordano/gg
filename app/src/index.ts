@@ -14,7 +14,6 @@ import addSystemOperation from "./operations/systemAdd.js";
 import setTitleOperation from "./operations/setTitle.js";
 import moveOperation from "./operations/move.js";
 import panOperation from "./operations/pan.js";
-import setSystemParentOperation from "./operations/systemSetParent.js";
 import linkOperation from "./operations/link.js";
 import eraseOperation from "./operations/erase.js";
 import paintOperation from "./operations/paint.js";
@@ -180,8 +179,6 @@ window.addEventListener("keydown", event => {
     switchOperation(setTitleOperation);
   } else if (event.key === "q") {
     switchOperation(linkOperation);
-  } else if (event.key === "4") {
-    switchOperation(setSystemParentOperation);
   } else if (event.key === "2") {
     switchOperation(eraseOperation);
   } else if (event.key === "r") {
@@ -901,7 +898,6 @@ addSystemOperation.setup(state);
 setTitleOperation.setup(state);
 moveOperation.setup(state);
 panOperation.setup(state);
-setSystemParentOperation.setup(state);
 linkOperation.setup(state);
 eraseOperation.setup(state);
 paintOperation.setup(state);
@@ -931,8 +927,6 @@ for (const button of singleChoiceButtons) {
       state.operation = panOperation;
     } else if (button.id === "operation-erase") {
       state.operation = eraseOperation;
-    } else if (button.id === "operation-system-set-parent") {
-      state.operation = setSystemParentOperation;
     } else if (button.id === "operation-set-title") {
       state.operation = setTitleOperation;
     } else if (button.id === "operation-set-color") {

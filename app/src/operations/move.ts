@@ -5,6 +5,7 @@ import {
   moveSystems,
   RuntimeLink,
   moveLink,
+  moveSubsystemsToParent,
 } from "@gg/core";
 import SystemSelector from "../renderer/systemSelector.js";
 import { modifySpecification } from "../simulator/api.js";
@@ -59,8 +60,32 @@ let oneLinkSelected: RuntimeLink | null = null;
 let oneLinkSelectedSystemId: string | null = null;
 
 //
+// Move into a container.
+//
+
+const parentSystemSelectVisual = new SystemSelector();
+
+//
 // Handlers.
 //
+
+function isChildOf(a: RuntimeSubsystem, bId: string): boolean {
+  return a.systems.some(ss => ss.id === bId || isChildOf(ss, bId));
+}
+
+function isSystemPadding(
+  subsystem: RuntimeSubsystem,
+  x: number,
+  y: number,
+): boolean {
+  const insideSystem =
+    x >= subsystem.position.x + 1 &&
+    x <= subsystem.position.x + subsystem.size.width - 2 &&
+    y >= subsystem.position.y + 1 &&
+    y <= subsystem.position.y + subsystem.size.height - 2;
+
+  return !insideSystem;
+}
 
 function onPointerMove(state: State) {
   oneSystemSelectVisual.visible = false;
@@ -70,11 +95,13 @@ function onPointerMove(state: State) {
   multiSelectVisual.visible = false;
   multiSelectedVisuals.visible = true;
   multiMovingVisuals.visible = false;
+  parentSystemSelectVisual.visible = false;
 
   //
   // Move multiple systems - Stage 2.1
   //
   if (multiPickedUpAt) {
+    // Show the moving systems.
     multiSelectedVisuals.visible = true;
     multiMovingVisuals.visible = true;
 
@@ -85,6 +112,24 @@ function onPointerMove(state: State) {
       const visual = multiMovingVisuals.children[index] as SystemSelector;
 
       visual.setPosition(subsystem, { x: deltaX, y: deltaY });
+    }
+
+    // Show hovering another system (container).
+    let parent = state.simulator.getSubsystemAt(state.x, state.y);
+
+    if (
+      // User moves the ss over itself.
+      (parent?.id &&
+        multiSelected.some(selected => selected.id === parent!.id)) ||
+      // User moves the ss inside a child ss.
+      (parent?.id && isChildOf(multiSelected[0]!, parent.id))
+    ) {
+      parent = multiSelected[0]!.parent as RuntimeSubsystem;
+    }
+
+    if (parent?.id) {
+      parentSystemSelectVisual.setPosition(parent, { x: 0, y: 0 });
+      parentSystemSelectVisual.visible = true;
     }
 
     return;
@@ -112,8 +157,8 @@ function onPointerMove(state: State) {
       multiX2 = multiSelectEndAt.x;
       multiY2 = multiSelectStartAt.y;
     } else if (
-      multiSelectStartAt.x > multiSelectEndAt.x &&
-      multiSelectStartAt.y > multiSelectEndAt.y
+      multiSelectStartAt.x >= multiSelectEndAt.x &&
+      multiSelectStartAt.y >= multiSelectEndAt.y
     ) {
       //
       // end +---+
@@ -234,6 +279,7 @@ function onPointerMove(state: State) {
   // Moving one system.
   //
   if (oneSystemSelected && oneSystemPickedUpAt) {
+    // Show the moving system.
     oneSystemSelectVisual.visible = true;
     oneSystemSelectVisual.setPosition(oneSystemSelected, { x: 0, y: 0 });
 
@@ -242,6 +288,23 @@ function onPointerMove(state: State) {
       x: state.x - oneSystemPickedUpAt.x,
       y: state.y - oneSystemPickedUpAt.y,
     });
+
+    // Show hovering another system (container).
+    let parent = state.simulator.getSubsystemAt(state.x, state.y);
+
+    if (
+      // User moves the ss over itself.
+      (parent?.id && oneSystemSelected.id === parent.id) ||
+      // User moves the ss inside a child ss.
+      (parent?.id && isChildOf(oneSystemSelected, parent.id))
+    ) {
+      parent = oneSystemSelected.parent as RuntimeSubsystem;
+    }
+
+    if (parent?.id) {
+      parentSystemSelectVisual.setPosition(parent, { x: 0, y: 0 });
+      parentSystemSelectVisual.visible = true;
+    }
 
     return;
   }
@@ -282,7 +345,14 @@ function onPointerMove(state: State) {
   //
   const ssToPickUp = state.simulator.getSubsystemAt(state.x, state.y);
 
-  if (ssToPickUp) {
+  if (
+    /* Whitebox */
+    (ssToPickUp &&
+      ssToPickUp.systems.length &&
+      isSystemPadding(ssToPickUp, state.x, state.y)) ||
+    /* Blackbox */
+    (ssToPickUp && !ssToPickUp.systems.length)
+  ) {
     oneSystemSelectVisual.visible = true;
     oneSystemSelectVisual.setPosition(ssToPickUp, { x: 0, y: 0 });
   }
@@ -347,6 +417,11 @@ const operation: Operation = {
     //
     viewport.addChild(oneLinkSelectVisual);
     viewport.addChild(oneLinkMoveVisual);
+
+    //
+    // Move into container.
+    //
+    viewport.addChild(parentSystemSelectVisual);
   },
   onBegin,
   onEnd: () => {
@@ -370,6 +445,11 @@ const operation: Operation = {
     oneLinkMoveVisual.visible = false;
 
     //
+    // Move into container.
+    //
+    parentSystemSelectVisual.visible = false;
+
+    //
     // Shared.
     //
     viewport.pause = false;
@@ -387,6 +467,11 @@ const operation: Operation = {
     //
     oneSystemSelectVisual.visible = false;
     oneSystemMoveVisual.visible = false;
+
+    //
+    // Move into container.
+    //
+    parentSystemSelectVisual.visible = false;
 
     //
     // Move one link.
@@ -457,7 +542,14 @@ const operation: Operation = {
     //
     const ssToPickUp = state.simulator.getSubsystemAt(state.x, state.y);
 
-    if (ssToPickUp) {
+    if (
+      /* Whitebox */
+      (ssToPickUp &&
+        ssToPickUp.systems.length &&
+        isSystemPadding(ssToPickUp, state.x, state.y)) ||
+      /* Blackbox */
+      (ssToPickUp && !ssToPickUp.systems.length)
+    ) {
       oneSystemSelected = ssToPickUp;
       oneSystemPickedUpAt = { x: state.x, y: state.y };
 
@@ -471,17 +563,80 @@ const operation: Operation = {
     //
     multiSelectStartAt = { x: state.x, y: state.y };
     multiSelectEndAt = null;
+
+    onPointerMove(state);
   },
   onPointerUp: state => {
     //
-    // Move multiple systems - Stage 2.
+    // Move multiple systems into a container, or not. - Stage 2.
     //
     if (multiPickedUpAt) {
-      const deltaX = state.x - multiPickedUpAt.x;
-      const deltaY = state.y - multiPickedUpAt.y;
+      const parent =
+        state.simulator.getSubsystemAt(state.x, state.y) ??
+        state.simulator.getSystem();
 
       modifySpecification(() => {
-        moveSystems(multiSelected, deltaX, deltaY);
+        if (
+          // User moves the ss over itself.
+          multiSelected.some(ss => ss.id === parent.id) ||
+          // User moves the ss inside the same parent.
+          multiSelected.some(ss => ss.parent!.id === parent.id) ||
+          // User moves the ss inside a child ss.
+          (parent.id && multiSelected.some(ss => isChildOf(ss, parent.id)))
+        ) {
+          const deltaX = state.x - multiPickedUpAt!.x;
+          const deltaY = state.y - multiPickedUpAt!.y;
+
+          moveSystems(multiSelected, deltaX, deltaY);
+        } else {
+          // Move the ss inside a container.
+          if (parent.id) {
+            // The ss dragged by the user.
+            const multiPickedUp = state.simulator.getSubsystemAt(
+              multiPickedUpAt!.x,
+              multiPickedUpAt!.y,
+            )!;
+
+            // Delta of top-left of the ss with the dragging anchor.
+            const localDeltaX = multiPickedUp!.position.x - multiPickedUpAt!.x;
+            const localDeltaY = multiPickedUp!.position.y - multiPickedUpAt!.y;
+
+            // Padding and title offsets.
+            const containerOffset = state.simulator.getParentOffset(parent);
+
+            // Local position inside the container.
+            const x =
+              state.x - parent.position.x - containerOffset.x + localDeltaX;
+
+            const y =
+              state.y - parent.position.y - containerOffset.y + localDeltaY;
+
+            // Local positions of other moved systems,
+            // based on the system dragged by the user.
+            const positions = multiSelected.map(ss => {
+              if (ss.id === multiPickedUp.id) {
+                return { x, y };
+              }
+
+              return {
+                x: x + (ss.position.x - multiPickedUp.position.x),
+                y: y + (ss.position.y - multiPickedUp.position.y),
+              };
+            });
+
+            moveSubsystemsToParent(multiSelected, parent, positions);
+          } /* Move the ss outside of a container (i.e. in the root container) */ else {
+            const deltaX = state.x - multiPickedUpAt!.x;
+            const deltaY = state.y - multiPickedUpAt!.y;
+
+            const positions = multiSelected.map(ss => ({
+              x: ss.position.x + deltaX,
+              y: ss.position.y + deltaY,
+            }));
+
+            moveSubsystemsToParent(multiSelected, parent, positions);
+          }
+        }
       }).then(() => {
         onBegin(state);
         tick();
@@ -526,14 +681,47 @@ const operation: Operation = {
     }
 
     //
-    // Move one system.
+    // Move one system into a container, or not.
     //
     if (oneSystemSelected && oneSystemPickedUpAt) {
-      const deltaX = state.x - oneSystemPickedUpAt.x;
-      const deltaY = state.y - oneSystemPickedUpAt.y;
+      const parent =
+        state.simulator.getSubsystemAt(state.x, state.y) ??
+        state.simulator.getSystem();
 
       modifySpecification(() => {
-        moveSystems([oneSystemSelected!], deltaX, deltaY);
+        if (
+          // User moves the ss over itself.
+          oneSystemSelected!.id === parent.id ||
+          // User moves the ss inside the same parent.
+          oneSystemSelected!.parent!.id === parent.id ||
+          // User moves the ss inside a child ss.
+          (parent.id && isChildOf(oneSystemSelected!, parent.id))
+        ) {
+          moveSystems(
+            [oneSystemSelected!],
+            state.x - oneSystemPickedUpAt!.x,
+            state.y - oneSystemPickedUpAt!.y,
+          );
+        } else {
+          const deltaX = oneSystemSelected!.position.x - oneSystemPickedUpAt!.x;
+          const deltaY = oneSystemSelected!.position.y - oneSystemPickedUpAt!.y;
+
+          let x: number;
+          let y: number;
+
+          // Move the ss inside a container.
+          if (parent.id) {
+            const offset = state.simulator.getParentOffset(parent);
+
+            x = state.x - parent.position.x - offset.x + deltaX;
+            y = state.y - parent.position.y - offset.y + deltaY;
+          } /* Move the ss outside of a container (i.e. in the root container) */ else {
+            x = state.x + deltaX;
+            y = state.y + deltaY;
+          }
+
+          moveSubsystemsToParent([oneSystemSelected!], parent, [{ x, y }]);
+        }
       }).then(() => {
         onBegin(state);
         tick();

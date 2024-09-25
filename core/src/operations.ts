@@ -1,4 +1,9 @@
-import { RuntimeSystem, RuntimeSubsystem, RuntimeLink } from "./runtime.js";
+import {
+  RuntimeSystem,
+  RuntimeSubsystem,
+  RuntimeLink,
+  RuntimePosition,
+} from "./runtime.js";
 import { isSubsystemOf, SystemMargin } from "./helpers.js";
 import {
   Link,
@@ -245,26 +250,41 @@ export function setLinkTitle(
   link.title = newTitle;
 }
 
-export function moveSubsystemToParent(
-  subsystem: RuntimeSubsystem,
+/*
+ * Move many systems of the same parent into another parent.
+ * This function assumes that all systems are from the same parent.
+ * This function assumes at least one system.
+ * The resulting system is not validated and may be invalid.
+ */
+export function moveSubsystemsToParent(
+  subsystems: RuntimeSubsystem[],
   parent: RuntimeSystem | RuntimeSubsystem,
-  x: number,
-  y: number,
+  positions: RuntimePosition[],
 ): void {
-  // Remove subsystem from previous parent.
-  subsystem.parent!.specification.systems?.splice(subsystem.index, 1);
-  subsystem.parent!.systems.splice(subsystem.index, 1);
+  // Remove subsystems from previous parent.
+  const previousParent = subsystems[0]!.parent!;
 
+  for (let i = previousParent.systems.length - 1; i >= 0; i--) {
+    if (subsystems.some(ss => ss.id === previousParent.systems[i]!.id)) {
+      previousParent.systems.splice(i, 1);
+      previousParent.specification.systems?.splice(i, 1);
+    }
+  }
+
+  // Add subsystems to new parent.
   parent.specification.systems ??= [];
-  parent.specification.systems!.push(subsystem.specification);
 
-  subsystem.specification.position.x = x;
-  subsystem.specification.position.y = y;
+  for (const [index, subsystem] of subsystems.entries()) {
+    parent.specification.systems!.push(subsystem.specification);
 
-  parent.systems.push(subsystem);
+    subsystem.specification.position.x = positions[index]!.x;
+    subsystem.specification.position.y = positions[index]!.y;
+
+    parent.systems.push(subsystem);
+  }
 
   // Find the root system.
-  const rootSystem = getRootSystem(subsystem);
+  const rootSystem = getRootSystem(subsystems[0]!);
 
   // Move links of the subsystem.
   const speclinks = rootSystem.specification.links ?? [];
@@ -285,15 +305,17 @@ export function moveSubsystemToParent(
     }
   }
 
-  initSystem(
-    subsystem,
-    parent,
-    subsystem.specification,
-    parent.systems.length - 1,
-    parent.depth + 1,
-  );
+  for (const subsystem of subsystems) {
+    initSystem(
+      subsystem,
+      parent,
+      subsystem.specification,
+      parent.systems.length - 1,
+      parent.depth + 1,
+    );
+  }
 
-  moveSystems([subsystem], 0, 0);
+  moveSystems(subsystems, 0, 0);
 }
 
 /*
