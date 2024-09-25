@@ -326,8 +326,10 @@ export function moveSystems(
   // Retrieve sibling subsystems.
   // Replace moved systems in the siblings collection with the pseudo-system.
   const parent = systems[0]!.parent;
-  const allSubsystems = (parent?.systems ?? []);
-  const subsystemsInCollision = allSubsystems.filter(ss => !systems.some(s => s.id === ss.id));
+  const allSubsystems = parent?.systems ?? [];
+  const subsystemsInCollision = allSubsystems.filter(
+    ss => !systems.some(s => s.id === ss.id),
+  );
   subsystemsInCollision.push(pseudoSystem);
 
   // Resolve collisions.
@@ -645,20 +647,20 @@ function createPseudoSystem(systems: RuntimeSubsystem[]): RuntimeSubsystem {
 
   return {
     /* Important */
-    id: 'gg-pseudo-system',
+    id: "gg-pseudo-system",
     parent: systems[0]!.parent!,
     depth: systems[0]!.depth,
     position: { x: left, y: top },
     size: { width: right - left, height: bottom - top },
     specification: {
-      id: 'gg-pseudo-system',
+      id: "gg-pseudo-system",
       position: {
         x: left,
         y: top,
       },
     },
     /* Irrelevant */
-    title: '',
+    title: "",
     titlePosition: { x: 0, y: 0 },
     titleSize: { width: 0, height: 0 },
     titleFont: "text",
@@ -666,5 +668,5 @@ function createPseudoSystem(systems: RuntimeSubsystem[]): RuntimeSubsystem {
     index: -1,
     systems: [],
     borderPattern: "none",
-  }
+  };
 }
