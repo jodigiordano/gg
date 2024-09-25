@@ -79,10 +79,10 @@
 
 ## Examples
 
-- [Systems and sub-systems](https://gg-charts.com/#id=be6f8310-4023-43bf-b755-41a4fae250a7)
+- [Boxes and containers](https://gg-charts.com/#id=be6f8310-4023-43bf-b755-41a4fae250a7)
 - [Colors](https://gg-charts.com/#id=bf442e5c-2689-4953-b228-593e4648ccb7)
-- [Labels on links](https://gg-charts.com/#id=5aba2725-ec43-4107-899f-4cbd05666735)
-- [Various link styles and directions](https://gg-charts.com/#id=cea38700-8656-4b21-872b-af4d4ed7c050)
+- [Labels on lines](https://gg-charts.com/#id=5aba2725-ec43-4107-899f-4cbd05666735)
+- [Various line styles and directions](https://gg-charts.com/#id=cea38700-8656-4b21-872b-af4d4ed7c050)
 - [Fonts, Alignment, Emojis, Unicode, etc.](https://gg-charts.com/#id=8125ea14-b289-4186-b3b4-b842216db5e2)
 
 ## Usage
