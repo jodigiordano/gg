@@ -51,7 +51,7 @@
   </tr>
   <tr>
     <td>
-      <img src="./readme/icon-batch.png" /> Batch operations
+      <img src="./readme/icon-batch.png" /> Multi select
     </td>
     <td>
       <img src="./readme/icon-image.png" /> Export to PNG
