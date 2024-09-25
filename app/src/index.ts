@@ -13,6 +13,7 @@ import Operation from "./operation.js";
 import addSystemOperation from "./operations/systemAdd.js";
 import setTitleOperation from "./operations/setTitle.js";
 import moveOperation from "./operations/move.js";
+import panOperation from "./operations/pan.js";
 import setSystemParentOperation from "./operations/systemSetParent.js";
 import linkOperation from "./operations/link.js";
 import eraseOperation from "./operations/erase.js";
@@ -899,6 +900,7 @@ document
 addSystemOperation.setup(state);
 setTitleOperation.setup(state);
 moveOperation.setup(state);
+panOperation.setup(state);
 setSystemParentOperation.setup(state);
 linkOperation.setup(state);
 eraseOperation.setup(state);
@@ -925,6 +927,8 @@ for (const button of singleChoiceButtons) {
       state.operation = addSystemOperation;
     } else if (button.id === "operation-move") {
       state.operation = moveOperation;
+    } else if (button.id === "operation-pan") {
+      state.operation = panOperation;
     } else if (button.id === "operation-erase") {
       state.operation = eraseOperation;
     } else if (button.id === "operation-system-set-parent") {
