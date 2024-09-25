@@ -85,13 +85,18 @@ export async function save(value: string): Promise<void> {
 }
 
 export function isNewUser(): boolean {
-  const hasLocalSave = window.localStorage.getItem("file");
-  const hasCloudSave = !!getUrlParams().file;
+  const hasLocalStorageSave = window.localStorage.getItem("file");
+  const hasLocalSave = !!getUrlParams().file;
+  const hasCloudSave = !!getUrlParams().id;
 
   const hasSeenWelcomeMessage =
     window.localStorage.getItem("welcomed") === "true";
 
-  const isNewUser = !hasLocalSave && !hasCloudSave && !hasSeenWelcomeMessage;
+  const isNewUser =
+    !hasLocalStorageSave &&
+    !hasLocalSave &&
+    !hasCloudSave &&
+    !hasSeenWelcomeMessage;
 
   if (isNewUser) {
     window.localStorage.setItem("welcomed", "true");
