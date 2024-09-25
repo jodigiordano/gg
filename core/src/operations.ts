@@ -667,6 +667,7 @@ function createPseudoSystem(systems: RuntimeSubsystem[]): RuntimeSubsystem {
     titleAlign: "left",
     index: -1,
     systems: [],
+    links: [],
     borderPattern: "none",
   };
 }
