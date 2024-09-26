@@ -48,6 +48,19 @@ export default class SystemSelector extends Container {
 
     // @ts-ignore
     this.addChild(this.bottomRight);
+
+    this.tint = "#0de500";
+  }
+
+  get tint(): string {
+    return this.topLeft.tint.toString();
+  }
+
+  set tint(tint: string) {
+    this.topLeft.tint = tint;
+    this.topRight.tint = tint;
+    this.bottomLeft.tint = tint;
+    this.bottomRight.tint = tint;
   }
 
   setPosition(subsystem: RuntimeSubsystem, delta: RuntimePosition): void {

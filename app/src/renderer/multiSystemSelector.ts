@@ -38,6 +38,10 @@ export default class MultiSystemSelector extends Container {
     this.lassoVisual.visible = visible;
   }
 
+  set tint(tint: string) {
+    this.lassoVisual.tint = tint;
+  }
+
   reset() {
     this.selected.length = 0;
     this.selectedVisual.removeChildren();
@@ -128,6 +132,7 @@ export default class MultiSystemSelector extends Container {
       const visual = new SystemSelector();
       visual.visible = true;
       visual.setPosition(subsystem, { x: 0, y: 0 });
+      visual.tint = this.lassoVisual.tint;
 
       // @ts-ignore
       this.selectedVisual.addChild(visual);
