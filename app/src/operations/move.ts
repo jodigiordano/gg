@@ -1,4 +1,3 @@
-import { Container } from "pixi.js";
 import {
   RuntimeSubsystem,
   RuntimePosition,
@@ -7,13 +6,14 @@ import {
   moveLink,
   moveSubsystemsToParent,
 } from "@gg/core";
-import SystemSelector from "../renderer/systemSelector.js";
 import { modifySpecification } from "../simulator/api.js";
 import Operation from "../operation.js";
 import { State } from "../state.js";
 import viewport from "../renderer/viewport.js";
 import { tick } from "../renderer/pixi.js";
 import SystemLinker from "../renderer/systemLinker.js";
+import SystemSelector from "../renderer/systemSelector.js";
+import MultiSystemSelector from "../renderer/multiSystemSelector.js";
 
 //
 // Move multiple systems.
@@ -21,19 +21,11 @@ import SystemLinker from "../renderer/systemLinker.js";
 
 // State 1: select systems.
 
-const multiSelectVisual = new SystemSelector();
-const multiSelectedVisuals = new Container();
-const multiMovingVisuals = new Container();
+const multiSelectVisual = new MultiSystemSelector();
+const multiMovingVisual = new MultiSystemSelector();
 
 let multiSelectStartAt: RuntimePosition | null = null;
 let multiSelectEndAt: RuntimePosition | null = null;
-
-let multiSelected: RuntimeSubsystem[] = [];
-
-let multiX1 = 0;
-let multiY1 = 0;
-let multiX2 = 0;
-let multiY2 = 0;
 
 // State 2: move systems.
 
@@ -92,9 +84,12 @@ function onPointerMove(state: State) {
   oneSystemMoveVisual.visible = false;
   oneLinkSelectVisual.visible = false;
   oneLinkMoveVisual.visible = false;
-  multiSelectVisual.visible = false;
-  multiSelectedVisuals.visible = true;
-  multiMovingVisuals.visible = false;
+  multiSelectVisual.visible = true;
+  multiSelectVisual.lassoVisible = false;
+  multiSelectVisual.selectedVisible = true;
+  multiMovingVisual.visible = true;
+  multiMovingVisual.lassoVisible = false;
+  multiMovingVisual.selectedVisible = false;
   parentSystemSelectVisual.visible = false;
 
   //
@@ -102,16 +97,13 @@ function onPointerMove(state: State) {
   //
   if (multiPickedUpAt) {
     // Show the moving systems.
-    multiSelectedVisuals.visible = true;
-    multiMovingVisuals.visible = true;
+    multiMovingVisual.selectedVisible = true;
 
     const deltaX = state.x - multiPickedUpAt.x;
     const deltaY = state.y - multiPickedUpAt.y;
 
-    for (const [index, subsystem] of multiSelected.entries()) {
-      const visual = multiMovingVisuals.children[index] as SystemSelector;
-
-      visual.setPosition(subsystem, { x: deltaX, y: deltaY });
+    for (const subsystem of multiSelectVisual.selected) {
+      multiMovingVisual.setSystemPosition(subsystem, { x: deltaX, y: deltaY });
     }
 
     // Show hovering another system (container).
@@ -120,11 +112,13 @@ function onPointerMove(state: State) {
     if (
       // User moves the ss over itself.
       (parent?.id &&
-        multiSelected.some(selected => selected.id === parent!.id)) ||
+        multiSelectVisual.selected.some(
+          selected => selected.id === parent!.id,
+        )) ||
       // User moves the ss inside a child ss.
-      (parent?.id && isChildOf(multiSelected[0]!, parent.id))
+      (parent?.id && isChildOf(multiSelectVisual.selected[0]!, parent.id))
     ) {
-      parent = multiSelected[0]!.parent as RuntimeSubsystem;
+      parent = multiSelectVisual.selected[0]!.parent as RuntimeSubsystem;
     }
 
     if (parent?.id) {
@@ -139,92 +133,27 @@ function onPointerMove(state: State) {
   // Move multiple systems - Stage 1.
   //
   if (multiSelectStartAt) {
-    multiSelectVisual.visible = true;
+    multiSelectVisual.lassoVisible = true;
 
     multiSelectEndAt = { x: state.x, y: state.y };
 
-    if (
-      multiSelectStartAt.x < multiSelectEndAt.x &&
-      multiSelectStartAt.y > multiSelectEndAt.y
-    ) {
-      //
-      // x1,y1 +---+ end
-      //       |   |
-      // start +---+ x2,y2
-      //
-      multiX1 = multiSelectStartAt.x;
-      multiY1 = multiSelectEndAt.y;
-      multiX2 = multiSelectEndAt.x;
-      multiY2 = multiSelectStartAt.y;
-    } else if (
-      multiSelectStartAt.x >= multiSelectEndAt.x &&
-      multiSelectStartAt.y >= multiSelectEndAt.y
-    ) {
-      //
-      // end +---+
-      //     |   |
-      //     +---+ start
-      //
-      multiX1 = multiSelectEndAt.x;
-      multiY1 = multiSelectEndAt.y;
-      multiX2 = multiSelectStartAt.x;
-      multiY2 = multiSelectStartAt.y;
-    } else if (
-      multiSelectStartAt.x > multiSelectEndAt.x &&
-      multiSelectStartAt.y < multiSelectEndAt.y
-    ) {
-      //
-      // x1,y1 +---+ start
-      //       |   |
-      //   end +---+ x2,y2
-      //
-      multiX1 = multiSelectEndAt.x;
-      multiY1 = multiSelectStartAt.y;
-      multiX2 = multiSelectStartAt.x;
-      multiY2 = multiSelectEndAt.y;
-    } else {
-      //
-      // start +---+
-      //       |   |
-      //       +---+ end
-      //
-      multiX1 = multiSelectStartAt.x;
-      multiY1 = multiSelectStartAt.y;
-      multiX2 = multiSelectEndAt.x;
-      multiY2 = multiSelectEndAt.y;
-    }
-
-    multiSelectVisual.setPositionRect(multiX1, multiY1, multiX2, multiY2);
-
-    const parent =
-      state.simulator.getWhiteboxAt(
-        multiSelectStartAt.x,
-        multiSelectStartAt.y,
-      ) ?? state.simulator.getSystem();
-
-    multiSelected = state.simulator.getSubsystemsAt(
-      parent,
-      multiX1,
-      multiY1,
-      multiX2,
-      multiY2,
+    multiSelectVisual.setLassoPosition(
+      multiSelectStartAt.x,
+      multiSelectStartAt.y,
+      multiSelectEndAt.x,
+      multiSelectEndAt.y,
     );
 
-    // TODO: don't systematically re-create SystemSelectors.
-    // Instead, re-use them.
+    multiSelectVisual.setSelected(state.simulator);
 
-    multiSelectedVisuals.removeChildren();
+    multiMovingVisual.setLassoPosition(
+      multiSelectStartAt.x,
+      multiSelectStartAt.y,
+      multiSelectEndAt.x,
+      multiSelectEndAt.y,
+    );
 
-    if (multiSelected.length) {
-      for (const subsystem of multiSelected) {
-        const visual = new SystemSelector();
-        visual.visible = true;
-        visual.setPosition(subsystem, { x: 0, y: 0 });
-
-        // @ts-ignore
-        multiSelectedVisuals.addChild(visual);
-      }
-    }
+    multiMovingVisual.setSelected(state.simulator);
 
     return;
   }
@@ -232,7 +161,7 @@ function onPointerMove(state: State) {
   //
   // Move multiple systems - Stage 2.2
   //
-  if (multiSelected.length) {
+  if (multiSelectVisual.selected.length) {
     return;
   }
 
@@ -362,18 +291,18 @@ function onBegin(state: State): void {
   //
   // Move multiple systems.
   //
-  multiSelectVisual.visible = true;
+  multiSelectVisual.reset();
+  multiSelectVisual.visible = false;
+  multiSelectVisual.lassoVisible = false;
+  multiSelectVisual.selectedVisible = false;
 
-  multiSelectedVisuals.visible = true;
-  multiSelectedVisuals.removeChildren();
-
-  multiMovingVisuals.visible = true;
-  multiMovingVisuals.removeChildren();
+  multiMovingVisual.reset();
+  multiMovingVisual.visible = false;
+  multiMovingVisual.lassoVisible = false;
+  multiMovingVisual.selectedVisible = false;
 
   multiSelectStartAt = null;
   multiSelectEndAt = null;
-
-  multiSelected.length = 0;
 
   multiPickedUpAt = null;
 
@@ -403,8 +332,7 @@ const operation: Operation = {
     // Move multiple systems.
     //
     viewport.addChild(multiSelectVisual);
-    viewport.addChild(multiSelectedVisuals);
-    viewport.addChild(multiMovingVisuals);
+    viewport.addChild(multiMovingVisual);
 
     //
     // Move one system.
@@ -429,8 +357,7 @@ const operation: Operation = {
     // Move multiple systems.
     //
     multiSelectVisual.visible = false;
-    multiSelectedVisuals.visible = false;
-    multiMovingVisuals.visible = false;
+    multiMovingVisual.visible = false;
 
     //
     // Move one system.
@@ -459,8 +386,7 @@ const operation: Operation = {
     // Move multiple systems.
     //
     multiSelectVisual.visible = false;
-    //multiSelectedVisuals.visible = false;
-    multiMovingVisuals.visible = false;
+    multiMovingVisual.visible = false;
 
     //
     // Move one system.
@@ -491,17 +417,11 @@ const operation: Operation = {
     //
     // Move multiple systems - Stage 2.
     //
-    if (multiSystemToPickUp && multiSelected.includes(multiSystemToPickUp)) {
+    if (
+      multiSystemToPickUp &&
+      multiSelectVisual.selected.includes(multiSystemToPickUp)
+    ) {
       multiPickedUpAt = { x: state.x, y: state.y };
-
-      for (const subsystem of multiSelected) {
-        const visual = new SystemSelector();
-        visual.visible = true;
-        visual.setPosition(subsystem, { x: 0, y: 0 });
-
-        // @ts-ignore
-        multiMovingVisuals.addChild(visual);
-      }
 
       return;
     }
@@ -578,16 +498,17 @@ const operation: Operation = {
       modifySpecification(() => {
         if (
           // User moves the ss over itself.
-          multiSelected.some(ss => ss.id === parent.id) ||
+          multiSelectVisual.selected.some(ss => ss.id === parent.id) ||
           // User moves the ss inside the same parent.
-          multiSelected.some(ss => ss.parent!.id === parent.id) ||
+          multiSelectVisual.selected.some(ss => ss.parent!.id === parent.id) ||
           // User moves the ss inside a child ss.
-          (parent.id && multiSelected.some(ss => isChildOf(ss, parent.id)))
+          (parent.id &&
+            multiSelectVisual.selected.some(ss => isChildOf(ss, parent.id)))
         ) {
           const deltaX = state.x - multiPickedUpAt!.x;
           const deltaY = state.y - multiPickedUpAt!.y;
 
-          moveSystems(multiSelected, deltaX, deltaY);
+          moveSystems(multiSelectVisual.selected, deltaX, deltaY);
         } else {
           // Move the ss inside a container.
           if (parent.id) {
@@ -613,7 +534,7 @@ const operation: Operation = {
 
             // Local positions of other moved systems,
             // based on the system dragged by the user.
-            const positions = multiSelected.map(ss => {
+            const positions = multiSelectVisual.selected.map(ss => {
               if (ss.id === multiPickedUp.id) {
                 return { x, y };
               }
@@ -624,17 +545,25 @@ const operation: Operation = {
               };
             });
 
-            moveSubsystemsToParent(multiSelected, parent, positions);
+            moveSubsystemsToParent(
+              multiSelectVisual.selected,
+              parent,
+              positions,
+            );
           } /* Move the ss outside of a container (i.e. in the root container) */ else {
             const deltaX = state.x - multiPickedUpAt!.x;
             const deltaY = state.y - multiPickedUpAt!.y;
 
-            const positions = multiSelected.map(ss => ({
+            const positions = multiSelectVisual.selected.map(ss => ({
               x: ss.position.x + deltaX,
               y: ss.position.y + deltaY,
             }));
 
-            moveSubsystemsToParent(multiSelected, parent, positions);
+            moveSubsystemsToParent(
+              multiSelectVisual.selected,
+              parent,
+              positions,
+            );
           }
         }
       }).then(() => {
@@ -650,7 +579,7 @@ const operation: Operation = {
     //
     if (multiSelectStartAt && multiSelectEndAt) {
       // Systems are selected in onPointerMove.
-      if (multiSelected.length) {
+      if (multiSelectVisual.selected.length) {
         multiSelectStartAt = null;
         multiSelectEndAt = null;
 
