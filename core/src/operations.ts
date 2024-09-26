@@ -57,7 +57,15 @@ export function addSubsystem(
  * The resulting system is not validated and may be invalid.
  */
 export function removeSubsystem(subsystem: RuntimeSubsystem): void {
-  subsystem.parent!.specification.systems?.splice(subsystem.index, 1);
+  const systems = subsystem.parent!.specification.systems!;
+
+  // Perfomed this way so this function can be called multiple times.
+  for (let i = systems.length - 1; i >= 0; i--) {
+    if (systems[i]!.id === subsystem.id) {
+      systems.splice(i, 1);
+      break;
+    }
+  }
 
   const rootSystem = getRootSystem(subsystem);
 
