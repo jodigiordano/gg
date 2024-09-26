@@ -173,15 +173,23 @@ window.addEventListener("keydown", event => {
   // The user press "Esc" to cancel any ongoing operation.
   if (event.key === "Escape" || event.key === "1") {
     switchOperation(moveOperation);
-  } else if (event.key === "3") {
-    switchOperation(addSystemOperation);
-  } else if (event.key === "e") {
-    switchOperation(setTitleOperation);
-  } else if (event.key === "q") {
-    switchOperation(linkOperation);
   } else if (event.key === "2") {
     switchOperation(eraseOperation);
-  } else if (event.key === "r") {
+  } else if (event.key === "3") {
+    switchOperation(addSystemOperation);
+  } else if (event.key === "4") {
+    switchOperation(setTitleOperation);
+  } else if (event.key === "q") {
+    if (!linkPatternPipe.classList.contains("hidden")) {
+      setLinkPatternSolid();
+    } else if (!linkPatternSolid.classList.contains("hidden")) {
+      setLinkPatternDotted();
+    } else {
+      setLinkPatternPipe();
+    }
+  } else if (event.key === "w") {
+    switchOperation(linkOperation);
+  } else if (event.key === "e") {
     switchOperation(paintOperation);
   } else if (event.key === "[") {
     undo();
@@ -193,14 +201,6 @@ window.addEventListener("keydown", event => {
     cameraZoomIn();
   } else if (event.key === "-") {
     cameraZoomOut();
-  } else if (event.key === "w") {
-    if (!linkPatternPipe.classList.contains("hidden")) {
-      setLinkPatternSolid();
-    } else if (!linkPatternSolid.classList.contains("hidden")) {
-      setLinkPatternDotted();
-    } else {
-      setLinkPatternPipe();
-    }
   }
 
   tick();
