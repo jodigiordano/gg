@@ -17,6 +17,7 @@ import panOperation from "./operations/pan.js";
 import linkOperation from "./operations/link.js";
 import eraseOperation from "./operations/erase.js";
 import paintOperation from "./operations/paint.js";
+import duplicateOperation from "./operations/duplicate.js";
 import {
   getJsonEditorValue,
   isJsonEditorOpen,
@@ -191,6 +192,8 @@ window.addEventListener("keydown", event => {
     switchOperation(linkOperation);
   } else if (event.key === "e") {
     switchOperation(paintOperation);
+  } else if (event.key === "r") {
+    switchOperation(duplicateOperation);
   } else if (event.key === "[") {
     undo();
   } else if (event.key === "]") {
@@ -201,6 +204,8 @@ window.addEventListener("keydown", event => {
     cameraZoomIn();
   } else if (event.key === "-") {
     cameraZoomOut();
+  } else {
+    state.operation.onKeyDown(state, event);
   }
 
   tick();
@@ -900,6 +905,7 @@ moveOperation.setup(state);
 panOperation.setup(state);
 linkOperation.setup(state);
 eraseOperation.setup(state);
+duplicateOperation.setup(state);
 paintOperation.setup(state);
 
 // Initialize buttons.
@@ -927,6 +933,8 @@ for (const button of singleChoiceButtons) {
       state.operation = panOperation;
     } else if (button.id === "operation-erase") {
       state.operation = eraseOperation;
+    } else if (button.id === "operation-duplicate") {
+      state.operation = duplicateOperation;
     } else if (button.id === "operation-set-title") {
       state.operation = setTitleOperation;
     } else if (button.id === "operation-set-color") {
