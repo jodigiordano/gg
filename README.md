@@ -68,9 +68,10 @@
       <img src="./readme/icon-undo.png" /> Undo / Redo
     </td>
     <td>
-      <img src="./readme/icon-more.png" /> ...and more!
+      <img src="./readme/icon-duplicate.png" /> Copy / Paste
     </td>
     <td>
+      <img src="./readme/icon-more.png" /> ...and more!
     </td>
     <td>
     </td>
