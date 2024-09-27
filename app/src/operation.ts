@@ -10,4 +10,5 @@ export default interface Operation {
   onEnd: (state: State) => void;
   onMute: (state: State) => void;
   onUnmute: (state: State) => void;
+  onKeyDown: (state: State, event: KeyboardEvent) => void;
 }

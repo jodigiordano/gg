@@ -5,6 +5,9 @@ import {
   RuntimeLink,
   moveLink,
   moveSubsystemsToParent,
+  removeSubsystem,
+  System,
+  RuntimeSystem,
 } from "@gg/core";
 import { modifySpecification } from "../simulator/api.js";
 import Operation from "../operation.js";
@@ -665,6 +668,59 @@ const operation: Operation = {
     onBegin(state);
   },
   onPointerMove,
+  onKeyDown: (state, event) => {
+    //
+    // Delete many systems.
+    //
+    if (multiSelectVisual.selected.length && event.key === "Delete") {
+      modifySpecification(() => {
+        for (const subsystem of multiSelectVisual.selected) {
+          removeSubsystem(subsystem);
+        }
+      }).then(() => {
+        onBegin(state);
+        tick();
+      });
+
+      return;
+    }
+
+    //
+    // Copy many systems & links in the clipboard.
+    //
+    if (
+      multiSelectVisual.selected.length &&
+      event.ctrlKey &&
+      event.key === "c"
+    ) {
+      let rootSystem = multiSelectVisual
+        .selected[0]! as unknown as RuntimeSystem;
+
+      while (rootSystem.parent) {
+        rootSystem = rootSystem.parent;
+      }
+
+      const specification: System = {
+        specificationVersion: "1.0.0",
+        title: "",
+        systems: multiSelectVisual.selected.map(ss => ss.specification),
+        links: (rootSystem.specification.links ?? []).filter(
+          link =>
+            multiSelectVisual.selected.some(ss => ss.id === link.a) &&
+            multiSelectVisual.selected.some(ss => ss.id === link.b),
+        ),
+      };
+
+      navigator.clipboard
+        .writeText(JSON.stringify(specification, null, 2))
+        .then(() => {
+          onBegin(state);
+          tick();
+        });
+
+      return;
+    }
+  },
 };
 
 export default operation;

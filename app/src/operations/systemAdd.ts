@@ -105,6 +105,7 @@ const operation: Operation = {
 
     onPointerMove(state);
   },
+  onKeyDown: () => {},
 };
 
 export default operation;

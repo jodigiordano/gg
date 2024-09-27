@@ -323,7 +323,7 @@ const operation: Operation = {
     viewport.addChild(selectLinkVisual3);
   },
   onBegin: onPointerMove,
-  onEnd() {
+  onEnd: () => {
     selectSystemVisual.visible = false;
     selectLinkVisual1.visible = false;
     selectLinkVisual2.visible = false;
@@ -339,8 +339,9 @@ const operation: Operation = {
   },
   onUnmute: onPointerMove,
   onPointerMove,
-  onPointerDown() {},
-  onPointerUp(state) {
+  onPointerDown: () => {},
+  onKeyDown: () => {},
+  onPointerUp: state => {
     if (dialog.open) {
       return;
     }

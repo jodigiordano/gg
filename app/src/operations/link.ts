@@ -203,6 +203,7 @@ const operation: Operation = {
     onPointerMove(state);
   },
   onPointerMove,
+  onKeyDown: () => {},
 };
 
 export default operation;

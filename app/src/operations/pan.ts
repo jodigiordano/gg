@@ -10,6 +10,7 @@ const operation: Operation = {
   onPointerUp: () => {},
   onPointerDown: () => {},
   onPointerMove: () => {},
+  onKeyDown: () => {},
 };
 
 export default operation;

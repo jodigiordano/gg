@@ -109,7 +109,7 @@ const operation: Operation = {
     dialog.showModal();
     dialog.inert = false;
   },
-  onEnd() {
+  onEnd: () => {
     selectVisual1.visible = false;
     selectVisual2.visible = false;
 
@@ -122,8 +122,9 @@ const operation: Operation = {
   },
   onUnmute: onPointerMove,
   onPointerMove,
-  onPointerDown() {},
-  onPointerUp(state) {
+  onPointerDown: () => {},
+  onKeyDown: () => {},
+  onPointerUp: state => {
     const linkByTitle = state.simulator.getLinkByTitleAt(state.x, state.y);
 
     if (linkByTitle) {

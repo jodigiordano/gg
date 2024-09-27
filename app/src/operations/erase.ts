@@ -1,20 +1,72 @@
-import { removeLink, removeSubsystem } from "@gg/core";
+import { removeLink, removeSubsystem, RuntimePosition } from "@gg/core";
 import { modifySpecification } from "../simulator/api.js";
 import SystemSelector from "../renderer/systemSelector.js";
 import Operation from "../operation.js";
 import { State } from "../state.js";
 import viewport from "../renderer/viewport.js";
 import { tick } from "../renderer/pixi.js";
+import MultiSystemSelector from "../renderer/multiSystemSelector.js";
+
+//
+// Erase multiple systems.
+//
+
+const multiSelectVisual = new MultiSystemSelector();
+
+multiSelectVisual.tint = "#e6194b";
+
+let multiSelectStartAt: RuntimePosition | null = null;
+let multiSelectEndAt: RuntimePosition | null = null;
+
+//
+// Erase one system.
+//
 
 const selectSystemVisual = new SystemSelector();
+
+selectSystemVisual.tint = "#e6194b";
+
+//
+// Erase one link.
+//
+
 const selectLinkVisual1 = new SystemSelector();
 const selectLinkVisual2 = new SystemSelector();
 
+selectLinkVisual1.tint = "#e6194b";
+selectLinkVisual2.tint = "#e6194b";
+
+//
+// Handlers.
+//
+
 function onPointerMove(state: State) {
+  multiSelectVisual.visible = true;
+  multiSelectVisual.lassoVisible = false;
+  multiSelectVisual.selectedVisible = true;
   selectSystemVisual.visible = false;
   selectLinkVisual1.visible = false;
   selectLinkVisual2.visible = false;
-  viewport.pause = false;
+
+  //
+  // Erase multiple systems.
+  //
+  if (multiSelectStartAt) {
+    multiSelectVisual.lassoVisible = true;
+
+    multiSelectEndAt = { x: state.x, y: state.y };
+
+    multiSelectVisual.setLassoPosition(
+      multiSelectStartAt.x,
+      multiSelectStartAt.y,
+      multiSelectEndAt.x,
+      multiSelectEndAt.y,
+    );
+
+    multiSelectVisual.setSelected(state.simulator);
+
+    return;
+  }
 
   const link = state.simulator.getLinkAt(state.x, state.y);
 
@@ -57,15 +109,36 @@ function onPointerMove(state: State) {
   }
 }
 
+function onBegin(state: State): void {
+  //
+  // Erase multiple systems.
+  //
+  multiSelectVisual.reset();
+  multiSelectVisual.visible = false;
+  multiSelectVisual.lassoVisible = false;
+  multiSelectVisual.selectedVisible = false;
+
+  multiSelectStartAt = null;
+  multiSelectEndAt = null;
+
+  //
+  // Shared.
+  //
+  viewport.pause = false;
+  onPointerMove(state);
+}
+
 const operation: Operation = {
   id: "operation-erase",
   setup: () => {
+    viewport.addChild(multiSelectVisual);
     viewport.addChild(selectSystemVisual);
     viewport.addChild(selectLinkVisual1);
     viewport.addChild(selectLinkVisual2);
   },
-  onBegin: onPointerMove,
+  onBegin,
   onEnd: () => {
+    multiSelectVisual.visible = false;
     selectSystemVisual.visible = false;
     selectLinkVisual1.visible = false;
     selectLinkVisual2.visible = false;
@@ -73,38 +146,116 @@ const operation: Operation = {
     viewport.pause = false;
   },
   onMute: () => {
+    multiSelectVisual.visible = false;
     selectSystemVisual.visible = false;
     selectLinkVisual1.visible = false;
     selectLinkVisual2.visible = false;
   },
   onUnmute: onPointerMove,
+  onPointerDown: state => {
+    viewport.pause = true;
+
+    //
+    // Erase one link.
+    //
+    const link = state.simulator.getLinkAt(state.x, state.y);
+
+    if (link) {
+      return;
+    }
+
+    //
+    // Erase one system.
+    //
+    const subsystem = state.simulator.getSubsystemAt(state.x, state.y);
+
+    if (subsystem) {
+      return;
+    }
+
+    //
+    // Erase multiple systems.
+    //
+    multiSelectStartAt = { x: state.x, y: state.y };
+    multiSelectEndAt = null;
+
+    onPointerMove(state);
+  },
   onPointerUp: state => {
+    //
+    // Erase multiple systems.
+    //
+    if (multiSelectStartAt && multiSelectEndAt) {
+      // Systems are selected in onPointerMove.
+      if (multiSelectVisual.selected.length) {
+        modifySpecification(() => {
+          for (const subsystem of multiSelectVisual.selected) {
+            removeSubsystem(subsystem);
+          }
+        }).then(() => {
+          onBegin(state);
+          tick();
+        });
+      } else {
+        onBegin(state);
+      }
+
+      return;
+    }
+
+    //
+    // Erase one link.
+    //
     const link = state.simulator.getLinkAt(state.x, state.y);
 
     if (link) {
       modifySpecification(() => {
         removeLink(state.simulator.getSystem(), link);
       }).then(() => {
-        onPointerMove(state);
+        onBegin(state);
         tick();
       });
-    } else {
-      const subsystem = state.simulator.getSubsystemAt(state.x, state.y);
 
-      if (subsystem) {
-        modifySpecification(() => {
-          removeSubsystem(subsystem);
-        }).then(() => {
-          onPointerMove(state);
-          tick();
-        });
-      }
+      return;
     }
 
-    onPointerMove(state);
+    //
+    // Erase one system.
+    //
+    const subsystem = state.simulator.getSubsystemAt(state.x, state.y);
+
+    if (subsystem) {
+      modifySpecification(() => {
+        removeSubsystem(subsystem);
+      }).then(() => {
+        onBegin(state);
+        tick();
+      });
+    }
+
+    //
+    // Operation incomplete.
+    //
+    onBegin(state);
   },
-  onPointerDown: () => {},
   onPointerMove,
+  onKeyDown: (state, event) => {
+    //
+    // Delete many systems.
+    //
+    if (multiSelectVisual.selected.length && event.key === "Delete") {
+      modifySpecification(() => {
+        for (const subsystem of multiSelectVisual.selected) {
+          removeSubsystem(subsystem);
+        }
+      }).then(() => {
+        onBegin(state);
+        tick();
+      });
+
+      return;
+    }
+  },
 };
 
 export default operation;
