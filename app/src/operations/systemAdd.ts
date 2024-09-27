@@ -11,10 +11,10 @@ const parentVisual = new SystemSelector();
 
 function onPointerMove(state: State): void {
   placeholderVisual.setPositionRect(
-    state.x,
-    state.y,
-    state.x + SystemMinSize.width - 1,
-    state.y + SystemMinSize.height - 1,
+    state.x - Math.floor(SystemMinSize.width / 2),
+    state.y - Math.floor(SystemMinSize.height / 2),
+    state.x + SystemMinSize.width - 1 - Math.floor(SystemMinSize.width / 2),
+    state.y + SystemMinSize.height - 1 - Math.floor(SystemMinSize.height / 2),
   );
 
   const parent = state.simulator.getSubsystemAt(state.x, state.y);
@@ -74,6 +74,9 @@ const operation: Operation = {
       x = state.x;
       y = state.y;
     }
+
+    x -= Math.floor(SystemMinSize.width / 2);
+    y -= Math.floor(SystemMinSize.height / 2);
 
     modifySpecification(() => {
       addSubsystem(parent, x, y, "");
