@@ -26,7 +26,7 @@ export function addSubsystem(
   title: string,
 ): void {
   const newSpecSystem: Subsystem = {
-    id: (Math.random() + 1).toString(36).substring(7),
+    id: generateUniqueId(),
     position: { x, y },
     title,
   };
@@ -256,6 +256,94 @@ export function setLinkTitle(
   }
 
   link.title = newTitle;
+}
+
+/*
+ * Duplicate many systems of the same parent.
+ * This function assumes that all systems are from the same parent.
+ * This function assumes at least one system.
+ * The resulting system is not validated and may be invalid.
+ */
+export function duplicateSystems(
+  subsystems: RuntimeSubsystem[],
+  parent: RuntimeSystem | RuntimeSubsystem,
+  positions: RuntimePosition[],
+): void {
+  const duplicatedIds: Record<string, string> = {};
+
+  const toMove: RuntimeSubsystem[] = [];
+
+  for (const [index, subsystem] of subsystems.entries()) {
+    // Duplicate the system.
+    const duplicatedSpecSystem = structuredClone(subsystem.specification);
+
+    duplicatedSpecSystem.id = generateUniqueId();
+    duplicatedSpecSystem.position = positions[index]!;
+
+    duplicatedIds[subsystem.id] = duplicatedSpecSystem.id;
+
+    // Generate unique ids for sub-systems.
+    const toVisit = [...(duplicatedSpecSystem.systems ?? [])];
+
+    while (toVisit.length) {
+      const ss = toVisit.pop()!;
+
+      if (ss.systems) {
+        toVisit.push(...ss.systems);
+      }
+
+      const newId = generateUniqueId();
+
+      duplicatedIds[ss.id] = newId;
+
+      ss.id = newId;
+    }
+
+    // Add the system to the parent.
+    parent.specification.systems ??= [];
+    parent.specification.systems.push(duplicatedSpecSystem);
+
+    // Duplicate the runtime system.
+    const duplicatedRuntimeSystem = structuredClone(
+      duplicatedSpecSystem,
+    ) as RuntimeSubsystem;
+
+    duplicatedRuntimeSystem.size = structuredClone(subsystem.size);
+
+    // Add the runtime system to the parent.
+    parent.systems.push(duplicatedRuntimeSystem);
+
+    // Initialize the runtime system.
+    initSystem(
+      duplicatedRuntimeSystem,
+      parent,
+      duplicatedSpecSystem,
+      parent.systems.length - 1,
+      parent.depth + 1,
+    );
+
+    toMove.push(duplicatedRuntimeSystem);
+  }
+
+  // Find the root system.
+  const rootSystem = getRootSystem(subsystems[0]!);
+
+  // Duplicate links.
+  const links = rootSystem.specification.links ?? [];
+  const linksToDuplicate = links.filter(
+    link => duplicatedIds[link.a] && duplicatedIds[link.b],
+  );
+
+  for (const link of linksToDuplicate) {
+    const duplicatedLink = structuredClone(link);
+
+    duplicatedLink.a = duplicatedIds[link.a]!;
+    duplicatedLink.b = duplicatedIds[link.b]!;
+
+    links.push(duplicatedLink);
+  }
+
+  moveSystems(toMove, 0, 0);
 }
 
 /*
@@ -700,4 +788,8 @@ function createPseudoSystem(systems: RuntimeSubsystem[]): RuntimeSubsystem {
     links: [],
     borderPattern: "none",
   };
+}
+
+function generateUniqueId(): string {
+  return (Math.random() + 1).toString(36).substring(7);
 }
