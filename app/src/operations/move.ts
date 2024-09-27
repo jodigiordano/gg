@@ -670,6 +670,33 @@ const operation: Operation = {
   onPointerMove,
   onKeyDown: (state, event) => {
     //
+    // Select everything.
+    //
+    if (event.ctrlKey && event.key === "a") {
+      onBegin(state);
+
+      multiSelectVisual.setLassoPosition(
+        -Number.MAX_SAFE_INTEGER,
+        -Number.MAX_SAFE_INTEGER,
+        Number.MAX_SAFE_INTEGER,
+        Number.MAX_SAFE_INTEGER,
+      );
+
+      multiSelectVisual.setSelectedFromLasso(state.simulator);
+
+      multiMovingVisual.setLassoPosition(
+        -Number.MAX_SAFE_INTEGER,
+        -Number.MAX_SAFE_INTEGER,
+        Number.MAX_SAFE_INTEGER,
+        Number.MAX_SAFE_INTEGER,
+      );
+
+      multiMovingVisual.setSelectedFromLasso(state.simulator);
+
+      return;
+    }
+
+    //
     // Delete many systems.
     //
     if (multiSelectVisual.selected.length && event.key === "Delete") {

@@ -171,6 +171,12 @@ window.addEventListener("keydown", event => {
     return;
   }
 
+  // The user press "ctrl+a" to select everything,
+  // so we switch to the move operation.
+  if (event.ctrlKey && event.key === "a") {
+    switchOperation(moveOperation);
+  }
+
   // The user press "Esc" to cancel any ongoing operation.
   if (event.key === "Escape" || event.key === "1") {
     switchOperation(moveOperation);
