@@ -207,7 +207,7 @@ function onPointerMove(state: State) {
 
 function onBegin(state: State): void {
   //
-  // Move multiple systems.
+  // Duplicate multiple systems.
   //
   multiSelectVisual.reset();
   multiSelectVisual.visible = false;
@@ -225,7 +225,7 @@ function onBegin(state: State): void {
   multiPickedUpAt = null;
 
   //
-  // Move one system.
+  // Duplicate one system.
   //
   oneSystemSelected = null;
   oneSystemPickedUpAt = null;
