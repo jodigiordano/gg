@@ -1,9 +1,6 @@
 
 # `gg`
 
-> [!IMPORTANT]
-> This editor is still in alpha so expect rough edges. 😅
-
 `gg` is a **diagramming editor** for flowcharts, organizational diagrams, mind maps, process diagrams, network diagrams, database diagrams and more! It helps you produce complex diagrams easily, with its simple UI and its innovative approach to layout.
 
 <p align="center">
