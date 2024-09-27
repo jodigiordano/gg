@@ -177,6 +177,12 @@ window.addEventListener("keydown", event => {
     switchOperation(moveOperation);
   }
 
+  // The user press "ctrl+v" to paste a selection,
+  // so we switch to the duplicate operation.
+  if (event.ctrlKey && event.key === "v") {
+    switchOperation(duplicateOperation);
+  }
+
   // The user press "Esc" to cancel any ongoing operation.
   if (event.key === "Escape" || event.key === "1") {
     switchOperation(moveOperation);

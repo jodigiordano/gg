@@ -263,11 +263,15 @@ export function setLinkTitle(
  * This function assumes that all systems are from the same parent.
  * This function assumes at least one system.
  * The resulting system is not validated and may be invalid.
+ *
+ * TODO: refactor into a "mergeSystem" function that takes a RuntimeSystem
+ * to merge into a RuntimeSystem | RuntimeSubsystem.
  */
 export function duplicateSystems(
   subsystems: RuntimeSubsystem[],
   parent: RuntimeSystem | RuntimeSubsystem,
   positions: RuntimePosition[],
+  additionalLinks: RuntimeLink[],
 ): void {
   const duplicatedIds: Record<string, string> = {};
 
@@ -326,13 +330,18 @@ export function duplicateSystems(
   }
 
   // Find the root system.
-  const rootSystem = getRootSystem(subsystems[0]!);
+  const rootSystem = getRootSystem(parent as RuntimeSubsystem);
 
   // Duplicate links.
   const links = rootSystem.specification.links ?? [];
-  const linksToDuplicate = links.filter(
-    link => duplicatedIds[link.a] && duplicatedIds[link.b],
-  );
+
+  const linksToDuplicate = links
+    .filter(link => duplicatedIds[link.a] && duplicatedIds[link.b])
+    .concat(
+      additionalLinks
+        .filter(link => !links.some(l => l.a === link.a && l.b === link.b))
+        .map(link => link.specification),
+    );
 
   for (const link of linksToDuplicate) {
     const duplicatedLink = structuredClone(link);

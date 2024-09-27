@@ -1,4 +1,11 @@
-import { RuntimeSubsystem, RuntimePosition, duplicateSystems } from "@gg/core";
+import {
+  RuntimeSubsystem,
+  RuntimePosition,
+  duplicateSystems,
+  RuntimeSystem,
+  System,
+  removeSubsystem,
+} from "@gg/core";
 import { modifySpecification } from "../simulator/api.js";
 import Operation from "../operation.js";
 import { State } from "../state.js";
@@ -6,6 +13,7 @@ import viewport from "../renderer/viewport.js";
 import { tick } from "../renderer/pixi.js";
 import SystemSelector from "../renderer/systemSelector.js";
 import MultiSystemSelector from "../renderer/multiSystemSelector.js";
+import { loadJSON } from "@gg/core";
 
 //
 // Duplicate multiple systems.
@@ -48,6 +56,12 @@ const parentSystemSelectVisual = new SystemSelector();
 parentSystemSelectVisual.tint = "#4363d8";
 
 //
+// Duplicate a system on paste.
+//
+
+let systemFromClipboard: RuntimeSystem | null = null;
+
+//
 // Handlers.
 //
 
@@ -81,9 +95,15 @@ function onPointerMove(state: State) {
   parentSystemSelectVisual.visible = false;
 
   //
-  // Move multiple systems - Stage 2.1
+  // Move multiple systems - Stage 2.1 or
+  // Paste from clipboard
   //
   if (multiPickedUpAt) {
+    // Do not show the selected systems when they are coming from the clipboard.
+    if (systemFromClipboard) {
+      multiSelectVisual.visible = false;
+    }
+
     // Show the moving systems.
     multiMovingVisual.selectedVisible = true;
 
@@ -229,6 +249,11 @@ function onBegin(state: State): void {
   //
   oneSystemSelected = null;
   oneSystemPickedUpAt = null;
+
+  //
+  // Duplicate from clipboard.
+  //
+  systemFromClipboard = null;
 
   //
   // Shared.
@@ -384,19 +409,25 @@ const operation: Operation = {
               x: ss.specification.position.x + deltaX,
               y: ss.specification.position.y + deltaY,
             })),
+            systemFromClipboard?.links ?? [],
           );
         } else {
           // Duplicate the ss inside a container.
           if (parent.id) {
             // The ss dragged by the user.
-            const multiPickedUp = state.simulator.getSubsystemAt(
-              multiPickedUpAt!.x,
-              multiPickedUpAt!.y,
-            )!;
+            const multiPickedUp = systemFromClipboard
+              ? null
+              : state.simulator.getSubsystemAt(
+                  multiPickedUpAt!.x,
+                  multiPickedUpAt!.y,
+                )!;
+
+            const draggedX = multiPickedUp?.position?.x ?? 0;
+            const draggedY = multiPickedUp?.position?.y ?? 0;
 
             // Delta of top-left of the ss with the dragging anchor.
-            const localDeltaX = multiPickedUp!.position.x - multiPickedUpAt!.x;
-            const localDeltaY = multiPickedUp!.position.y - multiPickedUpAt!.y;
+            const localDeltaX = draggedX - multiPickedUpAt!.x;
+            const localDeltaY = draggedY - multiPickedUpAt!.y;
 
             // Padding and title offsets.
             const containerOffset = state.simulator.getParentOffset(parent);
@@ -411,17 +442,22 @@ const operation: Operation = {
             // Local positions of other moved systems,
             // based on the system dragged by the user.
             const positions = multiSelectVisual.selected.map(ss => {
-              if (ss.id === multiPickedUp.id) {
+              if (ss.id === multiPickedUp?.id) {
                 return { x, y };
               }
 
               return {
-                x: x + (ss.position.x - multiPickedUp.position.x),
-                y: y + (ss.position.y - multiPickedUp.position.y),
+                x: x + (ss.position.x - draggedX),
+                y: y + (ss.position.y - draggedY),
               };
             });
 
-            duplicateSystems(multiSelectVisual.selected, parent, positions);
+            duplicateSystems(
+              multiSelectVisual.selected,
+              parent,
+              positions,
+              systemFromClipboard?.links ?? [],
+            );
           } /* Duplicate the ss outside of a container (i.e. in the root container) */ else {
             const deltaX = state.x - multiPickedUpAt!.x;
             const deltaY = state.y - multiPickedUpAt!.y;
@@ -431,7 +467,13 @@ const operation: Operation = {
               y: ss.position.y + deltaY,
             }));
 
-            duplicateSystems(multiSelectVisual.selected, parent, positions);
+            duplicateSystems(
+              multiSelectVisual.selected,
+              parent,
+              positions,
+
+              systemFromClipboard?.links ?? [],
+            );
           }
         }
       }).then(() => {
@@ -476,16 +518,21 @@ const operation: Operation = {
             // User duplicates the ss inside a child ss.
             (parent.id && isChildOf(oneSystemSelected!, parent.id)))
         ) {
-          duplicateSystems([oneSystemSelected!], parent, [
-            {
-              x:
-                oneSystemSelected!.specification.position.x +
-                (state.x - oneSystemPickedUpAt!.x),
-              y:
-                oneSystemSelected!.specification.position.y +
-                (state.y - oneSystemPickedUpAt!.y),
-            },
-          ]);
+          duplicateSystems(
+            [oneSystemSelected!],
+            parent,
+            [
+              {
+                x:
+                  oneSystemSelected!.specification.position.x +
+                  (state.x - oneSystemPickedUpAt!.x),
+                y:
+                  oneSystemSelected!.specification.position.y +
+                  (state.y - oneSystemPickedUpAt!.y),
+              },
+            ],
+            systemFromClipboard?.links ?? [],
+          );
         } else {
           const deltaX = oneSystemSelected!.position.x - oneSystemPickedUpAt!.x;
           const deltaY = oneSystemSelected!.position.y - oneSystemPickedUpAt!.y;
@@ -504,7 +551,12 @@ const operation: Operation = {
             y = state.y + deltaY;
           }
 
-          duplicateSystems([oneSystemSelected!], parent, [{ x, y }]);
+          duplicateSystems(
+            [oneSystemSelected!],
+            parent,
+            [{ x, y }],
+            systemFromClipboard?.links ?? [],
+          );
         }
       }).then(() => {
         onBegin(state);
@@ -520,7 +572,124 @@ const operation: Operation = {
     onBegin(state);
   },
   onPointerMove,
-  onKeyDown: () => {},
+  onKeyDown: (state, event) => {
+    //
+    // Copy many systems & links in the clipboard.
+    //
+    if (
+      multiSelectVisual.selected.length &&
+      event.ctrlKey &&
+      event.key === "c"
+    ) {
+      let rootSystem = multiSelectVisual
+        .selected[0]! as unknown as RuntimeSystem;
+
+      while (rootSystem.parent) {
+        rootSystem = rootSystem.parent;
+      }
+
+      const specification: System = {
+        specificationVersion: "1.0.0",
+        title: "",
+        systems: multiSelectVisual.selected.map(ss => ss.specification),
+        links: (rootSystem.specification.links ?? []).filter(
+          link =>
+            multiSelectVisual.selected.some(ss => ss.id === link.a) &&
+            multiSelectVisual.selected.some(ss => ss.id === link.b),
+        ),
+      };
+
+      navigator.clipboard
+        .writeText(JSON.stringify(specification, null, 2))
+        .then(() => {
+          onBegin(state);
+          tick();
+        });
+
+      return;
+    }
+
+    //
+    // Delete many systems.
+    //
+    if (multiSelectVisual.selected.length && event.key === "Delete") {
+      modifySpecification(() => {
+        for (const subsystem of multiSelectVisual.selected) {
+          removeSubsystem(subsystem);
+        }
+      }).then(() => {
+        onBegin(state);
+        tick();
+      });
+
+      return;
+    }
+
+    //
+    // Paste many systems & links from the clipboard.
+    //
+    if (event.ctrlKey && event.key === "v") {
+      navigator.clipboard.readText().then(fromClipboard => {
+        let result: ReturnType<typeof loadJSON>;
+
+        try {
+          result = loadJSON(fromClipboard);
+        } catch {
+          /* NOOP */
+          return;
+        }
+
+        if (result.errors.length) {
+          return;
+        }
+
+        systemFromClipboard = result.system;
+
+        multiSelectVisual.setSelectedFromSystem(systemFromClipboard);
+        multiMovingVisual.setSelectedFromSystem(systemFromClipboard);
+
+        let left = Number.MAX_SAFE_INTEGER;
+        let right = -Number.MAX_SAFE_INTEGER;
+        let top = Number.MAX_SAFE_INTEGER;
+        let bottom = -Number.MAX_SAFE_INTEGER;
+
+        for (const system of systemFromClipboard.systems) {
+          if (system.position.x < left) {
+            left = system.position.x;
+          }
+
+          if (system.position.x + system.size.width > right) {
+            right = system.position.x + system.size.width;
+          }
+
+          if (system.position.y < top) {
+            top = system.position.y;
+          }
+
+          if (system.position.y + system.size.height > bottom) {
+            bottom = system.position.y + system.size.height;
+          }
+        }
+
+        // Happens when there are no subsystems.
+        if (left > right) {
+          left = right;
+        }
+
+        if (top > bottom) {
+          top = bottom;
+        }
+
+        multiPickedUpAt = {
+          x: Math.floor(left + (right - left) / 2),
+          y: Math.floor(top + (bottom - top) / 2),
+        };
+
+        onPointerMove(state);
+        tick();
+      });
+    }
+  },
 };
 
 export default operation;
