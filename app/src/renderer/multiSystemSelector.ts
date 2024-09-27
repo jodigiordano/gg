@@ -1,4 +1,9 @@
-import { RuntimePosition, RuntimeSubsystem, SystemSimulator } from "@gg/core";
+import {
+  RuntimePosition,
+  RuntimeSubsystem,
+  RuntimeSystem,
+  SystemSimulator,
+} from "@gg/core";
 import { Container } from "pixi.js";
 import SystemSelector from "./systemSelector.js";
 
@@ -110,7 +115,13 @@ export default class MultiSystemSelector extends Container {
     );
   }
 
-  setSelected(simulator: SystemSimulator): void {
+  setSelectedFromSystem(system: RuntimeSystem): void {
+    this.selected = [...system.systems];
+
+    this.setSelectedVisuals();
+  }
+
+  setSelectedFromLasso(simulator: SystemSimulator): void {
     const parent =
       simulator.getWhiteboxAt(this.lassoStart.x, this.lassoStart.y) ??
       simulator.getSystem();
@@ -123,9 +134,12 @@ export default class MultiSystemSelector extends Container {
       this.lassoEnd.y,
     );
 
-    // TODO: don't systematically re-create SystemSelectors.
-    // Instead, re-use them.
+    this.setSelectedVisuals();
+  }
 
+  // TODO: don't systematically re-create SystemSelectors.
+  // Instead, re-use them.
+  private setSelectedVisuals(): void {
     this.selectedVisual.removeChildren();
 
     for (const subsystem of this.selected) {

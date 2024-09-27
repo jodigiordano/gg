@@ -63,7 +63,7 @@ function onPointerMove(state: State) {
       multiSelectEndAt.y,
     );
 
-    multiSelectVisual.setSelected(state.simulator);
+    multiSelectVisual.setSelectedFromLasso(state.simulator);
 
     return;
   }
