@@ -1,4 +1,9 @@
-import { removeLink, removeSubsystem, RuntimePosition } from "@gg/core";
+import {
+  removeLink,
+  removeSubsystem,
+  RuntimePosition,
+  RuntimeSubsystem,
+} from "@gg/core";
 import { modifySpecification } from "../simulator/api.js";
 import SystemSelector from "../renderer/systemSelector.js";
 import Operation from "../operation.js";
@@ -39,6 +44,20 @@ selectLinkVisual2.tint = "#e6194b";
 //
 // Handlers.
 //
+
+function isSystemPadding(
+  subsystem: RuntimeSubsystem,
+  x: number,
+  y: number,
+): boolean {
+  const insideSystem =
+    x >= subsystem.position.x + 1 &&
+    x <= subsystem.position.x + subsystem.size.width - 2 &&
+    y >= subsystem.position.y + 1 &&
+    y <= subsystem.position.y + subsystem.size.height - 2;
+
+  return !insideSystem;
+}
 
 function onPointerMove(state: State) {
   multiSelectVisual.visible = true;
@@ -101,7 +120,14 @@ function onPointerMove(state: State) {
 
   const subsystem = state.simulator.getSubsystemAt(state.x, state.y);
 
-  if (subsystem) {
+  if (
+    /* Whitebox */
+    (subsystem &&
+      subsystem.systems.length &&
+      isSystemPadding(subsystem, state.x, state.y)) ||
+    /* Blackbox */
+    (subsystem && !subsystem.systems.length)
+  ) {
     selectSystemVisual.visible = true;
     selectSystemVisual.setPosition(subsystem, { x: 0, y: 0 });
 
@@ -169,7 +195,14 @@ const operation: Operation = {
     //
     const subsystem = state.simulator.getSubsystemAt(state.x, state.y);
 
-    if (subsystem) {
+    if (
+      /* Whitebox */
+      (subsystem &&
+        subsystem.systems.length &&
+        isSystemPadding(subsystem, state.x, state.y)) ||
+      /* Blackbox */
+      (subsystem && !subsystem.systems.length)
+    ) {
       return;
     }
 
@@ -224,7 +257,14 @@ const operation: Operation = {
     //
     const subsystem = state.simulator.getSubsystemAt(state.x, state.y);
 
-    if (subsystem) {
+    if (
+      /* Whitebox */
+      (subsystem &&
+        subsystem.systems.length &&
+        isSystemPadding(subsystem, state.x, state.y)) ||
+      /* Blackbox */
+      (subsystem && !subsystem.systems.length)
+    ) {
       modifySpecification(() => {
         removeSubsystem(subsystem);
       }).then(() => {
