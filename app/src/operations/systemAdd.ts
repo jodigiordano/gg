@@ -10,6 +10,8 @@ const placeholderVisual = new SystemSelector();
 const parentVisual = new SystemSelector();
 
 function onPointerMove(state: State): void {
+  viewport.pause = true;
+
   placeholderVisual.setPositionRect(
     state.x - Math.floor(SystemMinSize.width / 2),
     state.y - Math.floor(SystemMinSize.height / 2),
@@ -27,8 +29,6 @@ function onPointerMove(state: State): void {
   }
 }
 
-let pointerIsDown = false;
-
 const operation: Operation = {
   id: "operation-system-add",
   setup: () => {
@@ -37,8 +37,6 @@ const operation: Operation = {
   },
   onBegin: state => {
     placeholderVisual.visible = true;
-
-    pointerIsDown = false;
 
     onPointerMove(state);
   },
@@ -86,28 +84,11 @@ const operation: Operation = {
     });
 
     viewport.pause = false;
-    pointerIsDown = false;
 
     onPointerMove(state);
   },
-  // This code is only necessary on mobile.
-  //
-  // On mobile, there is no mouse pointer being drag around.
-  // Therefore, the position of the overlay is only updated
-  // on "pointerdown". Here we update the position of the overlay
-  // so it appears under the pointer for this event.
-  onPointerDown: state => {
-    pointerIsDown = true;
-
-    onPointerMove(state);
-  },
-  onPointerMove: state => {
-    if (pointerIsDown) {
-      viewport.pause = true;
-    }
-
-    onPointerMove(state);
-  },
+  onPointerMove,
+  onPointerDown: onPointerMove,
   onKeyDown: () => {},
 };
 

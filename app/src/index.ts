@@ -157,6 +157,12 @@ canvasContainer.addEventListener("pointerleave", event => {
 
   viewport.stopMoving(event.pointerId);
 
+  // On mobile / tablet, the user cannot drag the mouse outside the canvas.
+  // Yet, the event is triggered on pointer up.
+  if (event.pointerType !== "mouse") {
+    return;
+  }
+
   state.operation.onMute(state);
   tick();
 });
