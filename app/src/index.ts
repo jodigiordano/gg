@@ -759,16 +759,15 @@ function undo(): void {
   if (state.changeIndex > 0) {
     state.changeIndex -= 1;
 
+    state.operation.onEnd(state);
+    state.operation.onBegin(state);
+
     const json = state.changes[state.changeIndex];
 
-    state.operation.onMute(state);
     setJsonEditorValue(json);
 
     loadSimulation(json)
       .then(() => {
-        state.operation.onUnmute(state);
-        tick();
-
         save(json)
           .then(() => setConnectivity(isLocalFile() ? "local-file" : "ok"))
           .catch(() => setConnectivity("save-failed"));
@@ -783,16 +782,15 @@ function redo(): void {
   if (state.changeIndex < state.changes.length - 1) {
     state.changeIndex += 1;
 
+    state.operation.onEnd(state);
+    state.operation.onBegin(state);
+
     const json = state.changes[state.changeIndex];
 
-    state.operation.onMute(state);
     setJsonEditorValue(json);
 
     loadSimulation(json)
       .then(() => {
-        state.operation.onUnmute(state);
-        tick();
-
         save(json)
           .then(() => setConnectivity(isLocalFile() ? "local-file" : "ok"))
           .catch(() => setConnectivity("save-failed"));
