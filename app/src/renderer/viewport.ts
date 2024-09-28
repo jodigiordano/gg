@@ -70,6 +70,10 @@ class Viewport extends Container {
     return !this.paused && this.pointers.length > 0;
   }
 
+  get mobileMoving(): boolean {
+    return this.pointers.length > 1;
+  }
+
   startMoving(id: number, screenX: number, screenY: number): void {
     const index = this.pointers.findIndex(p => p.id === id);
 
@@ -151,7 +155,7 @@ class Viewport extends Container {
       // twice, one time for pointerA and one time for pointerB.
       //
       // This delta distance check is done to remove some "zoom flickering".
-      if (this.multiPointersPreviousDistance > 0 && deltaDistance > 0.1) {
+      if (this.multiPointersPreviousDistance > 0 && deltaDistance > 1) {
         if (distance > this.multiPointersPreviousDistance) {
           this.zoomCenter(0.01);
         } else if (distance < this.multiPointersPreviousDistance) {
@@ -161,11 +165,20 @@ class Viewport extends Container {
 
       // When the 2 pointers are moving in the same direction,
       // we assume the user is dragging them.
-      if (pointer.id === this.pointers[0].id && deltaDistance < 1) {
-        const deltaX = pointer.currentX - pointer.previousX;
-        const deltaY = pointer.currentY - pointer.previousY;
+      else if (pointer.id === this.pointers[0].id) {
+        let deltaX = pointer.currentX - pointer.previousX;
+        let deltaY = pointer.currentY - pointer.previousY;
 
-        this.position.set(this.position.x + deltaX, this.position.y + deltaY);
+        deltaX = deltaX < 0 ? Math.max(-1, deltaX) : Math.min(1, deltaX);
+
+        deltaY = deltaY < 0 ? Math.max(-1, deltaY) : Math.min(1, deltaY);
+
+        const pointerSensitivity = 5;
+
+        this.position.set(
+          this.position.x + deltaX * pointerSensitivity,
+          this.position.y + deltaY * pointerSensitivity,
+        );
       }
 
       this.multiPointersPreviousDistance = distance;

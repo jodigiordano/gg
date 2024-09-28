@@ -55,13 +55,17 @@ canvasContainer.addEventListener("pointermove", event => {
     return;
   }
 
-  if (viewport.moving) {
+  if (viewport.moving || viewport.mobileMoving) {
     viewport.move(event.pointerId, event.x, event.y);
   }
 
   updateStatePosition(event.x, event.y);
 
-  if (viewport.moving) {
+  if (viewport.mobileMoving) {
+    state.operation.onEnd(state);
+  }
+
+  if (viewport.moving || viewport.mobileMoving) {
     redrawGrid();
   } else {
     state.operation.onPointerMove(state);
@@ -83,6 +87,11 @@ canvasContainer.addEventListener("pointerdown", event => {
     return;
   }
 
+  if (viewport.mobileMoving) {
+    state.operation.onEnd(state);
+    return;
+  }
+
   updateStatePosition(event.x, event.y);
   state.operation.onPointerDown(state);
   tick();
@@ -97,6 +106,11 @@ canvasContainer.addEventListener("pointerup", event => {
   viewport.stopMoving(event.pointerId);
 
   if (viewport.moving) {
+    return;
+  }
+
+  if (viewport.mobileMoving) {
+    state.operation.onEnd(state);
     return;
   }
 
