@@ -37,7 +37,7 @@ function onBegin(state: State): void {
 }
 
 const operation: Operation = {
-  id: "operation-system-add",
+  id: "operation-add-box",
   setup: () => {
     viewport.addChild(placeholderVisual);
     viewport.addChild(parentVisual);

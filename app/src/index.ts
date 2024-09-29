@@ -10,7 +10,7 @@ import { initializeDropdowns } from "./dropdown.js";
 import { state, resetState, pushChange } from "./state.js";
 import { redrawGrid, setGridTheme, setGridVisible } from "./renderer/grid.js";
 import Operation from "./operation.js";
-import addSystemOperation from "./operations/systemAdd.js";
+import addBoxOperation from "./operations/addBox.js";
 import setTitleOperation from "./operations/setTitle.js";
 import moveOperation from "./operations/move.js";
 import panOperation from "./operations/pan.js";
@@ -209,7 +209,7 @@ window.addEventListener("keydown", event => {
   } else if (event.key === "2") {
     switchOperation(eraseOperation);
   } else if (event.key === "3") {
-    switchOperation(addSystemOperation);
+    switchOperation(addBoxOperation);
   } else if (event.key === "4") {
     switchOperation(setTitleOperation);
   } else if (event.key === "q") {
@@ -929,7 +929,7 @@ document
 //
 
 // Initialize operations.
-addSystemOperation.setup(state);
+addBoxOperation.setup(state);
 setTitleOperation.setup(state);
 moveOperation.setup(state);
 panOperation.setup(state);
@@ -955,8 +955,8 @@ for (const button of singleChoiceButtons) {
 
     if (button.id === "operation-link") {
       state.operation = linkOperation;
-    } else if (button.id === "operation-system-add") {
-      state.operation = addSystemOperation;
+    } else if (button.id === "operation-add-box") {
+      state.operation = addBoxOperation;
     } else if (button.id === "operation-move") {
       state.operation = moveOperation;
     } else if (button.id === "operation-pan") {
