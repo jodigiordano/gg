@@ -10,6 +10,7 @@ const placeholderVisual = new SystemSelector();
 const parentVisual = new SystemSelector();
 
 function onPointerMove(state: State): void {
+  parentVisual.visible = false;
   viewport.pause = true;
 
   placeholderVisual.setPositionRect(
@@ -24,9 +25,15 @@ function onPointerMove(state: State): void {
   if (parent) {
     parentVisual.setPosition(parent, { x: 0, y: 0 });
     parentVisual.visible = true;
-  } else {
-    parentVisual.visible = false;
   }
+}
+
+function onBegin(state: State): void {
+  placeholderVisual.visible = true;
+  parentVisual.visible = false;
+
+  viewport.pause = false;
+  onPointerMove(state);
 }
 
 const operation: Operation = {
@@ -35,11 +42,7 @@ const operation: Operation = {
     viewport.addChild(placeholderVisual);
     viewport.addChild(parentVisual);
   },
-  onBegin: state => {
-    placeholderVisual.visible = true;
-
-    onPointerMove(state);
-  },
+  onBegin,
   onEnd: () => {
     placeholderVisual.visible = false;
     parentVisual.visible = false;
@@ -79,13 +82,9 @@ const operation: Operation = {
     modifySpecification(() => {
       addSubsystem(parent, x, y, "");
     }).then(() => {
-      onPointerMove(state);
+      onBegin(state);
       tick();
     });
-
-    viewport.pause = false;
-
-    onPointerMove(state);
   },
   onPointerMove,
   onPointerDown: onPointerMove,
