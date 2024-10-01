@@ -53,29 +53,31 @@ export function addSubsystem(
 }
 
 /*
- * Remove a subsystem in the given parent system.
+ * Remove subsystems in the given parent system.
+ * This function assumes that all systems are from the same parent.
+ * This function assumes at least one system.
  * The resulting system is not validated and may be invalid.
  */
-export function removeSubsystem(subsystem: RuntimeSubsystem): void {
-  const systems = subsystem.parent!.specification.systems!;
+export function removeSubsystems(subsystems: RuntimeSubsystem[]): void {
+  const siblings = subsystems[0]!.parent!.specification.systems!;
 
   // Perfomed this way so this function can be called multiple times.
-  for (let i = systems.length - 1; i >= 0; i--) {
-    if (systems[i]!.id === subsystem.id) {
-      systems.splice(i, 1);
-      break;
+  for (let i = siblings.length - 1; i >= 0; i--) {
+    if (subsystems.some(ss => ss.id === siblings[i]!.id)) {
+      siblings.splice(i, 1);
+      continue;
     }
   }
 
-  const rootSystem = getRootSystem(subsystem);
+  const rootSystem = getRootSystem(subsystems[0]!);
 
-  // Remove all links of the system and its subsystems.
-  const subsystems = [subsystem];
+  // Remove all links of the systems and its subsystems.
+  const toVisit = [...subsystems];
 
-  while (subsystems.length) {
-    const ss = subsystems.pop()!;
+  while (toVisit.length) {
+    const ss = toVisit.pop()!;
 
-    subsystems.push(...ss.systems);
+    toVisit.push(...ss.systems);
 
     let linkReadIndex = 0;
     let linkWriteIndex = 0;

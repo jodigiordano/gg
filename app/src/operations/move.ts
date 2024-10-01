@@ -5,7 +5,7 @@ import {
   RuntimeLink,
   moveLink,
   moveSubsystemsToParent,
-  removeSubsystem,
+  removeSubsystems,
   System,
   RuntimeSystem,
 } from "@gg/core";
@@ -701,9 +701,7 @@ const operation: Operation = {
     //
     if (multiSelectVisual.selected.length && event.key === "Delete") {
       modifySpecification(() => {
-        for (const subsystem of multiSelectVisual.selected) {
-          removeSubsystem(subsystem);
-        }
+        removeSubsystems(multiSelectVisual.selected);
       }).then(() => {
         onBegin(state);
         tick();

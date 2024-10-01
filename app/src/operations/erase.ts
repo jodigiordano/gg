@@ -1,6 +1,6 @@
 import {
   removeLink,
-  removeSubsystem,
+  removeSubsystems,
   RuntimePosition,
   RuntimeSubsystem,
 } from "@gg/core";
@@ -222,9 +222,7 @@ const operation: Operation = {
       // Systems are selected in onPointerMove.
       if (multiSelectVisual.selected.length) {
         modifySpecification(() => {
-          for (const subsystem of multiSelectVisual.selected) {
-            removeSubsystem(subsystem);
-          }
+          removeSubsystems(multiSelectVisual.selected);
         }).then(() => {
           onBegin(state);
           tick();
@@ -266,7 +264,7 @@ const operation: Operation = {
       (subsystem && !subsystem.systems.length)
     ) {
       modifySpecification(() => {
-        removeSubsystem(subsystem);
+        removeSubsystems([subsystem]);
       }).then(() => {
         onBegin(state);
         tick();
@@ -285,9 +283,7 @@ const operation: Operation = {
     //
     if (multiSelectVisual.selected.length && event.key === "Delete") {
       modifySpecification(() => {
-        for (const subsystem of multiSelectVisual.selected) {
-          removeSubsystem(subsystem);
-        }
+        removeSubsystems(multiSelectVisual.selected);
       }).then(() => {
         onBegin(state);
         tick();

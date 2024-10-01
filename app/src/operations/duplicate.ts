@@ -4,7 +4,7 @@ import {
   duplicateSystems,
   RuntimeSystem,
   System,
-  removeSubsystem,
+  removeSubsystems,
 } from "@gg/core";
 import { modifySpecification } from "../simulator/api.js";
 import Operation from "../operation.js";
@@ -614,9 +614,7 @@ const operation: Operation = {
     //
     if (multiSelectVisual.selected.length && event.key === "Delete") {
       modifySpecification(() => {
-        for (const subsystem of multiSelectVisual.selected) {
-          removeSubsystem(subsystem);
-        }
+        removeSubsystems(multiSelectVisual.selected);
       }).then(() => {
         onBegin(state);
         tick();
