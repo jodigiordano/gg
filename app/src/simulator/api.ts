@@ -58,7 +58,11 @@ export async function loadSimulation(json: string): Promise<void> {
             resolve();
           } else {
             for (const error of data.errors as string[]) {
-              console.warn(error);
+              console.warn("ERROR", error);
+            }
+
+            for (const warning of data.warnings as string[]) {
+              console.warn("WARNING", warning);
             }
 
             reject();
