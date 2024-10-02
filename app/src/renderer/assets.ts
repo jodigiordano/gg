@@ -161,6 +161,7 @@ function loadRectangle(
 }
 
 const box = loadRectangle(2, 2);
+const listItem = loadRectangle(28, 80);
 const systemSelector = loadRectangle(2, 28);
 const linkLabel = loadRectangle(2, 54);
 const boxDotted = loadRectangle(2, 80);
@@ -195,6 +196,15 @@ export const spritesheet = new Spritesheet(Assets.get("spritesheet"), {
     boxSolidTopCenter: { frame: boxSolid.topCenter },
     boxSolidBottomCenter: { frame: boxSolid.bottomCenter },
     boxSolidCenterCenter: { frame: boxSolid.centerCenter },
+    listItemTopLeft: { frame: listItem.topLeft },
+    listItemTopRight: { frame: listItem.topRight },
+    listItemBottomLeft: { frame: listItem.bottomLeft },
+    listItemBottomRight: { frame: listItem.bottomRight },
+    listItemCenterLeft: { frame: listItem.centerLeft },
+    listItemCenterRight: { frame: listItem.centerRight },
+    listItemTopCenter: { frame: listItem.topCenter },
+    listItemBottomCenter: { frame: listItem.bottomCenter },
+    listItemCenterCenter: { frame: listItem.centerCenter },
     systemSelectorTopLeft: { frame: systemSelector.topLeft },
     systemSelectorTopRight: { frame: systemSelector.topRight },
     systemSelectorBottomLeft: { frame: systemSelector.bottomLeft },
@@ -223,6 +233,7 @@ export const spritesheet = new Spritesheet(Assets.get("spritesheet"), {
     linkDottedLineCorner: { frame: { x: 68, y: 12, w: 8, h: 8 } },
     linkDottedLineSolidArrow: { frame: { x: 58, y: 22, w: 8, h: 8 } },
     linkDottedLineSolidArrowCorner: { frame: { x: 68, y: 22, w: 8, h: 8 } },
+    linkDoubleSolidArrow: { frame: { x: 48, y: 22, w: 8, h: 8 } },
   },
   meta: {
     image: "spritesheet.png",
