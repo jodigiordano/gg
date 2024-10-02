@@ -1,12 +1,13 @@
 import { RuntimeSystem, RuntimeSubsystem, RuntimeLink } from "./runtime.js";
 import { System } from "./specification.js";
-import { validate, ValidationError } from "./validations.js";
+import { validate, ValidationError, ValidationWarning } from "./validations.js";
 import { computeSystemSize, getSubsystemById, initSystem } from "./system.js";
 import { getTitleLength, sanitizeTitle } from "./helpers.js";
 
 export function load(system: System): {
   system: RuntimeSystem;
   errors: ValidationError[];
+  warnings: ValidationWarning[];
 } {
   const runtime = structuredClone(system) as RuntimeSystem;
 
@@ -26,14 +27,15 @@ export function load(system: System): {
   enhanceLinks(runtime);
   computeSizes(runtime, runtime.links);
 
-  const errors = validate(system, runtime);
+  const { errors, warnings } = validate(system, runtime);
 
-  return { system: runtime, errors };
+  return { system: runtime, errors, warnings };
 }
 
 export function loadJSON(json: string): {
   system: RuntimeSystem;
   errors: ValidationError[];
+  warnings: ValidationWarning[];
 } {
   return load(JSON.parse(json) as System);
 }

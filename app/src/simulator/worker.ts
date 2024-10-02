@@ -18,15 +18,20 @@ onmessage = function (event) {
     }
 
     if (result.errors.length) {
-      const messages = result.errors.map(error =>
+      const errors = result.errors.map(error =>
         [error.path, error.message].join(" "),
+      );
+
+      const warnings = result.warnings.map(warning =>
+        [warning.path, warning.message].join(" "),
       );
 
       postMessage({
         operationId: event.data.operationId,
         operation: event.data.operation,
         success: false,
-        errors: messages,
+        errors,
+        warnings,
       });
 
       return;

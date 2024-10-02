@@ -249,9 +249,10 @@ describe("systems", () => {
         ],
       };
 
-      const { errors } = load(system);
+      const { errors, warnings } = load(system);
 
-      assert.deepEqual(errors, [
+      assert.deepEqual(errors, []);
+      assert.deepEqual(warnings, [
         {
           message: "foo overlaps with bar",
           path: "/systems/0",
@@ -283,9 +284,10 @@ describe("systems", () => {
         ],
       };
 
-      const { errors } = load(system);
+      const { errors, warnings } = load(system);
 
-      assert.deepEqual(errors, [
+      assert.deepEqual(errors, []);
+      assert.deepEqual(warnings, [
         {
           message: "foo overlaps with bar",
           path: "/systems/0",
@@ -318,9 +320,10 @@ describe("systems", () => {
         ],
       };
 
-      const { errors } = load(system);
+      const { errors, warnings } = load(system);
 
-      assert.deepEqual(errors, [
+      assert.deepEqual(errors, []);
+      assert.deepEqual(warnings, [
         {
           message: "foo overlaps with bar",
           path: "/systems/0",
@@ -356,9 +359,10 @@ describe("systems", () => {
         ],
       };
 
-      const { errors } = load(system);
+      const { errors, warnings } = load(system);
 
-      assert.deepEqual(errors, [
+      assert.deepEqual(errors, []);
+      assert.deepEqual(warnings, [
         {
           message: "bar overlaps with spam",
           path: "/systems/0/systems/0",
@@ -387,9 +391,10 @@ describe("systems", () => {
         ],
       };
 
-      const { errors } = load(system);
+      const { errors, warnings } = load(system);
 
-      assert.deepEqual(errors, [
+      assert.deepEqual(errors, []);
+      assert.deepEqual(warnings, [
         {
           message: "bar is out of bounds of foo",
           path: "/systems/0/systems/0",

@@ -16,19 +16,27 @@ export interface ValidationError {
   message: string;
 }
 
+export interface ValidationWarning {
+  path: string;
+  message: string;
+}
+
 export function validate(
   system: System,
   runtime: RuntimeSystem,
-): ValidationError[] {
+): { errors: ValidationError[]; warnings: ValidationWarning[] } {
   const validateAjv = specification.getSchema<System>("system")!;
 
   validateAjv(system);
 
   if (validateAjv.errors) {
-    return validateAjv.errors.map(error => ({
-      path: error.instancePath,
-      message: `${error.message} (${JSON.stringify(error.params)})`,
-    }));
+    return {
+      errors: validateAjv.errors.map(error => ({
+        path: error.instancePath,
+        message: `${error.message} (${JSON.stringify(error.params)})`,
+      })),
+      warnings: [],
+    };
   }
 
   const systemOverlapErrors = validateSystemOverlaps(runtime);
@@ -36,10 +44,10 @@ export function validate(
   const systemErrors = validateSystems(runtime, []);
   const linkErrors = validateLinks(runtime);
 
-  return systemOverlapErrors
-    .concat(systemErrors)
-    .concat(whiteBoxBoundaryErrors)
-    .concat(linkErrors);
+  return {
+    errors: systemErrors.concat(linkErrors),
+    warnings: systemOverlapErrors.concat(whiteBoxBoundaryErrors),
+  };
 }
 
 function validateSystemOverlaps(
