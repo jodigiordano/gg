@@ -753,8 +753,12 @@ function undo(): void {
   if (state.changeIndex > 0) {
     state.changeIndex -= 1;
 
-    state.operation.onEnd(state);
-    state.operation.onBegin(state);
+    // We skip the end/begin for that operation because it clears the color on
+    // the icon (end) and opens a modal (begin).
+    if (state.operation.id !== "operation-set-color") {
+      state.operation.onEnd(state);
+      state.operation.onBegin(state);
+    }
 
     const json = state.changes[state.changeIndex];
 
@@ -776,8 +780,12 @@ function redo(): void {
   if (state.changeIndex < state.changes.length - 1) {
     state.changeIndex += 1;
 
-    state.operation.onEnd(state);
-    state.operation.onBegin(state);
+    // We skip the end/begin for that operation because it clears the color on
+    // the icon (end) and opens a modal (begin).
+    if (state.operation.id !== "operation-set-color") {
+      state.operation.onEnd(state);
+      state.operation.onBegin(state);
+    }
 
     const json = state.changes[state.changeIndex];
 
