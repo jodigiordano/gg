@@ -1,12 +1,8 @@
 import { RuntimeSystem, RuntimeSubsystem, RuntimeLink } from "./runtime.js";
-import {
-  TitlePadding,
-  PaddingWhiteBox,
-  SystemMinSize,
-  sanitizeTitle,
-  getTitleLength,
-} from "./helpers.js";
+import { sanitizeTitle, getTitleLength } from "./helpers.js";
 import { Subsystem } from "./specification.js";
+import * as Box from "./systems/box.js";
+import * as List from "./systems/list.js";
 
 export function initSystem(
   system: RuntimeSubsystem,
@@ -15,6 +11,9 @@ export function initSystem(
   parentIndex: number,
   depth: number,
 ): void {
+  // Set the type.
+  system.type ??= "box";
+
   // Initialize sub-systems.
   system.systems ??= [];
 
@@ -39,17 +38,20 @@ export function initSystem(
   // Set the title alignment.
   system.titleAlign ??= "left";
 
-  // Set the title position.
-  system.titlePosition = {
-    x: TitlePadding,
-    y: TitlePadding,
-  };
-
   // Set the depth.
   system.depth = depth;
 
   // Set the border.
   system.borderPattern ??= "none";
+
+  // Set title margin.
+  computeTitleMargin(system);
+
+  // Set padding.
+  computePadding(system);
+
+  // Set margin.
+  computeMargin(system);
 }
 
 export function getRootSystem(system: RuntimeSubsystem): RuntimeSystem {
@@ -85,55 +87,33 @@ export function computeSystemSize(
   system: RuntimeSubsystem,
   links: RuntimeLink[],
 ): void {
-  // Blackbox.
-  if (!system.systems.length) {
-    const titleWidth = system.titleSize.width + 2 * TitlePadding;
-    const titleHeight = system.titleSize.height + 2 * TitlePadding;
-
-    const linksCount = links.filter(
-      link => link.a === system.id || link.b === system.id,
-    ).length;
-
-    const linksWidth = Math.floor(linksCount / 2);
-
-    system.size = {
-      width: Math.max(titleWidth, linksWidth, SystemMinSize.width),
-      height: Math.max(titleHeight, SystemMinSize.height),
-    };
-
-    return;
+  if (system.type === "box") {
+    Box.computeSize(system, links);
+  } /* list */ else {
+    List.computeSize(system, links);
   }
+}
 
-  // Whitebox
-  let maxWidth = 0;
-  let maxHeight = 0;
-
-  for (const subsystem of system.systems) {
-    const width = subsystem.specification.position.x + subsystem.size.width;
-    const height = subsystem.specification.position.y + subsystem.size.height;
-
-    if (width > maxWidth) {
-      maxWidth = width;
-    }
-
-    if (height > maxHeight) {
-      maxHeight = height;
-    }
+export function computeTitleMargin(system: RuntimeSubsystem): void {
+  if (system.type === "box") {
+    Box.computeTitleMargin(system);
+  } /* list */ else {
+    List.computeTitleMargin(system);
   }
+}
 
-  // +----------------------+
-  // | Title                |
-  // | +-----+    +-----+   |
-  // | | Foo |====| Bar |   |
-  // | +-----+    +-----+   |
-  // +----------------------+
-
-  if (system.titleSize.width > maxWidth) {
-    maxWidth = system.titleSize.width;
+function computePadding(system: RuntimeSubsystem): void {
+  if (system.type === "box") {
+    Box.computePadding(system);
+  } /* list */ else {
+    List.computePadding(system);
   }
+}
 
-  system.size = {
-    width: maxWidth + PaddingWhiteBox * 2,
-    height: maxHeight + system.titleSize.height + PaddingWhiteBox * 2,
-  };
+function computeMargin(system: RuntimeSubsystem): void {
+  if (system.type === "box") {
+    Box.computeMargin(system);
+  } /* list */ else {
+    List.computeMargin(system);
+  }
 }

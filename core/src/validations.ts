@@ -1,5 +1,5 @@
 import { RuntimeLink, RuntimeSubsystem, RuntimeSystem } from "./runtime.js";
-import { isSubsystemOf, SystemMargin } from "./helpers.js";
+import { isSubsystemOf } from "./helpers.js";
 import { System, specification } from "./specification.js";
 
 export class InvalidSystemError extends Error {
@@ -60,19 +60,23 @@ function validateSystemOverlaps(
       const subsystemA = system.systems[i]!;
       const subsystemB = system.systems[j]!;
 
-      const aLeft = subsystemA.position.x - SystemMargin;
+      const aLeft = subsystemA.position.x - subsystemA.margin.left;
       const aRight =
-        subsystemA.position.x + subsystemA.size.width + SystemMargin;
-      const aTop = subsystemA.position.y - SystemMargin;
+        subsystemA.position.x + subsystemA.size.width + subsystemA.margin.right;
+      const aTop = subsystemA.position.y - subsystemA.margin.top;
       const aBottom =
-        subsystemA.position.y + subsystemA.size.height + SystemMargin;
+        subsystemA.position.y +
+        subsystemA.size.height +
+        subsystemA.margin.bottom;
 
-      const bLeft = subsystemB.position.x - SystemMargin;
+      const bLeft = subsystemB.position.x - subsystemB.margin.left;
       const bRight =
-        subsystemB.position.x + subsystemB.size.width + SystemMargin;
-      const bTop = subsystemB.position.y - SystemMargin;
+        subsystemB.position.x + subsystemB.size.width + subsystemB.margin.right;
+      const bTop = subsystemB.position.y - subsystemB.margin.top;
       const bBottom =
-        subsystemB.position.y + subsystemB.size.height + SystemMargin;
+        subsystemB.position.y +
+        subsystemB.size.height +
+        subsystemB.margin.bottom;
 
       if (
         aLeft < bRight &&

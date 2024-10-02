@@ -5,8 +5,6 @@ import {
   setLinkTitle,
   TextFont,
   TextAlign,
-  SystemMinSize,
-  TitlePadding,
 } from "@gg/core";
 import Operation from "../operation.js";
 import SystemSelector from "../renderer/systemSelector.js";
@@ -160,7 +158,13 @@ document
           "#000000",
           getFont(),
           getAlign(),
-          subsystem ? SystemMinSize.width - TitlePadding * 2 : 1,
+          subsystem
+            ? subsystem.size.width -
+                subsystem.titleMargin.left -
+                subsystem.titleMargin.right -
+                subsystem.padding.left -
+                subsystem.padding.right
+            : 1,
         );
 
         let width = 0;

@@ -10,8 +10,8 @@ const placeholderVisual = new SystemSelector();
 const parentVisual = new SystemSelector();
 
 const SystemMinSize: RuntimeSize = {
-  width: 5,
-  height: 3,
+  width: 7,
+  height: /* title */ 2 + /* placeholders */ 3 * 3,
 };
 
 function onPointerMove(state: State): void {
@@ -42,7 +42,7 @@ function onBegin(state: State): void {
 }
 
 const operation: Operation = {
-  id: "operation-add-box",
+  id: "operation-add-list",
   setup: () => {
     viewport.addChild(placeholderVisual);
     viewport.addChild(parentVisual);
@@ -85,7 +85,11 @@ const operation: Operation = {
     y -= Math.floor(SystemMinSize.height / 2);
 
     modifySpecification(() => {
-      addSubsystem(parent, "box", x, y, "");
+      const list = addSubsystem(parent, "list", x, y, "List");
+
+      addSubsystem(list, "box", 0, 0, "item 1");
+      addSubsystem(list, "box", 0, 10, "item 2");
+      addSubsystem(list, "box", 0, 20, "item 3");
     }).then(() => {
       onBegin(state);
       tick();

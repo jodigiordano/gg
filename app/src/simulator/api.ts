@@ -1,7 +1,7 @@
 import {
   SystemSimulator,
   SimulatorObjectType,
-  SimulatorSystemTitle,
+  SimulatorSystemTitleText,
   SimulatorSubsystem,
   SimulatorLinkDirectionType,
   SimulatorLink,
@@ -9,8 +9,6 @@ import {
   SimulatorDirectionType,
   SimulatorLinkTitle,
   SimulatorLinkPathPosition,
-  SystemMinSize,
-  TitlePadding,
   TextFont,
   TextAlign,
 } from "@gg/core";
@@ -99,26 +97,30 @@ viewport.addChild(container);
 
 const defaultColors = {
   light: {
-    system1: "#eeeeee",
-    system2: "#ced4da",
-    system3: "#dee2e6",
-    system4: "#e9ecef",
+    box1: "#eeeeee",
+    box2: "#ced4da",
+    box3: "#dee2e6",
+    box4: "#e9ecef",
+    boxTitleBlackbox: "#000000",
+    boxTitleWhitebox: "#000000",
+    list: "#adb1b5",
+    listTitle: "#000000",
     link: "#000000",
     linkTitleBackground: "#ced4da",
     linkTitle: "#000000",
-    systemTitleBlackbox: "#000000",
-    systemTitleWhitebox: "#000000",
   },
   dark: {
-    system1: "#666666",
-    system2: "#2b2b2b",
-    system3: "#1b1b1b",
-    system4: "#000000",
+    box1: "#666666",
+    box2: "#2b2b2b",
+    box3: "#1b1b1b",
+    box4: "#000000",
+    boxTitleBlackbox: "#ffffff",
+    boxTitleWhitebox: "#ffffff",
+    list: "#333333",
+    listTitle: "#ffffff",
     link: "#dddddd",
     linkTitleBackground: "#4b4b4b",
     linkTitle: "#ffffff",
-    systemTitleBlackbox: "#ffffff",
-    systemTitleWhitebox: "#ffffff",
   },
 };
 
@@ -153,7 +155,17 @@ function getObjectsToRender(): (Sprite | TaggedText)[] {
           let systemBottomCenter;
           let systemBottomRight;
 
-          if (system.borderPattern === "solid") {
+          if (system.parent?.type === "list") {
+            systemTopLeft = spritesheet.textures.listItemTopLeft;
+            systemTopCenter = spritesheet.textures.listItemTopCenter;
+            systemTopRight = spritesheet.textures.listItemTopRight;
+            systemCenterLeft = spritesheet.textures.listItemCenterLeft;
+            systemCenterCenter = spritesheet.textures.listItemCenterCenter;
+            systemCenterRight = spritesheet.textures.listItemCenterRight;
+            systemBottomLeft = spritesheet.textures.listItemBottomLeft;
+            systemBottomCenter = spritesheet.textures.listItemBottomCenter;
+            systemBottomRight = spritesheet.textures.listItemBottomRight;
+          } else if (system.borderPattern === "solid") {
             systemTopLeft = spritesheet.textures.boxSolidTopLeft;
             systemTopCenter = spritesheet.textures.boxSolidTopCenter;
             systemTopRight = spritesheet.textures.boxSolidTopRight;
@@ -185,18 +197,21 @@ function getObjectsToRender(): (Sprite | TaggedText)[] {
             systemBottomRight = spritesheet.textures.boxBottomRight;
           }
 
-          if (blackbox) {
+          if (system.type === "list") {
             sprite.tint =
-              system.backgroundColor ?? defaultColors[state.theme].system1;
+              system.backgroundColor ?? defaultColors[state.theme].list;
+          } else if (blackbox) {
+            sprite.tint =
+              system.backgroundColor ?? defaultColors[state.theme].box1;
           } else if (system.depth % 2 === 0) {
             sprite.tint =
-              system.backgroundColor ?? defaultColors[state.theme].system2;
+              system.backgroundColor ?? defaultColors[state.theme].box2;
           } else if (system.depth % 3 === 0) {
             sprite.tint =
-              system.backgroundColor ?? defaultColors[state.theme].system3;
+              system.backgroundColor ?? defaultColors[state.theme].box3;
           } else {
             sprite.tint =
-              system.backgroundColor ?? defaultColors[state.theme].system4;
+              system.backgroundColor ?? defaultColors[state.theme].box4;
           }
 
           if (direction === SimulatorDirectionType.TopLeft) {
@@ -232,7 +247,8 @@ function getObjectsToRender(): (Sprite | TaggedText)[] {
           sprite.anchor.x = 0.5;
           sprite.anchor.y = 0.5;
 
-          const { direction, pathPosition, link } = obj as SimulatorLink;
+          const { direction, pathPosition, pathLength, link } =
+            obj as SimulatorLink;
 
           if (link.backgroundColor) {
             sprite.tint = link.backgroundColor;
@@ -251,6 +267,20 @@ function getObjectsToRender(): (Sprite | TaggedText)[] {
             direction === SimulatorLinkDirectionType.TopToRight;
 
           if (
+            link.middlePattern !== "pipe" &&
+            pathLength === 1 &&
+            link.startPattern === "solid-arrow" &&
+            link.endPattern === "solid-arrow"
+          ) {
+            sprite.texture = spritesheet.textures.linkDoubleSolidArrow;
+
+            if (
+              direction === SimulatorLinkDirectionType.BottomToTop ||
+              direction === SimulatorLinkDirectionType.TopToBottom
+            ) {
+              sprite.rotation = Math.PI / 2;
+            }
+          } else if (
             link.middlePattern !== "pipe" &&
             pathPosition === SimulatorLinkPathPosition.Start &&
             link.startPattern !== "none"
@@ -427,26 +457,34 @@ function getObjectsToRender(): (Sprite | TaggedText)[] {
           }
 
           toDraw.push(sprite);
-        } else if (obj.type === SimulatorObjectType.SystemTitle) {
+        } else if (obj.type === SimulatorObjectType.SystemTitleText) {
           const { system, blackbox } = obj as SimulatorSubsystem;
 
           const color = system.backgroundColor
             ? getForegroundColor(system.backgroundColor)
-            : blackbox
-              ? defaultColors[state.theme].systemTitleBlackbox
-              : defaultColors[state.theme].systemTitleWhitebox;
+            : system.type === "list"
+              ? defaultColors[state.theme].listTitle
+              : /* box */ blackbox
+                ? defaultColors[state.theme].boxTitleBlackbox
+                : defaultColors[state.theme].boxTitleWhitebox;
 
           const title = initializeText(
-            (obj as SimulatorSystemTitle).chars.replaceAll("\\n", "\n"),
+            (obj as SimulatorSystemTitleText).chars.replaceAll("\\n", "\n"),
             color,
             system.titleFont,
             system.titleAlign,
-            SystemMinSize.width - TitlePadding * 2,
+            system.size.width -
+              system.titleMargin.left -
+              system.titleMargin.right -
+              system.padding.left -
+              system.padding.right,
           );
 
           title.zIndex = obj.zIndex;
           title.x = (i - boundaries.translateX) * BlockSize;
-          title.y = (j - boundaries.translateY) * BlockSize;
+          title.y =
+            (j - boundaries.translateY) * BlockSize +
+            (blackbox ? 0 : BlockSize / 2);
 
           toDraw.push(title);
         } else if (obj.type === SimulatorObjectType.LinkTitle) {
@@ -542,8 +580,6 @@ export function initializeText(
   align: TextAlign,
   minWidthForCentering: number,
 ): TaggedText {
-  let width: number | null = null;
-
   const configuration: Record<string, Record<string, unknown>> = {
     ...textBaseConfiguration,
     default: {
@@ -572,6 +608,8 @@ export function initializeText(
     imgMap: textImageMap,
     //debug: true,
   };
+
+  let width: number | null = null;
 
   if (align === "center" || align === "right") {
     const unalignedText = new TaggedText(text, configuration, options);

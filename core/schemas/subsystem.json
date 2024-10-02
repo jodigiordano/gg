@@ -12,6 +12,15 @@
       "maxLength": 32,
       "description": "The id of the sub-system. Must be unique across the entire system."
     },
+    "type": {
+      "type": "string",
+      "description": "The type of the sub-system.",
+      "allOf": [
+        {
+          "$ref": "#/$defs/type"
+        }
+      ]
+    },
     "title": {
       "type": "string",
       "description": "The title of the sub-system."
@@ -89,6 +98,11 @@
     }
   },
   "$defs": {
+    "type": {
+      "$id": "SubsystemType",
+      "type": "string",
+      "enum": ["box", "list"]
+    },
     "borderPattern": {
       "$id": "BorderPattern",
       "type": "string",

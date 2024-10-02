@@ -7,6 +7,7 @@ import {
   TextFont,
   TextAlign,
   BorderPattern,
+  SubsystemType,
 } from "./specification.js";
 
 export interface RuntimeSize {
@@ -17,6 +18,13 @@ export interface RuntimeSize {
 export interface RuntimePosition {
   x: number;
   y: number;
+}
+
+export interface RuntimeMargin {
+  left: number;
+  right: number;
+  top: number;
+  bottom: number;
 }
 
 export interface RuntimeLink extends Link {
@@ -36,11 +44,12 @@ export interface RuntimeLink extends Link {
 
 export interface RuntimeSubsystem extends Subsystem {
   specification: Subsystem;
+  type: SubsystemType;
   title: string;
-  titlePosition: RuntimePosition;
   titleSize: RuntimeSize;
   titleFont: TextFont;
   titleAlign: TextAlign;
+  titleMargin: RuntimeMargin;
   index: number;
   size: RuntimeSize;
   position: RuntimePosition;
@@ -49,17 +58,22 @@ export interface RuntimeSubsystem extends Subsystem {
   links: RuntimeLink[];
   depth: number;
   borderPattern: BorderPattern;
+  padding: RuntimeMargin;
+  margin: RuntimeMargin;
 }
 
 export interface RuntimeSystem extends System {
   specification: System;
   id: undefined;
-  titlePosition: RuntimePosition;
+  type: undefined;
   titleSize: RuntimeSize;
+  titleMargin: RuntimeMargin;
   size: RuntimeSize;
   position: RuntimePosition;
   parent?: undefined;
   systems: RuntimeSubsystem[];
   links: RuntimeLink[];
   depth: 0;
+  padding: RuntimeMargin;
+  margin: RuntimeMargin;
 }

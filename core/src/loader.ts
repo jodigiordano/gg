@@ -13,11 +13,31 @@ export function load(system: System): {
 
   runtime.specification = system;
   runtime.links ??= [];
-  runtime.titlePosition = { x: 0, y: 0 };
   runtime.titleSize = { width: 0, height: 0 };
   runtime.size = { width: 0, height: 0 };
   runtime.depth = 0;
   runtime.position = { x: 0, y: 0 };
+
+  runtime.titleMargin = {
+    left: 0,
+    right: 0,
+    top: 0,
+    bottom: 0,
+  };
+
+  runtime.padding = {
+    left: 0,
+    right: 0,
+    top: 0,
+    bottom: 0,
+  };
+
+  runtime.margin = {
+    left: 0,
+    right: 0,
+    top: 0,
+    bottom: 0,
+  };
 
   // TODO: we are enhancing a system that wasn't validated with AJV yet,
   // TODO: so it's the far west in the JSON file.

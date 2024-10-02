@@ -11,6 +11,7 @@ import { state, resetState, pushChange } from "./state.js";
 import { redrawGrid, setGridTheme, setGridVisible } from "./renderer/grid.js";
 import Operation from "./operation.js";
 import addBoxOperation from "./operations/addBox.js";
+import addListOperation from "./operations/addList.js";
 import setTitleOperation from "./operations/setTitle.js";
 import moveOperation from "./operations/move.js";
 import panOperation from "./operations/pan.js";
@@ -226,6 +227,8 @@ window.addEventListener("keydown", event => {
     switchOperation(paintOperation);
   } else if (event.key === "r") {
     switchOperation(duplicateOperation);
+  } else if (event.key === "a") {
+    switchOperation(addListOperation);
   } else if (event.key === "[") {
     undo();
   } else if (event.key === "]") {
@@ -932,6 +935,7 @@ document
 
 // Initialize operations.
 addBoxOperation.setup(state);
+addListOperation.setup(state);
 setTitleOperation.setup(state);
 moveOperation.setup(state);
 panOperation.setup(state);
@@ -959,6 +963,8 @@ for (const button of singleChoiceButtons) {
       state.operation = linkOperation;
     } else if (button.id === "operation-add-box") {
       state.operation = addBoxOperation;
+    } else if (button.id === "operation-add-list") {
+      state.operation = addListOperation;
     } else if (button.id === "operation-move") {
       state.operation = moveOperation;
     } else if (button.id === "operation-pan") {

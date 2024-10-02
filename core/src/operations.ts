@@ -4,7 +4,7 @@ import {
   RuntimeLink,
   RuntimePosition,
 } from "./runtime.js";
-import { isSubsystemOf, SystemMargin } from "./helpers.js";
+import { isSubsystemOf } from "./helpers.js";
 import {
   Link,
   Subsystem,
@@ -12,6 +12,7 @@ import {
   PathEndingPattern,
   TextFont,
   TextAlign,
+  SubsystemType,
 } from "./specification.js";
 import { computeSystemSize, getRootSystem, initSystem } from "./system.js";
 
@@ -21,13 +22,18 @@ import { computeSystemSize, getRootSystem, initSystem } from "./system.js";
  */
 export function addSubsystem(
   parent: RuntimeSystem | RuntimeSubsystem,
+  type: SubsystemType,
   x: number,
   y: number,
   title: string,
-): void {
+): RuntimeSubsystem {
   const newSpecSystem: Subsystem = {
     id: generateUniqueId(),
-    position: { x, y },
+    type,
+    position: {
+      x: parent.type === "list" ? 0 : x,
+      y,
+    },
     title,
   };
 
@@ -50,6 +56,8 @@ export function addSubsystem(
 
   computeSystemSize(newRuntimeSystem, rootSystem.links);
   moveSystems([newRuntimeSystem], 0, 0);
+
+  return newRuntimeSystem;
 }
 
 /*
@@ -59,11 +67,13 @@ export function addSubsystem(
  * The resulting system is not validated and may be invalid.
  */
 export function removeSubsystems(subsystems: RuntimeSubsystem[]): void {
-  const siblings = subsystems[0]!.parent!.specification.systems!;
+  const parent = subsystems[0]!.parent!;
+  const siblingsSpec = parent.specification.systems!;
+  const siblings = parent.systems;
 
-  // Perfomed this way so this function can be called multiple times.
-  for (let i = siblings.length - 1; i >= 0; i--) {
-    if (subsystems.some(ss => ss.id === siblings[i]!.id)) {
+  for (let i = siblingsSpec.length - 1; i >= 0; i--) {
+    if (subsystems.some(ss => ss.id === siblingsSpec[i]!.id)) {
+      siblingsSpec.splice(i, 1);
       siblings.splice(i, 1);
       continue;
     }
@@ -99,6 +109,13 @@ export function removeSubsystems(subsystems: RuntimeSubsystem[]): void {
     if (rootSystem.specification.links) {
       rootSystem.specification.links.length = linkWriteIndex;
     }
+  }
+
+  // By removing systems, their siblings may need to be moved & resized.
+  if (siblings.length) {
+    moveSystems([...siblings], 0, 0);
+  } else if (parent.id) {
+    moveSystems([parent], 0, 0);
   }
 }
 
@@ -286,6 +303,10 @@ export function duplicateSystems(
     duplicatedSpecSystem.id = generateUniqueId();
     duplicatedSpecSystem.position = positions[index]!;
 
+    if (parent.type === "list") {
+      duplicatedSpecSystem.position.x = 0;
+    }
+
     duplicatedIds[subsystem.id] = duplicatedSpecSystem.id;
 
     // Generate unique ids for sub-systems.
@@ -387,6 +408,10 @@ export function moveSubsystemsToParent(
     subsystem.specification.position.x = positions[index]!.x;
     subsystem.specification.position.y = positions[index]!.y;
 
+    if (parent.type === "list") {
+      subsystem.specification.position.x = 0;
+    }
+
     parent.systems.push(subsystem);
   }
 
@@ -420,6 +445,14 @@ export function moveSubsystemsToParent(
       parent.systems.length - 1,
       parent.depth + 1,
     );
+  }
+
+  // By removing systems from a parent,
+  // the siblings of that parent may need to be moved & resized.
+  if (previousParent.systems.length) {
+    moveSystems([...previousParent.systems], 0, 0);
+  } else if (previousParent.id) {
+    moveSystems([previousParent], 0, 0);
   }
 
   moveSystems(subsystems, 0, 0);
@@ -460,6 +493,22 @@ export function moveSystems(
     ss => !systems.some(s => s.id === ss.id),
   );
   subsystemsInCollision.push(pseudoSystem);
+
+  // In a list:
+  //
+  // - All subsystems are at position X 0.
+  // - There is no vertical space between subsystems.
+  if (parent?.type === "list") {
+    let nextY = 0;
+
+    for (const subsystem of allSubsystems.sort(
+      (a, b) => a.specification.position.y - b.specification.position.y,
+    )) {
+      subsystem.specification.position.x = 0;
+      subsystem.specification.position.y = nextY;
+      nextY += subsystem.size.height;
+    }
+  }
 
   // Resolve collisions.
   let iterations = 0;
@@ -541,19 +590,23 @@ export function moveSystems(
           displacers[ssA.id]!.push(ssB.id);
         }
 
-        const aPositionX1 = ssA.specification.position.x - SystemMargin;
+        const aPositionX1 = ssA.specification.position.x - ssA.margin.left / 2;
         const aPositionX2 =
-          ssA.specification.position.x + ssA.size.width + SystemMargin;
-        const aPositionY1 = ssA.specification.position.y - SystemMargin;
+          ssA.specification.position.x + ssA.size.width + ssA.margin.right / 2;
+        const aPositionY1 = ssA.specification.position.y - ssA.margin.top / 2;
         const aPositionY2 =
-          ssA.specification.position.y + ssA.size.height + SystemMargin;
+          ssA.specification.position.y +
+          ssA.size.height +
+          ssA.margin.bottom / 2;
 
-        const bPositionX1 = ssB.specification.position.x - SystemMargin;
+        const bPositionX1 = ssB.specification.position.x - ssB.margin.left / 2;
         const bPositionX2 =
-          ssB.specification.position.x + ssB.size.width + SystemMargin;
-        const bPositionY1 = ssB.specification.position.y - SystemMargin;
+          ssB.specification.position.x + ssB.size.width + ssB.margin.right / 2;
+        const bPositionY1 = ssB.specification.position.y - ssB.margin.top / 2;
         const bPositionY2 =
-          ssB.specification.position.y + ssB.size.height + SystemMargin;
+          ssB.specification.position.y +
+          ssB.size.height +
+          ssB.margin.bottom / 2;
 
         // Calculate the area of intersection,
         // which is a rectangle [0, 0, X, Y].
@@ -726,18 +779,8 @@ export function moveSystems(
   if (parent && parent.id) {
     const rootSystem = getRootSystem(pseudoSystem);
 
-    const sizeBefore = structuredClone(parent.size);
-
     computeSystemSize(parent, rootSystem.links);
-
-    // Optimization: when the parent subsystem shrinks,
-    // it won't create collisions.
-    if (
-      parent.size.width > sizeBefore.width ||
-      parent.size.height > sizeBefore.height
-    ) {
-      moveSystems([parent], 0, 0);
-    }
+    moveSystems([parent], 0, 0);
   }
 }
 
@@ -777,6 +820,10 @@ function createPseudoSystem(systems: RuntimeSubsystem[]): RuntimeSubsystem {
   return {
     /* Important */
     id: "gg-pseudo-system",
+    type: systems.some(ss => ss.type === "box") ? "box" : systems[0]!.type,
+    padding:
+      systems.find(ss => ss.type === "box")?.padding ?? systems[0]!.padding,
+    margin: systems.find(ss => ss.type === "box")?.margin ?? systems[0]!.margin,
     parent: systems[0]!.parent!,
     depth: systems[0]!.depth,
     position: { x: left, y: top },
@@ -790,7 +837,7 @@ function createPseudoSystem(systems: RuntimeSubsystem[]): RuntimeSubsystem {
     },
     /* Irrelevant */
     title: "",
-    titlePosition: { x: 0, y: 0 },
+    titleMargin: { left: 0, right: 0, top: 0, bottom: 0 },
     titleSize: { width: 0, height: 0 },
     titleFont: "text",
     titleAlign: "left",

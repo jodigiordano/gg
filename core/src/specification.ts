@@ -1,3 +1,4 @@
+export type SubsystemType = "box" | "list";
 export type TextFont = "text" | "sketch" | "code";
 export type TextAlign = "left" | "center" | "right";
 export type BorderPattern = "none" | "solid" | "dotted";
@@ -37,6 +38,10 @@ export interface Subsystem {
    * The id of the sub-system. Must be unique across the entire system.
    */
   id: string;
+  /**
+   * The type of the sub-system.
+   */
+  type?: SubsystemType & string;
   /**
    * The title of the sub-system.
    */
@@ -290,6 +295,15 @@ const schemas = [
         description:
           "The id of the sub-system. Must be unique across the entire system.",
       },
+      type: {
+        type: "string",
+        description: "The type of the sub-system.",
+        allOf: [
+          {
+            $ref: "#/$defs/type",
+          },
+        ],
+      },
       title: {
         type: "string",
         description: "The title of the sub-system.",
@@ -369,6 +383,11 @@ const schemas = [
       },
     },
     $defs: {
+      type: {
+        $id: "SubsystemType",
+        type: "string",
+        enum: ["box", "list"],
+      },
       borderPattern: {
         $id: "BorderPattern",
         type: "string",
