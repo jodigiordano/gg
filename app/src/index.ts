@@ -601,9 +601,6 @@ document
     // Finish any ongoing operation.
     state.operation.onEnd(state);
 
-    // Stop PixiJS.
-    app.stop();
-
     // Hide the grid.
     setGridVisible(false);
 
@@ -689,9 +686,6 @@ document
 
     // Draw the simulation with the right theme.
     drawSimulation();
-
-    // Start PixiJS.
-    app.start();
   });
 
 //
