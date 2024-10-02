@@ -54,7 +54,7 @@ function onPointerMove(state: State) {
     const path = state.simulator.getPath(link)!;
     const boundaries = state.simulator.getBoundaries();
 
-    const [startX, startY] = path.at(1)!;
+    const [startX, startY] = (path.at(1) ?? path.at(0))!;
 
     selectAVisual.visible = true;
     selectAVisual.setPositionRect(
@@ -64,7 +64,7 @@ function onPointerMove(state: State) {
       startY - boundaries.translateY,
     );
 
-    const [endX, endY] = path.at(-2)!;
+    const [endX, endY] = (path.at(-2) ?? path.at(-1))!;
 
     selectBVisual.visible = true;
     selectBVisual.setPositionRect(
