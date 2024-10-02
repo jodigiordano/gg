@@ -11,6 +11,8 @@ import {
   SimulatorLinkPathPosition,
   SystemMinSize,
   TitlePadding,
+  TextFont,
+  TextAlign,
 } from "@gg/core";
 import { Sprite, Container, Texture } from "pixi.js";
 import TaggedText from "../pixi-tagged-text/TaggedText.js";
@@ -23,8 +25,6 @@ import { getUrlParams, save } from "../persistence.js";
 import { setJsonEditorValue } from "../jsonEditor.js";
 import WebWorker from "../worker.js";
 import { setConnectivity } from "../connectivity.js";
-import { TextFont } from "@gg/core";
-import { TextAlign } from "@gg/core";
 import { setFullTagRegex } from "../pixi-tagged-text/tags.js";
 
 //
