@@ -115,6 +115,7 @@ export function removeSubsystems(subsystems: RuntimeSubsystem[]): void {
   if (siblings.length) {
     moveSystems([...siblings], 0, 0);
   } else if (parent.id) {
+    computeSystemSize(parent, rootSystem.links);
     moveSystems([parent], 0, 0);
   }
 }
@@ -497,7 +498,7 @@ export function moveSystems(
   // In a list:
   //
   // - All subsystems are at position X 0.
-  // - There is no vertical space between subsystems.
+  // - There is no empty vertical space between subsystems.
   if (parent?.type === "list") {
     let nextY = 0;
 
