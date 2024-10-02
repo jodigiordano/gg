@@ -50,7 +50,8 @@ export function sanitizeTitle(rawTitle: string): string {
 }
 
 export function getTitleLength(title: string): RuntimeSize {
-  const titleLengths = title.split("\\n").map(line => line.length);
+  const titleLengths =
+    title === "" ? [] : title.split("\\n").map(line => line.length);
 
   return {
     width: Math.ceil(Math.max(...titleLengths) / TitleCharsPerSquare) | 0,
