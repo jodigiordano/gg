@@ -78,6 +78,7 @@
 ## Examples
 
 - [Boxes and containers](https://gg-charts.com/#id=be6f8310-4023-43bf-b755-41a4fae250a7)
+- [Lists](https://gg-charts.com/#id=b9728c85-de27-4a19-a715-fab3e53a59db)
 - [Colors](https://gg-charts.com/#id=bf442e5c-2689-4953-b228-593e4648ccb7)
 - [Labels on lines](https://gg-charts.com/#id=5aba2725-ec43-4107-899f-4cbd05666735)
 - [Various line styles and directions](https://gg-charts.com/#id=cea38700-8656-4b21-872b-af4d4ed7c050)
