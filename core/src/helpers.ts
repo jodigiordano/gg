@@ -2,7 +2,8 @@ import { RuntimeSize, RuntimeSubsystem, RuntimeSystem } from "./runtime";
 
 export enum PathfindingWeights {
   EmptySpace = 1,
-  SystemPerimeter = 2,
+  RoutedSystemPerimeter = 1,
+  ListPerimeter = 2,
   Path = 5,
   MakeATurn = 10,
   Impenetrable = Infinity,

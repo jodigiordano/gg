@@ -691,7 +691,11 @@ export class SystemSimulator {
             obj.type === SimulatorObjectType.SystemTitle,
         )
       ) {
-        finderGrid.setWeightAt(x, top, PathfindingWeights.SystemPerimeter);
+        finderGrid.setWeightAt(
+          x,
+          top,
+          PathfindingWeights.RoutedSystemPerimeter,
+        );
       }
 
       if (
@@ -701,7 +705,11 @@ export class SystemSimulator {
             obj.type === SimulatorObjectType.SystemTitle,
         )
       ) {
-        finderGrid.setWeightAt(x, bottom, PathfindingWeights.SystemPerimeter);
+        finderGrid.setWeightAt(
+          x,
+          bottom,
+          PathfindingWeights.RoutedSystemPerimeter,
+        );
       }
     }
 
@@ -720,7 +728,11 @@ export class SystemSimulator {
             obj.type === SimulatorObjectType.SystemTitle,
         )
       ) {
-        finderGrid.setWeightAt(left, y, PathfindingWeights.SystemPerimeter);
+        finderGrid.setWeightAt(
+          left,
+          y,
+          PathfindingWeights.RoutedSystemPerimeter,
+        );
       }
 
       if (
@@ -730,7 +742,11 @@ export class SystemSimulator {
             obj.type === SimulatorObjectType.SystemTitle,
         )
       ) {
-        finderGrid.setWeightAt(right, y, PathfindingWeights.SystemPerimeter);
+        finderGrid.setWeightAt(
+          right,
+          y,
+          PathfindingWeights.RoutedSystemPerimeter,
+        );
       }
     }
   }
@@ -841,20 +857,17 @@ export class SystemSimulator {
         }
       }
 
-      // It costs a little bit more for a path to hug the system perimeter.
-      this.setSystemPerimeterWeights(
-        gridSS,
-        finderGrid,
-        PathfindingWeights.SystemPerimeter,
-      );
-
-      // For a list, a path cannot go through the header.
       if (ss.type === "list") {
-        for (
-          let x = gridSS.x1;
-          x <= gridSS.x2;
-          x++
-        ) {
+        // For a list, it costs a little bit more for a path to
+        // hug the system perimeter.
+        this.setSystemPerimeterWeights(
+          gridSS,
+          finderGrid,
+          PathfindingWeights.ListPerimeter,
+        );
+
+        // For a list, a path cannot go through the header.
+        for (let x = gridSS.x1; x <= gridSS.x2; x++) {
           for (
             let y = gridSS.y1;
             y <= gridSS.title.y + gridSS.title.height;
@@ -1765,7 +1778,7 @@ export class SystemSimulator {
                 : finderGrid.getWeightAt(x, y) === PathfindingWeights.EmptySpace
                   ? "."
                   : finderGrid.getWeightAt(x, y) ===
-                      PathfindingWeights.SystemPerimeter
+                      PathfindingWeights.RoutedSystemPerimeter
                     ? "A"
                     : finderGrid.getWeightAt(x, y).toString(),
         };
