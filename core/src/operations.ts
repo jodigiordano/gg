@@ -508,188 +508,196 @@ export function moveSystems(
     )) {
       subsystem.specification.position.x = 0;
       subsystem.specification.position.y = nextY;
+
       nextY += subsystem.size.height;
     }
-  }
+  } else {
+    // Resolve collisions.
+    let iterations = 0;
+    const displacers: Record<string, string[]> = {};
+    const displacedThisIteration: string[] = [];
 
-  // Resolve collisions.
-  let iterations = 0;
-  const displacers: Record<string, string[]> = {};
-  const displacedThisIteration: string[] = [];
+    do {
+      displacedThisIteration.length = 0;
+      iterations += 1;
 
-  do {
-    displacedThisIteration.length = 0;
-    iterations += 1;
+      for (const ssACandidate of subsystemsInCollision) {
+        for (const ssBCandidate of subsystemsInCollision) {
+          if (
+            displacedThisIteration.includes(
+              [ssACandidate.id, ssBCandidate.id].join("."),
+            ) ||
+            ssACandidate.id === ssBCandidate.id
+          ) {
+            continue;
+          }
 
-    for (const ssACandidate of subsystemsInCollision) {
-      for (const ssBCandidate of subsystemsInCollision) {
-        if (
-          displacedThisIteration.includes(
-            [ssACandidate.id, ssBCandidate.id].join("."),
-          ) ||
-          ssACandidate.id === ssBCandidate.id
-        ) {
-          continue;
-        }
+          // Find which subsystem displaces and
+          // which subsystem is being displaced.
+          //
+          // It is important that the order is consistent between iterations.
+          // So if subsystem A displaces subsystem B on iteration 0,
+          // it is important that A still displaces B on iteration 1.
+          //
+          // To accomplish this, we apply this rule: the subsystem which
+          // displaces is always the one nearest (center to center) to the
+          // subsystem being moved (i.e. the first parameter of this function).
+          //
+          // Special case: the subsystem being moved is always displacing.
+          let ssA: RuntimeSubsystem;
+          let ssB: RuntimeSubsystem;
 
-        // Find which subsystem displaces and
-        // which subsystem is being displaced.
-        //
-        // It is important that the order is consistent between iterations.
-        // So if subsystem A displaces subsystem B on iteration 0,
-        // it is important that A still displaces B on iteration 1.
-        //
-        // To accomplish this, we apply this rule: the subsystem which
-        // displaces is always the one nearest (center to center) to the
-        // subsystem being moved (i.e. the first parameter of this function).
-        //
-        // Special case: the subsystem being moved is always displacing.
-        let ssA: RuntimeSubsystem;
-        let ssB: RuntimeSubsystem;
+          if (displacers[ssACandidate.id]?.includes(ssBCandidate.id)) {
+            ssA = ssACandidate;
+            ssB = ssBCandidate;
+          } else if (displacers[ssBCandidate.id]?.includes(ssACandidate.id)) {
+            ssA = ssBCandidate;
+            ssB = ssACandidate;
+          } else {
+            const ssACandidateCenterX =
+              ssACandidate.specification.position.x +
+              ssACandidate.size.width / 2;
 
-        if (displacers[ssACandidate.id]?.includes(ssBCandidate.id)) {
-          ssA = ssACandidate;
-          ssB = ssBCandidate;
-        } else if (displacers[ssBCandidate.id]?.includes(ssACandidate.id)) {
-          ssA = ssBCandidate;
-          ssB = ssACandidate;
-        } else {
-          const ssACandidateCenterX =
-            ssACandidate.specification.position.x + ssACandidate.size.width / 2;
+            const ssaCandidateCenterY =
+              ssACandidate.specification.position.y +
+              ssACandidate.size.height / 2;
 
-          const ssaCandidateCenterY =
-            ssACandidate.specification.position.y +
-            ssACandidate.size.height / 2;
+            const ssACandidateDistance = Math.sqrt(
+              Math.pow(ssACandidateCenterX - centerSS.x, 2) +
+                Math.pow(ssaCandidateCenterY - centerSS.y, 2),
+            );
 
-          const ssACandidateDistance = Math.sqrt(
-            Math.pow(ssACandidateCenterX - centerSS.x, 2) +
-              Math.pow(ssaCandidateCenterY - centerSS.y, 2),
+            const ssBCandidateCenterX =
+              ssBCandidate.specification.position.x +
+              ssBCandidate.size.width / 2;
+
+            const ssBCandidateCenterY =
+              ssBCandidate.specification.position.y +
+              ssBCandidate.size.height / 2;
+
+            const ssBCandidateDistance = Math.sqrt(
+              Math.pow(ssBCandidateCenterX - centerSS.x, 2) +
+                Math.pow(ssBCandidateCenterY - centerSS.y, 2),
+            );
+
+            // Subsystem displacing.
+            ssA =
+              ssACandidate.id === pseudoSystem.id ||
+              ssACandidateDistance < ssBCandidateDistance
+                ? ssACandidate
+                : ssBCandidate;
+
+            // Subsystem being displaced.
+            ssB = ssA.id === ssACandidate.id ? ssBCandidate : ssACandidate;
+
+            displacers[ssA.id] ??= [];
+            displacers[ssA.id]!.push(ssB.id);
+          }
+
+          const aPositionX1 =
+            ssA.specification.position.x - ssA.margin.left / 2;
+          const aPositionX2 =
+            ssA.specification.position.x +
+            ssA.size.width +
+            ssA.margin.right / 2;
+          const aPositionY1 = ssA.specification.position.y - ssA.margin.top / 2;
+          const aPositionY2 =
+            ssA.specification.position.y +
+            ssA.size.height +
+            ssA.margin.bottom / 2;
+
+          const bPositionX1 =
+            ssB.specification.position.x - ssB.margin.left / 2;
+          const bPositionX2 =
+            ssB.specification.position.x +
+            ssB.size.width +
+            ssB.margin.right / 2;
+          const bPositionY1 = ssB.specification.position.y - ssB.margin.top / 2;
+          const bPositionY2 =
+            ssB.specification.position.y +
+            ssB.size.height +
+            ssB.margin.bottom / 2;
+
+          // Calculate the area of intersection,
+          // which is a rectangle [0, 0, X, Y].
+          const overlapX = Math.max(
+            0,
+            Math.min(aPositionX2, bPositionX2) -
+              Math.max(aPositionX1, bPositionX1),
           );
 
-          const ssBCandidateCenterX =
-            ssBCandidate.specification.position.x + ssBCandidate.size.width / 2;
-
-          const ssBCandidateCenterY =
-            ssBCandidate.specification.position.y +
-            ssBCandidate.size.height / 2;
-
-          const ssBCandidateDistance = Math.sqrt(
-            Math.pow(ssBCandidateCenterX - centerSS.x, 2) +
-              Math.pow(ssBCandidateCenterY - centerSS.y, 2),
+          const overlapY = Math.max(
+            0,
+            Math.min(aPositionY2, bPositionY2) -
+              Math.max(aPositionY1, bPositionY1),
           );
 
-          // Subsystem displacing.
-          ssA =
-            ssACandidate.id === pseudoSystem.id ||
-            ssACandidateDistance < ssBCandidateDistance
-              ? ssACandidate
-              : ssBCandidate;
+          // No overlap.
+          if (overlapX === 0 || overlapY === 0) {
+            continue;
+          }
 
-          // Subsystem being displaced.
-          ssB = ssA.id === ssACandidate.id ? ssBCandidate : ssACandidate;
+          const aCenterX = (aPositionX1 + aPositionX2) / 2;
+          const aCenterY = (aPositionY1 + aPositionY2) / 2;
 
-          displacers[ssA.id] ??= [];
-          displacers[ssA.id]!.push(ssB.id);
+          let bCenterX = (bPositionX1 + bPositionX2) / 2;
+          const bCenterY = (bPositionY1 + bPositionY2) / 2;
+
+          if (aCenterX === bCenterX && aCenterY === bCenterY) {
+            bCenterX += 1;
+          }
+
+          const centerToCenterMagnitude = Math.sqrt(
+            Math.pow(bCenterX - aCenterX, 2) + Math.pow(bCenterY - aCenterY, 2),
+          );
+
+          const centerToCenterUnitVectorX =
+            (bCenterX - aCenterX) / centerToCenterMagnitude;
+
+          const centerToCenterUnitVectorY =
+            (bCenterY - aCenterY) / centerToCenterMagnitude;
+
+          const displacementX =
+            centerToCenterUnitVectorX >= 0
+              ? Math.ceil(centerToCenterUnitVectorX) | 0
+              : Math.floor(centerToCenterUnitVectorX) | 0;
+
+          const displacementY =
+            centerToCenterUnitVectorY >= 0
+              ? Math.ceil(centerToCenterUnitVectorY) | 0
+              : Math.floor(centerToCenterUnitVectorY) | 0;
+
+          console.debug(
+            ssA.id,
+            "collides",
+            overlapX,
+            overlapY,
+            "with",
+            ssB.id,
+            "=>",
+            "move",
+            ssB.id,
+            displacementX,
+            displacementY,
+          );
+
+          if (
+            Math.abs(centerToCenterUnitVectorX) >=
+            Math.abs(centerToCenterUnitVectorY)
+          ) {
+            ssB.specification.position.x += displacementX;
+          } else {
+            ssB.specification.position.y += displacementY;
+          }
+
+          displacedThisIteration.push([ssA.id, ssB.id].join("."));
+          displacedThisIteration.push([ssB.id, ssA.id].join("."));
         }
-
-        const aPositionX1 = ssA.specification.position.x - ssA.margin.left / 2;
-        const aPositionX2 =
-          ssA.specification.position.x + ssA.size.width + ssA.margin.right / 2;
-        const aPositionY1 = ssA.specification.position.y - ssA.margin.top / 2;
-        const aPositionY2 =
-          ssA.specification.position.y +
-          ssA.size.height +
-          ssA.margin.bottom / 2;
-
-        const bPositionX1 = ssB.specification.position.x - ssB.margin.left / 2;
-        const bPositionX2 =
-          ssB.specification.position.x + ssB.size.width + ssB.margin.right / 2;
-        const bPositionY1 = ssB.specification.position.y - ssB.margin.top / 2;
-        const bPositionY2 =
-          ssB.specification.position.y +
-          ssB.size.height +
-          ssB.margin.bottom / 2;
-
-        // Calculate the area of intersection,
-        // which is a rectangle [0, 0, X, Y].
-        const overlapX = Math.max(
-          0,
-          Math.min(aPositionX2, bPositionX2) -
-            Math.max(aPositionX1, bPositionX1),
-        );
-
-        const overlapY = Math.max(
-          0,
-          Math.min(aPositionY2, bPositionY2) -
-            Math.max(aPositionY1, bPositionY1),
-        );
-
-        // No overlap.
-        if (overlapX === 0 || overlapY === 0) {
-          continue;
-        }
-
-        const aCenterX = (aPositionX1 + aPositionX2) / 2;
-        const aCenterY = (aPositionY1 + aPositionY2) / 2;
-
-        let bCenterX = (bPositionX1 + bPositionX2) / 2;
-        const bCenterY = (bPositionY1 + bPositionY2) / 2;
-
-        if (aCenterX === bCenterX && aCenterY === bCenterY) {
-          bCenterX += 1;
-        }
-
-        const centerToCenterMagnitude = Math.sqrt(
-          Math.pow(bCenterX - aCenterX, 2) + Math.pow(bCenterY - aCenterY, 2),
-        );
-
-        const centerToCenterUnitVectorX =
-          (bCenterX - aCenterX) / centerToCenterMagnitude;
-
-        const centerToCenterUnitVectorY =
-          (bCenterY - aCenterY) / centerToCenterMagnitude;
-
-        const displacementX =
-          centerToCenterUnitVectorX >= 0
-            ? Math.ceil(centerToCenterUnitVectorX) | 0
-            : Math.floor(centerToCenterUnitVectorX) | 0;
-
-        const displacementY =
-          centerToCenterUnitVectorY >= 0
-            ? Math.ceil(centerToCenterUnitVectorY) | 0
-            : Math.floor(centerToCenterUnitVectorY) | 0;
-
-        console.debug(
-          ssA.id,
-          "collides",
-          overlapX,
-          overlapY,
-          "with",
-          ssB.id,
-          " => ",
-          "move",
-          ssB.id,
-          displacementX,
-          displacementY,
-        );
-
-        if (
-          Math.abs(centerToCenterUnitVectorX) >=
-          Math.abs(centerToCenterUnitVectorY)
-        ) {
-          ssB.specification.position.x += displacementX;
-        } else {
-          ssB.specification.position.y += displacementY;
-        }
-
-        displacedThisIteration.push([ssA.id, ssB.id].join("."));
-
-        displacedThisIteration.push([ssB.id, ssA.id].join("."));
       }
-    }
-  } while (displacedThisIteration.length && iterations < 200);
+    } while (displacedThisIteration.length && iterations < 200);
 
-  console.debug("iterations to resolve collisions", iterations);
+    console.debug("iterations to resolve collisions", iterations);
+  }
 
   for (const system of allSubsystems) {
     const ssPosition = system.specification.position;
