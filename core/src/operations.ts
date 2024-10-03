@@ -453,6 +453,7 @@ export function moveSubsystemsToParent(
   if (previousParent.systems.length) {
     moveSystems([...previousParent.systems], 0, 0);
   } else if (previousParent.id) {
+    computeSystemSize(previousParent, rootSystem.links);
     moveSystems([previousParent], 0, 0);
   }
 
