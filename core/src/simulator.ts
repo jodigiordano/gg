@@ -975,7 +975,7 @@ export class SystemSimulator {
       while (children.length) {
         const child = children.pop()!;
 
-        if (child.systems.length && child.title.length) {
+        if (child.systems.length && child.titleSize.height) {
           disabledWhiteboxTitles.push(child.id);
         }
 
@@ -1000,7 +1000,7 @@ export class SystemSimulator {
       while (children.length) {
         const child = children.pop()!;
 
-        if (child.systems.length && child.title.length) {
+        if (child.systems.length && child.titleSize.height) {
           disabledWhiteboxTitles.push(child.id);
         }
 
@@ -1020,7 +1020,7 @@ export class SystemSimulator {
       const allowedSystemPerimeters: number[][][] = [];
 
       // Open the perimeter around A & B so a link can be found between
-      // the center of A and the center of B.
+      // the center of A and the center of B. Part I.
       //
       // This needs to be performed before setting the perimeters for
       // parents & children below, so we correctly apply this behavior:
@@ -1036,21 +1036,27 @@ export class SystemSimulator {
         this.getSystemPerimeterWeights(subsystemA, finderGrid),
       );
 
-      this.setSystemPerimeterWeightsForRouting(subsystemA, finderGrid);
-
       allowedSystemPerimeters.push(
         this.getSystemPerimeterWeights(subsystemB, finderGrid),
       );
 
-      this.setSystemPerimeterWeightsForRouting(subsystemB, finderGrid);
-
-      // Set the perimeters for parents & childrens.
+      // Set the perimeters for parents & childrens. Part I.
       for (const gridSS of Object.values(this.gridSystems)) {
         if (!allowedSystems.includes(gridSS.id)) {
           allowedSystemPerimeters.push(
             this.getSystemPerimeterWeights(gridSS, finderGrid),
           );
+        }
+      }
 
+      // Open the perimeter around A & B so a link can be found between
+      // the center of A and the center of B. Part II.
+      this.setSystemPerimeterWeightsForRouting(subsystemA, finderGrid);
+      this.setSystemPerimeterWeightsForRouting(subsystemB, finderGrid);
+
+      // Set the perimeters for parents & childrens. Part II.
+      for (const gridSS of Object.values(this.gridSystems)) {
+        if (!allowedSystems.includes(gridSS.id)) {
           this.setSystemPerimeterWeights(
             gridSS,
             finderGrid,
