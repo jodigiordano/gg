@@ -112,6 +112,15 @@ function onPointerMove(state: State) {
     // Show hovering another system (container).
     let parent = state.simulator.getSubsystemAt(state.x, state.y);
 
+    // The systems are hovering the perimeter of another system,
+    // which is part of a list.
+    if (
+      parent?.parent?.type === "list" &&
+      isSystemPadding(parent as RuntimeSubsystem, state.x, state.y)
+    ) {
+      parent = parent.parent;
+    }
+
     if (
       // User moves the ss over itself.
       (parent?.id &&
@@ -223,6 +232,15 @@ function onPointerMove(state: State) {
 
     // Show hovering another system (container).
     let parent = state.simulator.getSubsystemAt(state.x, state.y);
+
+    // The system is hovering the perimeter of another system,
+    // which is part of a list.
+    if (
+      parent?.parent?.type === "list" &&
+      isSystemPadding(parent as RuntimeSubsystem, state.x, state.y)
+    ) {
+      parent = parent.parent;
+    }
 
     if (
       // User moves the ss over itself.
@@ -494,9 +512,18 @@ const operation: Operation = {
     // Move multiple systems into a container, or not. - Stage 2.
     //
     if (multiPickedUpAt) {
-      const parent =
+      let parent =
         state.simulator.getSubsystemAt(state.x, state.y) ??
         state.simulator.getSystem();
+
+      // The systems are moved to the perimeter of another system,
+      // which is part of a list.
+      if (
+        parent.parent?.type === "list" &&
+        isSystemPadding(parent as RuntimeSubsystem, state.x, state.y)
+      ) {
+        parent = parent.parent;
+      }
 
       modifySpecification(() => {
         if (
@@ -616,9 +643,18 @@ const operation: Operation = {
     // Move one system into a container, or not.
     //
     if (oneSystemSelected && oneSystemPickedUpAt) {
-      const parent =
+      let parent =
         state.simulator.getSubsystemAt(state.x, state.y) ??
         state.simulator.getSystem();
+
+      // The system is moved to the perimeter of another system,
+      // which is part of a list.
+      if (
+        parent.parent?.type === "list" &&
+        isSystemPadding(parent as RuntimeSubsystem, state.x, state.y)
+      ) {
+        parent = parent.parent;
+      }
 
       modifySpecification(() => {
         if (
