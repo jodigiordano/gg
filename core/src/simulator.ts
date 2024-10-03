@@ -841,7 +841,29 @@ export class SystemSimulator {
         }
       }
 
-      if (ss.systems.length && ss.title.trim().length > 0) {
+      // It costs a little bit more for a path to hug the system perimeter.
+      this.setSystemPerimeterWeights(
+        gridSS,
+        finderGrid,
+        PathfindingWeights.SystemPerimeter,
+      );
+
+      // For a list, a path cannot go through the header.
+      if (ss.type === "list") {
+        for (
+          let x = gridSS.x1;
+          x <= gridSS.x2;
+          x++
+        ) {
+          for (
+            let y = gridSS.y1;
+            y <= gridSS.title.y + gridSS.title.height;
+            y++
+          ) {
+            finderGrid.setWeightAt(x, y, PathfindingWeights.Impenetrable);
+          }
+        }
+      } /* box */ else if (ss.systems.length && ss.titleSize.height) {
         // Title margins.
         this.setSystemTitleWeights(
           gridSS,
@@ -1728,7 +1750,12 @@ export class SystemSimulator {
         const debugInfo: SimulatorSystemTitleText = {
           type: SimulatorObjectType.SystemTitleText,
           // @ts-ignore
-          system: { titleFont: "text" },
+          system: {
+            titleFont: "text",
+            size: { width: 0, height: 0 },
+            titleMargin: { left: 0, right: 0, top: 0, bottom: 0 },
+            padding: { left: 0, right: 0, top: 0, bottom: 0 },
+          },
           blackbox: false,
           chars:
             finderGrid.getWeightAt(x, y) === PathfindingWeights.Impenetrable
