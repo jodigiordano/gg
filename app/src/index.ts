@@ -205,40 +205,44 @@ window.addEventListener("keydown", event => {
   }
 
   // The user press "Esc" to cancel any ongoing operation.
-  if (event.key === "Escape" || event.key === "1") {
-    switchOperation(moveOperation);
-  } else if (event.key === "2") {
-    switchOperation(eraseOperation);
-  } else if (event.key === "3") {
-    switchOperation(addBoxOperation);
-  } else if (event.key === "4") {
-    switchOperation(setTitleOperation);
-  } else if (event.key === "q") {
-    if (!linkPatternPipe.classList.contains("hidden")) {
-      setLinkPatternSolid();
-    } else if (!linkPatternSolid.classList.contains("hidden")) {
-      setLinkPatternDotted();
+  if (!event.ctrlKey) {
+    if (event.key === "Escape" || event.key === "1") {
+      switchOperation(moveOperation);
+    } else if (event.key === "2") {
+      switchOperation(eraseOperation);
+    } else if (event.key === "3") {
+      switchOperation(addBoxOperation);
+    } else if (event.key === "4") {
+      switchOperation(setTitleOperation);
+    } else if (event.key === "q") {
+      if (!linkPatternPipe.classList.contains("hidden")) {
+        setLinkPatternSolid();
+      } else if (!linkPatternSolid.classList.contains("hidden")) {
+        setLinkPatternDotted();
+      } else {
+        setLinkPatternPipe();
+      }
+    } else if (event.key === "w") {
+      switchOperation(linkOperation);
+    } else if (event.key === "e") {
+      switchOperation(paintOperation);
+    } else if (event.key === "r") {
+      switchOperation(duplicateOperation);
+    } else if (event.key === "a") {
+      switchOperation(addListOperation);
+    } else if (event.key === "[") {
+      undo();
+    } else if (event.key === "]") {
+      redo();
+    } else if (event.key === "=") {
+      cameraFit();
+    } else if (event.key === "+") {
+      cameraZoomIn();
+    } else if (event.key === "-") {
+      cameraZoomOut();
     } else {
-      setLinkPatternPipe();
+      state.operation.onKeyDown(state, event);
     }
-  } else if (event.key === "w") {
-    switchOperation(linkOperation);
-  } else if (event.key === "e") {
-    switchOperation(paintOperation);
-  } else if (event.key === "r") {
-    switchOperation(duplicateOperation);
-  } else if (event.key === "a") {
-    switchOperation(addListOperation);
-  } else if (event.key === "[") {
-    undo();
-  } else if (event.key === "]") {
-    redo();
-  } else if (event.key === "=") {
-    cameraFit();
-  } else if (event.key === "+") {
-    cameraZoomIn();
-  } else if (event.key === "-") {
-    cameraZoomOut();
   } else {
     state.operation.onKeyDown(state, event);
   }
