@@ -10,6 +10,7 @@ import SystemSelector from "./systemSelector.js";
 export default class MultiSystemSelector extends Container {
   private lassoVisual: SystemSelector;
   private selectedVisual: Container;
+  private parentAt: RuntimePosition;
 
   public selected: RuntimeSubsystem[];
   public lassoStart: RuntimePosition;
@@ -20,6 +21,8 @@ export default class MultiSystemSelector extends Container {
 
     this.lassoVisual = new SystemSelector();
     this.selectedVisual = new Container();
+
+    this.parentAt = { x: 0, y: 0 };
 
     this.selected = [];
     this.lassoStart = { x: 0, y: 0 };
@@ -65,6 +68,8 @@ export default class MultiSystemSelector extends Container {
   }
 
   setLassoPosition(x1: number, y1: number, x2: number, y2: number): void {
+    this.parentAt = { x: x1, y: y1 };
+
     if (x1 < x2 && y1 > y2) {
       //
       // x1,y1 +---+ end
@@ -123,7 +128,7 @@ export default class MultiSystemSelector extends Container {
 
   setSelectedFromLasso(simulator: SystemSimulator): void {
     const parent =
-      simulator.getWhiteboxAt(this.lassoStart.x, this.lassoStart.y) ??
+      simulator.getWhiteboxAt(this.parentAt.x, this.parentAt.y) ??
       simulator.getSystem();
 
     this.selected = simulator.getSubsystemsAt(
