@@ -387,6 +387,7 @@ button {
     margin-right: 1em;
     font-weight: bold;
     white-space: nowrap;
+    user-select: none;
   }
 
   #header-right {
