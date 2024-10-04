@@ -227,21 +227,33 @@ document
           );
         }
       }).then(() => {
-        onPointerMove(state);
+        onBegin(state);
         tick();
       });
     }
 
-    // Reset operation.
     dialog.close();
-
-    subsystem = null;
-    link = null;
-
-    onPointerMove(state);
-
-    tick();
   });
+
+//
+// Cancel
+//
+
+document
+  .getElementById("operation-set-title-cancel")
+  ?.addEventListener("click", function () {
+    onBegin(state);
+  });
+
+dialog.addEventListener("keydown", event => {
+  if (event.key === "Escape" || event.key === "1") {
+    onBegin(state);
+  }
+});
+
+//
+// State
+//
 
 const selectSystemVisual = new SystemSelector();
 const selectLinkVisual1 = new SystemSelector();
@@ -250,6 +262,10 @@ const selectLinkVisual3 = new SystemSelector();
 
 let subsystem: RuntimeSubsystem | null = null;
 let link: RuntimeLink | null = null;
+
+//
+// Handlers
+//
 
 function onPointerMove(state: State) {
   selectSystemVisual.visible = false;
@@ -318,6 +334,16 @@ function onPointerMove(state: State) {
   }
 }
 
+function onBegin(state: State): void {
+  subsystem = null;
+  link = null;
+
+  dialog.close();
+
+  viewport.pause = false;
+  onPointerMove(state);
+}
+
 const operation: Operation = {
   id: "operation-set-title",
   setup: () => {
@@ -326,7 +352,7 @@ const operation: Operation = {
     viewport.addChild(selectLinkVisual2);
     viewport.addChild(selectLinkVisual3);
   },
-  onBegin: onPointerMove,
+  onBegin,
   onEnd: () => {
     selectSystemVisual.visible = false;
     selectLinkVisual1.visible = false;
