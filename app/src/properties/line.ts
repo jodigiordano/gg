@@ -19,23 +19,23 @@ const linePatternDotted = document.getElementById(
 )!;
 
 function setLinePatternPipe(): void {
-  linePattern = "pipe";
+  hideLinePattern();
 
-  linePatternDotted.classList.add("hidden");
+  linePattern = "pipe";
   linePatternPipe.classList.remove("hidden");
 }
 
 function setLinePatternSolid(): void {
-  linePattern = "solid-line";
+  hideLinePattern();
 
-  linePatternPipe.classList.add("hidden");
+  linePattern = "solid-line";
   linePatternSolid.classList.remove("hidden");
 }
 
 function setLinePatternDotted(): void {
-  linePattern = "dotted-line";
+  hideLinePattern();
 
-  linePatternSolid.classList.add("hidden");
+  linePattern = "dotted-line";
   linePatternDotted.classList.remove("hidden");
 }
 
