@@ -846,6 +846,19 @@ function createPseudoSystem(systems: RuntimeSubsystem[]): RuntimeSubsystem {
   }
 
   // Happens when there are no subsystems.
+  if (
+    left === Number.MAX_SAFE_INTEGER &&
+    right === -Number.MAX_SAFE_INTEGER &&
+    top === Number.MAX_SAFE_INTEGER &&
+    bottom === -Number.MAX_SAFE_INTEGER
+  ) {
+    left = 0;
+    right = 0;
+    top = 0;
+    bottom = 0;
+  }
+
+  // Happens when there are no subsystems.
   if (left > right) {
     left = right;
   }

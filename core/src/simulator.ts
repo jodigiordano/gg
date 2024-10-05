@@ -543,9 +543,9 @@ export class SystemSimulator {
 
   private computeBoundaries(): SimulatorBoundaries {
     let left = Number.MAX_SAFE_INTEGER;
-    let right = 0;
+    let right = -Number.MAX_SAFE_INTEGER;
     let top = Number.MAX_SAFE_INTEGER;
-    let bottom = 0;
+    let bottom = -Number.MAX_SAFE_INTEGER;
 
     for (const obj of Object.values(this.gridSystems)) {
       if (obj.worldX < left) {
@@ -566,6 +566,19 @@ export class SystemSimulator {
     }
 
     // Happens when there are no subsystems.
+    if (
+      left === Number.MAX_SAFE_INTEGER &&
+      right === -Number.MAX_SAFE_INTEGER &&
+      top === Number.MAX_SAFE_INTEGER &&
+      bottom === -Number.MAX_SAFE_INTEGER
+    ) {
+      left = 0;
+      right = 0;
+      top = 0;
+      bottom = 0;
+    }
+
+    // Happens when there are no subsystems.
     if (left > right) {
       left = right;
     }
@@ -578,10 +591,12 @@ export class SystemSimulator {
     // When computing the boundaries, we don't know how the links will
     // be routed so we must be prepared for the worst case scenario.
     const maxTitleWidth = Math.max(
+      0,
       ...this.system.links.map(link => link.titleSize.width),
     );
 
     const maxTitleHeight = Math.max(
+      0,
       ...this.system.links.map(link => link.titleSize.height),
     );
 
