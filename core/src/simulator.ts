@@ -1844,6 +1844,6 @@ export class SystemSimulator {
   }
 
   private getGridLinkId(link: RuntimeLink): string {
-    return [link.a, link.b].join("<>");
+    return [link.a, link.b, link.index].join("<>");
   }
 }
