@@ -13,6 +13,7 @@ import {
   TextFont,
   TextAlign,
   SubsystemType,
+  BorderPattern,
 } from "./specification.js";
 import { computeSystemSize, getRootSystem, initSystem } from "./system.js";
 
@@ -26,6 +27,10 @@ export function addSubsystem(
   x: number,
   y: number,
   title: string,
+  options: {
+    backgroundColor?: string;
+    borderPattern?: BorderPattern;
+  } = {},
 ): RuntimeSubsystem {
   const newSpecSystem: Subsystem = {
     id: generateUniqueId(),
@@ -36,6 +41,14 @@ export function addSubsystem(
     },
     title,
   };
+
+  if (options.borderPattern) {
+    newSpecSystem.borderPattern = options.borderPattern;
+  }
+
+  if (options.backgroundColor) {
+    newSpecSystem.backgroundColor = options.backgroundColor;
+  }
 
   parent.specification.systems ??= [];
   parent.specification.systems.push(newSpecSystem);
@@ -868,7 +881,7 @@ function createPseudoSystem(systems: RuntimeSubsystem[]): RuntimeSubsystem {
     index: -1,
     systems: [],
     links: [],
-    borderPattern: "none",
+    borderPattern: "light",
   };
 }
 

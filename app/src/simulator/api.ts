@@ -185,7 +185,7 @@ function getObjectsToRender(): (Sprite | TaggedText)[] {
             systemBottomLeft = spritesheet.textures.boxDottedBottomLeft;
             systemBottomCenter = spritesheet.textures.boxDottedBottomCenter;
             systemBottomRight = spritesheet.textures.boxDottedBottomRight;
-          } /* none */ else {
+          } /* light */ else {
             systemTopLeft = spritesheet.textures.boxTopLeft;
             systemTopCenter = spritesheet.textures.boxTopCenter;
             systemTopRight = spritesheet.textures.boxTopRight;

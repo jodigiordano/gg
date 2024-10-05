@@ -1,7 +1,7 @@
 export type SubsystemType = "box" | "list";
 export type TextFont = "text" | "sketch" | "code";
 export type TextAlign = "left" | "center" | "right";
-export type BorderPattern = "none" | "solid" | "dotted";
+export type BorderPattern = "light" | "solid" | "dotted";
 export type PathEndingPattern = "none" | "solid-arrow";
 export type PathPattern = "solid-line" | "dotted-line" | "pipe";
 
@@ -391,7 +391,7 @@ const schemas = [
       borderPattern: {
         $id: "BorderPattern",
         type: "string",
-        enum: ["none", "solid", "dotted"],
+        enum: ["light", "solid", "dotted"],
       },
     },
   },

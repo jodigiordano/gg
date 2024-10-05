@@ -42,7 +42,7 @@ export function initSystem(
   system.depth = depth;
 
   // Set the border.
-  system.borderPattern ??= "none";
+  system.borderPattern ??= "light";
 
   // Set title margin.
   computeTitleMargin(system);
