@@ -1,4 +1,4 @@
-import { load, PathPattern, SystemSimulator } from "@gg/core";
+import { load, SystemSimulator } from "@gg/core";
 import Operation from "./operation.js";
 import moveOperation from "./operations/move.js";
 import { getUrlParams } from "./persistence.js";
@@ -14,7 +14,6 @@ export interface State {
   preciseY: number;
   simulator: SystemSimulator;
   simulatorInitialized: boolean;
-  linkPattern: PathPattern;
   theme: "light" | "dark";
   zoomControls: boolean;
   editorButton: boolean;
@@ -44,7 +43,6 @@ export const state: State = {
   preciseY: -999999,
   simulator: defaultSimulator,
   simulatorInitialized: false,
-  linkPattern: "solid-line",
   theme: getThemeOnLoad(),
   zoomControls: urlParams.zoomControls,
   editorButton: urlParams.editorButton,

@@ -31,11 +31,13 @@ body {
   height: calc(100vh - var(--header-height));
 }
 
-/* Menu on the left of the content */
+/* Menu of tools on the left of the content */
 #toolbox {
   padding: 0.5em;
   overflow-y: scroll;
   background: var(--toolbox-background);
+  display: flex;
+  flex-direction: column;
 
   .operations {
     display: grid;
@@ -68,6 +70,11 @@ body {
       display: flex;
       justify-content: center;
       align-items: center;
+    }
+
+    /*  Push the camera operations at the end of the container. */
+    &.camera {
+      margin-top: auto;
     }
   }
 

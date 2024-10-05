@@ -6,6 +6,12 @@ import Operation from "../operation.js";
 import { State } from "../state.js";
 import viewport from "../renderer/viewport.js";
 import { tick } from "../renderer/pixi.js";
+import {
+  cycleLinePattern,
+  getLinePattern,
+  hideLinePattern,
+  resetLinePattern,
+} from "../properties/line.js";
 
 const selectAVisual = new SystemSelector();
 const selectBVisual = new SystemSelector();
@@ -51,28 +57,8 @@ function onPointerMove(state: State) {
 
   // The user is hovering a link.
   if (link) {
-    const path = state.simulator.getPath(link)!;
-    const boundaries = state.simulator.getBoundaries();
-
-    const [startX, startY] = (path.at(1) ?? path.at(0))!;
-
     selectAVisual.visible = true;
-    selectAVisual.setPositionRect(
-      startX - boundaries.translateX,
-      startY - boundaries.translateY,
-      startX - boundaries.translateX,
-      startY - boundaries.translateY,
-    );
-
-    const [endX, endY] = (path.at(-2) ?? path.at(-1))!;
-
-    selectBVisual.visible = true;
-    selectBVisual.setPositionRect(
-      endX - boundaries.translateX,
-      endY - boundaries.translateY,
-      endX - boundaries.translateX,
-      endY - boundaries.translateY,
-    );
+    selectAVisual.setPositionRect(state.x, state.y, state.x, state.y);
 
     return;
   }
@@ -95,6 +81,7 @@ const operation: Operation = {
   },
   onBegin: state => {
     a = null;
+    resetLinePattern();
 
     onPointerMove(state);
   },
@@ -102,6 +89,8 @@ const operation: Operation = {
     selectAVisual.visible = false;
     selectBVisual.visible = false;
     linkingLine.visible = false;
+
+    hideLinePattern();
 
     viewport.pause = false;
   },
@@ -119,7 +108,7 @@ const operation: Operation = {
       if (b && b.id !== a.id) {
         modifySpecification(() => {
           addLink(state.simulator.getSystem(), a!.id, b!.id, {
-            middlePattern: state.linkPattern,
+            middlePattern: getLinePattern(),
           });
         }).then(() => {
           onPointerMove(state);
@@ -146,7 +135,7 @@ const operation: Operation = {
     }
 
     modifySpecification(() => {
-      if (link.specification.middlePattern === state.linkPattern) {
+      if (link.specification.middlePattern === getLinePattern()) {
         if (link.startPattern === "none" && link.endPattern === "none") {
           link.specification.startPattern = "none";
           link.specification.endPattern = "solid-arrow";
@@ -170,7 +159,7 @@ const operation: Operation = {
           link.specification.endPattern = "none";
         }
       } else {
-        link.specification.middlePattern = state.linkPattern;
+        link.specification.middlePattern = getLinePattern();
       }
     }).then(() => {
       onPointerMove(state);
@@ -203,7 +192,11 @@ const operation: Operation = {
     onPointerMove(state);
   },
   onPointerMove,
-  onKeyDown: () => {},
+  onKeyDown: (_state, event) => {
+    if (event.key === "q") {
+      cycleLinePattern();
+    }
+  },
 };
 
 export default operation;

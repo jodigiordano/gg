@@ -214,14 +214,6 @@ window.addEventListener("keydown", event => {
       switchOperation(addBoxOperation);
     } else if (event.key === "4") {
       switchOperation(setTitleOperation);
-    } else if (event.key === "q") {
-      if (!linkPatternPipe.classList.contains("hidden")) {
-        setLinkPatternSolid();
-      } else if (!linkPatternSolid.classList.contains("hidden")) {
-        setLinkPatternDotted();
-      } else {
-        setLinkPatternPipe();
-      }
     } else if (event.key === "w") {
       switchOperation(linkOperation);
     } else if (event.key === "e") {
@@ -848,68 +840,6 @@ document
 document
   .getElementById("operation-camera-zoom-out")
   ?.addEventListener("click", cameraZoomOut);
-
-//
-// Link operations
-//
-
-const linkPatternPipe = document.getElementById(
-  "operation-set-link-pattern-pipe",
-)!;
-
-const linkPatternSolid = document.getElementById(
-  "operation-set-link-pattern-solid",
-)!;
-
-const linkPatternDotted = document.getElementById(
-  "operation-set-link-pattern-dotted",
-)!;
-
-function setLinkPatternPipe(): void {
-  state.linkPattern = "pipe";
-
-  linkPatternDotted.classList.add("hidden");
-  linkPatternPipe.classList.remove("hidden");
-
-  // Timeout used to apply this operation after the "click" event
-  // has bubbled up. Without this, the "selected" class is not applied
-  // on the link button.
-  setTimeout(() => {
-    switchOperation(linkOperation);
-  }, 0);
-}
-
-function setLinkPatternSolid(): void {
-  state.linkPattern = "solid-line";
-
-  linkPatternPipe.classList.add("hidden");
-  linkPatternSolid.classList.remove("hidden");
-
-  // Timeout used to apply this operation after the "click" event
-  // has bubbled up. Without this, the "selected" class is not applied
-  // on the link button.
-  setTimeout(() => {
-    switchOperation(linkOperation);
-  }, 0);
-}
-
-function setLinkPatternDotted(): void {
-  state.linkPattern = "dotted-line";
-
-  linkPatternSolid.classList.add("hidden");
-  linkPatternDotted.classList.remove("hidden");
-
-  // Timeout used to apply this operation after the "click" event
-  // has bubbled up. Without this, the "selected" class is not applied
-  // on the link button.
-  setTimeout(() => {
-    switchOperation(linkOperation);
-  }, 0);
-}
-
-linkPatternPipe.addEventListener("click", setLinkPatternSolid);
-linkPatternSolid.addEventListener("click", setLinkPatternDotted);
-linkPatternDotted.addEventListener("click", setLinkPatternPipe);
 
 //
 // Profile operations
