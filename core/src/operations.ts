@@ -169,6 +169,7 @@ export function addLink(
     startPattern?: PathEndingPattern;
     middlePattern?: PathPattern;
     endPattern?: PathEndingPattern;
+    index?: number;
   } = {},
 ): Link {
   const newLink: Link = {
@@ -209,7 +210,16 @@ export function addLink(
   }
 
   system.specification.links ??= [];
-  system.specification.links.push(structuredClone(newLink));
+
+  const index = Math.max(
+    0,
+    Math.min(
+      options.index ?? system.specification.links.length - 1,
+      system.specification.links.length,
+    ),
+  );
+
+  system.specification.links.splice(index, 0, structuredClone(newLink));
 
   return newLink;
 }
@@ -235,6 +245,7 @@ export function moveLink(
     startPattern: link.startPattern,
     middlePattern: link.middlePattern,
     endPattern: link.endPattern,
+    index: link.index,
   };
 
   if (link.titleBackgroundColor) {
@@ -245,9 +256,12 @@ export function moveLink(
     options["backgroundColor"] = link.backgroundColor;
   }
 
-  addLink(rootSystem, aId, bId, options);
-
+  // Must be done first, as it mutates that spec links array.
   removeLink(rootSystem, link);
+
+  // The new link is inserted at the same index of the previous link,
+  // to maintain its priority in the routing phase.
+  addLink(rootSystem, aId, bId, options);
 }
 
 /*
