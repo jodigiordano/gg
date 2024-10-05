@@ -8,6 +8,7 @@ import {
   removeSubsystems,
   System,
   RuntimeSystem,
+  isSubsystemOf,
 } from "@gg/core";
 import { modifySpecification } from "../simulator/api.js";
 import Operation from "../operation.js";
@@ -52,7 +53,7 @@ const oneLinkSelectVisual = new SystemSelector();
 const oneLinkMoveVisual = new SystemLinker();
 
 let oneLinkSelected: RuntimeLink | null = null;
-let oneLinkSelectedSystemId: string | null = null;
+let oneLinkSelectedSystem: RuntimeSubsystem | null = null;
 
 //
 // Move into a container.
@@ -180,12 +181,12 @@ function onPointerMove(state: State) {
   //
   // Moving one link.
   //
-  if (oneLinkSelected && oneLinkSelectedSystemId) {
+  if (oneLinkSelected && oneLinkSelectedSystem) {
     const path = state.simulator.getPath(oneLinkSelected)!;
     const boundaries = state.simulator.getBoundaries();
 
     const [startX, startY] =
-      oneLinkSelectedSystemId === oneLinkSelected.b
+      oneLinkSelectedSystem.id === oneLinkSelected.b
         ? path.at(-1)!
         : path.at(0)!;
 
@@ -199,18 +200,25 @@ function onPointerMove(state: State) {
 
     oneLinkSelectVisual.visible = true;
 
-    const ssToMoveLinkAt = state.simulator.getSubsystemAt(state.x, state.y);
+    const oneLinkNewB = state.simulator.getSubsystemAt(state.x, state.y);
 
-    if (
-      ssToMoveLinkAt &&
-      !ssToMoveLinkAt.systems.length &&
-      ssToMoveLinkAt.id !== oneLinkSelected.a &&
-      ssToMoveLinkAt.id !== oneLinkSelected.b
-    ) {
-      oneSystemSelectVisual.visible = true;
-      oneSystemSelectVisual.setPosition(ssToMoveLinkAt, { x: 0, y: 0 });
+    if (oneLinkNewB) {
+      const oneLinkA =
+        oneLinkSelectedSystem.id === oneLinkSelected.a
+          ? oneLinkSelected.systemB
+          : oneLinkSelected.systemA;
 
-      oneSystemSelected = ssToMoveLinkAt;
+      if (
+        oneLinkNewB.id !== oneLinkSelected.a &&
+        oneLinkNewB.id !== oneLinkSelected.b &&
+        !isSubsystemOf(oneLinkNewB, oneLinkA) &&
+        !isSubsystemOf(oneLinkA, oneLinkNewB)
+      ) {
+        oneSystemSelectVisual.visible = true;
+        oneSystemSelectVisual.setPosition(oneLinkNewB, { x: 0, y: 0 });
+
+        oneSystemSelected = oneLinkNewB;
+      }
     }
 
     return;
@@ -337,7 +345,7 @@ function onBegin(state: State): void {
   // Move one link.
   //
   oneLinkSelected = null;
-  oneLinkSelectedSystemId = null;
+  oneLinkSelectedSystem = null;
 
   //
   // Shared.
@@ -453,7 +461,7 @@ const operation: Operation = {
     oneSystemSelected = null;
     oneSystemPickedUpAt = null;
     oneLinkSelected = null;
-    oneLinkSelectedSystemId = null;
+    oneLinkSelectedSystem = null;
 
     //
     // Move one link.
@@ -472,8 +480,8 @@ const operation: Operation = {
 
       oneLinkSelected = linkToMove;
 
-      oneLinkSelectedSystemId =
-        pathIndex < path.length / 2 ? linkToMove.a : linkToMove.b;
+      oneLinkSelectedSystem =
+        pathIndex < path.length / 2 ? linkToMove.systemA : linkToMove.systemB;
 
       return;
     }
@@ -624,11 +632,11 @@ const operation: Operation = {
     //
     // Move one link.
     //
-    if (oneLinkSelected && oneLinkSelectedSystemId && oneSystemSelected) {
+    if (oneLinkSelected && oneLinkSelectedSystem && oneSystemSelected) {
       modifySpecification(() => {
         moveLink(
           oneLinkSelected!,
-          oneLinkSelectedSystemId!,
+          oneLinkSelectedSystem!.id,
           oneSystemSelected!.id,
         );
       }).then(() => {
