@@ -37,7 +37,10 @@ onmessage = function (event) {
       return;
     }
 
-    const simulator = new SystemSimulator({ system: result.system });
+    const simulator = new SystemSimulator({
+      system: result.system,
+      linkIndexToDebug: event.data.linkIndexToDebug,
+    });
 
     simulator.compute();
 

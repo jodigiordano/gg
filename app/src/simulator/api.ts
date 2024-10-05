@@ -11,6 +11,8 @@ import {
   SimulatorLinkPathPosition,
   TextFont,
   TextAlign,
+  SimulatorDebugInformation,
+  PathfindingWeights,
 } from "@gg/core";
 import { Sprite, Container, Texture } from "pixi.js";
 import TaggedText from "../pixi-tagged-text/TaggedText.js";
@@ -36,12 +38,16 @@ const nativeWorker = new Worker(new URL("worker.ts", import.meta.url), {
 
 const worker = new WebWorker(nativeWorker);
 
-export async function loadSimulation(json: string): Promise<void> {
+export async function loadSimulation(
+  json: string,
+  options: { linkIndexToDebug?: number } = {},
+): Promise<void> {
   return new Promise((resolve, reject) => {
     worker.onCodeLoaded(() => {
       worker
         .sendOperation({
           operation: "initialize",
+          ...options,
           json,
         })
         .then(data => {
@@ -505,6 +511,29 @@ function getObjectsToRender(): (Sprite | TaggedText)[] {
           title.y = (j - boundaries.translateY) * BlockSize;
 
           toDraw.push(title);
+        } else if (obj.type === SimulatorObjectType.DebugInformation) {
+          const { weight } = obj as SimulatorDebugInformation;
+
+          if (weight > 1) {
+            const sprite = new Sprite();
+
+            sprite.zIndex = obj.zIndex;
+            sprite.x = (i - boundaries.translateX) * BlockSize;
+            sprite.y = (j - boundaries.translateY) * BlockSize;
+            sprite.width = BlockSize;
+            sprite.height = BlockSize;
+            sprite.texture = spritesheet.textures.boxCenterCenter;
+            sprite.alpha = 0.5;
+            (sprite.tint =
+              weight === PathfindingWeights.Impenetrable
+                ? "red"
+                : weight === PathfindingWeights.Path
+                  ? "blue"
+                  : weight === PathfindingWeights.RoutedSystemPerimeter
+                    ? "brown"
+                    : "yellow"),
+              toDraw.push(sprite);
+          }
         }
       }
     }

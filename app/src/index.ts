@@ -19,6 +19,7 @@ import linkOperation from "./operations/link.js";
 import eraseOperation from "./operations/erase.js";
 import paintOperation from "./operations/paint.js";
 import duplicateOperation from "./operations/duplicate.js";
+import debugOperation from "./operations/debug.js";
 import {
   getJsonEditorValue,
   isJsonEditorOpen,
@@ -877,6 +878,7 @@ linkOperation.setup(state);
 eraseOperation.setup(state);
 duplicateOperation.setup(state);
 paintOperation.setup(state);
+debugOperation.setup(state);
 
 // Initialize buttons.
 const singleChoiceButtons = document.querySelectorAll(
@@ -907,6 +909,8 @@ for (const button of singleChoiceButtons) {
       state.operation = eraseOperation;
     } else if (button.id === "operation-duplicate") {
       state.operation = duplicateOperation;
+    } else if (button.id === "operation-debug") {
+      state.operation = debugOperation;
     } else if (button.id === "operation-set-title") {
       state.operation = setTitleOperation;
     } else if (button.id === "operation-set-color") {
