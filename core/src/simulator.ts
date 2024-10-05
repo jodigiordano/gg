@@ -686,6 +686,21 @@ export class SystemSimulator {
     finderGrid: PathFinderGrid,
     weight: number,
   ): void {
+    // For a list, the title is the entire header.
+    if (gridSS.type === "list") {
+      for (let x = gridSS.x1; x <= gridSS.x2; x++) {
+        for (
+          let y = gridSS.y1;
+          y <= gridSS.title.y + gridSS.title.height;
+          y++
+        ) {
+          finderGrid.setWeightAt(x, y, weight);
+        }
+      }
+
+      return;
+    }
+
     for (
       let x = gridSS.title.x - 1;
       x < gridSS.title.x + gridSS.title.width + 1;
@@ -895,16 +910,12 @@ export class SystemSimulator {
           PathfindingWeights.ListPerimeter,
         );
 
-        // For a list, a path cannot go through the header.
-        for (let x = gridSS.x1; x <= gridSS.x2; x++) {
-          for (
-            let y = gridSS.y1;
-            y <= gridSS.title.y + gridSS.title.height;
-            y++
-          ) {
-            finderGrid.setWeightAt(x, y, PathfindingWeights.Impenetrable);
-          }
-        }
+        // Title margins.
+        this.setSystemTitleWeights(
+          gridSS,
+          finderGrid,
+          PathfindingWeights.Impenetrable,
+        );
       } /* box */ else if (ss.systems.length && ss.titleSize.height) {
         // Title margins.
         this.setSystemTitleWeights(
@@ -985,7 +996,7 @@ export class SystemSimulator {
       // is possible that A.X is traversed to find the link between A and B
       // (as we find the link from center to center). When A.X is traversed, we
       // also want to traverse its title.
-      const disabledWhiteboxTitles: string[] = [];
+      const allowedSystemTitles: string[] = [];
 
       // Allow the parents of A.
       let parent: RuntimeSystem | RuntimeSubsystem | undefined =
@@ -1005,7 +1016,7 @@ export class SystemSimulator {
         const child = children.pop()!;
 
         if (child.systems.length && child.titleSize.height) {
-          disabledWhiteboxTitles.push(child.id);
+          allowedSystemTitles.push(child.id);
         }
 
         children.push(...child.systems);
@@ -1030,7 +1041,7 @@ export class SystemSimulator {
         const child = children.pop()!;
 
         if (child.systems.length && child.titleSize.height) {
-          disabledWhiteboxTitles.push(child.id);
+          allowedSystemTitles.push(child.id);
         }
 
         children.push(...child.systems);
@@ -1039,11 +1050,11 @@ export class SystemSimulator {
       }
 
       if (link.systemA.systems.length && link.systemA.title.length) {
-        disabledWhiteboxTitles.push(link.systemA.id);
+        allowedSystemTitles.push(link.systemA.id);
       }
 
       if (link.systemB.systems.length && link.systemB.title.length) {
-        disabledWhiteboxTitles.push(link.systemB.id);
+        allowedSystemTitles.push(link.systemB.id);
       }
 
       const allowedSystemPerimeters: number[][][] = [];
@@ -1093,7 +1104,7 @@ export class SystemSimulator {
           );
         }
 
-        if (disabledWhiteboxTitles.includes(gridSS.id)) {
+        if (allowedSystemTitles.includes(gridSS.id)) {
           this.setSystemTitleWeights(
             gridSS,
             finderGrid,
@@ -1678,6 +1689,7 @@ export class SystemSimulator {
 
             this.gridSystems[this.getGridLinkId(link)] = {
               id: this.getGridLinkId(link),
+              type: "linkTitle",
               x1,
               y1,
               x2,
@@ -1749,7 +1761,7 @@ export class SystemSimulator {
       }
 
       // ... and we set back some system titles as impenetrable.
-      for (const systemId of disabledWhiteboxTitles) {
+      for (const systemId of allowedSystemTitles) {
         this.setSystemTitleWeights(
           this.gridSystems[systemId]!,
           finderGrid,
