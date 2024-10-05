@@ -6,6 +6,7 @@ import {
   RuntimePosition,
 } from "./runtime.js";
 import { PathfindingWeights } from "./helpers.js";
+import { SubsystemType } from "./specification.js";
 
 export enum SimulatorObjectType {
   System = 1,
@@ -14,6 +15,7 @@ export enum SimulatorObjectType {
   Link = 4,
   LinkTitle = 5,
   LinkTitleContainer = 6,
+  DebugInformation = 7,
 }
 
 export enum SimulatorObjectZIndex {
@@ -22,6 +24,7 @@ export enum SimulatorObjectZIndex {
   Link = 100,
   LinkTitleContainer = 500,
   LinkTitle = 501,
+  DebugInformation = 999,
 }
 
 export enum SimulatorLinkDirectionType {
@@ -101,6 +104,11 @@ export interface SimulatorLinkTitleContainer extends SimulatorObject {
   link: RuntimeLink;
 }
 
+export interface SimulatorDebugInformation extends SimulatorObject {
+  type: SimulatorObjectType.DebugInformation;
+  weight: number;
+}
+
 export interface SimulatorBoundaries {
   left: number;
   top: number;
@@ -143,6 +151,8 @@ interface GridSystem {
   width: number;
   height: number;
 
+  type: SubsystemType | "linkTitle";
+
   title: {
     x: number;
     y: number;
@@ -157,6 +167,7 @@ export class SystemSimulator {
   private gridSystems: Record<string, GridSystem>;
   private grid: SimulatorObject[][][];
   private boundaries: SimulatorBoundaries;
+  private linkIndexToDebug: number | null;
 
   constructor(options: {
     system: RuntimeSystem;
@@ -164,12 +175,14 @@ export class SystemSimulator {
     gridSystems?: Record<string, GridSystem>;
     grid?: SimulatorObject[][][];
     boundaries?: SimulatorBoundaries;
+    linkIndexToDebug?: number | null;
   }) {
     this.system = options.system;
     this.paths = options.paths ?? Array(options.system.links.length);
     this.gridSystems = options.gridSystems ?? {};
     this.grid = options.grid ?? [];
     this.boundaries = options.boundaries ?? this.computeBoundaries();
+    this.linkIndexToDebug = options.linkIndexToDebug ?? null;
   }
 
   compute(): void {
@@ -435,6 +448,7 @@ export class SystemSimulator {
     // Initialize system.
     const gridSystem: GridSystem = {
       id: system.id,
+      type: system.type,
       x1: -1,
       x2: -1,
       y1: -1,
@@ -1086,7 +1100,9 @@ export class SystemSimulator {
         y: subsystemB.y1 + ((subsystemB.height / 2) | 0),
       };
 
-      //this.debugDraw(finderGrid);
+      if (link.index === this.linkIndexToDebug) {
+        this.debugDraw(finderGrid);
+      }
 
       const path = findPath(
         centerA.x,
@@ -1762,31 +1778,13 @@ export class SystemSimulator {
     }
   }
 
-  // @ts-ignore not referenced
   private debugDraw(finderGrid: PathFinderGrid): void {
     for (let x = 0; x < this.boundaries.width; x++) {
       for (let y = 0; y < this.boundaries.height; y++) {
-        const debugInfo: SimulatorSystemTitleText = {
-          type: SimulatorObjectType.SystemTitleText,
-          // @ts-ignore
-          system: {
-            titleFont: "text",
-            size: { width: 0, height: 0 },
-            titleMargin: { left: 0, right: 0, top: 0, bottom: 0 },
-            padding: { left: 0, right: 0, top: 0, bottom: 0 },
-          },
-          blackbox: false,
-          chars:
-            finderGrid.getWeightAt(x, y) === PathfindingWeights.Impenetrable
-              ? "X"
-              : finderGrid.getWeightAt(x, y) === PathfindingWeights.Path
-                ? "P"
-                : finderGrid.getWeightAt(x, y) === PathfindingWeights.EmptySpace
-                  ? "."
-                  : finderGrid.getWeightAt(x, y) ===
-                      PathfindingWeights.RoutedSystemPerimeter
-                    ? "A"
-                    : finderGrid.getWeightAt(x, y).toString(),
+        const debugInfo: SimulatorDebugInformation = {
+          type: SimulatorObjectType.DebugInformation,
+          weight: finderGrid.getWeightAt(x, y),
+          zIndex: SimulatorObjectZIndex.DebugInformation,
         };
 
         this.grid[x]![y]!.push(debugInfo);
