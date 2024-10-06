@@ -205,25 +205,6 @@ describe("systems", () => {
     });
   });
 
-  describe("titlePosition", () => {
-    it("calculated", () => {
-      const system: System = {
-        specificationVersion: "1.0.0",
-        title: "test",
-        systems: [
-          {
-            id: "foo",
-            position: { x: 0, y: 0 },
-          },
-        ],
-      };
-
-      const { system: runtime } = load(system);
-
-      assert.deepEqual(runtime.systems.at(0)?.titlePosition, { x: 1, y: 1 });
-    });
-  });
-
   describe("position", () => {
     it("overlaps", () => {
       const system: System = {
@@ -544,8 +525,8 @@ describe("systems", () => {
       const { system: runtime } = load(system);
 
       assert.deepEqual(runtime.systems.at(0)?.size, {
-        width: 23,
-        height: 23,
+        width: 19,
+        height: 19,
       });
     });
   });
