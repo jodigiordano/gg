@@ -410,31 +410,10 @@ const operation: Operation = {
     //
     viewport.pause = false;
   },
-  onMute: () => {
-    //
-    // Move multiple systems.
-    //
-    multiSelectVisual.visible = false;
-    multiMovingVisual.visible = false;
 
     //
-    // Move one system.
     //
-    oneSystemSelectVisual.visible = false;
-    oneSystemMoveVisual.visible = false;
-
     //
-    // Move into container.
-    //
-    parentSystemSelectVisual.visible = false;
-
-    //
-    // Move one link.
-    //
-    oneLinkSelectVisual.visible = false;
-    oneLinkMoveVisual.visible = false;
-  },
-  onUnmute: onPointerMove,
   onPointerDown: state => {
     viewport.pause = true;
 
@@ -790,6 +769,8 @@ const operation: Operation = {
       return;
     }
   },
+  onPointerEnter: () => {},
+  onPointerLeave: () => {},
 };
 
 export default operation;

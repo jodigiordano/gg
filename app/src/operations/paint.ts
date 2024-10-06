@@ -116,11 +116,6 @@ const operation: Operation = {
     button.style.removeProperty("background-color");
     button.style.removeProperty("color");
   },
-  onMute: () => {
-    selectVisual1.visible = false;
-    selectVisual2.visible = false;
-  },
-  onUnmute: onPointerMove,
   onPointerMove,
   onPointerDown: () => {},
   onKeyDown: () => {},
@@ -162,6 +157,8 @@ const operation: Operation = {
       });
     }
   },
+  onPointerEnter: () => {},
+  onPointerLeave: () => {},
 };
 
 export default operation;

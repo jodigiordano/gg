@@ -37,10 +37,6 @@ const operation: Operation = {
   onEnd: () => {
     selectVisual.visible = false;
   },
-  onMute: () => {},
-  onUnmute: () => {
-    selectVisual.visible = false;
-  },
   onPointerUp: state => {
     const link =
       state.simulator.getLinkAt(state.x, state.y) ??
@@ -61,6 +57,8 @@ const operation: Operation = {
   onPointerDown: () => {},
   onPointerMove,
   onKeyDown: () => {},
+  onPointerEnter: () => {},
+  onPointerLeave: () => {},
 };
 
 export default operation;

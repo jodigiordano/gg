@@ -361,13 +361,6 @@ const operation: Operation = {
 
     viewport.pause = false;
   },
-  onMute: () => {
-    selectSystemVisual.visible = false;
-    selectLinkVisual1.visible = false;
-    selectLinkVisual2.visible = false;
-    selectLinkVisual3.visible = false;
-  },
-  onUnmute: onPointerMove,
   onPointerMove,
   onPointerDown: () => {},
   onKeyDown: () => {},
@@ -412,6 +405,8 @@ const operation: Operation = {
       editor.focus();
     }
   },
+  onPointerEnter: () => {},
+  onPointerLeave: () => {},
 };
 
 export default operation;

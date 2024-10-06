@@ -147,7 +147,7 @@ canvasContainer.addEventListener("pointerenter", () => {
     return;
   }
 
-  state.operation.onUnmute(state);
+  state.operation.onPointerEnter(state);
   tick();
 });
 
@@ -165,7 +165,7 @@ canvasContainer.addEventListener("pointerleave", event => {
     return;
   }
 
-  state.operation.onMute(state);
+  state.operation.onPointerLeave(state);
   tick();
 });
 
@@ -363,8 +363,6 @@ const guide = document.getElementById("guide") as HTMLDialogElement;
 document
   .getElementById("operation-help-guide")
   ?.addEventListener("click", function () {
-    state.operation.onMute(state);
-
     guide.inert = true;
     guide.showModal();
     guide.inert = false;
@@ -375,8 +373,6 @@ const about = document.getElementById("about") as HTMLDialogElement;
 document
   .getElementById("operation-help-about")
   ?.addEventListener("click", function () {
-    state.operation.onMute(state);
-
     about.inert = true;
     about.showModal();
     about.inert = false;
@@ -387,8 +383,6 @@ const privacy = document.getElementById("privacy") as HTMLDialogElement;
 document
   .getElementById("operation-help-privacy")
   ?.addEventListener("click", function () {
-    state.operation.onMute(state);
-
     privacy.inert = true;
     privacy.showModal();
     privacy.inert = false;
@@ -403,8 +397,6 @@ const theme = document.getElementById("theme") as HTMLDialogElement;
 document
   .getElementById("operation-theme")
   ?.addEventListener("click", function () {
-    state.operation.onMute(state);
-
     theme.inert = true;
     theme.showModal();
     theme.inert = false;
@@ -920,7 +912,6 @@ for (const button of singleChoiceButtons) {
     }
 
     state.operation.onBegin(state);
-    state.operation.onMute(state);
 
     tick();
   });

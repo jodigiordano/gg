@@ -5,12 +5,12 @@ const operation: Operation = {
   setup: () => {},
   onBegin: () => {},
   onEnd: () => {},
-  onMute: () => {},
-  onUnmute: () => {},
   onPointerUp: () => {},
   onPointerDown: () => {},
   onPointerMove: () => {},
   onKeyDown: () => {},
+  onPointerEnter: () => {},
+  onPointerLeave: () => {},
 };
 
 export default operation;

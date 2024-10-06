@@ -79,15 +79,7 @@ const operation: Operation = {
     parentVisual.visible = false;
 
     viewport.pause = false;
-  },
-  onMute: () => {
-    placeholderVisual.visible = false;
-    parentVisual.visible = false;
-  },
-  onUnmute: state => {
-    placeholderVisual.visible = true;
 
-    onPointerMove(state);
   },
   onPointerUp: state => {
     let parent =
@@ -129,6 +121,15 @@ const operation: Operation = {
   onPointerMove,
   onPointerDown: onPointerMove,
   onKeyDown: () => {},
+  onPointerEnter: (state: State) => {
+    placeholderVisual.visible = true;
+
+    onPointerMove(state);
+  },
+  onPointerLeave: () => {
+    placeholderVisual.visible = false;
+    parentVisual.visible = false;
+  },
 };
 
 export default operation;

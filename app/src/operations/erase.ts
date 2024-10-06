@@ -171,13 +171,6 @@ const operation: Operation = {
 
     viewport.pause = false;
   },
-  onMute: () => {
-    multiSelectVisual.visible = false;
-    selectSystemVisual.visible = false;
-    selectLinkVisual1.visible = false;
-    selectLinkVisual2.visible = false;
-  },
-  onUnmute: onPointerMove,
   onPointerDown: state => {
     viewport.pause = true;
 
@@ -292,6 +285,8 @@ const operation: Operation = {
       return;
     }
   },
+  onPointerEnter: () => {},
+  onPointerLeave: () => {},
 };
 
 export default operation;

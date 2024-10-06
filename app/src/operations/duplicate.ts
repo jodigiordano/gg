@@ -324,25 +324,6 @@ const operation: Operation = {
     //
     viewport.pause = false;
   },
-  onMute: () => {
-    //
-    // Duplicate multiple systems.
-    //
-    multiSelectVisual.visible = false;
-    multiMovingVisual.visible = false;
-
-    //
-    // Duplicate one system.
-    //
-    oneSystemSelectVisual.visible = false;
-    oneSystemMoveVisual.visible = false;
-
-    //
-    // Duplicate into container.
-    //
-    parentSystemSelectVisual.visible = false;
-  },
-  onUnmute: onPointerMove,
   onPointerDown: state => {
     viewport.pause = true;
 
@@ -724,6 +705,8 @@ const operation: Operation = {
       });
     }
   },
+  onPointerEnter: () => {},
+  onPointerLeave: () => {},
 };
 
 export default operation;

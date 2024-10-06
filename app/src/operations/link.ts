@@ -94,12 +94,6 @@ const operation: Operation = {
 
     viewport.pause = false;
   },
-  onMute: () => {
-    selectAVisual.visible = false;
-    selectBVisual.visible = false;
-    linkingLine.visible = false;
-  },
-  onUnmute: onPointerMove,
   onPointerUp: state => {
     if (a) {
       // Apply operation.
@@ -197,6 +191,8 @@ const operation: Operation = {
       cycleLinePattern();
     }
   },
+  onPointerEnter: () => {},
+  onPointerLeave: () => {},
 };
 
 export default operation;
