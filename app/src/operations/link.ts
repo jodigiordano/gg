@@ -6,11 +6,7 @@ import Operation from "../operation.js";
 import { State } from "../state.js";
 import viewport from "../renderer/viewport.js";
 import { tick } from "../renderer/pixi.js";
-import {
-  getLinePattern,
-  hideLinePattern,
-  showLinePattern,
-} from "../properties/line.js";
+import * as LineMiddleProperty from "../properties/lineMiddle.js";
 
 const selectAVisual = new SystemSelector();
 const selectBVisual = new SystemSelector();
@@ -80,7 +76,7 @@ const operation: Operation = {
   },
   onBegin: state => {
     a = null;
-    showLinePattern();
+    LineMiddleProperty.show({ initial: "solid-line" });
 
     onPointerMove(state);
   },
@@ -89,7 +85,7 @@ const operation: Operation = {
     selectBVisual.visible = false;
     linkingLine.visible = false;
 
-    hideLinePattern();
+    LineMiddleProperty.hide();
 
     viewport.pause = false;
   },
@@ -101,7 +97,7 @@ const operation: Operation = {
       if (b && b.id !== a.id) {
         modifySpecification(() => {
           addLink(state.simulator.getSystem(), a!.id, b!.id, {
-            middlePattern: getLinePattern(),
+            middlePattern: LineMiddleProperty.value(),
           });
         }).then(() => {
           onPointerMove(state);
@@ -128,7 +124,7 @@ const operation: Operation = {
     }
 
     modifySpecification(() => {
-      if (link.specification.middlePattern === getLinePattern()) {
+      if (link.specification.middlePattern === LineMiddleProperty.value()) {
         if (link.startPattern === "none" && link.endPattern === "none") {
           link.specification.startPattern = "none";
           link.specification.endPattern = "solid-arrow";
@@ -152,7 +148,7 @@ const operation: Operation = {
           link.specification.endPattern = "none";
         }
       } else {
-        link.specification.middlePattern = getLinePattern();
+        link.specification.middlePattern = LineMiddleProperty.value();
       }
     }).then(() => {
       onPointerMove(state);

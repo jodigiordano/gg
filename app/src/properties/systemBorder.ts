@@ -1,14 +1,10 @@
 import { BorderPattern } from "@gg/core";
 
-//
-// Border pattern
-//
-
 let borderPattern: BorderPattern | null = null;
 let onChangeCallback: ((pattern: BorderPattern) => void) | null = null;
 
-const propertyTitle = document.getElementById("property-border-title")!;
-const property = document.getElementById("property-border")!;
+const propertyTitle = document.getElementById("property-system-border-title")!;
+const property = document.getElementById("property-system-border")!;
 
 const buttons = property.querySelectorAll(
   "button",
@@ -37,7 +33,7 @@ for (const button of buttons) {
   });
 }
 
-export function showBorderPattern(
+export function show(
   options: {
     initial?: BorderPattern;
     onChange?: (pattern: BorderPattern) => void;
@@ -58,13 +54,13 @@ export function showBorderPattern(
   }
 }
 
-export function hideBorderPattern(): void {
+export function hide(): void {
   propertyTitle.classList.add("hidden");
   property.classList.add("hidden");
 
   onChangeCallback = null;
 }
 
-export function getBorderPattern(): BorderPattern {
+export function value(): BorderPattern {
   return borderPattern ?? "light";
 }

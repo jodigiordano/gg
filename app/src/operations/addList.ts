@@ -5,11 +5,7 @@ import { modifySpecification } from "../simulator/api.js";
 import Operation from "../operation.js";
 import viewport from "../renderer/viewport.js";
 import { tick } from "../renderer/pixi.js";
-import {
-  getBorderPattern,
-  hideBorderPattern,
-  showBorderPattern,
-} from "../properties/system.js";
+import * as SystemBorderProperty from "../properties/systemBorder.js";
 
 const placeholderVisual = new SystemSelector();
 const parentVisual = new SystemSelector();
@@ -56,7 +52,7 @@ const operation: Operation = {
     placeholderVisual.visible = true;
     parentVisual.visible = false;
 
-    showBorderPattern({ initial: "light" });
+    SystemBorderProperty.show({ initial: "light" });
 
     viewport.pause = false;
     onPointerMove(state);
@@ -65,7 +61,7 @@ const operation: Operation = {
     placeholderVisual.visible = false;
     parentVisual.visible = false;
 
-    hideBorderPattern();
+    SystemBorderProperty.hide();
 
     viewport.pause = false;
   },
@@ -92,7 +88,7 @@ const operation: Operation = {
 
     modifySpecification(() => {
       const list = addSubsystem(parent, "list", x, y, "List", {
-        borderPattern: getBorderPattern(),
+        borderPattern: SystemBorderProperty.value(),
       });
 
       addSubsystem(list, "box", 0, 0, "item 1");

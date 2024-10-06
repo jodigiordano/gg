@@ -11,6 +11,8 @@ import {
   isSubsystemOf,
   getSubsystemById,
   BorderPattern,
+  PathPattern,
+  PathEndingPattern,
 } from "@gg/core";
 import { modifySpecification } from "../simulator/api.js";
 import Operation from "../operation.js";
@@ -20,7 +22,10 @@ import { tick } from "../renderer/pixi.js";
 import SystemLinker from "../renderer/systemLinker.js";
 import SystemSelector from "../renderer/systemSelector.js";
 import MultiSystemSelector from "../renderer/multiSystemSelector.js";
-import { hideBorderPattern, showBorderPattern } from "../properties/system.js";
+import * as SystemBorderProperty from "../properties/systemBorder.js";
+import * as LineStartProperty from "../properties/lineStart.js";
+import * as LineMiddleProperty from "../properties/lineMiddle.js";
+import * as LineEndProperty from "../properties/lineEnd.js";
 
 //
 // Select & move multiple systems.
@@ -53,11 +58,14 @@ let oneSystemPickedUpAt: RuntimePosition | null = null;
 // Select & move one link.
 //
 
-const oneLinkSelectVisual = new SystemSelector();
+const oneLinkSelected1Visual = new SystemSelector();
+const oneLinkSelected2Visual = new SystemSelector();
+const oneLinkHoverVisual = new SystemSelector();
 const oneLinkMoveVisual = new SystemLinker();
 
 let oneLinkSelected: RuntimeLink | null = null;
-let oneLinkSelectedSystem: RuntimeSubsystem | null = null;
+let oneLinkSelectedBeforeSystem: RuntimeSubsystem | null = null;
+let oneLinkSelectedAfterSystem: RuntimeSubsystem | null = null;
 
 //
 // Move into a container.
@@ -91,7 +99,9 @@ function onPointerMove(state: State) {
   oneSystemSelectedVisual.visible = false;
   oneSystemHoverVisual.visible = false;
   oneSystemMoveVisual.visible = false;
-  oneLinkSelectVisual.visible = false;
+  oneLinkSelected1Visual.visible = false;
+  oneLinkSelected2Visual.visible = false;
+  oneLinkHoverVisual.visible = false;
   oneLinkMoveVisual.visible = false;
   multiSelectVisual.visible = true;
   multiSelectVisual.lassoVisible = false;
@@ -201,14 +211,41 @@ function onPointerMove(state: State) {
   }
 
   //
+  // Selecting one link.
+  //
+  if (oneLinkSelected) {
+    const path = state.simulator.getPath(oneLinkSelected)!;
+    const boundaries = state.simulator.getBoundaries();
+
+    const [startX, startY] = path.at(0)!;
+    const [endX, endY] = path.at(-1)!;
+
+    oneLinkSelected1Visual.visible = true;
+    oneLinkSelected1Visual.setPositionRect(
+      startX - boundaries.translateX - 0.25,
+      startY - boundaries.translateY - 0.25,
+      startX - boundaries.translateX + 0.25,
+      startY - boundaries.translateY + 0.25,
+    );
+
+    oneLinkSelected2Visual.visible = true;
+    oneLinkSelected2Visual.setPositionRect(
+      endX - boundaries.translateX - 0.25,
+      endY - boundaries.translateY - 0.25,
+      endX - boundaries.translateX + 0.25,
+      endY - boundaries.translateY + 0.25,
+    );
+  }
+
+  //
   // Moving one link.
   //
-  if (oneLinkSelected && oneLinkSelectedSystem) {
+  if (oneLinkSelected && oneLinkSelectedBeforeSystem) {
     const path = state.simulator.getPath(oneLinkSelected)!;
     const boundaries = state.simulator.getBoundaries();
 
     const [startX, startY] =
-      oneLinkSelectedSystem.id === oneLinkSelected.b
+      oneLinkSelectedBeforeSystem.id === oneLinkSelected.b
         ? path.at(-1)!
         : path.at(0)!;
 
@@ -220,13 +257,19 @@ function onPointerMove(state: State) {
       state.y,
     );
 
-    oneLinkSelectVisual.visible = true;
+    oneLinkSelected1Visual.visible = true;
+    oneLinkSelected1Visual.setPositionRect(
+      startX - boundaries.translateX,
+      startY - boundaries.translateY,
+      startX - boundaries.translateX,
+      startY - boundaries.translateY,
+    );
 
     const oneLinkNewB = state.simulator.getSubsystemAt(state.x, state.y);
 
     if (oneLinkNewB) {
       const oneLinkA =
-        oneLinkSelectedSystem.id === oneLinkSelected.a
+        oneLinkSelectedBeforeSystem.id === oneLinkSelected.a
           ? oneLinkSelected.systemB
           : oneLinkSelected.systemA;
 
@@ -239,7 +282,7 @@ function onPointerMove(state: State) {
         oneSystemSelectedVisual.visible = true;
         oneSystemSelectedVisual.setPosition(oneLinkNewB, { x: 0, y: 0 });
 
-        oneSystemSelected = oneLinkNewB;
+        oneLinkSelectedAfterSystem = oneLinkNewB;
       }
     }
 
@@ -297,30 +340,11 @@ function onPointerMove(state: State) {
   //
   // Hovering one link.
   //
-  const linkToMove = state.simulator.getLinkAt(state.x, state.y);
+  const linkToSelect = state.simulator.getLinkAt(state.x, state.y);
 
-  if (linkToMove) {
-    const path = state.simulator.getPath(linkToMove)!;
-    const boundaries = state.simulator.getBoundaries();
-
-    const pathIndex = path.findIndex(
-      ([x, y]) =>
-        x === state.x + boundaries.translateX &&
-        y === state.y + boundaries.translateY,
-    );
-
-    const [startX, startY] =
-      pathIndex === path.length - 1 || pathIndex > path.length / 2
-        ? path.at(-1)!
-        : path.at(0)!;
-
-    oneLinkSelectVisual.visible = true;
-    oneLinkSelectVisual.setPositionRect(
-      startX - boundaries.translateX,
-      startY - boundaries.translateY,
-      startX - boundaries.translateX,
-      startY - boundaries.translateY,
-    );
+  if (linkToSelect) {
+    oneLinkHoverVisual.visible = true;
+    oneLinkHoverVisual.setPositionRect(state.x, state.y, state.x, state.y);
 
     return;
   }
@@ -349,12 +373,19 @@ function resetSingleSelection(): void {
   oneSystemSelected = null;
   oneSystemPickedUpAt = null;
 
-  hideBorderPattern();
+  SystemBorderProperty.hide();
 
-  oneLinkSelectVisual.visible = false;
+  oneLinkSelected1Visual.visible = false;
+  oneLinkSelected2Visual.visible = false;
+  oneLinkHoverVisual.visible = false;
   oneLinkMoveVisual.visible = false;
   oneLinkSelected = null;
-  oneLinkSelectedSystem = null;
+  oneLinkSelectedBeforeSystem = null;
+  oneLinkSelectedAfterSystem = null;
+
+  LineStartProperty.hide();
+  LineMiddleProperty.hide();
+  LineEndProperty.hide();
 }
 
 function onModified(state: State): void {
@@ -395,6 +426,23 @@ function onModified(state: State): void {
     return;
   }
 
+  // When a link is modified (ex: moved, property change, etc.), reselect it.
+  if (oneLinkSelected) {
+    const link = state.simulator
+      .getSystem()
+      .links.find(link => link.index === oneLinkSelected?.index)!;
+
+    resetSingleSelection();
+    resetMultiSelection();
+
+    oneLinkSelected = link;
+
+    onSelected(state);
+    onPointerMove(state);
+
+    return;
+  }
+
   // Default behavior.
   onBegin(state);
 }
@@ -407,14 +455,11 @@ function onBegin(state: State): void {
   onPointerMove(state);
 }
 
-function onBorderPatternChange(
-  state: State,
-  newBorderPattern: BorderPattern,
-): void {
+function onBorderPatternChange(state: State, value: BorderPattern): void {
   if (multiSelectVisual.selected.length) {
     modifySpecification(() => {
       for (const subsystem of multiSelectVisual.selected) {
-        subsystem.specification.borderPattern = newBorderPattern;
+        subsystem.specification.borderPattern = value;
       }
     }).then(() => {
       onModified(state);
@@ -426,7 +471,7 @@ function onBorderPatternChange(
 
   if (oneSystemSelected) {
     modifySpecification(() => {
-      oneSystemSelected!.specification.borderPattern = newBorderPattern;
+      oneSystemSelected!.specification.borderPattern = value;
     }).then(() => {
       onModified(state);
       tick();
@@ -442,10 +487,10 @@ function onSelected(state: State): void {
       ? multiSelectVisual.selected[0].borderPattern
       : undefined;
 
-    showBorderPattern({
+    SystemBorderProperty.show({
       initial,
-      onChange: (newBorderPattern: BorderPattern) => {
-        onBorderPatternChange(state, newBorderPattern);
+      onChange: (value: BorderPattern) => {
+        onBorderPatternChange(state, value);
       },
     });
 
@@ -453,10 +498,54 @@ function onSelected(state: State): void {
   }
 
   if (oneSystemSelected) {
-    showBorderPattern({
+    SystemBorderProperty.show({
       initial: oneSystemSelected.borderPattern,
-      onChange: (newBorderPattern: BorderPattern) => {
-        onBorderPatternChange(state, newBorderPattern);
+      onChange: (value: BorderPattern) => {
+        onBorderPatternChange(state, value);
+      },
+    });
+  }
+
+  if (oneLinkSelected) {
+    LineStartProperty.show({
+      initial: oneLinkSelected.startPattern,
+      onChange: (value: PathEndingPattern) => {
+        if (oneLinkSelected) {
+          modifySpecification(() => {
+            oneLinkSelected!.specification.startPattern = value;
+          }).then(() => {
+            onModified(state);
+            tick();
+          });
+        }
+      },
+    });
+
+    LineMiddleProperty.show({
+      initial: oneLinkSelected.middlePattern,
+      onChange: (value: PathPattern) => {
+        if (oneLinkSelected) {
+          modifySpecification(() => {
+            oneLinkSelected!.specification.middlePattern = value;
+          }).then(() => {
+            onModified(state);
+            tick();
+          });
+        }
+      },
+    });
+
+    LineEndProperty.show({
+      initial: oneLinkSelected.endPattern,
+      onChange: (value: PathEndingPattern) => {
+        if (oneLinkSelected) {
+          modifySpecification(() => {
+            oneLinkSelected!.specification.endPattern = value;
+          }).then(() => {
+            onModified(state);
+            tick();
+          });
+        }
       },
     });
   }
@@ -481,7 +570,9 @@ const operation: Operation = {
     //
     // Move one link.
     //
-    viewport.addChild(oneLinkSelectVisual);
+    viewport.addChild(oneLinkSelected1Visual);
+    viewport.addChild(oneLinkSelected2Visual);
+    viewport.addChild(oneLinkHoverVisual);
     viewport.addChild(oneLinkMoveVisual);
 
     //
@@ -507,7 +598,9 @@ const operation: Operation = {
     //
     // Move one link.
     //
-    oneLinkSelectVisual.visible = false;
+    oneLinkSelected1Visual.visible = false;
+    oneLinkSelected2Visual.visible = false;
+    oneLinkHoverVisual.visible = false;
     oneLinkMoveVisual.visible = false;
 
     //
@@ -560,27 +653,34 @@ const operation: Operation = {
     // Select one link.
     //
     // The user clicks on a link.
-    // We assume they want to drag one of its end to move the link,
-    // until the click is unpressed.
+    // If the user clicks on a line termination, we assume they want to
+    // drag it to move the link, until the click is unpressed.
     //
     const linkToSelect = state.simulator.getLinkAt(state.x, state.y);
 
     if (linkToSelect) {
+      oneLinkSelected = linkToSelect;
+
       const path = state.simulator.getPath(linkToSelect)!;
       const boundaries = state.simulator.getBoundaries();
 
-      const pathIndex = path.findIndex(
-        ([x, y]) =>
-          x === state.x + boundaries.translateX &&
-          y === state.y + boundaries.translateY,
-      );
+      const [startX, startY] = path.at(0)!;
+      const [endX, endY] = path.at(-1)!;
 
-      oneLinkSelected = linkToSelect;
+      if (
+        state.x + boundaries.translateX === startX &&
+        state.y + boundaries.translateY === startY
+      ) {
+        oneLinkSelectedBeforeSystem = linkToSelect.systemA;
+      } else if (
+        state.x + boundaries.translateX === endX &&
+        state.y + boundaries.translateY === endY
+      ) {
+        oneLinkSelectedBeforeSystem = linkToSelect.systemB;
+      }
 
-      oneLinkSelectedSystem =
-        pathIndex < path.length / 2
-          ? linkToSelect.systemA
-          : linkToSelect.systemB;
+      onSelected(state);
+      onPointerMove(state);
 
       return;
     }
@@ -751,19 +851,23 @@ const operation: Operation = {
     }
 
     //
-    // Move one link.
+    // Move one link, or not.
     //
-    if (oneLinkSelected && oneLinkSelectedSystem && oneSystemSelected) {
-      modifySpecification(() => {
-        moveLink(
-          oneLinkSelected!,
-          oneLinkSelectedSystem!.id,
-          oneSystemSelected!.id,
-        );
-      }).then(() => {
-        onBegin(state);
-        tick();
-      });
+    if (oneLinkSelected) {
+      if (oneLinkSelectedBeforeSystem && oneLinkSelectedAfterSystem) {
+        modifySpecification(() => {
+          moveLink(
+            oneLinkSelected!,
+            oneLinkSelectedBeforeSystem!.id,
+            oneLinkSelectedAfterSystem!.id,
+          );
+        }).then(() => {
+          onModified(state);
+          tick();
+        });
+      } else {
+        onModified(state);
+      }
 
       return;
     }
