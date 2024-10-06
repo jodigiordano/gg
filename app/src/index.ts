@@ -912,6 +912,7 @@ for (const button of singleChoiceButtons) {
     }
 
     state.operation.onBegin(state);
+    state.operation.onPointerLeave(state);
 
     tick();
   });
