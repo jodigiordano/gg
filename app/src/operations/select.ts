@@ -582,26 +582,8 @@ const operation: Operation = {
   },
   onBegin,
   onEnd: () => {
-    //
-    // Move multiple systems.
-    //
-    multiSelectVisual.visible = false;
-    multiMovingVisual.visible = false;
-
-    //
-    // Move one system.
-    //
-    oneSystemHoverVisual.visible = false;
-    oneSystemSelectedVisual.visible = false;
-    oneSystemMoveVisual.visible = false;
-
-    //
-    // Move one link.
-    //
-    oneLinkSelected1Visual.visible = false;
-    oneLinkSelected2Visual.visible = false;
-    oneLinkHoverVisual.visible = false;
-    oneLinkMoveVisual.visible = false;
+    resetMultiSelection();
+    resetSingleSelection();
 
     //
     // Move into container.
