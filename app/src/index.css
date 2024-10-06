@@ -66,16 +66,23 @@ body {
       }
     }
 
-    div {
-      display: flex;
-      justify-content: center;
-      align-items: center;
+    &.properties {
+      grid-template-columns: 2em 2em 2em;
+      grid-auto-rows: 2em;
+      column-gap: 0.25em;
     }
 
-    /*  Push the camera operations at the end of the container. */
-    &.camera {
-      margin-top: auto;
+    &.hidden {
+      display: none;
     }
+  }
+
+  /*  Push the camera operations at the end of the container. */
+  .separator-camera {
+    margin: 1em 0.5em;
+    margin-top: auto;
+    padding-top: 1em;
+    border-bottom: solid 1px #bbb;
   }
 
   .separator {
@@ -96,6 +103,10 @@ body {
       width: 1em;
       margin: 0 0.25em;
       transform: translateY(-0.25em);
+    }
+
+    &.hidden {
+      display: none;
     }
   }
 }

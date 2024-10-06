@@ -142,6 +142,12 @@ export default class MultiSystemSelector extends Container {
     this.setSelectedVisuals();
   }
 
+  setSelectedFromSubsystems(subsystems: RuntimeSubsystem[]): void {
+    this.selected = [...subsystems];
+
+    this.setSelectedVisuals();
+  }
+
   // TODO: don't systematically re-create SystemSelectors.
   // Instead, re-use them.
   private setSelectedVisuals(): void {

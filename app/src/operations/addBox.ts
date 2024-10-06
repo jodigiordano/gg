@@ -5,6 +5,11 @@ import { modifySpecification } from "../simulator/api.js";
 import Operation from "../operation.js";
 import viewport from "../renderer/viewport.js";
 import { tick } from "../renderer/pixi.js";
+import {
+  getBorderPattern,
+  hideBorderPattern,
+  showBorderPattern,
+} from "../properties/system.js";
 
 const placeholderVisual = new SystemSelector();
 const parentVisual = new SystemSelector();
@@ -59,7 +64,7 @@ function onPointerMove(state: State): void {
   }
 }
 
-function onBegin(state: State): void {
+function onAdded(state: State): void {
   placeholderVisual.visible = true;
   parentVisual.visible = false;
 
@@ -73,13 +78,17 @@ const operation: Operation = {
     viewport.addChild(placeholderVisual);
     viewport.addChild(parentVisual);
   },
-  onBegin,
+  onBegin: state => {
+    showBorderPattern({ initial: "light" });
+    onAdded(state);
+  },
   onEnd: () => {
     placeholderVisual.visible = false;
     parentVisual.visible = false;
 
-    viewport.pause = false;
+    hideBorderPattern();
 
+    viewport.pause = false;
   },
   onPointerUp: state => {
     let parent =
@@ -112,9 +121,11 @@ const operation: Operation = {
     y -= Math.floor(SystemMinSize.height / 2);
 
     modifySpecification(() => {
-      addSubsystem(parent, "box", x, y, "");
+      addSubsystem(parent, "box", x, y, "", {
+        borderPattern: getBorderPattern(),
+      });
     }).then(() => {
-      onBegin(state);
+      onAdded(state);
       tick();
     });
   },

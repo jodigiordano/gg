@@ -156,34 +156,39 @@
             <inline-svg>icon-debug</inline-svg>
           </button>
         </div>
-        <div class="separator"></div>
-        <div class="operations">
-          <button
-            id="operation-set-line-pattern-dotted"
-            class="hidden single-choice"
-            title="Dotted line"
-          >
-            <inline-svg>icon-link-pattern-dotted</inline-svg>
-            <div class="keyboard">q</div>
+        <div id="property-border-title" class="separator-with-title hidden">
+          border
+        </div>
+        <div id="property-border" class="operations properties hidden">
+          <button title="Dotted border" data-value="dotted">
+            <inline-svg>icon-border-pattern-dotted</inline-svg>
           </button>
-          <button
-            id="operation-set-line-pattern-solid"
-            class="hidden single-choice"
-            title="Solid line"
-          >
-            <inline-svg>icon-link-pattern-solid</inline-svg>
-            <div class="keyboard">q</div>
+          <button title="Solid border" data-value="solid">
+            <inline-svg>icon-border-pattern-solid</inline-svg>
           </button>
-          <button
-            id="operation-set-line-pattern-pipe"
-            title="Pipe line"
-            class="hidden single-choice"
-          >
-            <inline-svg>icon-link-pattern-pipe</inline-svg>
-            <div class="keyboard">q</div>
+          <button title="Light border" data-value="light">
+            <inline-svg>icon-border-pattern-light</inline-svg>
           </button>
         </div>
-        <div class="operations camera">
+        <div
+          id="property-line-pattern-title"
+          class="separator-with-title hidden"
+        >
+          style
+        </div>
+        <div id="property-line-pattern" class="operations properties hidden">
+          <button title="Dotted line" data-value="dotted-line">
+            <inline-svg>icon-link-pattern-dotted</inline-svg>
+          </button>
+          <button title="Solid line" data-value="solid-line">
+            <inline-svg>icon-link-pattern-solid</inline-svg>
+          </button>
+          <button title="Pipe line" data-value="pipe">
+            <inline-svg>icon-link-pattern-pipe</inline-svg>
+          </button>
+        </div>
+        <div class="separator-camera"></div>
+        <div class="operations">
           <button id="operation-camera-fit" title="Fit to screen">
             <inline-svg>icon-zoom-fit</inline-svg>
             <div class="keyboard">=</div>

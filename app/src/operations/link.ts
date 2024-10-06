@@ -7,10 +7,9 @@ import { State } from "../state.js";
 import viewport from "../renderer/viewport.js";
 import { tick } from "../renderer/pixi.js";
 import {
-  cycleLinePattern,
   getLinePattern,
   hideLinePattern,
-  resetLinePattern,
+  showLinePattern,
 } from "../properties/line.js";
 
 const selectAVisual = new SystemSelector();
@@ -81,7 +80,7 @@ const operation: Operation = {
   },
   onBegin: state => {
     a = null;
-    resetLinePattern();
+    showLinePattern();
 
     onPointerMove(state);
   },
@@ -186,11 +185,7 @@ const operation: Operation = {
     onPointerMove(state);
   },
   onPointerMove,
-  onKeyDown: (_state, event) => {
-    if (event.key === "q") {
-      cycleLinePattern();
-    }
-  },
+  onKeyDown: () => {},
   onPointerEnter: () => {},
   onPointerLeave: () => {},
 };

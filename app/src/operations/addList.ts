@@ -5,6 +5,11 @@ import { modifySpecification } from "../simulator/api.js";
 import Operation from "../operation.js";
 import viewport from "../renderer/viewport.js";
 import { tick } from "../renderer/pixi.js";
+import {
+  getBorderPattern,
+  hideBorderPattern,
+  showBorderPattern,
+} from "../properties/system.js";
 
 const placeholderVisual = new SystemSelector();
 const parentVisual = new SystemSelector();
@@ -33,7 +38,7 @@ function onPointerMove(state: State): void {
   }
 }
 
-function onBegin(state: State): void {
+function onAdded(state: State): void {
   placeholderVisual.visible = true;
   parentVisual.visible = false;
 
@@ -47,13 +52,22 @@ const operation: Operation = {
     viewport.addChild(placeholderVisual);
     viewport.addChild(parentVisual);
   },
-  onBegin,
+  onBegin: state => {
+    placeholderVisual.visible = true;
+    parentVisual.visible = false;
+
+    showBorderPattern({ initial: "light" });
+
+    viewport.pause = false;
+    onPointerMove(state);
+  },
   onEnd: () => {
     placeholderVisual.visible = false;
     parentVisual.visible = false;
 
-    viewport.pause = false;
+    hideBorderPattern();
 
+    viewport.pause = false;
   },
   onPointerUp: state => {
     const parent =
@@ -77,20 +91,22 @@ const operation: Operation = {
     y -= Math.floor(SystemMinSize.height / 2);
 
     modifySpecification(() => {
-      const list = addSubsystem(parent, "list", x, y, "List");
+      const list = addSubsystem(parent, "list", x, y, "List", {
+        borderPattern: getBorderPattern(),
+      });
 
       addSubsystem(list, "box", 0, 0, "item 1");
       addSubsystem(list, "box", 0, 10, "item 2");
       addSubsystem(list, "box", 0, 20, "item 3");
     }).then(() => {
-      onBegin(state);
+      onAdded(state);
       tick();
     });
   },
   onPointerMove,
   onPointerDown: onPointerMove,
   onKeyDown: () => {},
-  onPointerEnter: (state) => {
+  onPointerEnter: state => {
     placeholderVisual.visible = true;
 
     onPointerMove(state);

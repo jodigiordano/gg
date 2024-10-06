@@ -1,68 +1,57 @@
 import { PathPattern } from "@gg/core";
 
 //
-// Path pattern
+// Line pattern
 //
 
 let linePattern: PathPattern = "solid-line";
 
-const linePatternPipe = document.getElementById(
-  "operation-set-line-pattern-pipe",
-)!;
+const propertyTitle = document.getElementById("property-line-pattern-title")!;
+const property = document.getElementById("property-line-pattern")!;
 
-const linePatternSolid = document.getElementById(
-  "operation-set-line-pattern-solid",
-)!;
+const buttons = property.querySelectorAll(
+  "button",
+) as unknown as HTMLButtonElement[];
 
-const linePatternDotted = document.getElementById(
-  "operation-set-line-pattern-dotted",
-)!;
-
-function setLinePatternPipe(): void {
-  hideLinePattern();
-
-  linePattern = "pipe";
-  linePatternPipe.classList.remove("hidden");
-}
-
-function setLinePatternSolid(): void {
-  hideLinePattern();
-
-  linePattern = "solid-line";
-  linePatternSolid.classList.remove("hidden");
-}
-
-function setLinePatternDotted(): void {
-  hideLinePattern();
-
-  linePattern = "dotted-line";
-  linePatternDotted.classList.remove("hidden");
-}
-
-export function cycleLinePattern(): void {
-  if (!linePatternPipe.classList.contains("hidden")) {
-    setLinePatternSolid();
-  } else if (!linePatternSolid.classList.contains("hidden")) {
-    setLinePatternDotted();
-  } else {
-    setLinePatternPipe();
+function resetButtonStates(): void {
+  for (const button of buttons) {
+    button.classList.remove("selected");
   }
 }
 
-export function resetLinePattern(): void {
-  setLinePatternSolid();
+for (const button of buttons) {
+  button.addEventListener("click", function () {
+    resetButtonStates();
+
+    button.classList.add("selected");
+
+    linePattern = button.dataset.value as PathPattern;
+
+    // Remove focus once clicked.
+    this.blur();
+  });
+}
+
+export function showLinePattern(initial: PathPattern = "solid-line"): void {
+  propertyTitle.classList.remove("hidden");
+  property.classList.remove("hidden");
+
+  linePattern = initial;
+
+  resetButtonStates();
+
+  for (const button of buttons) {
+    if (button.dataset.value === linePattern) {
+      button.classList.add("selected");
+    }
+  }
 }
 
 export function hideLinePattern(): void {
-  linePatternDotted.classList.add("hidden");
-  linePatternPipe.classList.add("hidden");
-  linePatternSolid.classList.add("hidden");
+  propertyTitle.classList.add("hidden");
+  property.classList.add("hidden");
 }
 
 export function getLinePattern(): PathPattern {
   return linePattern;
 }
-
-linePatternPipe.addEventListener("click", setLinePatternSolid);
-linePatternSolid.addEventListener("click", setLinePatternDotted);
-linePatternDotted.addEventListener("click", setLinePatternPipe);
