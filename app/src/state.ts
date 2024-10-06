@@ -1,6 +1,6 @@
 import { load, SystemSimulator } from "@gg/core";
 import Operation from "./operation.js";
-import moveOperation from "./operations/move.js";
+import selectOperation from "./operations/select.js";
 import { getUrlParams } from "./persistence.js";
 import { getThemeOnLoad } from "./theme.js";
 
@@ -29,7 +29,7 @@ const defaultSimulator = new SystemSimulator({ system: defaultSystem });
 
 defaultSimulator.compute();
 
-const defaultOperation = moveOperation;
+const defaultOperation = selectOperation;
 
 const urlParams = getUrlParams();
 

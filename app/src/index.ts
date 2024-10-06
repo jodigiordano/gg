@@ -13,7 +13,7 @@ import Operation from "./operation.js";
 import addBoxOperation from "./operations/addBox.js";
 import addListOperation from "./operations/addList.js";
 import setTitleOperation from "./operations/setTitle.js";
-import moveOperation from "./operations/move.js";
+import selectOperation from "./operations/select.js";
 import panOperation from "./operations/pan.js";
 import linkOperation from "./operations/link.js";
 import eraseOperation from "./operations/erase.js";
@@ -75,6 +75,11 @@ canvasContainer.addEventListener("pointermove", event => {
 
   tick();
 });
+
+// https://github.com/pixijs/pixijs/issues/5910
+//canvasContainer.addEventListener("click", event => {
+//console.log(event.detail);
+//});
 
 // The user press the pointer in the canvas.
 canvasContainer.addEventListener("pointerdown", event => {
@@ -196,7 +201,7 @@ window.addEventListener("keydown", event => {
   // The user press "ctrl+a" to select everything,
   // so we switch to the move operation.
   if (event.ctrlKey && event.key === "a") {
-    switchOperation(moveOperation);
+    switchOperation(selectOperation);
   }
 
   // The user press "ctrl+v" to paste a selection,
@@ -208,7 +213,7 @@ window.addEventListener("keydown", event => {
   // The user press "Esc" to cancel any ongoing operation.
   if (!event.ctrlKey) {
     if (event.key === "Escape" || event.key === "1") {
-      switchOperation(moveOperation);
+      switchOperation(selectOperation);
     } else if (event.key === "2") {
       switchOperation(eraseOperation);
     } else if (event.key === "3") {
@@ -864,7 +869,7 @@ document
 addBoxOperation.setup(state);
 addListOperation.setup(state);
 setTitleOperation.setup(state);
-moveOperation.setup(state);
+selectOperation.setup(state);
 panOperation.setup(state);
 linkOperation.setup(state);
 eraseOperation.setup(state);
@@ -893,8 +898,8 @@ for (const button of singleChoiceButtons) {
       state.operation = addBoxOperation;
     } else if (button.id === "operation-add-list") {
       state.operation = addListOperation;
-    } else if (button.id === "operation-move") {
-      state.operation = moveOperation;
+    } else if (button.id === "operation-select") {
+      state.operation = selectOperation;
     } else if (button.id === "operation-pan") {
       state.operation = panOperation;
     } else if (button.id === "operation-erase") {
@@ -908,7 +913,7 @@ for (const button of singleChoiceButtons) {
     } else if (button.id === "operation-set-color") {
       state.operation = paintOperation;
     } else {
-      state.operation = moveOperation;
+      state.operation = selectOperation;
     }
 
     state.operation.onBegin(state);

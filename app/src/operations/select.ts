@@ -463,7 +463,7 @@ function onSelected(state: State): void {
 }
 
 const operation: Operation = {
-  id: "operation-move",
+  id: "operation-select",
   setup: () => {
     //
     // Move multiple systems.
