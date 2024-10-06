@@ -1,8 +1,8 @@
 import { RuntimeSystem, RuntimeSubsystem, RuntimeLink } from "./runtime.js";
 import { System } from "./specification.js";
 import { validate, ValidationError, ValidationWarning } from "./validations.js";
-import { computeSystemSize, getSubsystemById, initSystem } from "./system.js";
-import { getTitleLength, sanitizeTitle } from "./helpers.js";
+import { computeSystemSize, initSystem } from "./system.js";
+import { getTitleLength, sanitizeTitle, getSubsystemById } from "./helpers.js";
 
 export function load(system: System): {
   system: RuntimeSystem;

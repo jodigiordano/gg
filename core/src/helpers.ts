@@ -70,3 +70,22 @@ export function isSubsystemOf(
 
   return false;
 }
+
+export function getSubsystemById(
+  system: RuntimeSystem | RuntimeSubsystem,
+  id: string,
+): RuntimeSubsystem | null {
+  for (const ss of system.systems) {
+    if (ss.id === id) {
+      return ss;
+    }
+
+    const foundInChildren = getSubsystemById(ss, id);
+
+    if (foundInChildren) {
+      return foundInChildren;
+    }
+  }
+
+  return null;
+}
