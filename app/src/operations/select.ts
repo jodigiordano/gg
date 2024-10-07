@@ -1596,7 +1596,7 @@ const operation: Operation = {
     }
 
     //
-    // Copy one or many systems & links in the clipboard.
+    // Copy one or many systems & links in the local storage.
     //
     if (event.ctrlKey && event.key === "c") {
       const systems: RuntimeSubsystem[] = [];
@@ -1628,34 +1628,34 @@ const operation: Operation = {
         ),
       };
 
-      navigator.clipboard.writeText(JSON.stringify(specification, null, 2));
+      window.localStorage.setItem("clipboard", JSON.stringify(specification));
 
       return;
     }
 
     //
-    // Paste many systems & links from the clipboard.
+    // Paste many systems & links from the local storage.
     //
     if (event.ctrlKey && event.key === "v") {
-      navigator.clipboard.readText().then(fromClipboard => {
-        let result: ReturnType<typeof loadJSON>;
+      const fromClipboard = window.localStorage.getItem("clipboard") ?? "";
 
-        try {
-          result = loadJSON(fromClipboard);
-        } catch {
-          /* NOOP */
-          return;
-        }
+      let result: ReturnType<typeof loadJSON>;
 
-        if (result.errors.length) {
-          return;
-        }
+      try {
+        result = loadJSON(fromClipboard);
+      } catch {
+        /* NOOP */
+        return;
+      }
 
-        setDuplicating(result.system);
+      if (result.errors.length) {
+        return;
+      }
 
-        onPointerMove(state);
-        tick();
-      });
+      setDuplicating(result.system);
+
+      onPointerMove(state);
+      tick();
     }
   },
   onPointerEnter: () => {},
