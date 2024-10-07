@@ -235,7 +235,11 @@ function onPointerMove(state: State) {
   //
   // Hovering one link or one link title.
   //
-  if (!oneSystemPickedUpAt && !multiPickedUpAt && !oneLinkSelectedBeforeSystem) {
+  if (
+    !oneSystemPickedUpAt &&
+    !multiPickedUpAt &&
+    !oneLinkSelectedBeforeSystem
+  ) {
     const linkTitleToSelect = state.simulator.getLinkByTitleAt(
       state.x,
       state.y,
