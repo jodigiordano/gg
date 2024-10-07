@@ -131,6 +131,7 @@ function onPointerMove(state: State) {
   multiMovingVisual.lassoVisible = false;
   multiMovingVisual.selectedVisible = false;
   parentSystemSelectVisual.visible = false;
+  oneLinkSelectedAfterSystem = null;
 
   //
   // Move multiple systems - Stage 2.1
@@ -234,7 +235,7 @@ function onPointerMove(state: State) {
   //
   // Hovering one link or one link title.
   //
-  if (!oneSystemPickedUpAt && !multiPickedUpAt) {
+  if (!oneSystemPickedUpAt && !multiPickedUpAt && !oneLinkSelectedBeforeSystem) {
     const linkTitleToSelect = state.simulator.getLinkByTitleAt(
       state.x,
       state.y,
@@ -327,6 +328,7 @@ function onPointerMove(state: State) {
       state.y,
     );
 
+    oneLinkSelected2Visual.visible = false;
     oneLinkSelected1Visual.visible = true;
     oneLinkSelected1Visual.setPositionRect(
       startX - boundaries.translateX,
