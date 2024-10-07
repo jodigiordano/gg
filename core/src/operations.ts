@@ -30,6 +30,8 @@ export function addSubsystem(
   options: {
     backgroundColor?: string;
     borderPattern?: BorderPattern;
+    titleAlign?: TextAlign;
+    titleFont?: TextFont;
   } = {},
 ): RuntimeSubsystem {
   const newSpecSystem: Subsystem = {
@@ -48,6 +50,14 @@ export function addSubsystem(
 
   if (options.backgroundColor) {
     newSpecSystem.backgroundColor = options.backgroundColor;
+  }
+
+  if (options.titleAlign) {
+    newSpecSystem.titleAlign = options.titleAlign;
+  }
+
+  if (options.titleFont) {
+    newSpecSystem.titleFont = options.titleFont;
   }
 
   parent.specification.systems ??= [];
@@ -319,7 +329,7 @@ export function duplicateSystems(
   parent: RuntimeSystem | RuntimeSubsystem,
   positions: RuntimePosition[],
   additionalLinks: RuntimeLink[],
-): void {
+): RuntimeSubsystem[] {
   const duplicatedIds: Record<string, string> = {};
 
   const toMove: RuntimeSubsystem[] = [];
@@ -404,6 +414,8 @@ export function duplicateSystems(
   }
 
   moveSystems(toMove, 0, 0);
+
+  return toMove;
 }
 
 /*

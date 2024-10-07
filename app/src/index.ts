@@ -18,7 +18,6 @@ import panOperation from "./operations/pan.js";
 import linkOperation from "./operations/link.js";
 import eraseOperation from "./operations/erase.js";
 import paintOperation from "./operations/paint.js";
-import duplicateOperation from "./operations/duplicate.js";
 import debugOperation from "./operations/debug.js";
 import {
   getJsonEditorValue,
@@ -201,13 +200,15 @@ window.addEventListener("keydown", event => {
   // The user press "ctrl+a" to select everything,
   // so we switch to the move operation.
   if (event.ctrlKey && event.key === "a") {
+    event.preventDefault();
     switchOperation(selectOperation);
   }
 
   // The user press "ctrl+v" to paste a selection,
-  // so we switch to the duplicate operation.
+  // so we switch to the move operation.
   if (event.ctrlKey && event.key === "v") {
-    switchOperation(duplicateOperation);
+    event.preventDefault();
+    switchOperation(selectOperation);
   }
 
   // The user press "Esc" to cancel any ongoing operation.
@@ -216,17 +217,15 @@ window.addEventListener("keydown", event => {
       switchOperation(selectOperation);
     } else if (event.key === "2") {
       switchOperation(eraseOperation);
-    } else if (event.key === "3") {
+    } else if (event.key === "q") {
       switchOperation(addBoxOperation);
-    } else if (event.key === "4") {
+    } else if (event.key === "a") {
       switchOperation(setTitleOperation);
     } else if (event.key === "w") {
       switchOperation(linkOperation);
-    } else if (event.key === "e") {
+    } else if (event.key === "s") {
       switchOperation(paintOperation);
-    } else if (event.key === "r") {
-      switchOperation(duplicateOperation);
-    } else if (event.key === "a") {
+    } else if (event.key === "z") {
       switchOperation(addListOperation);
     } else if (event.key === "[") {
       undo();
@@ -873,7 +872,6 @@ selectOperation.setup(state);
 panOperation.setup(state);
 linkOperation.setup(state);
 eraseOperation.setup(state);
-duplicateOperation.setup(state);
 paintOperation.setup(state);
 debugOperation.setup(state);
 
@@ -904,8 +902,6 @@ for (const button of singleChoiceButtons) {
       state.operation = panOperation;
     } else if (button.id === "operation-erase") {
       state.operation = eraseOperation;
-    } else if (button.id === "operation-duplicate") {
-      state.operation = duplicateOperation;
     } else if (button.id === "operation-debug") {
       state.operation = debugOperation;
     } else if (button.id === "operation-set-title") {

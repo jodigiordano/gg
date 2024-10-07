@@ -106,15 +106,7 @@
           </button>
           <button id="operation-add-box" title="Add box" class="single-choice">
             <inline-svg>icon-box</inline-svg>
-            <div class="keyboard">3</div>
-          </button>
-          <button
-            id="operation-set-title"
-            title="Name boxes & lines"
-            class="single-choice"
-          >
-            <inline-svg>icon-text</inline-svg>
-            <div class="keyboard">4</div>
+            <div class="keyboard">q</div>
           </button>
           <button
             id="operation-link"
@@ -125,20 +117,20 @@
             <div class="keyboard">w</div>
           </button>
           <button
+            id="operation-set-title"
+            title="Name boxes & lines"
+            class="single-choice"
+          >
+            <inline-svg>icon-text</inline-svg>
+            <div class="keyboard">a</div>
+          </button>
+          <button
             id="operation-set-color"
             title="Color boxes & lines"
             class="single-choice"
           >
             <inline-svg>icon-paint</inline-svg>
-            <div class="keyboard">e</div>
-          </button>
-          <button
-            id="operation-duplicate"
-            title="Duplicate a selection"
-            class="single-choice"
-          >
-            <inline-svg>icon-duplicate</inline-svg>
-            <div class="keyboard">r</div>
+            <div class="keyboard">s</div>
           </button>
           <button
             id="operation-add-list"
@@ -146,7 +138,7 @@
             class="single-choice"
           >
             <inline-svg>icon-list</inline-svg>
-            <div class="keyboard">a</div>
+            <div class="keyboard">z</div>
           </button>
           <button
             id="operation-debug"
@@ -210,6 +202,48 @@
           </button>
           <button title="Triangle" data-value="solid-arrow">
             <inline-svg>icon-link-end-solid-arrow</inline-svg>
+          </button>
+        </div>
+        <div id="property-text-font-title" class="separator-with-title hidden">
+          font
+        </div>
+        <div id="property-text-font" class="operations properties hidden">
+          <button title="Text" data-value="text">
+            <inline-svg>icon-text-font-text</inline-svg>
+          </button>
+          <button title="Sketch" data-value="sketch">
+            <inline-svg>icon-text-font-sketch</inline-svg>
+          </button>
+          <button title="Code" data-value="code">
+            <inline-svg>icon-text-font-code</inline-svg>
+          </button>
+        </div>
+        <div id="property-text-align-title" class="separator-with-title hidden">
+          align
+        </div>
+        <div id="property-text-align" class="operations properties hidden">
+          <button title="Left" data-value="left">
+            <inline-svg>icon-text-align-left</inline-svg>
+          </button>
+          <button title="Center" data-value="center">
+            <inline-svg>icon-text-align-center</inline-svg>
+          </button>
+          <button title="Right" data-value="right">
+            <inline-svg>icon-text-align-right</inline-svg>
+          </button>
+        </div>
+        <div id="property-actions-title" class="separator-with-title hidden">
+          actions
+        </div>
+        <div id="property-actions" class="operations properties hidden">
+          <button title="Delete" data-value="delete">
+            <inline-svg>icon-trash</inline-svg>
+          </button>
+          <button title="Paint" data-value="paint">
+            <inline-svg>icon-paint</inline-svg>
+          </button>
+          <button title="Duplicate" data-value="duplicate">
+            <inline-svg>icon-duplicate</inline-svg>
           </button>
         </div>
         <div class="separator-camera"></div>
@@ -347,10 +381,6 @@
             <tr>
               <td><inline-svg>icon-list</inline-svg></td>
               <td>Add a list to the canvas.</td>
-            </tr>
-            <tr>
-              <td><inline-svg>icon-duplicate</inline-svg></td>
-              <td>Duplicate boxes and lists on the canvas.</td>
             </tr>
           </tbody>
         </table>

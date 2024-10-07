@@ -13,6 +13,11 @@ import {
   BorderPattern,
   PathPattern,
   PathEndingPattern,
+  TextAlign,
+  TextFont,
+  removeLink,
+  loadJSON,
+  duplicateSystems,
 } from "@gg/core";
 import { modifySpecification } from "../simulator/api.js";
 import Operation from "../operation.js";
@@ -26,6 +31,9 @@ import * as SystemBorderProperty from "../properties/systemBorder.js";
 import * as LineStartProperty from "../properties/lineStart.js";
 import * as LineMiddleProperty from "../properties/lineMiddle.js";
 import * as LineEndProperty from "../properties/lineEnd.js";
+import * as TextAlignProperty from "../properties/textAlign.js";
+import * as TextFontProperty from "../properties/textFont.js";
+import * as ActionsProperty from "../properties/actions.js";
 
 //
 // Select & move multiple systems.
@@ -74,6 +82,12 @@ let oneLinkSelectedAfterSystem: RuntimeSubsystem | null = null;
 const parentSystemSelectVisual = new SystemSelector();
 
 //
+// Duplicate a system on paste.
+//
+
+let systemToDuplicate: RuntimeSystem | null = null;
+
+//
 // Handlers.
 //
 
@@ -115,6 +129,11 @@ function onPointerMove(state: State) {
   // Move multiple systems - Stage 2.1
   //
   if (multiPickedUpAt) {
+    // Do not show the selected systems when they are being duplicated.
+    if (systemToDuplicate) {
+      multiSelectVisual.visible = false;
+    }
+
     // Show the moving systems.
     multiMovingVisual.selectedVisible = true;
 
@@ -138,13 +157,15 @@ function onPointerMove(state: State) {
     }
 
     if (
+      // User is duplicating.
+      !systemToDuplicate &&
       // User moves the ss over itself.
-      (parent?.id &&
+      ((parent?.id &&
         multiSelectVisual.selected.some(
           selected => selected.id === parent!.id,
         )) ||
-      // User moves the ss inside a child ss.
-      (parent?.id && isChildOf(multiSelectVisual.selected[0]!, parent.id))
+        // User moves the ss inside a child ss.
+        (parent?.id && isChildOf(multiSelectVisual.selected[0]!, parent.id)))
     ) {
       parent = multiSelectVisual.selected[0]!.parent as RuntimeSubsystem;
     }
@@ -201,6 +222,16 @@ function onPointerMove(state: State) {
   ) {
     oneSystemHoverVisual.visible = true;
     oneSystemHoverVisual.setPosition(hoveringSystem, { x: 0, y: 0 });
+  }
+
+  //
+  // Hovering one link.
+  //
+  const linkToSelect = state.simulator.getLinkAt(state.x, state.y);
+
+  if (linkToSelect) {
+    oneLinkHoverVisual.visible = true;
+    oneLinkHoverVisual.setPositionRect(state.x, state.y, state.x, state.y);
   }
 
   //
@@ -336,18 +367,6 @@ function onPointerMove(state: State) {
 
     return;
   }
-
-  //
-  // Hovering one link.
-  //
-  const linkToSelect = state.simulator.getLinkAt(state.x, state.y);
-
-  if (linkToSelect) {
-    oneLinkHoverVisual.visible = true;
-    oneLinkHoverVisual.setPositionRect(state.x, state.y, state.x, state.y);
-
-    return;
-  }
 }
 
 function resetMultiSelection(): void {
@@ -355,11 +374,13 @@ function resetMultiSelection(): void {
   multiSelectVisual.visible = false;
   multiSelectVisual.lassoVisible = false;
   multiSelectVisual.selectedVisible = false;
+  multiSelectVisual.tint = "#0de500";
 
   multiMovingVisual.reset();
   multiMovingVisual.visible = false;
   multiMovingVisual.lassoVisible = false;
   multiMovingVisual.selectedVisible = false;
+  multiMovingVisual.tint = "#0de500";
 
   multiSelectStartAt = null;
   multiSelectEndAt = null;
@@ -386,9 +407,14 @@ function resetSingleSelection(): void {
   LineStartProperty.hide();
   LineMiddleProperty.hide();
   LineEndProperty.hide();
+  TextAlignProperty.hide();
+  TextFontProperty.hide();
+  ActionsProperty.hide();
 }
 
 function onModified(state: State): void {
+  systemToDuplicate = null;
+
   // When a multi-selection is modified (ex: moved, property change, etc.),
   // reselect it.
   if (multiSelectVisual.selected.length) {
@@ -451,6 +477,8 @@ function onBegin(state: State): void {
   resetMultiSelection();
   resetSingleSelection();
 
+  systemToDuplicate = null;
+
   viewport.pause = false;
   onPointerMove(state);
 }
@@ -479,18 +507,212 @@ function onBorderPatternChange(state: State, value: BorderPattern): void {
   }
 }
 
+function onTextAlignChange(state: State, value: TextAlign): void {
+  if (multiSelectVisual.selected.length) {
+    modifySpecification(() => {
+      for (const subsystem of multiSelectVisual.selected) {
+        subsystem.specification.titleAlign = value;
+      }
+    }).then(() => {
+      onModified(state);
+      tick();
+    });
+
+    return;
+  }
+
+  if (oneSystemSelected) {
+    modifySpecification(() => {
+      oneSystemSelected!.specification.titleAlign = value;
+    }).then(() => {
+      onModified(state);
+      tick();
+    });
+  }
+}
+
+function onTextFontChange(state: State, value: TextFont): void {
+  if (multiSelectVisual.selected.length) {
+    modifySpecification(() => {
+      for (const subsystem of multiSelectVisual.selected) {
+        subsystem.specification.titleFont = value;
+      }
+    }).then(() => {
+      onModified(state);
+      tick();
+    });
+
+    return;
+  }
+
+  if (oneSystemSelected) {
+    modifySpecification(() => {
+      oneSystemSelected!.specification.titleFont = value;
+    }).then(() => {
+      onModified(state);
+      tick();
+    });
+  }
+}
+
+function setDuplicating(system: RuntimeSystem): void {
+  systemToDuplicate = system;
+
+  // Must be set before setting the selected systems.
+  multiMovingVisual.tint = "#4363d8";
+
+  multiSelectVisual.setSelectedFromSystem(system);
+  multiMovingVisual.setSelectedFromSystem(system);
+
+  let left = Number.MAX_SAFE_INTEGER;
+  let right = -Number.MAX_SAFE_INTEGER;
+  let top = Number.MAX_SAFE_INTEGER;
+  let bottom = -Number.MAX_SAFE_INTEGER;
+
+  for (const ss of system.systems) {
+    if (ss.position.x < left) {
+      left = ss.position.x;
+    }
+
+    if (ss.position.x + ss.size.width > right) {
+      right = ss.position.x + ss.size.width;
+    }
+
+    if (ss.position.y < top) {
+      top = ss.position.y;
+    }
+
+    if (ss.position.y + ss.size.height > bottom) {
+      bottom = ss.position.y + ss.size.height;
+    }
+  }
+
+  // Happens when there are no subsystems.
+  if (left > right) {
+    left = right;
+  }
+
+  if (top > bottom) {
+    top = bottom;
+  }
+
+  multiPickedUpAt = {
+    x: Math.floor(left + (right - left) / 2),
+    y: Math.floor(top + (bottom - top) / 2),
+  };
+}
+
+function onAction(state: State, value: ActionsProperty.SelectAction): void {
+  if (multiSelectVisual.selected.length) {
+    if (value === "delete") {
+      modifySpecification(() => {
+        removeSubsystems(multiSelectVisual.selected);
+      }).then(() => {
+        onBegin(state);
+        tick();
+      });
+    } else if (value === "duplicate") {
+      setDuplicating({
+        systems: [...multiSelectVisual.selected],
+        links: state.simulator
+          .getSystem()
+          .links.filter(
+            link =>
+              multiSelectVisual.selected.some(ss => ss.id === link.a) &&
+              multiSelectVisual.selected.some(ss => ss.id === link.b),
+          ),
+      } as RuntimeSystem);
+
+      onPointerMove(state);
+      tick();
+    } else if (value === "paint") {
+      // TODO.
+    }
+
+    return;
+  }
+
+  if (oneSystemSelected) {
+    if (value === "delete") {
+      modifySpecification(() => {
+        removeSubsystems([oneSystemSelected!]);
+      }).then(() => {
+        onBegin(state);
+        tick();
+      });
+    } else if (value === "duplicate") {
+      setDuplicating({
+        systems: [oneSystemSelected],
+        links: [],
+      } as unknown as RuntimeSystem);
+
+      onPointerMove(state);
+      tick();
+    } else if (value === "paint") {
+      // TODO.
+    }
+
+    return;
+  }
+
+  if (oneLinkSelected) {
+    if (value === "delete") {
+      modifySpecification(() => {
+        removeLink(state.simulator.getSystem(), oneLinkSelected!);
+      }).then(() => {
+        onBegin(state);
+        tick();
+      });
+    } else if (value === "paint") {
+      // TODO.
+    }
+  }
+}
+
 function onSelected(state: State): void {
   if (multiSelectVisual.selected.length) {
-    const initial = multiSelectVisual.selected.every(
+    const border = multiSelectVisual.selected.every(
       ss => ss.borderPattern === multiSelectVisual.selected[0].borderPattern,
     )
       ? multiSelectVisual.selected[0].borderPattern
       : undefined;
 
     SystemBorderProperty.show({
-      initial,
+      initial: border,
       onChange: (value: BorderPattern) => {
         onBorderPatternChange(state, value);
+      },
+    });
+
+    const textAlign = multiSelectVisual.selected.every(
+      ss => ss.titleAlign === multiSelectVisual.selected[0].titleAlign,
+    )
+      ? multiSelectVisual.selected[0].titleAlign
+      : undefined;
+
+    TextAlignProperty.show({
+      initial: textAlign,
+      onChange: (value: TextAlign) => {
+        onTextAlignChange(state, value);
+      },
+    });
+
+    const textFont = multiSelectVisual.selected.every(
+      ss => ss.titleFont === multiSelectVisual.selected[0].titleFont,
+    )
+      ? multiSelectVisual.selected[0].titleFont
+      : undefined;
+
+    TextFontProperty.show({
+      initial: textFont,
+      onChange: (value: TextFont) => {
+        onTextFontChange(state, value);
+      },
+    });
+
+    ActionsProperty.show({
+      onChange: (value: ActionsProperty.SelectAction) => {
+        onAction(state, value);
       },
     });
 
@@ -502,6 +724,26 @@ function onSelected(state: State): void {
       initial: oneSystemSelected.borderPattern,
       onChange: (value: BorderPattern) => {
         onBorderPatternChange(state, value);
+      },
+    });
+
+    TextAlignProperty.show({
+      initial: oneSystemSelected.titleAlign,
+      onChange: (value: TextAlign) => {
+        onTextAlignChange(state, value);
+      },
+    });
+
+    TextFontProperty.show({
+      initial: oneSystemSelected.titleFont,
+      onChange: (value: TextFont) => {
+        onTextFontChange(state, value);
+      },
+    });
+
+    ActionsProperty.show({
+      onChange: (value: ActionsProperty.SelectAction) => {
+        onAction(state, value);
       },
     });
   }
@@ -546,6 +788,13 @@ function onSelected(state: State): void {
             tick();
           });
         }
+      },
+    });
+
+    ActionsProperty.show({
+      actions: ["delete", "paint"],
+      onChange: (value: ActionsProperty.SelectAction) => {
+        onAction(state, value);
       },
     });
   }
@@ -597,6 +846,16 @@ const operation: Operation = {
   },
   onPointerDown: state => {
     viewport.pause = true;
+
+    //
+    // Duplicate one or many systems - Stage 2.
+    //
+    // One or many systems are selected and being dragged by the user to be
+    // placed.
+    //
+    if (systemToDuplicate) {
+      return;
+    }
 
     //
     // Move multiple systems - Stage 2.
@@ -705,7 +964,7 @@ const operation: Operation = {
   },
   onPointerUp: state => {
     //
-    // Move multiple systems into a container, or not. - Stage 2.
+    // Move or duplicate multiple systems into a container, or not. - Stage 2.
     //
     if (multiPickedUpAt) {
       let parent =
@@ -735,7 +994,21 @@ const operation: Operation = {
 
         if (deltaX !== 0 || deltaY !== 0) {
           modifySpecification(() => {
-            moveSystems(multiSelectVisual.selected, deltaX, deltaY);
+            if (systemToDuplicate) {
+              const newSystems = duplicateSystems(
+                multiSelectVisual.selected,
+                parent,
+                multiSelectVisual.selected.map(ss => ({
+                  x: ss.specification.position.x + deltaX,
+                  y: ss.specification.position.y + deltaY,
+                })),
+                systemToDuplicate.links,
+              );
+
+              multiSelectVisual.setSelectedFromSubsystems(newSystems);
+            } else {
+              moveSystems(multiSelectVisual.selected, deltaX, deltaY);
+            }
           }).then(() => {
             onModified(state);
             tick();
@@ -746,45 +1019,67 @@ const operation: Operation = {
       } else {
         // Move the ss inside a container.
         if (parent.id) {
-          // The ss dragged by the user.
-          const multiPickedUp = state.simulator.getSubsystemAt(
-            multiPickedUpAt!.x,
-            multiPickedUpAt!.y,
-          )!;
-
-          // Delta of top-left of the ss with the dragging anchor.
-          const localDeltaX = multiPickedUp!.position.x - multiPickedUpAt!.x;
-          const localDeltaY = multiPickedUp!.position.y - multiPickedUpAt!.y;
-
           // Padding and title offsets.
           const containerOffset = state.simulator.getParentOffset(parent);
 
-          // Local position inside the container.
-          const x =
-            state.x - parent.position.x - containerOffset.x + localDeltaX;
-
-          const y =
-            state.y - parent.position.y - containerOffset.y + localDeltaY;
-
-          // Local positions of other moved systems,
-          // based on the system dragged by the user.
-          const positions = multiSelectVisual.selected.map(ss => {
-            if (ss.id === multiPickedUp.id) {
-              return { x, y };
-            }
-
-            return {
-              x: x + (ss.position.x - multiPickedUp.position.x),
-              y: y + (ss.position.y - multiPickedUp.position.y),
-            };
-          });
-
           modifySpecification(() => {
-            moveSubsystemsToParent(
-              multiSelectVisual.selected,
-              parent,
-              positions,
-            );
+            if (systemToDuplicate) {
+              // Local position inside the container.
+              const x = state.x - parent.position.x - containerOffset.x;
+              const y = state.y - parent.position.y - containerOffset.y;
+
+              const positions = multiSelectVisual.selected.map(ss => ({
+                x: x + (ss.position.x - multiPickedUpAt!.x),
+                y: y + (ss.position.y - multiPickedUpAt!.y),
+              }));
+
+              const newSystems = duplicateSystems(
+                multiSelectVisual.selected,
+                parent,
+                positions,
+                systemToDuplicate.links,
+              );
+
+              multiSelectVisual.setSelectedFromSubsystems(newSystems);
+            } else {
+              // The ss dragged by the user.
+              const multiPickedUp = state.simulator.getSubsystemAt(
+                multiPickedUpAt!.x,
+                multiPickedUpAt!.y,
+              )!;
+
+              // Delta of top-left of the ss with the dragging anchor.
+              const localDeltaX =
+                multiPickedUp!.position.x - multiPickedUpAt!.x;
+              const localDeltaY =
+                multiPickedUp!.position.y - multiPickedUpAt!.y;
+
+              // Local position inside the container.
+              const x =
+                state.x - parent.position.x - containerOffset.x + localDeltaX;
+
+              const y =
+                state.y - parent.position.y - containerOffset.y + localDeltaY;
+
+              // Local positions of other moved systems,
+              // based on the system dragged by the user.
+              const positions = multiSelectVisual.selected.map(ss => {
+                if (ss.id === multiPickedUp.id) {
+                  return { x, y };
+                }
+
+                return {
+                  x: x + (ss.position.x - multiPickedUp.position.x),
+                  y: y + (ss.position.y - multiPickedUp.position.y),
+                };
+              });
+
+              moveSubsystemsToParent(
+                multiSelectVisual.selected,
+                parent,
+                positions,
+              );
+            }
           }).then(() => {
             onModified(state);
             tick();
@@ -799,11 +1094,22 @@ const operation: Operation = {
           }));
 
           modifySpecification(() => {
-            moveSubsystemsToParent(
-              multiSelectVisual.selected,
-              parent,
-              positions,
-            );
+            if (systemToDuplicate) {
+              const newSystems = duplicateSystems(
+                multiSelectVisual.selected,
+                parent,
+                positions,
+                systemToDuplicate.links,
+              );
+
+              multiSelectVisual.setSelectedFromSubsystems(newSystems);
+            } else {
+              moveSubsystemsToParent(
+                multiSelectVisual.selected,
+                parent,
+                positions,
+              );
+            }
           }).then(() => {
             onModified(state);
             tick();
@@ -855,7 +1161,7 @@ const operation: Operation = {
     }
 
     //
-    // Move one system into a container, or not.
+    // Move or duplicate one system into a container, or not.
     //
     if (oneSystemSelected && oneSystemPickedUpAt) {
       let parent =
@@ -952,15 +1258,29 @@ const operation: Operation = {
 
       multiMovingVisual.setSelectedFromLasso(state.simulator);
 
+      onSelected(state);
+
       return;
     }
 
     //
-    // Delete many systems.
+    // Delete one or many systems.
     //
-    if (multiSelectVisual.selected.length && event.key === "Delete") {
+    if (event.key === "Delete") {
+      const systems: RuntimeSubsystem[] = [];
+
+      if (multiSelectVisual.selected.length) {
+        systems.push(...multiSelectVisual.selected);
+      } else if (oneSystemSelected) {
+        systems.push(oneSystemSelected);
+      }
+
+      if (!systems.length) {
+        return;
+      }
+
       modifySpecification(() => {
-        removeSubsystems(multiSelectVisual.selected);
+        removeSubsystems(systems);
       }).then(() => {
         onBegin(state);
         tick();
@@ -970,15 +1290,22 @@ const operation: Operation = {
     }
 
     //
-    // Copy many systems & links in the clipboard.
+    // Copy one or many systems & links in the clipboard.
     //
-    if (
-      multiSelectVisual.selected.length &&
-      event.ctrlKey &&
-      event.key === "c"
-    ) {
-      let rootSystem = multiSelectVisual
-        .selected[0]! as unknown as RuntimeSystem;
+    if (event.ctrlKey && event.key === "c") {
+      const systems: RuntimeSubsystem[] = [];
+
+      if (multiSelectVisual.selected.length) {
+        systems.push(...multiSelectVisual.selected);
+      } else if (oneSystemSelected) {
+        systems.push(oneSystemSelected);
+      }
+
+      if (!systems.length) {
+        return;
+      }
+
+      let rootSystem = systems[0] as unknown as RuntimeSystem;
 
       while (rootSystem.parent) {
         rootSystem = rootSystem.parent;
@@ -987,22 +1314,42 @@ const operation: Operation = {
       const specification: System = {
         specificationVersion: "1.0.0",
         title: "",
-        systems: multiSelectVisual.selected.map(ss => ss.specification),
+        systems: systems.map(ss => ss.specification),
         links: (rootSystem.specification.links ?? []).filter(
           link =>
-            multiSelectVisual.selected.some(ss => ss.id === link.a) &&
-            multiSelectVisual.selected.some(ss => ss.id === link.b),
+            systems.some(ss => ss.id === link.a) &&
+            systems.some(ss => ss.id === link.b),
         ),
       };
 
-      navigator.clipboard
-        .writeText(JSON.stringify(specification, null, 2))
-        .then(() => {
-          onBegin(state);
-          tick();
-        });
+      navigator.clipboard.writeText(JSON.stringify(specification, null, 2));
 
       return;
+    }
+
+    //
+    // Paste many systems & links from the clipboard.
+    //
+    if (event.ctrlKey && event.key === "v") {
+      navigator.clipboard.readText().then(fromClipboard => {
+        let result: ReturnType<typeof loadJSON>;
+
+        try {
+          result = loadJSON(fromClipboard);
+        } catch {
+          /* NOOP */
+          return;
+        }
+
+        if (result.errors.length) {
+          return;
+        }
+
+        setDuplicating(result.system);
+
+        onPointerMove(state);
+        tick();
+      });
     }
   },
   onPointerEnter: () => {},

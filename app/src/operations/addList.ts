@@ -6,6 +6,8 @@ import Operation from "../operation.js";
 import viewport from "../renderer/viewport.js";
 import { tick } from "../renderer/pixi.js";
 import * as SystemBorderProperty from "../properties/systemBorder.js";
+import * as TextAlignProperty from "../properties/textAlign.js";
+import * as TextFontProperty from "../properties/textFont.js";
 
 const placeholderVisual = new SystemSelector();
 const parentVisual = new SystemSelector();
@@ -53,6 +55,8 @@ const operation: Operation = {
     parentVisual.visible = false;
 
     SystemBorderProperty.show({ initial: "light" });
+    TextAlignProperty.show({ initial: "left" });
+    TextFontProperty.show({ initial: "text" });
 
     viewport.pause = false;
     onPointerMove(state);
@@ -62,6 +66,8 @@ const operation: Operation = {
     parentVisual.visible = false;
 
     SystemBorderProperty.hide();
+    TextAlignProperty.hide();
+    TextFontProperty.hide();
 
     viewport.pause = false;
   },
@@ -89,6 +95,8 @@ const operation: Operation = {
     modifySpecification(() => {
       const list = addSubsystem(parent, "list", x, y, "List", {
         borderPattern: SystemBorderProperty.value(),
+        titleAlign: TextAlignProperty.value(),
+        titleFont: TextFontProperty.value(),
       });
 
       addSubsystem(list, "box", 0, 0, "item 1");
