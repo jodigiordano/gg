@@ -16,6 +16,7 @@ import {
   removeLink,
   loadJSON,
   duplicateSystems,
+  removeLinkTitle,
 } from "@gg/core";
 import { modifySpecification } from "../simulator/api.js";
 import Operation from "../operation.js";
@@ -62,7 +63,7 @@ let oneSystemSelected: RuntimeSubsystem | null = null;
 let oneSystemPickedUpAt: RuntimePosition | null = null;
 
 //
-// Select & move one link.
+// Select & move one link or select one link title.
 //
 
 const oneLinkSelected1Visual = new SystemSelector();
@@ -71,6 +72,7 @@ const oneLinkHoverVisual = new SystemSelector();
 const oneLinkMoveVisual = new SystemLinker();
 
 let oneLinkSelected: RuntimeLink | null = null;
+let oneLinkTitleSelected: RuntimeLink | null = null;
 let oneLinkSelectedBeforeSystem: RuntimeSubsystem | null = null;
 let oneLinkSelectedAfterSystem: RuntimeSubsystem | null = null;
 
@@ -224,14 +226,29 @@ function onPointerMove(state: State) {
   }
 
   //
-  // Hovering one link.
+  // Hovering one link or one link title.
   //
   if (!oneSystemPickedUpAt && !multiPickedUpAt) {
-    const linkToSelect = state.simulator.getLinkAt(state.x, state.y);
+    const linkTitleToSelect = state.simulator.getLinkByTitleAt(
+      state.x,
+      state.y,
+    );
 
-    if (linkToSelect) {
+    if (linkTitleToSelect) {
       oneLinkHoverVisual.visible = true;
-      oneLinkHoverVisual.setPositionRect(state.x, state.y, state.x, state.y);
+      oneLinkHoverVisual.setPositionRect(
+        linkTitleToSelect.titlePosition.x,
+        linkTitleToSelect.titlePosition.y,
+        linkTitleToSelect.titlePosition.x + linkTitleToSelect.titleSize.width,
+        linkTitleToSelect.titlePosition.y + linkTitleToSelect.titleSize.height,
+      );
+    } else {
+      const linkToSelect = state.simulator.getLinkAt(state.x, state.y);
+
+      if (linkToSelect) {
+        oneLinkHoverVisual.visible = true;
+        oneLinkHoverVisual.setPositionRect(state.x, state.y, state.x, state.y);
+      }
     }
   }
 
@@ -240,6 +257,21 @@ function onPointerMove(state: State) {
   //
   if (multiSelectVisual.selected.length) {
     return;
+  }
+
+  //
+  // Selecting one link title.
+  //
+  if (oneLinkTitleSelected) {
+    oneLinkSelected1Visual.visible = true;
+    oneLinkSelected1Visual.setPositionRect(
+      oneLinkTitleSelected.titlePosition.x,
+      oneLinkTitleSelected.titlePosition.y,
+      oneLinkTitleSelected.titlePosition.x +
+        oneLinkTitleSelected.titleSize.width,
+      oneLinkTitleSelected.titlePosition.y +
+        oneLinkTitleSelected.titleSize.height,
+    );
   }
 
   //
@@ -402,6 +434,7 @@ function resetSingleSelection(): void {
   oneLinkHoverVisual.visible = false;
   oneLinkMoveVisual.visible = false;
   oneLinkSelected = null;
+  oneLinkTitleSelected = null;
   oneLinkSelectedBeforeSystem = null;
   oneLinkSelectedAfterSystem = null;
 
@@ -446,6 +479,23 @@ function onModified(state: State): void {
     resetMultiSelection();
 
     oneSystemSelected = subsystem;
+
+    onSelected(state);
+    onPointerMove(state);
+
+    return;
+  }
+
+  // When a link title is modified (ex: moved, property change, etc.), reselect it.
+  if (oneLinkTitleSelected) {
+    const link = state.simulator
+      .getSystem()
+      .links.find(link => link.index === oneLinkTitleSelected?.index)!;
+
+    resetSingleSelection();
+    resetMultiSelection();
+
+    oneLinkTitleSelected = link;
 
     onSelected(state);
     onPointerMove(state);
@@ -583,6 +633,17 @@ function onColorChanged(state: State, value: string | undefined) {
     return;
   }
 
+  if (oneLinkTitleSelected) {
+    modifySpecification(() => {
+      oneLinkTitleSelected!.specification.titleBackgroundColor = value;
+    }).then(() => {
+      onModified(state);
+      tick();
+    });
+
+    return;
+  }
+
   if (oneLinkSelected) {
     modifySpecification(() => {
       oneLinkSelected!.specification.backgroundColor = value;
@@ -703,6 +764,25 @@ function onAction(state: State, value: ActionsProperty.SelectAction): void {
     return;
   }
 
+  if (oneLinkTitleSelected) {
+    if (value === "delete") {
+      modifySpecification(() => {
+        removeLinkTitle(oneLinkTitleSelected!);
+      }).then(() => {
+        onBegin(state);
+        tick();
+      });
+    } else if (value === "paint") {
+      Paint.choose({
+        onChange: value => {
+          onColorChanged(state, value);
+        },
+      });
+    }
+
+    return;
+  }
+
   if (oneLinkSelected) {
     if (value === "delete") {
       modifySpecification(() => {
@@ -718,6 +798,8 @@ function onAction(state: State, value: ActionsProperty.SelectAction): void {
         },
       });
     }
+
+    return;
   }
 }
 
@@ -809,6 +891,33 @@ function onSelected(state: State): void {
     });
 
     Paint.setColor(oneSystemSelected.backgroundColor);
+
+    return;
+  }
+
+  if (oneLinkTitleSelected) {
+    TextAlignProperty.show({
+      initial: oneLinkTitleSelected.titleAlign,
+      onChange: value => {
+        onTextAlignChange(state, value);
+      },
+    });
+
+    TextFontProperty.show({
+      initial: oneLinkTitleSelected.titleFont,
+      onChange: value => {
+        onTextFontChange(state, value);
+      },
+    });
+
+    ActionsProperty.show({
+      actions: ["delete", "paint"],
+      onChange: value => {
+        onAction(state, value);
+      },
+    });
+
+    Paint.setColor(oneLinkTitleSelected.titleBackgroundColor);
 
     return;
   }
@@ -958,6 +1067,23 @@ const operation: Operation = {
     // Select one system or select one link.
     //
     resetSingleSelection();
+
+    //
+    // Select one link title.
+    //
+    const linkTitleToSelect = state.simulator.getLinkByTitleAt(
+      state.x,
+      state.y,
+    );
+
+    if (linkTitleToSelect) {
+      oneLinkTitleSelected = linkTitleToSelect;
+
+      onSelected(state);
+      onPointerMove(state);
+
+      return;
+    }
 
     //
     // Select one link.
@@ -1210,6 +1336,15 @@ const operation: Operation = {
     }
 
     //
+    // Select one link title.
+    //
+    if (oneLinkTitleSelected) {
+      onModified(state);
+
+      return;
+    }
+
+    //
     // Move one link, or not.
     //
     if (oneLinkSelected) {
@@ -1335,29 +1470,52 @@ const operation: Operation = {
     }
 
     //
-    // Delete one or many systems.
+    // Delete one or many things.
     //
     if (event.key === "Delete") {
-      const systems: RuntimeSubsystem[] = [];
-
       if (multiSelectVisual.selected.length) {
-        systems.push(...multiSelectVisual.selected);
-      } else if (oneSystemSelected) {
-        systems.push(oneSystemSelected);
-      }
+        modifySpecification(() => {
+          removeSubsystems(multiSelectVisual.selected);
+        }).then(() => {
+          onBegin(state);
+          tick();
+        });
 
-      if (!systems.length) {
         return;
       }
 
-      modifySpecification(() => {
-        removeSubsystems(systems);
-      }).then(() => {
-        onBegin(state);
-        tick();
-      });
+      if (oneSystemSelected) {
+        modifySpecification(() => {
+          removeSubsystems([oneSystemSelected!]);
+        }).then(() => {
+          onBegin(state);
+          tick();
+        });
 
-      return;
+        return;
+      }
+
+      if (oneLinkTitleSelected) {
+        modifySpecification(() => {
+          removeLinkTitle(oneLinkTitleSelected!);
+        }).then(() => {
+          onBegin(state);
+          tick();
+        });
+
+        return;
+      }
+
+      if (oneLinkSelected) {
+        modifySpecification(() => {
+          removeLink(state.simulator.getSystem(), oneLinkSelected!);
+        }).then(() => {
+          onBegin(state);
+          tick();
+        });
+
+        return;
+      }
     }
 
     //

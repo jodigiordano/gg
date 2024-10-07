@@ -295,6 +295,18 @@ export function removeLink(rootSystem: RuntimeSystem, link: RuntimeLink): void {
   rootSystem.specification.links!.splice(link.index, 1);
 }
 
+/*
+ * Remove a link title.
+ * The resulting system is not validated and may be invalid.
+ */
+export function removeLinkTitle(link: RuntimeLink): void {
+  delete link.specification.title;
+  delete link.specification.titleFont;
+  delete link.specification.titleSize;
+  delete link.specification.titleAlign;
+  delete link.specification.titleBackgroundColor;
+}
+
 export function setLinkTitle(
   link: RuntimeLink,
   newTitle: string,
