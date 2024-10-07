@@ -963,6 +963,8 @@ const operation: Operation = {
     onPointerMove(state);
   },
   onPointerUp: state => {
+    viewport.pause = false;
+
     //
     // Move or duplicate multiple systems into a container, or not. - Stage 2.
     //
