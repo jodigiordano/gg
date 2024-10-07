@@ -20,6 +20,11 @@ let fillColor: string | undefined = undefined;
 
 for (const availableColor of availableColors) {
   availableColor.addEventListener("click", function () {
+    // This modal is shared with other operations.
+    if (dialog.dataset.operation !== "paint") {
+      return;
+    }
+
     fillColor = (availableColor as HTMLDivElement).dataset.color;
 
     if (fillColor === "") {
@@ -106,12 +111,15 @@ const operation: Operation = {
     onPointerMove(state);
 
     dialog.inert = true;
+    dialog.dataset.operation = "paint";
     dialog.showModal();
     dialog.inert = false;
   },
   onEnd: () => {
     selectVisual1.visible = false;
     selectVisual2.visible = false;
+
+    dialog.dataset.operation = undefined;
 
     button.style.removeProperty("background-color");
     button.style.removeProperty("color");

@@ -11,8 +11,6 @@ import {
   isSubsystemOf,
   getSubsystemById,
   BorderPattern,
-  PathPattern,
-  PathEndingPattern,
   TextAlign,
   TextFont,
   removeLink,
@@ -34,6 +32,7 @@ import * as LineEndProperty from "../properties/lineEnd.js";
 import * as TextAlignProperty from "../properties/textAlign.js";
 import * as TextFontProperty from "../properties/textFont.js";
 import * as ActionsProperty from "../properties/actions.js";
+import * as Paint from "../properties/actionPaint.js";
 
 //
 // Select & move multiple systems.
@@ -552,6 +551,45 @@ function onTextFontChange(state: State, value: TextFont): void {
       onModified(state);
       tick();
     });
+
+    return;
+  }
+}
+
+function onColorChanged(state: State, value: string | undefined) {
+  if (multiSelectVisual.selected.length) {
+    modifySpecification(() => {
+      for (const subsystem of multiSelectVisual.selected) {
+        subsystem.specification.backgroundColor = value;
+      }
+    }).then(() => {
+      onModified(state);
+      tick();
+    });
+
+    return;
+  }
+
+  if (oneSystemSelected) {
+    modifySpecification(() => {
+      oneSystemSelected!.specification.backgroundColor = value;
+    }).then(() => {
+      onModified(state);
+      tick();
+    });
+
+    return;
+  }
+
+  if (oneLinkSelected) {
+    modifySpecification(() => {
+      oneLinkSelected!.specification.backgroundColor = value;
+    }).then(() => {
+      onModified(state);
+      tick();
+    });
+
+    return;
   }
 }
 
@@ -626,7 +664,11 @@ function onAction(state: State, value: ActionsProperty.SelectAction): void {
       onPointerMove(state);
       tick();
     } else if (value === "paint") {
-      // TODO.
+      Paint.choose({
+        onChange: value => {
+          onColorChanged(state, value);
+        },
+      });
     }
 
     return;
@@ -649,7 +691,11 @@ function onAction(state: State, value: ActionsProperty.SelectAction): void {
       onPointerMove(state);
       tick();
     } else if (value === "paint") {
-      // TODO.
+      Paint.choose({
+        onChange: value => {
+          onColorChanged(state, value);
+        },
+      });
     }
 
     return;
@@ -664,7 +710,11 @@ function onAction(state: State, value: ActionsProperty.SelectAction): void {
         tick();
       });
     } else if (value === "paint") {
-      // TODO.
+      Paint.choose({
+        onChange: value => {
+          onColorChanged(state, value);
+        },
+      });
     }
   }
 }
@@ -679,7 +729,7 @@ function onSelected(state: State): void {
 
     SystemBorderProperty.show({
       initial: border,
-      onChange: (value: BorderPattern) => {
+      onChange: value => {
         onBorderPatternChange(state, value);
       },
     });
@@ -692,7 +742,7 @@ function onSelected(state: State): void {
 
     TextAlignProperty.show({
       initial: textAlign,
-      onChange: (value: TextAlign) => {
+      onChange: value => {
         onTextAlignChange(state, value);
       },
     });
@@ -705,16 +755,25 @@ function onSelected(state: State): void {
 
     TextFontProperty.show({
       initial: textFont,
-      onChange: (value: TextFont) => {
+      onChange: value => {
         onTextFontChange(state, value);
       },
     });
 
     ActionsProperty.show({
-      onChange: (value: ActionsProperty.SelectAction) => {
+      onChange: value => {
         onAction(state, value);
       },
     });
+
+    const backgroundColor = multiSelectVisual.selected.every(
+      ss =>
+        ss.backgroundColor === multiSelectVisual.selected[0].backgroundColor,
+    )
+      ? multiSelectVisual.selected[0].backgroundColor
+      : undefined;
+
+    Paint.setColor(backgroundColor);
 
     return;
   }
@@ -722,36 +781,40 @@ function onSelected(state: State): void {
   if (oneSystemSelected) {
     SystemBorderProperty.show({
       initial: oneSystemSelected.borderPattern,
-      onChange: (value: BorderPattern) => {
+      onChange: value => {
         onBorderPatternChange(state, value);
       },
     });
 
     TextAlignProperty.show({
       initial: oneSystemSelected.titleAlign,
-      onChange: (value: TextAlign) => {
+      onChange: value => {
         onTextAlignChange(state, value);
       },
     });
 
     TextFontProperty.show({
       initial: oneSystemSelected.titleFont,
-      onChange: (value: TextFont) => {
+      onChange: value => {
         onTextFontChange(state, value);
       },
     });
 
     ActionsProperty.show({
-      onChange: (value: ActionsProperty.SelectAction) => {
+      onChange: value => {
         onAction(state, value);
       },
     });
+
+    Paint.setColor(oneSystemSelected.backgroundColor);
+
+    return;
   }
 
   if (oneLinkSelected) {
     LineStartProperty.show({
       initial: oneLinkSelected.startPattern,
-      onChange: (value: PathEndingPattern) => {
+      onChange: value => {
         if (oneLinkSelected) {
           modifySpecification(() => {
             oneLinkSelected!.specification.startPattern = value;
@@ -765,7 +828,7 @@ function onSelected(state: State): void {
 
     LineMiddleProperty.show({
       initial: oneLinkSelected.middlePattern,
-      onChange: (value: PathPattern) => {
+      onChange: value => {
         if (oneLinkSelected) {
           modifySpecification(() => {
             oneLinkSelected!.specification.middlePattern = value;
@@ -779,7 +842,7 @@ function onSelected(state: State): void {
 
     LineEndProperty.show({
       initial: oneLinkSelected.endPattern,
-      onChange: (value: PathEndingPattern) => {
+      onChange: value => {
         if (oneLinkSelected) {
           modifySpecification(() => {
             oneLinkSelected!.specification.endPattern = value;
@@ -793,10 +856,14 @@ function onSelected(state: State): void {
 
     ActionsProperty.show({
       actions: ["delete", "paint"],
-      onChange: (value: ActionsProperty.SelectAction) => {
+      onChange: value => {
         onAction(state, value);
       },
     });
+
+    Paint.setColor(oneLinkSelected.backgroundColor);
+
+    return;
   }
 }
 
