@@ -19,7 +19,6 @@ const SystemMinSize: RuntimeSize = {
 
 function onPointerMove(state: State): void {
   parentVisual.visible = false;
-  viewport.pause = true;
 
   placeholderVisual.setPositionRect(
     state.x - Math.floor(SystemMinSize.width / 2),
@@ -108,7 +107,11 @@ const operation: Operation = {
     });
   },
   onPointerMove,
-  onPointerDown: onPointerMove,
+  onPointerDown: state => {
+    viewport.pause = true;
+
+    onPointerMove(state);
+  },
   onKeyDown: () => {},
   onPointerEnter: state => {
     placeholderVisual.visible = true;
