@@ -13,6 +13,8 @@ import {
   TextAlign,
   SimulatorDebugInformation,
   PathfindingWeights,
+  RuntimeSize,
+  RuntimeSubsystem,
 } from "@gg/core";
 import { Sprite, Container, Texture } from "pixi.js";
 import TaggedText from "../pixi-tagged-text/TaggedText.js";
@@ -663,6 +665,88 @@ export function initializeText(
   configuration.default.align = wordWrap ? align : undefined;
 
   return new TaggedText(text, configuration, options);
+}
+
+function calculateTextSize(
+  text: string,
+  font: TextFont,
+  align: TextAlign,
+  minWidthForCentering: number,
+  minOverflowToAddOneMoreBlock: number,
+): RuntimeSize {
+  const title = initializeText(
+    text,
+    "#000000",
+    font,
+    align,
+    minWidthForCentering,
+  );
+
+  let width = 0;
+  let height = 0;
+
+  if (title.tokensFlat) {
+    for (const token of title.tokensFlat) {
+      const x = token.bounds.x === Infinity ? 0 : token.bounds.x;
+      const y = token.bounds.y === Infinity ? 0 : token.bounds.y;
+
+      if (x + token.bounds.width > width) {
+        width = x + token.bounds.width;
+      }
+
+      if (y + token.bounds.height > height) {
+        height = y + token.bounds.height;
+      }
+    }
+  } else {
+    width = title.width;
+    height = title.height;
+  }
+
+  width /= BlockSize;
+  height /= BlockSize;
+
+  width =
+    width - Math.floor(width) > minOverflowToAddOneMoreBlock
+      ? Math.ceil(width)
+      : Math.floor(width);
+
+  height =
+    height - Math.floor(height) > minOverflowToAddOneMoreBlock
+      ? Math.ceil(height)
+      : Math.floor(height);
+
+  return {
+    width,
+    height,
+  };
+}
+
+export function calculateTextSizeForLinkTitle(
+  text: string,
+  font: TextFont,
+  align: TextAlign,
+): RuntimeSize {
+  return calculateTextSize(text, font, align, 1, 0.25);
+}
+
+export function calculateTextSizeForSubsystem(
+  subsystem: RuntimeSubsystem,
+  text: string,
+  font: TextFont,
+  align: TextAlign,
+): RuntimeSize {
+  return calculateTextSize(
+    text,
+    font,
+    align,
+    subsystem.size.width -
+      subsystem.titleMargin.left -
+      subsystem.titleMargin.right -
+      subsystem.padding.left -
+      subsystem.padding.right,
+    0.5,
+  );
 }
 
 // Modifies the specification transactionally.

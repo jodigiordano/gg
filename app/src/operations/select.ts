@@ -17,8 +17,14 @@ import {
   loadJSON,
   duplicateSystems,
   removeLinkTitle,
+  setSubsystemTitle,
+  setLinkTitle,
 } from "@gg/core";
-import { modifySpecification } from "../simulator/api.js";
+import {
+  calculateTextSizeForLinkTitle,
+  calculateTextSizeForSubsystem,
+  modifySpecification,
+} from "../simulator/api.js";
 import Operation from "../operation.js";
 import { State } from "../state.js";
 import viewport from "../renderer/viewport.js";
@@ -579,6 +585,19 @@ function onTextAlignChange(state: State, value: TextAlign): void {
       onModified(state);
       tick();
     });
+
+    return;
+  }
+
+  if (oneLinkTitleSelected) {
+    modifySpecification(() => {
+      oneLinkTitleSelected!.specification.titleAlign = value;
+    }).then(() => {
+      onModified(state);
+      tick();
+    });
+
+    return;
   }
 }
 
@@ -586,7 +605,21 @@ function onTextFontChange(state: State, value: TextFont): void {
   if (multiSelectVisual.selected.length) {
     modifySpecification(() => {
       for (const subsystem of multiSelectVisual.selected) {
-        subsystem.specification.titleFont = value;
+        const size = calculateTextSizeForSubsystem(
+          subsystem,
+          subsystem.title.replaceAll("\\n", "\n"),
+          value,
+          subsystem.titleAlign,
+        );
+
+        setSubsystemTitle(
+          subsystem,
+          subsystem.title,
+          value,
+          subsystem.titleAlign,
+          size.width,
+          size.height,
+        );
       }
     }).then(() => {
       onModified(state);
@@ -598,7 +631,45 @@ function onTextFontChange(state: State, value: TextFont): void {
 
   if (oneSystemSelected) {
     modifySpecification(() => {
-      oneSystemSelected!.specification.titleFont = value;
+      const size = calculateTextSizeForSubsystem(
+        oneSystemSelected!,
+        oneSystemSelected!.title.replaceAll("\\n", "\n"),
+        value,
+        oneSystemSelected!.titleAlign,
+      );
+
+      setSubsystemTitle(
+        oneSystemSelected!,
+        oneSystemSelected!.title,
+        value,
+        oneSystemSelected!.titleAlign,
+        size.width,
+        size.height,
+      );
+    }).then(() => {
+      onModified(state);
+      tick();
+    });
+
+    return;
+  }
+
+  if (oneLinkTitleSelected) {
+    modifySpecification(() => {
+      const size = calculateTextSizeForLinkTitle(
+        oneLinkTitleSelected!.title.replaceAll("\\n", "\n"),
+        value,
+        oneLinkTitleSelected!.titleAlign,
+      );
+
+      setLinkTitle(
+        oneLinkTitleSelected!,
+        oneLinkTitleSelected!.title,
+        value,
+        oneLinkTitleSelected!.titleAlign,
+        size.width,
+        size.height,
+      );
     }).then(() => {
       onModified(state);
       tick();

@@ -8,12 +8,15 @@ import {
 } from "@gg/core";
 import Operation from "../operation.js";
 import SystemSelector from "../renderer/systemSelector.js";
-import { initializeText, modifySpecification } from "../simulator/api.js";
+import {
+  calculateTextSizeForLinkTitle,
+  calculateTextSizeForSubsystem,
+  modifySpecification,
+} from "../simulator/api.js";
 import { State } from "../state.js";
 import viewport from "../renderer/viewport.js";
 import { tick } from "../renderer/pixi.js";
 import { state } from "../state.js";
-import { BlockSize } from "../helpers.js";
 
 const dialog = document.getElementById(
   "input-set-title-dialog",
@@ -153,77 +156,36 @@ document
     // Apply operation.
     if (subsystem || link) {
       modifySpecification(() => {
-        const title = initializeText(
-          editor.value,
-          "#000000",
-          getFont(),
-          getAlign(),
-          subsystem
-            ? subsystem.size.width -
-                subsystem.titleMargin.left -
-                subsystem.titleMargin.right -
-                subsystem.padding.left -
-                subsystem.padding.right
-            : 1,
-        );
-
-        let width = 0;
-        let height = 0;
-
-        if (title.tokensFlat) {
-          for (const token of title.tokensFlat) {
-            const x = token.bounds.x === Infinity ? 0 : token.bounds.x;
-            const y = token.bounds.y === Infinity ? 0 : token.bounds.y;
-
-            if (x + token.bounds.width > width) {
-              width = x + token.bounds.width;
-            }
-
-            if (y + token.bounds.height > height) {
-              height = y + token.bounds.height;
-            }
-          }
-        } else {
-          width = title.width;
-          height = title.height;
-        }
-
-        width /= BlockSize;
-        height /= BlockSize;
-
-        let minOverflowToAddOneMoreBlock = 0.5;
-
-        if (link) {
-          minOverflowToAddOneMoreBlock = 0.25;
-        }
-
-        width =
-          width - Math.floor(width) > minOverflowToAddOneMoreBlock
-            ? Math.ceil(width)
-            : Math.floor(width);
-
-        height =
-          height - Math.floor(height) > minOverflowToAddOneMoreBlock
-            ? Math.ceil(height)
-            : Math.floor(height);
-
         if (subsystem) {
+          const size = calculateTextSizeForSubsystem(
+            subsystem,
+            editor.value,
+            getFont(),
+            getAlign(),
+          );
+
           setSubsystemTitle(
             subsystem,
             editor.value.replace(/\n/g, "\\n"),
             getFont(),
             getAlign(),
-            width,
-            height,
+            size.width,
+            size.height,
           );
         } else if (link) {
+          const size = calculateTextSizeForLinkTitle(
+            editor.value,
+            getFont(),
+            getAlign(),
+          );
+
           setLinkTitle(
             link,
             editor.value.replace(/\n/g, "\\n"),
             getFont(),
             getAlign(),
-            width,
-            height,
+            size.width,
+            size.height,
           );
         }
       }).then(() => {
