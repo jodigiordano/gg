@@ -226,11 +226,13 @@ function onPointerMove(state: State) {
   //
   // Hovering one link.
   //
-  const linkToSelect = state.simulator.getLinkAt(state.x, state.y);
+  if (!oneSystemPickedUpAt && !multiPickedUpAt) {
+    const linkToSelect = state.simulator.getLinkAt(state.x, state.y);
 
-  if (linkToSelect) {
-    oneLinkHoverVisual.visible = true;
-    oneLinkHoverVisual.setPositionRect(state.x, state.y, state.x, state.y);
+    if (linkToSelect) {
+      oneLinkHoverVisual.visible = true;
+      oneLinkHoverVisual.setPositionRect(state.x, state.y, state.x, state.y);
+    }
   }
 
   //
