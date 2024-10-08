@@ -1,13 +1,10 @@
 import { load, SystemSimulator } from "@gg/core";
-import Operation from "./operation.js";
-import selectOperation from "./operations/select.js";
 import { getUrlParams } from "./persistence.js";
 import { getThemeOnLoad } from "./theme.js";
 
 export interface State {
   changes: string[];
   changeIndex: number;
-  operation: Operation;
   x: number;
   y: number;
   preciseX: number;
@@ -29,14 +26,11 @@ const defaultSimulator = new SystemSimulator({ system: defaultSystem });
 
 defaultSimulator.compute();
 
-const defaultOperation = selectOperation;
-
 const urlParams = getUrlParams();
 
 export const state: State = {
   changes: [],
   changeIndex: -1,
-  operation: defaultOperation,
   x: -999999,
   y: -999999,
   preciseX: -999999,
@@ -52,8 +46,6 @@ export const state: State = {
   },
 };
 
-defaultOperation.onBegin(state);
-
 export function pushChange(change: string) {
   // A same change cannot be pushed multiple times consecutively.
   if (change === state.changes[state.changeIndex]) {
@@ -67,7 +59,4 @@ export function pushChange(change: string) {
 export function resetState(): void {
   state.changes.length = 0;
   state.changeIndex = -1;
-
-  state.operation.onEnd(state);
-  defaultOperation.onBegin(state);
 }

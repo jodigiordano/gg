@@ -47,6 +47,12 @@ const loadFileFailed = document.getElementById(
 ) as HTMLDialogElement;
 
 //
+// State
+//
+
+let operation: Operation = selectOperation;
+
+//
 // Events
 //
 
@@ -63,13 +69,13 @@ canvasContainer.addEventListener("pointermove", event => {
   updateStatePosition(event.x, event.y);
 
   if (viewport.mobileMoving) {
-    state.operation.onEnd(state);
+    operation.onEnd(state);
   }
 
   if (viewport.moving || viewport.mobileMoving) {
     redrawGrid();
   } else {
-    state.operation.onPointerMove(state);
+    operation.onPointerMove(state);
   }
 
   tick();
@@ -94,12 +100,12 @@ canvasContainer.addEventListener("pointerdown", event => {
   }
 
   if (viewport.mobileMoving) {
-    state.operation.onEnd(state);
+    operation.onEnd(state);
     return;
   }
 
   updateStatePosition(event.x, event.y);
-  state.operation.onPointerDown(state);
+  operation.onPointerDown(state);
   tick();
 });
 
@@ -116,7 +122,7 @@ canvasContainer.addEventListener("pointerup", event => {
   }
 
   if (viewport.mobileMoving) {
-    state.operation.onEnd(state);
+    operation.onEnd(state);
     return;
   }
 
@@ -126,7 +132,7 @@ canvasContainer.addEventListener("pointerup", event => {
   }
 
   updateStatePosition(event.x, event.y);
-  state.operation.onPointerUp(state);
+  operation.onPointerUp(state);
   tick();
 });
 
@@ -151,7 +157,7 @@ canvasContainer.addEventListener("pointerenter", () => {
     return;
   }
 
-  state.operation.onPointerEnter(state);
+  operation.onPointerEnter(state);
   tick();
 });
 
@@ -169,7 +175,7 @@ canvasContainer.addEventListener("pointerleave", event => {
     return;
   }
 
-  state.operation.onPointerLeave(state);
+  operation.onPointerLeave(state);
   tick();
 });
 
@@ -238,10 +244,10 @@ window.addEventListener("keydown", event => {
     } else if (event.key === "-") {
       cameraZoomOut();
     } else {
-      state.operation.onKeyDown(state, event);
+      operation.onKeyDown(state, event);
     }
   } else {
-    state.operation.onKeyDown(state, event);
+    operation.onKeyDown(state, event);
   }
 
   tick();
@@ -250,6 +256,7 @@ window.addEventListener("keydown", event => {
 // The user modifies the URL manually.
 window.addEventListener("hashchange", () => {
   resetState();
+  switchOperation(selectOperation);
 
   const urlParams = getUrlParams();
 
@@ -266,7 +273,7 @@ window.addEventListener("hashchange", () => {
 document
   .getElementById("operation-json-editor-open")
   ?.addEventListener("click", function () {
-    state.operation.onEnd(state);
+    operation.onEnd(state);
     openJsonEditor();
   });
 
@@ -288,7 +295,7 @@ document
       return;
     }
 
-    state.operation.onEnd(state);
+    operation.onEnd(state);
     pushChange(json);
 
     save(json)
@@ -500,6 +507,7 @@ async function newFile(): Promise<void> {
   }
 
   resetState();
+  switchOperation(selectOperation);
   setJsonEditorValue(json);
 
   await loadSimulation(json);
@@ -595,7 +603,7 @@ document
   .getElementById("operation-export-png")
   ?.addEventListener("click", function () {
     // Finish any ongoing operation.
-    state.operation.onEnd(state);
+    operation.onEnd(state);
 
     // Hide the grid.
     setGridVisible(false);
@@ -751,9 +759,9 @@ function undo(): void {
 
     // We skip the end/begin for that operation because it clears the color on
     // the icon (end) and opens a modal (begin).
-    if (state.operation.id !== "operation-set-color") {
-      state.operation.onEnd(state);
-      state.operation.onBegin(state);
+    if (operation.id !== "operation-set-color") {
+      operation.onEnd(state);
+      operation.onBegin(state);
     }
 
     const json = state.changes[state.changeIndex];
@@ -778,9 +786,9 @@ function redo(): void {
 
     // We skip the end/begin for that operation because it clears the color on
     // the icon (end) and opens a modal (begin).
-    if (state.operation.id !== "operation-set-color") {
-      state.operation.onEnd(state);
-      state.operation.onBegin(state);
+    if (operation.id !== "operation-set-color") {
+      operation.onEnd(state);
+      operation.onBegin(state);
     }
 
     const json = state.changes[state.changeIndex];
@@ -886,34 +894,34 @@ for (const button of singleChoiceButtons) {
       other.classList.remove("selected");
     }
 
-    state.operation.onEnd(state);
+    operation.onEnd(state);
 
     button.classList.add("selected");
 
     if (button.id === "operation-link") {
-      state.operation = linkOperation;
+      operation = linkOperation;
     } else if (button.id === "operation-add-box") {
-      state.operation = addBoxOperation;
+      operation = addBoxOperation;
     } else if (button.id === "operation-add-list") {
-      state.operation = addListOperation;
+      operation = addListOperation;
     } else if (button.id === "operation-select") {
-      state.operation = selectOperation;
+      operation = selectOperation;
     } else if (button.id === "operation-pan") {
-      state.operation = panOperation;
+      operation = panOperation;
     } else if (button.id === "operation-erase") {
-      state.operation = eraseOperation;
+      operation = eraseOperation;
     } else if (button.id === "operation-debug") {
-      state.operation = debugOperation;
+      operation = debugOperation;
     } else if (button.id === "operation-set-title") {
-      state.operation = setTitleOperation;
+      operation = setTitleOperation;
     } else if (button.id === "operation-set-color") {
-      state.operation = paintOperation;
+      operation = paintOperation;
     } else {
-      state.operation = selectOperation;
+      operation = selectOperation;
     }
 
-    state.operation.onBegin(state);
-    state.operation.onPointerLeave(state);
+    operation.onBegin(state);
+    operation.onPointerLeave(state);
 
     tick();
   });
@@ -931,9 +939,9 @@ for (const button of toolboxButtons) {
 }
 
 function switchOperation(operation: Operation): void {
-  state.operation.onEnd(state);
-  state.operation = operation;
-  state.operation.onBegin(state);
+  operation.onEnd(state);
+  operation = operation;
+  operation.onBegin(state);
 
   for (const button of singleChoiceButtons) {
     if (button.id === operation.id) {
