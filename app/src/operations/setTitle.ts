@@ -208,7 +208,7 @@ document
   });
 
 dialog.addEventListener("keydown", event => {
-  if (event.key === "Escape" || event.key === "1") {
+  if (event.key === "Escape") {
     onBegin(state);
   }
 });
