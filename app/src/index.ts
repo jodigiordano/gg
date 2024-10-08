@@ -938,9 +938,9 @@ for (const button of toolboxButtons) {
   });
 }
 
-function switchOperation(operation: Operation): void {
+function switchOperation(newOperation: Operation): void {
   operation.onEnd(state);
-  operation = operation;
+  operation = newOperation;
   operation.onBegin(state);
 
   for (const button of singleChoiceButtons) {
