@@ -216,24 +216,7 @@ function onPointerMove(state: State) {
   }
 
   //
-  // Hovering one system.
-  //
-  const hoveringSystem = state.simulator.getSubsystemAt(state.x, state.y);
-
-  if (
-    /* Whitebox */
-    (hoveringSystem &&
-      hoveringSystem.systems.length &&
-      isSystemPadding(hoveringSystem, state.x, state.y)) ||
-    /* Blackbox */
-    (hoveringSystem && !hoveringSystem.systems.length)
-  ) {
-    oneSystemHoverVisual.visible = true;
-    oneSystemHoverVisual.setPosition(hoveringSystem, { x: 0, y: 0 });
-  }
-
-  //
-  // Hovering one link or one link title.
+  // Hovering one link title.
   //
   if (
     !oneSystemPickedUpAt &&
@@ -254,11 +237,31 @@ function onPointerMove(state: State) {
         linkTitleToSelect.titlePosition.y + linkTitleToSelect.titleSize.height,
       );
     } else {
+      //
+      // Hovering one link.
+      //
       const linkToSelect = state.simulator.getLinkAt(state.x, state.y);
 
       if (linkToSelect) {
         oneLinkHoverVisual.visible = true;
         oneLinkHoverVisual.setPositionRect(state.x, state.y, state.x, state.y);
+      } else {
+        //
+        // Hovering one system.
+        //
+        const hoveringSystem = state.simulator.getSubsystemAt(state.x, state.y);
+
+        if (
+          /* Whitebox */
+          (hoveringSystem &&
+            hoveringSystem.systems.length &&
+            isSystemPadding(hoveringSystem, state.x, state.y)) ||
+          /* Blackbox */
+          (hoveringSystem && !hoveringSystem.systems.length)
+        ) {
+          oneSystemHoverVisual.visible = true;
+          oneSystemHoverVisual.setPosition(hoveringSystem, { x: 0, y: 0 });
+        }
       }
     }
   }
