@@ -50,6 +50,14 @@
         }
       }
     },
+    "titleBorderPattern": {
+      "description": "The pattern of the border of the title",
+      "allOf": [
+        {
+          "$ref": "definitions#/$defs/borderPattern"
+        }
+      ]
+    },
     "backgroundColor": {
       "type": "string",
       "description": "The background color of the link."

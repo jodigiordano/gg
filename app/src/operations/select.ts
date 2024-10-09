@@ -32,7 +32,7 @@ import { tick } from "../renderer/pixi.js";
 import SystemLinker from "../renderer/systemLinker.js";
 import SystemSelector from "../renderer/systemSelector.js";
 import MultiSystemSelector from "../renderer/multiSystemSelector.js";
-import * as SystemBorderProperty from "../properties/systemBorder.js";
+import * as BorderProperty from "../properties/border.js";
 import * as LineStartProperty from "../properties/lineStart.js";
 import * as LineMiddleProperty from "../properties/lineMiddle.js";
 import * as LineEndProperty from "../properties/lineEnd.js";
@@ -442,7 +442,7 @@ function resetSingleSelection(): void {
   oneSystemSelected = null;
   oneSystemPickedUpAt = null;
 
-  SystemBorderProperty.hide();
+  BorderProperty.hide();
 
   oneLinkSelected1Visual.visible = false;
   oneLinkSelected2Visual.visible = false;
@@ -570,6 +570,19 @@ function onBorderPatternChange(state: State, value: BorderPattern): void {
       onModified(state);
       tick();
     });
+
+    return;
+  }
+
+  if (oneLinkTitleSelected) {
+    modifySpecification(() => {
+      oneLinkTitleSelected!.specification.titleBorderPattern = value;
+    }).then(() => {
+      onModified(state);
+      tick();
+    });
+
+    return;
   }
 }
 
@@ -891,7 +904,7 @@ function onSelected(state: State): void {
       ? multiSelectVisual.selected[0].borderPattern
       : undefined;
 
-    SystemBorderProperty.show({
+    BorderProperty.show({
       initial: border,
       onChange: value => {
         onBorderPatternChange(state, value);
@@ -943,7 +956,7 @@ function onSelected(state: State): void {
   }
 
   if (oneSystemSelected) {
-    SystemBorderProperty.show({
+    BorderProperty.show({
       initial: oneSystemSelected.borderPattern,
       onChange: value => {
         onBorderPatternChange(state, value);
@@ -976,6 +989,13 @@ function onSelected(state: State): void {
   }
 
   if (oneLinkTitleSelected) {
+    BorderProperty.show({
+      initial: oneLinkTitleSelected.titleBorderPattern,
+      onChange: value => {
+        onBorderPatternChange(state, value);
+      },
+    });
+
     TextAlignProperty.show({
       initial: oneLinkTitleSelected.titleAlign,
       onChange: value => {

@@ -61,7 +61,7 @@
       "description": "The pattern of the border of the system",
       "allOf": [
         {
-          "$ref": "#/$defs/borderPattern"
+          "$ref": "definitions#/$defs/borderPattern"
         }
       ]
     },
@@ -102,11 +102,6 @@
       "$id": "SubsystemType",
       "type": "string",
       "enum": ["box", "list"]
-    },
-    "borderPattern": {
-      "$id": "BorderPattern",
-      "type": "string",
-      "enum": ["light", "solid", "dotted"]
     }
   }
 }

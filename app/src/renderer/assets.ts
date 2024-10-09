@@ -161,11 +161,13 @@ function loadRectangle(
 }
 
 const box = loadRectangle(2, 2);
+const boxDotted = loadRectangle(2, 80);
+const boxSolid = loadRectangle(28, 54);
 const listItem = loadRectangle(28, 80);
 const systemSelector = loadRectangle(2, 28);
 const linkLabel = loadRectangle(2, 54);
-const boxDotted = loadRectangle(2, 80);
-const boxSolid = loadRectangle(28, 54);
+const linkLabelDotted = loadRectangle(54, 80);
+const linkLabelSolid = loadRectangle(54, 54);
 
 export const spritesheet = new Spritesheet(Assets.get("spritesheet"), {
   frames: {
@@ -223,6 +225,24 @@ export const spritesheet = new Spritesheet(Assets.get("spritesheet"), {
     linkLabelTopCenter: { frame: linkLabel.topCenter },
     linkLabelBottomCenter: { frame: linkLabel.bottomCenter },
     linkLabelCenterCenter: { frame: linkLabel.centerCenter },
+    linkLabelDottedTopLeft: { frame: linkLabelDotted.topLeft },
+    linkLabelDottedTopRight: { frame: linkLabelDotted.topRight },
+    linkLabelDottedBottomLeft: { frame: linkLabelDotted.bottomLeft },
+    linkLabelDottedBottomRight: { frame: linkLabelDotted.bottomRight },
+    linkLabelDottedCenterLeft: { frame: linkLabelDotted.centerLeft },
+    linkLabelDottedCenterRight: { frame: linkLabelDotted.centerRight },
+    linkLabelDottedTopCenter: { frame: linkLabelDotted.topCenter },
+    linkLabelDottedBottomCenter: { frame: linkLabelDotted.bottomCenter },
+    linkLabelDottedCenterCenter: { frame: linkLabelDotted.centerCenter },
+    linkLabelSolidTopLeft: { frame: linkLabelSolid.topLeft },
+    linkLabelSolidTopRight: { frame: linkLabelSolid.topRight },
+    linkLabelSolidBottomLeft: { frame: linkLabelSolid.bottomLeft },
+    linkLabelSolidBottomRight: { frame: linkLabelSolid.bottomRight },
+    linkLabelSolidCenterLeft: { frame: linkLabelSolid.centerLeft },
+    linkLabelSolidCenterRight: { frame: linkLabelSolid.centerRight },
+    linkLabelSolidTopCenter: { frame: linkLabelSolid.topCenter },
+    linkLabelSolidBottomCenter: { frame: linkLabelSolid.bottomCenter },
+    linkLabelSolidCenterCenter: { frame: linkLabelSolid.centerCenter },
     linkPipe: { frame: { x: 48, y: 2, w: 8, h: 8 } },
     linkPipeCorner: { frame: { x: 48, y: 12, w: 8, h: 8 } },
     linkSolidLine: { frame: { x: 58, y: 2, w: 8, h: 8 } },

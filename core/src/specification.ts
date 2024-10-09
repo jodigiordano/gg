@@ -135,6 +135,10 @@ export interface Link {
     height: number;
   };
   /**
+   * The pattern of the border of the title
+   */
+  titleBorderPattern?: BorderPattern;
+  /**
    * The background color of the link.
    */
   backgroundColor?: string;
@@ -173,6 +177,11 @@ const schemas = [
         $id: "TextAlign",
         type: "string",
         enum: ["left", "center", "right"],
+      },
+      borderPattern: {
+        $id: "BorderPattern",
+        type: "string",
+        enum: ["light", "solid", "dotted"],
       },
     },
   },
@@ -227,6 +236,14 @@ const schemas = [
             description: "The height of the title.",
           },
         },
+      },
+      titleBorderPattern: {
+        description: "The pattern of the border of the title",
+        allOf: [
+          {
+            $ref: "definitions#/$defs/borderPattern",
+          },
+        ],
       },
       backgroundColor: {
         type: "string",
@@ -344,7 +361,7 @@ const schemas = [
         description: "The pattern of the border of the system",
         allOf: [
           {
-            $ref: "#/$defs/borderPattern",
+            $ref: "definitions#/$defs/borderPattern",
           },
         ],
       },
@@ -387,11 +404,6 @@ const schemas = [
         $id: "SubsystemType",
         type: "string",
         enum: ["box", "list"],
-      },
-      borderPattern: {
-        $id: "BorderPattern",
-        type: "string",
-        enum: ["light", "solid", "dotted"],
       },
     },
   },

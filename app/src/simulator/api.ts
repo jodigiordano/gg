@@ -444,24 +444,76 @@ function getObjectsToRender(): (Sprite | TaggedText)[] {
             link.titleBackgroundColor ??
             defaultColors[state.theme].linkTitleBackground;
 
+          let containerTopLeft;
+          let containerTopCenter;
+          let containerTopRight;
+          let containerCenterLeft;
+          let containerCenterCenter;
+          let containerCenterRight;
+          let containerBottomLeft;
+          let containerBottomCenter;
+          let containerBottomRight;
+
+          if (link.titleBorderPattern === "solid") {
+            containerTopLeft = spritesheet.textures.linkLabelSolidTopLeft;
+            containerTopCenter = spritesheet.textures.linkLabelSolidTopCenter;
+            containerTopRight = spritesheet.textures.linkLabelSolidTopRight;
+            containerCenterLeft = spritesheet.textures.linkLabelSolidCenterLeft;
+            containerCenterCenter =
+              spritesheet.textures.linkLabelSolidCenterCenter;
+            containerCenterRight =
+              spritesheet.textures.linkLabelSolidCenterRight;
+            containerBottomLeft = spritesheet.textures.linkLabelSolidBottomLeft;
+            containerBottomCenter =
+              spritesheet.textures.linkLabelSolidBottomCenter;
+            containerBottomRight =
+              spritesheet.textures.linkLabelSolidBottomRight;
+          } else if (link.titleBorderPattern === "dotted") {
+            containerTopLeft = spritesheet.textures.linkLabelDottedTopLeft;
+            containerTopCenter = spritesheet.textures.linkLabelDottedTopCenter;
+            containerTopRight = spritesheet.textures.linkLabelDottedTopRight;
+            containerCenterLeft =
+              spritesheet.textures.linkLabelDottedCenterLeft;
+            containerCenterCenter =
+              spritesheet.textures.linkLabelDottedCenterCenter;
+            containerCenterRight =
+              spritesheet.textures.linkLabelDottedCenterRight;
+            containerBottomLeft =
+              spritesheet.textures.linkLabelDottedBottomLeft;
+            containerBottomCenter =
+              spritesheet.textures.linkLabelDottedBottomCenter;
+            containerBottomRight =
+              spritesheet.textures.linkLabelDottedBottomRight;
+          } /* light */ else {
+            containerTopLeft = spritesheet.textures.linkLabelTopLeft;
+            containerTopCenter = spritesheet.textures.linkLabelTopCenter;
+            containerTopRight = spritesheet.textures.linkLabelTopRight;
+            containerCenterLeft = spritesheet.textures.linkLabelCenterLeft;
+            containerCenterCenter = spritesheet.textures.linkLabelCenterCenter;
+            containerCenterRight = spritesheet.textures.linkLabelCenterRight;
+            containerBottomLeft = spritesheet.textures.linkLabelBottomLeft;
+            containerBottomCenter = spritesheet.textures.linkLabelBottomCenter;
+            containerBottomRight = spritesheet.textures.linkLabelBottomRight;
+          }
+
           if (direction === SimulatorDirectionType.TopLeft) {
-            sprite.texture = spritesheet.textures.linkLabelTopLeft;
+            sprite.texture = containerTopLeft;
           } else if (direction === SimulatorDirectionType.TopCenter) {
-            sprite.texture = spritesheet.textures.linkLabelTopCenter;
+            sprite.texture = containerTopCenter;
           } else if (direction === SimulatorDirectionType.TopRight) {
-            sprite.texture = spritesheet.textures.linkLabelTopRight;
+            sprite.texture = containerTopRight;
           } else if (direction === SimulatorDirectionType.CenterLeft) {
-            sprite.texture = spritesheet.textures.linkLabelCenterLeft;
+            sprite.texture = containerCenterLeft;
           } else if (direction === SimulatorDirectionType.CenterRight) {
-            sprite.texture = spritesheet.textures.linkLabelCenterRight;
+            sprite.texture = containerCenterRight;
           } else if (direction === SimulatorDirectionType.BottomLeft) {
-            sprite.texture = spritesheet.textures.linkLabelBottomLeft;
+            sprite.texture = containerBottomLeft;
           } else if (direction === SimulatorDirectionType.BottomCenter) {
-            sprite.texture = spritesheet.textures.linkLabelBottomCenter;
+            sprite.texture = containerBottomCenter;
           } else if (direction === SimulatorDirectionType.BottomRight) {
-            sprite.texture = spritesheet.textures.linkLabelBottomRight;
+            sprite.texture = containerBottomRight;
           } else {
-            sprite.texture = spritesheet.textures.linkLabelCenterCenter;
+            sprite.texture = containerCenterCenter;
           }
 
           toDraw.push(sprite);

@@ -10,6 +10,11 @@
       "$id": "TextAlign",
       "type": "string",
       "enum": ["left", "center", "right"]
+    },
+    "borderPattern": {
+      "$id": "BorderPattern",
+      "type": "string",
+      "enum": ["light", "solid", "dotted"]
     }
   }
 }

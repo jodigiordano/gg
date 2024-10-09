@@ -20,6 +20,7 @@ import Operation from "../operation.js";
 import { State } from "../state.js";
 import viewport from "../renderer/viewport.js";
 import { tick } from "../renderer/pixi.js";
+import * as BorderProperty from "../properties/border.js";
 import * as LineStartProperty from "../properties/lineStart.js";
 import * as LineMiddleProperty from "../properties/lineMiddle.js";
 import * as LineEndProperty from "../properties/lineEnd.js";
@@ -27,6 +28,7 @@ import * as TextAlignProperty from "../properties/textAlign.js";
 import * as TextFontProperty from "../properties/textFont.js";
 import * as ActionsProperty from "../properties/actions.js";
 import * as Paint from "../properties/actionPaint.js";
+import { BorderPattern } from "@gg/core";
 
 //
 // Hover a link.
@@ -296,6 +298,7 @@ function resetSingleSelection(): void {
   moveLinkSystemAfter = null;
   createLinkSystemA = null;
 
+  BorderProperty.hide();
   LineStartProperty.hide();
   LineMiddleProperty.hide();
   LineEndProperty.hide();
@@ -347,6 +350,19 @@ function onBegin(state: State): void {
 
   viewport.pause = false;
   onPointerMove(state);
+}
+
+function onBorderChange(state: State, value: BorderPattern): void {
+  if (linkTitleSelected) {
+    modifySpecification(() => {
+      linkTitleSelected!.specification.titleBorderPattern = value;
+    }).then(() => {
+      onModified(state);
+      tick();
+    });
+
+    return;
+  }
 }
 
 function onTextAlignChange(state: State, value: TextAlign): void {
@@ -454,6 +470,13 @@ function onAction(state: State, value: ActionsProperty.SelectAction): void {
 
 function onSelected(state: State): void {
   if (linkTitleSelected) {
+    BorderProperty.show({
+      initial: linkTitleSelected.titleBorderPattern,
+      onChange: value => {
+        onBorderChange(state, value);
+      },
+    });
+
     TextAlignProperty.show({
       initial: linkTitleSelected.titleAlign,
       onChange: value => {

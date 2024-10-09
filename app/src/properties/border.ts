@@ -3,8 +3,8 @@ import { BorderPattern } from "@gg/core";
 let borderPattern: BorderPattern | null = null;
 let onChangeCallback: ((pattern: BorderPattern) => void) | null = null;
 
-const propertyTitle = document.getElementById("property-system-border-title")!;
-const property = document.getElementById("property-system-border")!;
+const propertyTitle = document.getElementById("property-border-title")!;
+const property = document.getElementById("property-border")!;
 
 const buttons = property.querySelectorAll(
   "button",

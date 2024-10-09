@@ -107,6 +107,9 @@ function enhanceLinks(system: RuntimeSystem): void {
       y: 0,
     };
 
+    // Set the title border.
+    link.titleBorderPattern ??= "light";
+
     // Set the patterns.
     link.startPattern ??= "none";
     link.middlePattern ??= "solid-line";
