@@ -19,6 +19,7 @@ import {
   removeLinkTitle,
   setSubsystemTitle,
   setLinkTitle,
+  BorderEdge,
 } from "@gg/core";
 import {
   calculateTextSizeForLinkTitle,
@@ -33,6 +34,7 @@ import SystemLinker from "../renderer/systemLinker.js";
 import SystemSelector from "../renderer/systemSelector.js";
 import MultiSystemSelector from "../renderer/multiSystemSelector.js";
 import * as BorderProperty from "../properties/border.js";
+import * as BorderEdgesProperty from "../properties/borderEdges.js";
 import * as LineStartProperty from "../properties/lineStart.js";
 import * as LineMiddleProperty from "../properties/lineMiddle.js";
 import * as LineEndProperty from "../properties/lineEnd.js";
@@ -444,6 +446,7 @@ function resetSingleSelection(): void {
   oneSystemPickedUpAt = null;
 
   BorderProperty.hide();
+  BorderEdgesProperty.hide();
 
   oneLinkSelected1Visual.visible = false;
   oneLinkSelected2Visual.visible = false;
@@ -579,6 +582,43 @@ function onBorderPatternChange(state: State, value: BorderPattern): void {
   if (oneLinkTitleSelected) {
     modifySpecification(() => {
       oneLinkTitleSelected!.specification.titleBorderPattern = value;
+    }).then(() => {
+      onModified(state);
+      tick();
+    });
+
+    return;
+  }
+}
+
+function onBorderEdgesChange(state: State, value: BorderEdge): void {
+  if (multiSelectVisual.selected.length) {
+    modifySpecification(() => {
+      for (const subsystem of multiSelectVisual.selected) {
+        subsystem.specification.borderEdges = value;
+      }
+    }).then(() => {
+      onModified(state);
+      tick();
+    });
+
+    return;
+  }
+
+  if (oneSystemSelected) {
+    modifySpecification(() => {
+      oneSystemSelected!.specification.borderEdges = value;
+    }).then(() => {
+      onModified(state);
+      tick();
+    });
+
+    return;
+  }
+
+  if (oneLinkTitleSelected) {
+    modifySpecification(() => {
+      oneLinkTitleSelected!.specification.titleBorderEdges = value;
     }).then(() => {
       onModified(state);
       tick();
@@ -976,6 +1016,19 @@ function onSelected(state: State): void {
       },
     });
 
+    const borderEdges = multiSelectVisual.selected.every(
+      ss => ss.borderEdges === multiSelectVisual.selected[0].borderEdges,
+    )
+      ? multiSelectVisual.selected[0].borderEdges
+      : undefined;
+
+    BorderEdgesProperty.show({
+      initial: borderEdges,
+      onChange: value => {
+        onBorderEdgesChange(state, value);
+      },
+    });
+
     const textAlign = multiSelectVisual.selected.every(
       ss => ss.titleAlign === multiSelectVisual.selected[0].titleAlign,
     )
@@ -1041,6 +1094,13 @@ function onSelected(state: State): void {
       },
     });
 
+    BorderEdgesProperty.show({
+      initial: oneSystemSelected.borderEdges,
+      onChange: value => {
+        onBorderEdgesChange(state, value);
+      },
+    });
+
     TextAlignProperty.show({
       initial: oneSystemSelected.titleAlign,
       onChange: value => {
@@ -1078,6 +1138,13 @@ function onSelected(state: State): void {
       initial: oneLinkTitleSelected.titleBorderPattern,
       onChange: value => {
         onBorderPatternChange(state, value);
+      },
+    });
+
+    BorderEdgesProperty.show({
+      initial: oneLinkTitleSelected.titleBorderEdges,
+      onChange: value => {
+        onBorderEdgesChange(state, value);
       },
     });
 

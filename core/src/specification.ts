@@ -2,6 +2,7 @@ export type SubsystemType = "box" | "list";
 export type TextFont = "text" | "sketch" | "code";
 export type TextAlign = "left" | "center" | "right";
 export type BorderPattern = "light" | "solid" | "dotted";
+export type BorderEdge = "round" | "straight";
 export type PathEndingPattern = "none" | "solid-arrow";
 export type PathPattern = "solid-line" | "dotted-line" | "pipe";
 
@@ -71,6 +72,10 @@ export interface Subsystem {
    * The pattern of the border of the system
    */
   borderPattern?: BorderPattern;
+  /**
+   * The edges style of the border of the system
+   */
+  borderEdges?: BorderEdge;
   /**
    * The opacity of the system
    */
@@ -143,6 +148,10 @@ export interface Link {
    */
   titleBorderPattern?: BorderPattern;
   /**
+   * The edges style of the border of the title
+   */
+  titleBorderEdges?: BorderEdge;
+  /**
    * The opacity of the title
    */
   titleOpacity?: number;
@@ -194,6 +203,11 @@ const schemas = [
         $id: "BorderPattern",
         type: "string",
         enum: ["light", "solid", "dotted"],
+      },
+      borderEdge: {
+        $id: "BorderEdge",
+        type: "string",
+        enum: ["round", "straight"],
       },
     },
   },
@@ -254,6 +268,14 @@ const schemas = [
         allOf: [
           {
             $ref: "definitions#/$defs/borderPattern",
+          },
+        ],
+      },
+      titleBorderEdges: {
+        description: "The edges style of the border of the title",
+        allOf: [
+          {
+            $ref: "definitions#/$defs/borderEdge",
           },
         ],
       },
@@ -386,6 +408,14 @@ const schemas = [
         allOf: [
           {
             $ref: "definitions#/$defs/borderPattern",
+          },
+        ],
+      },
+      borderEdges: {
+        description: "The edges style of the border of the system",
+        allOf: [
+          {
+            $ref: "definitions#/$defs/borderEdge",
           },
         ],
       },

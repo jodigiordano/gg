@@ -14,6 +14,7 @@ import {
   TextAlign,
   SubsystemType,
   BorderPattern,
+  BorderEdge,
 } from "./specification.js";
 import { computeSystemSize, getRootSystem, initSystem } from "./system.js";
 
@@ -30,6 +31,7 @@ export function addSubsystem(
   options: {
     backgroundColor?: string;
     borderPattern?: BorderPattern;
+    borderEdges?: BorderEdge;
     titleAlign?: TextAlign;
     titleFont?: TextFont;
     opacity?: number;
@@ -47,6 +49,10 @@ export function addSubsystem(
 
   if (options.borderPattern) {
     newSpecSystem.borderPattern = options.borderPattern;
+  }
+
+  if (options.borderEdges) {
+    newSpecSystem.borderEdges = options.borderEdges;
   }
 
   if (options.backgroundColor) {
@@ -194,6 +200,7 @@ export function addLink(
     titleFont?: TextFont;
     titleAlign?: TextAlign;
     titleBorderPattern?: BorderPattern;
+    titleBorderEdges?: BorderEdge;
     titleOpacity?: number;
     backgroundColor?: string;
     startPattern?: PathEndingPattern;
@@ -244,6 +251,10 @@ export function addLink(
     newLink.titleBorderPattern = options.titleBorderPattern;
   }
 
+  if (options.titleBorderEdges) {
+    newLink.titleBorderEdges = options.titleBorderEdges;
+  }
+
   if (options.titleOpacity) {
     newLink.titleOpacity = options.titleOpacity;
   }
@@ -286,6 +297,7 @@ export function moveLink(
     titleFont: link.titleFont,
     titleAlign: link.titleAlign,
     titleBorderPattern: link.titleBorderPattern,
+    titleBorderEdges: link.titleBorderEdges,
     titleOpacity: link.titleOpacity,
     startPattern: link.startPattern,
     middlePattern: link.middlePattern,
@@ -942,6 +954,7 @@ function createPseudoSystem(systems: RuntimeSubsystem[]): RuntimeSubsystem {
     systems: [],
     links: [],
     borderPattern: "light",
+    borderEdges: "straight",
     opacity: 1,
   };
 }

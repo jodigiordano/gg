@@ -8,6 +8,7 @@ import {
   TextAlign,
   BorderPattern,
   SubsystemType,
+  BorderEdge,
 } from "./specification.js";
 
 export interface RuntimeSize {
@@ -37,6 +38,7 @@ export interface RuntimeLink extends Link {
   titleAlign: TextAlign;
   titleBorderPattern: BorderPattern;
   titleOpacity: number;
+  titleBorderEdges: BorderEdge;
   startPattern: PathEndingPattern;
   endPattern: PathEndingPattern;
   middlePattern: PathPattern;
@@ -61,6 +63,7 @@ export interface RuntimeSubsystem extends Subsystem {
   links: RuntimeLink[];
   depth: number;
   borderPattern: BorderPattern;
+  borderEdges: BorderEdge;
   padding: RuntimeMargin;
   margin: RuntimeMargin;
   opacity: number;

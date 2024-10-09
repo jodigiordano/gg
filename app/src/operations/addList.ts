@@ -6,6 +6,7 @@ import Operation from "../operation.js";
 import viewport from "../renderer/viewport.js";
 import { tick } from "../renderer/pixi.js";
 import * as BorderProperty from "../properties/border.js";
+import * as BorderEdgesProperty from "../properties/borderEdges.js";
 import * as TextAlignProperty from "../properties/textAlign.js";
 import * as TextFontProperty from "../properties/textFont.js";
 import * as OpacityProperty from "../properties/opacity.js";
@@ -52,6 +53,7 @@ const operation: Operation = {
   },
   onBegin: state => {
     BorderProperty.show({ initial: "light" });
+    BorderEdgesProperty.show({ initial: "straight" });
     TextAlignProperty.show({ initial: "left" });
     TextFontProperty.show({ initial: "text" });
     OpacityProperty.show({ initial: 1 });
@@ -63,6 +65,7 @@ const operation: Operation = {
     parentVisual.visible = false;
 
     BorderProperty.hide();
+    BorderEdgesProperty.hide();
     TextAlignProperty.hide();
     TextFontProperty.hide();
     OpacityProperty.hide();
@@ -93,6 +96,7 @@ const operation: Operation = {
     modifySpecification(() => {
       const list = addSubsystem(parent, "list", x, y, "List", {
         borderPattern: BorderProperty.value(),
+        borderEdges: BorderEdgesProperty.value(),
         titleAlign: TextAlignProperty.value(),
         titleFont: TextFontProperty.value(),
         opacity: OpacityProperty.value(),

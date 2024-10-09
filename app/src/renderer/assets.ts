@@ -163,11 +163,18 @@ function loadRectangle(
 const box = loadRectangle(2, 2);
 const boxDotted = loadRectangle(2, 80);
 const boxSolid = loadRectangle(28, 54);
+const boxRound = loadRectangle(80, 2);
+const boxRoundDotted = loadRectangle(80, 80);
+const boxRoundSolid = loadRectangle(80, 54);
 const listItem = loadRectangle(28, 80);
+const listItemRound = loadRectangle(80, 28);
 const systemSelector = loadRectangle(2, 28);
 const linkLabel = loadRectangle(2, 54);
 const linkLabelDotted = loadRectangle(54, 80);
 const linkLabelSolid = loadRectangle(54, 54);
+const linkLabelRound = loadRectangle(106, 28);
+const linkLabelRoundDotted = loadRectangle(106, 80);
+const linkLabelRoundSolid = loadRectangle(106, 54);
 
 export const spritesheet = new Spritesheet(Assets.get("spritesheet"), {
   frames: {
@@ -198,6 +205,33 @@ export const spritesheet = new Spritesheet(Assets.get("spritesheet"), {
     boxSolidTopCenter: { frame: boxSolid.topCenter },
     boxSolidBottomCenter: { frame: boxSolid.bottomCenter },
     boxSolidCenterCenter: { frame: boxSolid.centerCenter },
+    boxRoundTopLeft: { frame: boxRound.topLeft },
+    boxRoundTopRight: { frame: boxRound.topRight },
+    boxRoundBottomLeft: { frame: boxRound.bottomLeft },
+    boxRoundBottomRight: { frame: boxRound.bottomRight },
+    boxRoundCenterLeft: { frame: boxRound.centerLeft },
+    boxRoundCenterRight: { frame: boxRound.centerRight },
+    boxRoundTopCenter: { frame: boxRound.topCenter },
+    boxRoundBottomCenter: { frame: boxRound.bottomCenter },
+    boxRoundCenterCenter: { frame: boxRound.centerCenter },
+    boxRoundDottedTopLeft: { frame: boxRoundDotted.topLeft },
+    boxRoundDottedTopRight: { frame: boxRoundDotted.topRight },
+    boxRoundDottedBottomLeft: { frame: boxRoundDotted.bottomLeft },
+    boxRoundDottedBottomRight: { frame: boxRoundDotted.bottomRight },
+    boxRoundDottedCenterLeft: { frame: boxRoundDotted.centerLeft },
+    boxRoundDottedCenterRight: { frame: boxRoundDotted.centerRight },
+    boxRoundDottedTopCenter: { frame: boxRoundDotted.topCenter },
+    boxRoundDottedBottomCenter: { frame: boxRoundDotted.bottomCenter },
+    boxRoundDottedCenterCenter: { frame: boxRoundDotted.centerCenter },
+    boxRoundSolidTopLeft: { frame: boxRoundSolid.topLeft },
+    boxRoundSolidTopRight: { frame: boxRoundSolid.topRight },
+    boxRoundSolidBottomLeft: { frame: boxRoundSolid.bottomLeft },
+    boxRoundSolidBottomRight: { frame: boxRoundSolid.bottomRight },
+    boxRoundSolidCenterLeft: { frame: boxRoundSolid.centerLeft },
+    boxRoundSolidCenterRight: { frame: boxRoundSolid.centerRight },
+    boxRoundSolidTopCenter: { frame: boxRoundSolid.topCenter },
+    boxRoundSolidBottomCenter: { frame: boxRoundSolid.bottomCenter },
+    boxRoundSolidCenterCenter: { frame: boxRoundSolid.centerCenter },
     listItemTopLeft: { frame: listItem.topLeft },
     listItemTopRight: { frame: listItem.topRight },
     listItemBottomLeft: { frame: listItem.bottomLeft },
@@ -207,6 +241,15 @@ export const spritesheet = new Spritesheet(Assets.get("spritesheet"), {
     listItemTopCenter: { frame: listItem.topCenter },
     listItemBottomCenter: { frame: listItem.bottomCenter },
     listItemCenterCenter: { frame: listItem.centerCenter },
+    listItemRoundTopLeft: { frame: listItemRound.topLeft },
+    listItemRoundTopRight: { frame: listItemRound.topRight },
+    listItemRoundBottomLeft: { frame: listItemRound.bottomLeft },
+    listItemRoundBottomRight: { frame: listItemRound.bottomRight },
+    listItemRoundCenterLeft: { frame: listItemRound.centerLeft },
+    listItemRoundCenterRight: { frame: listItemRound.centerRight },
+    listItemRoundTopCenter: { frame: listItemRound.topCenter },
+    listItemRoundBottomCenter: { frame: listItemRound.bottomCenter },
+    listItemRoundCenterCenter: { frame: listItemRound.centerCenter },
     systemSelectorTopLeft: { frame: systemSelector.topLeft },
     systemSelectorTopRight: { frame: systemSelector.topRight },
     systemSelectorBottomLeft: { frame: systemSelector.bottomLeft },
@@ -243,6 +286,45 @@ export const spritesheet = new Spritesheet(Assets.get("spritesheet"), {
     linkLabelSolidTopCenter: { frame: linkLabelSolid.topCenter },
     linkLabelSolidBottomCenter: { frame: linkLabelSolid.bottomCenter },
     linkLabelSolidCenterCenter: { frame: linkLabelSolid.centerCenter },
+    linkLabelRoundTopLeft: { frame: linkLabelRound.topLeft },
+    linkLabelRoundTopRight: { frame: linkLabelRound.topRight },
+    linkLabelRoundBottomLeft: { frame: linkLabelRound.bottomLeft },
+    linkLabelRoundBottomRight: { frame: linkLabelRound.bottomRight },
+    linkLabelRoundCenterLeft: { frame: linkLabelRound.centerLeft },
+    linkLabelRoundCenterRight: { frame: linkLabelRound.centerRight },
+    linkLabelRoundTopCenter: { frame: linkLabelRound.topCenter },
+    linkLabelRoundBottomCenter: { frame: linkLabelRound.bottomCenter },
+    linkLabelRoundCenterCenter: { frame: linkLabelRound.centerCenter },
+    linkLabelRoundDottedTopLeft: { frame: linkLabelRoundDotted.topLeft },
+    linkLabelRoundDottedTopRight: { frame: linkLabelRoundDotted.topRight },
+    linkLabelRoundDottedBottomLeft: { frame: linkLabelRoundDotted.bottomLeft },
+    linkLabelRoundDottedBottomRight: {
+      frame: linkLabelRoundDotted.bottomRight,
+    },
+    linkLabelRoundDottedCenterLeft: { frame: linkLabelRoundDotted.centerLeft },
+    linkLabelRoundDottedCenterRight: {
+      frame: linkLabelRoundDotted.centerRight,
+    },
+    linkLabelRoundDottedTopCenter: { frame: linkLabelRoundDotted.topCenter },
+    linkLabelRoundDottedBottomCenter: {
+      frame: linkLabelRoundDotted.bottomCenter,
+    },
+    linkLabelRoundDottedCenterCenter: {
+      frame: linkLabelRoundDotted.centerCenter,
+    },
+    linkLabelRoundSolidTopLeft: { frame: linkLabelRoundSolid.topLeft },
+    linkLabelRoundSolidTopRight: { frame: linkLabelRoundSolid.topRight },
+    linkLabelRoundSolidBottomLeft: { frame: linkLabelRoundSolid.bottomLeft },
+    linkLabelRoundSolidBottomRight: { frame: linkLabelRoundSolid.bottomRight },
+    linkLabelRoundSolidCenterLeft: { frame: linkLabelRoundSolid.centerLeft },
+    linkLabelRoundSolidCenterRight: { frame: linkLabelRoundSolid.centerRight },
+    linkLabelRoundSolidTopCenter: { frame: linkLabelRoundSolid.topCenter },
+    linkLabelRoundSolidBottomCenter: {
+      frame: linkLabelRoundSolid.bottomCenter,
+    },
+    linkLabelRoundSolidCenterCenter: {
+      frame: linkLabelRoundSolid.centerCenter,
+    },
     linkPipe: { frame: { x: 48, y: 2, w: 8, h: 8 } },
     linkPipeCorner: { frame: { x: 48, y: 12, w: 8, h: 8 } },
     linkSolidLine: { frame: { x: 58, y: 2, w: 8, h: 8 } },
@@ -258,7 +340,7 @@ export const spritesheet = new Spritesheet(Assets.get("spritesheet"), {
   meta: {
     image: "spritesheet.png",
     format: "RGBA8888",
-    size: { w: 128, h: 128 },
+    size: { w: 256, h: 256 },
     scale: 1,
   },
 });

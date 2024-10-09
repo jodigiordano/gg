@@ -1,5 +1,6 @@
 import {
   addLink,
+  BorderEdge,
   isSubsystemOf,
   moveLink,
   removeLink,
@@ -21,6 +22,7 @@ import { State } from "../state.js";
 import viewport from "../renderer/viewport.js";
 import { tick } from "../renderer/pixi.js";
 import * as BorderProperty from "../properties/border.js";
+import * as BorderEdgesProperty from "../properties/borderEdges.js";
 import * as LineStartProperty from "../properties/lineStart.js";
 import * as LineMiddleProperty from "../properties/lineMiddle.js";
 import * as LineEndProperty from "../properties/lineEnd.js";
@@ -304,6 +306,7 @@ function resetSingleSelection(): void {
   createLinkSystemA = null;
 
   BorderProperty.hide();
+  BorderEdgesProperty.hide();
   LineStartProperty.hide();
   LineMiddleProperty.hide();
   LineEndProperty.hide();
@@ -362,6 +365,19 @@ function onBorderChange(state: State, value: BorderPattern): void {
   if (linkTitleSelected) {
     modifySpecification(() => {
       linkTitleSelected!.specification.titleBorderPattern = value;
+    }).then(() => {
+      onModified(state);
+      tick();
+    });
+
+    return;
+  }
+}
+
+function onBorderEdgesChange(state: State, value: BorderEdge): void {
+  if (linkTitleSelected) {
+    modifySpecification(() => {
+      linkTitleSelected!.specification.titleBorderEdges = value;
     }).then(() => {
       onModified(state);
       tick();
@@ -505,6 +521,13 @@ function onSelected(state: State): void {
       initial: linkTitleSelected.titleBorderPattern,
       onChange: value => {
         onBorderChange(state, value);
+      },
+    });
+
+    BorderEdgesProperty.show({
+      initial: linkTitleSelected.titleBorderEdges,
+      onChange: value => {
+        onBorderEdgesChange(state, value);
       },
     });
 

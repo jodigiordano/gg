@@ -44,6 +44,9 @@ export function initSystem(
   // Set the border.
   system.borderPattern ??= "light";
 
+  // Set the border edges.
+  system.borderEdges ??= "straight";
+
   // Set the opacity.
   system.opacity ??= 1;
 

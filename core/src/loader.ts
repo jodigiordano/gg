@@ -110,6 +110,9 @@ function enhanceLinks(system: RuntimeSystem): void {
     // Set the title border.
     link.titleBorderPattern ??= "light";
 
+    // Set the title border edges.
+    link.titleBorderEdges ??= "straight";
+
     // Set the title opacity.
     link.titleOpacity ??= 1;
 

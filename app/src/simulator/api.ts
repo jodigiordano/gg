@@ -165,45 +165,105 @@ function getObjectsToRender(): (Sprite | TaggedText)[] {
           let systemBottomRight;
 
           if (system.parent?.type === "list") {
-            systemTopLeft = spritesheet.textures.listItemTopLeft;
-            systemTopCenter = spritesheet.textures.listItemTopCenter;
-            systemTopRight = spritesheet.textures.listItemTopRight;
-            systemCenterLeft = spritesheet.textures.listItemCenterLeft;
-            systemCenterCenter = spritesheet.textures.listItemCenterCenter;
-            systemCenterRight = spritesheet.textures.listItemCenterRight;
-            systemBottomLeft = spritesheet.textures.listItemBottomLeft;
-            systemBottomCenter = spritesheet.textures.listItemBottomCenter;
-            systemBottomRight = spritesheet.textures.listItemBottomRight;
+            if (
+              system.parent.borderEdges === "round" &&
+              system.position.y ===
+                Math.max(...system.parent.systems.map(ss => ss.position.y))
+            ) {
+              systemTopLeft = spritesheet.textures.listItemRoundTopLeft;
+              systemTopCenter = spritesheet.textures.listItemRoundTopCenter;
+              systemTopRight = spritesheet.textures.listItemRoundTopRight;
+              systemCenterLeft = spritesheet.textures.listItemRoundCenterLeft;
+              systemCenterCenter =
+                spritesheet.textures.listItemRoundCenterCenter;
+              systemCenterRight = spritesheet.textures.listItemRoundCenterRight;
+              systemBottomLeft = spritesheet.textures.listItemRoundBottomLeft;
+              systemBottomCenter =
+                spritesheet.textures.listItemRoundBottomCenter;
+              systemBottomRight = spritesheet.textures.listItemRoundBottomRight;
+            } /* straight */ else {
+              systemTopLeft = spritesheet.textures.listItemTopLeft;
+              systemTopCenter = spritesheet.textures.listItemTopCenter;
+              systemTopRight = spritesheet.textures.listItemTopRight;
+              systemCenterLeft = spritesheet.textures.listItemCenterLeft;
+              systemCenterCenter = spritesheet.textures.listItemCenterCenter;
+              systemCenterRight = spritesheet.textures.listItemCenterRight;
+              systemBottomLeft = spritesheet.textures.listItemBottomLeft;
+              systemBottomCenter = spritesheet.textures.listItemBottomCenter;
+              systemBottomRight = spritesheet.textures.listItemBottomRight;
+            }
           } else if (system.borderPattern === "solid") {
-            systemTopLeft = spritesheet.textures.boxSolidTopLeft;
-            systemTopCenter = spritesheet.textures.boxSolidTopCenter;
-            systemTopRight = spritesheet.textures.boxSolidTopRight;
-            systemCenterLeft = spritesheet.textures.boxSolidCenterLeft;
-            systemCenterCenter = spritesheet.textures.boxSolidCenterCenter;
-            systemCenterRight = spritesheet.textures.boxSolidCenterRight;
-            systemBottomLeft = spritesheet.textures.boxSolidBottomLeft;
-            systemBottomCenter = spritesheet.textures.boxSolidBottomCenter;
-            systemBottomRight = spritesheet.textures.boxSolidBottomRight;
+            if (system.borderEdges === "round") {
+              systemTopLeft = spritesheet.textures.boxRoundSolidTopLeft;
+              systemTopCenter = spritesheet.textures.boxRoundSolidTopCenter;
+              systemTopRight = spritesheet.textures.boxRoundSolidTopRight;
+              systemCenterLeft = spritesheet.textures.boxRoundSolidCenterLeft;
+              systemCenterCenter =
+                spritesheet.textures.boxRoundSolidCenterCenter;
+              systemCenterRight = spritesheet.textures.boxRoundSolidCenterRight;
+              systemBottomLeft = spritesheet.textures.boxRoundSolidBottomLeft;
+              systemBottomCenter =
+                spritesheet.textures.boxRoundSolidBottomCenter;
+              systemBottomRight = spritesheet.textures.boxRoundSolidBottomRight;
+            } /* straight */ else {
+              systemTopLeft = spritesheet.textures.boxSolidTopLeft;
+              systemTopCenter = spritesheet.textures.boxSolidTopCenter;
+              systemTopRight = spritesheet.textures.boxSolidTopRight;
+              systemCenterLeft = spritesheet.textures.boxSolidCenterLeft;
+              systemCenterCenter = spritesheet.textures.boxSolidCenterCenter;
+              systemCenterRight = spritesheet.textures.boxSolidCenterRight;
+              systemBottomLeft = spritesheet.textures.boxSolidBottomLeft;
+              systemBottomCenter = spritesheet.textures.boxSolidBottomCenter;
+              systemBottomRight = spritesheet.textures.boxSolidBottomRight;
+            }
           } else if (system.borderPattern === "dotted") {
-            systemTopLeft = spritesheet.textures.boxDottedTopLeft;
-            systemTopCenter = spritesheet.textures.boxDottedTopCenter;
-            systemTopRight = spritesheet.textures.boxDottedTopRight;
-            systemCenterLeft = spritesheet.textures.boxDottedCenterLeft;
-            systemCenterCenter = spritesheet.textures.boxDottedCenterCenter;
-            systemCenterRight = spritesheet.textures.boxDottedCenterRight;
-            systemBottomLeft = spritesheet.textures.boxDottedBottomLeft;
-            systemBottomCenter = spritesheet.textures.boxDottedBottomCenter;
-            systemBottomRight = spritesheet.textures.boxDottedBottomRight;
+            if (system.borderEdges === "round") {
+              systemTopLeft = spritesheet.textures.boxRoundDottedTopLeft;
+              systemTopCenter = spritesheet.textures.boxRoundDottedTopCenter;
+              systemTopRight = spritesheet.textures.boxRoundDottedTopRight;
+              systemCenterLeft = spritesheet.textures.boxRoundDottedCenterLeft;
+              systemCenterCenter =
+                spritesheet.textures.boxRoundDottedCenterCenter;
+              systemCenterRight =
+                spritesheet.textures.boxRoundDottedCenterRight;
+              systemBottomLeft = spritesheet.textures.boxRoundDottedBottomLeft;
+              systemBottomCenter =
+                spritesheet.textures.boxRoundDottedBottomCenter;
+              systemBottomRight =
+                spritesheet.textures.boxRoundDottedBottomRight;
+            } /* straight */ else {
+              systemTopLeft = spritesheet.textures.boxDottedTopLeft;
+              systemTopCenter = spritesheet.textures.boxDottedTopCenter;
+              systemTopRight = spritesheet.textures.boxDottedTopRight;
+              systemCenterLeft = spritesheet.textures.boxDottedCenterLeft;
+              systemCenterCenter = spritesheet.textures.boxDottedCenterCenter;
+              systemCenterRight = spritesheet.textures.boxDottedCenterRight;
+              systemBottomLeft = spritesheet.textures.boxDottedBottomLeft;
+              systemBottomCenter = spritesheet.textures.boxDottedBottomCenter;
+              systemBottomRight = spritesheet.textures.boxDottedBottomRight;
+            }
           } /* light */ else {
-            systemTopLeft = spritesheet.textures.boxTopLeft;
-            systemTopCenter = spritesheet.textures.boxTopCenter;
-            systemTopRight = spritesheet.textures.boxTopRight;
-            systemCenterLeft = spritesheet.textures.boxCenterLeft;
-            systemCenterCenter = spritesheet.textures.boxCenterCenter;
-            systemCenterRight = spritesheet.textures.boxCenterRight;
-            systemBottomLeft = spritesheet.textures.boxBottomLeft;
-            systemBottomCenter = spritesheet.textures.boxBottomCenter;
-            systemBottomRight = spritesheet.textures.boxBottomRight;
+            if (system.borderEdges === "round") {
+              systemTopLeft = spritesheet.textures.boxRoundTopLeft;
+              systemTopCenter = spritesheet.textures.boxRoundTopCenter;
+              systemTopRight = spritesheet.textures.boxRoundTopRight;
+              systemCenterLeft = spritesheet.textures.boxRoundCenterLeft;
+              systemCenterCenter = spritesheet.textures.boxRoundCenterCenter;
+              systemCenterRight = spritesheet.textures.boxRoundCenterRight;
+              systemBottomLeft = spritesheet.textures.boxRoundBottomLeft;
+              systemBottomCenter = spritesheet.textures.boxRoundBottomCenter;
+              systemBottomRight = spritesheet.textures.boxRoundBottomRight;
+            } /* straight */ else {
+              systemTopLeft = spritesheet.textures.boxTopLeft;
+              systemTopCenter = spritesheet.textures.boxTopCenter;
+              systemTopRight = spritesheet.textures.boxTopRight;
+              systemCenterLeft = spritesheet.textures.boxCenterLeft;
+              systemCenterCenter = spritesheet.textures.boxCenterCenter;
+              systemCenterRight = spritesheet.textures.boxCenterRight;
+              systemBottomLeft = spritesheet.textures.boxBottomLeft;
+              systemBottomCenter = spritesheet.textures.boxBottomCenter;
+              systemBottomRight = spritesheet.textures.boxBottomRight;
+            }
           }
 
           if (system.type === "list") {
@@ -459,45 +519,110 @@ function getObjectsToRender(): (Sprite | TaggedText)[] {
           let containerBottomRight;
 
           if (link.titleBorderPattern === "solid") {
-            containerTopLeft = spritesheet.textures.linkLabelSolidTopLeft;
-            containerTopCenter = spritesheet.textures.linkLabelSolidTopCenter;
-            containerTopRight = spritesheet.textures.linkLabelSolidTopRight;
-            containerCenterLeft = spritesheet.textures.linkLabelSolidCenterLeft;
-            containerCenterCenter =
-              spritesheet.textures.linkLabelSolidCenterCenter;
-            containerCenterRight =
-              spritesheet.textures.linkLabelSolidCenterRight;
-            containerBottomLeft = spritesheet.textures.linkLabelSolidBottomLeft;
-            containerBottomCenter =
-              spritesheet.textures.linkLabelSolidBottomCenter;
-            containerBottomRight =
-              spritesheet.textures.linkLabelSolidBottomRight;
+            if (link.titleBorderEdges === "round") {
+              containerTopLeft =
+                spritesheet.textures.linkLabelRoundSolidTopLeft;
+              containerTopCenter =
+                spritesheet.textures.linkLabelRoundSolidTopCenter;
+              containerTopRight =
+                spritesheet.textures.linkLabelRoundSolidTopRight;
+              containerCenterLeft =
+                spritesheet.textures.linkLabelRoundSolidCenterLeft;
+              containerCenterCenter =
+                spritesheet.textures.linkLabelRoundSolidCenterCenter;
+              containerCenterRight =
+                spritesheet.textures.linkLabelRoundSolidCenterRight;
+              containerBottomLeft =
+                spritesheet.textures.linkLabelRoundSolidBottomLeft;
+              containerBottomCenter =
+                spritesheet.textures.linkLabelRoundSolidBottomCenter;
+              containerBottomRight =
+                spritesheet.textures.linkLabelRoundSolidBottomRight;
+            } /* straight */ else {
+              containerTopLeft = spritesheet.textures.linkLabelSolidTopLeft;
+              containerTopCenter = spritesheet.textures.linkLabelSolidTopCenter;
+              containerTopRight = spritesheet.textures.linkLabelSolidTopRight;
+              containerCenterLeft =
+                spritesheet.textures.linkLabelSolidCenterLeft;
+              containerCenterCenter =
+                spritesheet.textures.linkLabelSolidCenterCenter;
+              containerCenterRight =
+                spritesheet.textures.linkLabelSolidCenterRight;
+              containerBottomLeft =
+                spritesheet.textures.linkLabelSolidBottomLeft;
+              containerBottomCenter =
+                spritesheet.textures.linkLabelSolidBottomCenter;
+              containerBottomRight =
+                spritesheet.textures.linkLabelSolidBottomRight;
+            }
           } else if (link.titleBorderPattern === "dotted") {
-            containerTopLeft = spritesheet.textures.linkLabelDottedTopLeft;
-            containerTopCenter = spritesheet.textures.linkLabelDottedTopCenter;
-            containerTopRight = spritesheet.textures.linkLabelDottedTopRight;
-            containerCenterLeft =
-              spritesheet.textures.linkLabelDottedCenterLeft;
-            containerCenterCenter =
-              spritesheet.textures.linkLabelDottedCenterCenter;
-            containerCenterRight =
-              spritesheet.textures.linkLabelDottedCenterRight;
-            containerBottomLeft =
-              spritesheet.textures.linkLabelDottedBottomLeft;
-            containerBottomCenter =
-              spritesheet.textures.linkLabelDottedBottomCenter;
-            containerBottomRight =
-              spritesheet.textures.linkLabelDottedBottomRight;
+            if (link.titleBorderEdges === "round") {
+              containerTopLeft =
+                spritesheet.textures.linkLabelRoundDottedTopLeft;
+              containerTopCenter =
+                spritesheet.textures.linkLabelRoundDottedTopCenter;
+              containerTopRight =
+                spritesheet.textures.linkLabelRoundDottedTopRight;
+              containerCenterLeft =
+                spritesheet.textures.linkLabelRoundDottedCenterLeft;
+              containerCenterCenter =
+                spritesheet.textures.linkLabelRoundDottedCenterCenter;
+              containerCenterRight =
+                spritesheet.textures.linkLabelRoundDottedCenterRight;
+              containerBottomLeft =
+                spritesheet.textures.linkLabelRoundDottedBottomLeft;
+              containerBottomCenter =
+                spritesheet.textures.linkLabelRoundDottedBottomCenter;
+              containerBottomRight =
+                spritesheet.textures.linkLabelRoundDottedBottomRight;
+            } /* straight */ else {
+              containerTopLeft = spritesheet.textures.linkLabelDottedTopLeft;
+              containerTopCenter =
+                spritesheet.textures.linkLabelDottedTopCenter;
+              containerTopRight = spritesheet.textures.linkLabelDottedTopRight;
+              containerCenterLeft =
+                spritesheet.textures.linkLabelDottedCenterLeft;
+              containerCenterCenter =
+                spritesheet.textures.linkLabelDottedCenterCenter;
+              containerCenterRight =
+                spritesheet.textures.linkLabelDottedCenterRight;
+              containerBottomLeft =
+                spritesheet.textures.linkLabelDottedBottomLeft;
+              containerBottomCenter =
+                spritesheet.textures.linkLabelDottedBottomCenter;
+              containerBottomRight =
+                spritesheet.textures.linkLabelDottedBottomRight;
+            }
           } /* light */ else {
-            containerTopLeft = spritesheet.textures.linkLabelTopLeft;
-            containerTopCenter = spritesheet.textures.linkLabelTopCenter;
-            containerTopRight = spritesheet.textures.linkLabelTopRight;
-            containerCenterLeft = spritesheet.textures.linkLabelCenterLeft;
-            containerCenterCenter = spritesheet.textures.linkLabelCenterCenter;
-            containerCenterRight = spritesheet.textures.linkLabelCenterRight;
-            containerBottomLeft = spritesheet.textures.linkLabelBottomLeft;
-            containerBottomCenter = spritesheet.textures.linkLabelBottomCenter;
-            containerBottomRight = spritesheet.textures.linkLabelBottomRight;
+            if (link.titleBorderEdges === "round") {
+              containerTopLeft = spritesheet.textures.linkLabelRoundTopLeft;
+              containerTopCenter = spritesheet.textures.linkLabelRoundTopCenter;
+              containerTopRight = spritesheet.textures.linkLabelRoundTopRight;
+              containerCenterLeft =
+                spritesheet.textures.linkLabelRoundCenterLeft;
+              containerCenterCenter =
+                spritesheet.textures.linkLabelRoundCenterCenter;
+              containerCenterRight =
+                spritesheet.textures.linkLabelRoundCenterRight;
+              containerBottomLeft =
+                spritesheet.textures.linkLabelRoundBottomLeft;
+              containerBottomCenter =
+                spritesheet.textures.linkLabelRoundBottomCenter;
+              containerBottomRight =
+                spritesheet.textures.linkLabelRoundBottomRight;
+            } /* straight */ else {
+              containerTopLeft = spritesheet.textures.linkLabelTopLeft;
+              containerTopCenter = spritesheet.textures.linkLabelTopCenter;
+              containerTopRight = spritesheet.textures.linkLabelTopRight;
+              containerCenterLeft = spritesheet.textures.linkLabelCenterLeft;
+              containerCenterCenter =
+                spritesheet.textures.linkLabelCenterCenter;
+              containerCenterRight = spritesheet.textures.linkLabelCenterRight;
+              containerBottomLeft = spritesheet.textures.linkLabelBottomLeft;
+              containerBottomCenter =
+                spritesheet.textures.linkLabelBottomCenter;
+              containerBottomRight = spritesheet.textures.linkLabelBottomRight;
+            }
           }
 
           if (direction === SimulatorDirectionType.TopLeft) {

@@ -65,6 +65,14 @@
         }
       ]
     },
+    "borderEdges": {
+      "description": "The edges style of the border of the system",
+      "allOf": [
+        {
+          "$ref": "definitions#/$defs/borderEdge"
+        }
+      ]
+    },
     "opacity": {
       "description": "The opacity of the system",
       "type": "number",

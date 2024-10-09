@@ -15,6 +15,11 @@
       "$id": "BorderPattern",
       "type": "string",
       "enum": ["light", "solid", "dotted"]
+    },
+    "borderEdge": {
+      "$id": "BorderEdge",
+      "type": "string",
+      "enum": ["round", "straight"]
     }
   }
 }
