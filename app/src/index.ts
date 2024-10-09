@@ -217,8 +217,8 @@ window.addEventListener("keydown", event => {
     switchOperation(selectOperation);
   }
 
-  // The user press "Esc" to cancel any ongoing operation.
   if (!event.ctrlKey) {
+    // The user press "Esc" to cancel any ongoing operation.
     if (event.key === "Escape" || event.key === "1") {
       switchOperation(selectOperation);
     } else if (event.key === "2") {
@@ -246,6 +246,10 @@ window.addEventListener("keydown", event => {
     } else {
       operation.onKeyDown(state, event);
     }
+  } else if (event.ctrlKey && event.key === "z") {
+    undo();
+  } else if (event.ctrlKey && event.key === "y") {
+    redo();
   } else {
     operation.onKeyDown(state, event);
   }
