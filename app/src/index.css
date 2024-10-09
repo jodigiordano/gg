@@ -35,6 +35,7 @@ body {
 #toolbox {
   padding: 0.5em;
   overflow-y: scroll;
+  scrollbar-width: none;
   background: var(--toolbox-background);
   display: flex;
   flex-direction: column;
