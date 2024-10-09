@@ -6,8 +6,6 @@ import azureSpritesheetAtlas from "@gg/icons/dist/azure.json";
 import azureSpritesheetUrl from "@gg/icons/dist/azure.png";
 import k8sSpritesheetAtlas from "@gg/icons/dist/k8s.json";
 import k8sSpritesheetUrl from "@gg/icons/dist/k8s.png";
-import devSpritesheetAtlas from "@gg/icons/dist/dev.json";
-import devSpritesheetUrl from "@gg/icons/dist/dev.png";
 import networkSpritesheetAtlas from "@gg/icons/dist/network.json";
 import networkSpritesheetUrl from "@gg/icons/dist/network.png";
 
@@ -53,10 +51,6 @@ function loadPage(): void {
     title.innerHTML = "Kubernetes icons pack";
 
     generatePage(k8sSpritesheetAtlas, k8sSpritesheetUrl);
-  } else if (urlParams.pack === "dev") {
-    title.innerHTML = "Dev icons pack";
-
-    generatePage(devSpritesheetAtlas, devSpritesheetUrl);
   } else if (urlParams.pack === "network") {
     title.innerHTML = "Network icons pack";
 
