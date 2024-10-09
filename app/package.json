@@ -21,7 +21,7 @@
     "prettier": "3.x",
     "typescript": "5.x",
     "vite": "5.x",
-    "vite-plugin-checker": "0.6.x",
+    "vite-plugin-checker": "0.8.x",
     "vite-plugin-sitemap": "0.7.x"
   },
   "dependencies": {

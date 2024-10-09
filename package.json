@@ -10,7 +10,7 @@
     "dev": "concurrently --kill-others --names core,app,server \"(cd core && npm run dev)\" \"(cd app && npm run dev)\" \"(cd server && npm run dev)\""
   },
   "devDependencies": {
-    "concurrently": "8.x"
+    "concurrently": "9.x"
   },
   "workspaces": [
     "icons",

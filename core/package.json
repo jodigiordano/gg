@@ -20,8 +20,8 @@
   "devDependencies": {
     "@tsconfig/strictest": "2.x",
     "@types/mocha": "10.x",
-    "@types/node": "20.x",
-    "json-schema-to-typescript": "14.x",
+    "@types/node": "22.x",
+    "json-schema-to-typescript": "15.x",
     "mocha": "10.x",
     "prettier": "3.x",
     "tsx": "4.x",
