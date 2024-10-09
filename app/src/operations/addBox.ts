@@ -8,6 +8,7 @@ import { tick } from "../renderer/pixi.js";
 import * as BorderProperty from "../properties/border.js";
 import * as TextAlignProperty from "../properties/textAlign.js";
 import * as TextFontProperty from "../properties/textFont.js";
+import * as OpacityProperty from "../properties/opacity.js";
 
 const placeholderVisual = new SystemSelector();
 const parentVisual = new SystemSelector();
@@ -79,6 +80,7 @@ const operation: Operation = {
     BorderProperty.show({ initial: "light" });
     TextAlignProperty.show({ initial: "left" });
     TextFontProperty.show({ initial: "text" });
+    OpacityProperty.show({ initial: 1 });
 
     onAdded(state);
   },
@@ -89,6 +91,7 @@ const operation: Operation = {
     BorderProperty.hide();
     TextAlignProperty.hide();
     TextFontProperty.hide();
+    OpacityProperty.hide();
 
     viewport.pause = false;
   },
@@ -127,6 +130,7 @@ const operation: Operation = {
         borderPattern: BorderProperty.value(),
         titleAlign: TextAlignProperty.value(),
         titleFont: TextFontProperty.value(),
+        opacity: OpacityProperty.value(),
       });
     }).then(() => {
       onAdded(state);

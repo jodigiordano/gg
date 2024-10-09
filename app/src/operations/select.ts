@@ -38,6 +38,7 @@ import * as LineMiddleProperty from "../properties/lineMiddle.js";
 import * as LineEndProperty from "../properties/lineEnd.js";
 import * as TextAlignProperty from "../properties/textAlign.js";
 import * as TextFontProperty from "../properties/textFont.js";
+import * as OpacityProperty from "../properties/opacity.js";
 import * as ActionsProperty from "../properties/actions.js";
 import * as Paint from "../properties/actionPaint.js";
 
@@ -458,6 +459,7 @@ function resetSingleSelection(): void {
   LineEndProperty.hide();
   TextAlignProperty.hide();
   TextFontProperty.hide();
+  OpacityProperty.hide();
   ActionsProperty.hide();
 }
 
@@ -749,6 +751,69 @@ function onColorChanged(state: State, value: string | undefined) {
   }
 }
 
+function onOpacityChange(state: State, value: number): void {
+  if (multiSelectVisual.selected.length) {
+    modifySpecification(() => {
+      for (const subsystem of multiSelectVisual.selected) {
+        subsystem.specification.opacity = value;
+
+        // TODO: recursively?
+        if (subsystem.type === "list") {
+          for (const ss of subsystem.systems) {
+            ss.specification.opacity = value;
+          }
+        }
+      }
+    }).then(() => {
+      onModified(state);
+      tick();
+    });
+
+    return;
+  }
+
+  if (oneSystemSelected) {
+    modifySpecification(() => {
+      oneSystemSelected!.specification.opacity = value;
+
+      // TODO: recursively?
+      if (oneSystemSelected!.type === "list") {
+        for (const ss of oneSystemSelected!.systems) {
+          ss.specification.opacity = value;
+        }
+      }
+    }).then(() => {
+      onModified(state);
+      tick();
+    });
+
+    return;
+  }
+
+  if (oneLinkTitleSelected) {
+    modifySpecification(() => {
+      oneLinkTitleSelected!.specification.titleOpacity = value;
+    }).then(() => {
+      onModified(state);
+      tick();
+    });
+
+    return;
+  }
+
+  if (oneLinkSelected) {
+    modifySpecification(() => {
+      oneLinkSelected!.specification.opacity = value;
+      oneLinkSelected!.specification.titleOpacity = value;
+    }).then(() => {
+      onModified(state);
+      tick();
+    });
+
+    return;
+  }
+}
+
 function setDuplicating(system: RuntimeSystem): void {
   systemToDuplicate = system;
 
@@ -937,6 +1002,19 @@ function onSelected(state: State): void {
       },
     });
 
+    const opacity = multiSelectVisual.selected.every(
+      ss => ss.opacity === multiSelectVisual.selected[0].opacity,
+    )
+      ? multiSelectVisual.selected[0].opacity
+      : undefined;
+
+    OpacityProperty.show({
+      initial: opacity,
+      onChange: value => {
+        onOpacityChange(state, value);
+      },
+    });
+
     ActionsProperty.show({
       onChange: value => {
         onAction(state, value);
@@ -977,6 +1055,13 @@ function onSelected(state: State): void {
       },
     });
 
+    OpacityProperty.show({
+      initial: oneSystemSelected.opacity,
+      onChange: value => {
+        onOpacityChange(state, value);
+      },
+    });
+
     ActionsProperty.show({
       onChange: value => {
         onAction(state, value);
@@ -1007,6 +1092,13 @@ function onSelected(state: State): void {
       initial: oneLinkTitleSelected.titleFont,
       onChange: value => {
         onTextFontChange(state, value);
+      },
+    });
+
+    OpacityProperty.show({
+      initial: oneLinkTitleSelected.titleOpacity,
+      onChange: value => {
+        onOpacityChange(state, value);
       },
     });
 
@@ -1062,6 +1154,13 @@ function onSelected(state: State): void {
             tick();
           });
         }
+      },
+    });
+
+    OpacityProperty.show({
+      initial: oneLinkSelected.opacity,
+      onChange: value => {
+        onOpacityChange(state, value);
       },
     });
 

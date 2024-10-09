@@ -143,6 +143,8 @@ function getObjectsToRender(): (Sprite | TaggedText)[] {
         const obj = layout[i]![j]![k]!;
 
         if (obj.type === SimulatorObjectType.System) {
+          const { system, blackbox, direction } = obj as SimulatorSubsystem;
+
           const sprite = new Sprite();
 
           sprite.zIndex = obj.zIndex;
@@ -150,8 +152,7 @@ function getObjectsToRender(): (Sprite | TaggedText)[] {
           sprite.y = (j - boundaries.translateY) * BlockSize;
           sprite.width = BlockSize;
           sprite.height = BlockSize;
-
-          const { system, blackbox, direction } = obj as SimulatorSubsystem;
+          sprite.alpha = system.opacity;
 
           let systemTopLeft;
           let systemTopCenter;
@@ -247,6 +248,9 @@ function getObjectsToRender(): (Sprite | TaggedText)[] {
         } else if (obj.type === SimulatorObjectType.Link) {
           const sprite = new Sprite();
 
+          const { direction, pathPosition, pathLength, link } =
+            obj as SimulatorLink;
+
           sprite.zIndex = obj.zIndex;
           sprite.x = (i - boundaries.translateX) * BlockSize + BlockSize / 2;
           sprite.y = (j - boundaries.translateY) * BlockSize + BlockSize / 2;
@@ -254,9 +258,7 @@ function getObjectsToRender(): (Sprite | TaggedText)[] {
           sprite.height = BlockSize;
           sprite.anchor.x = 0.5;
           sprite.anchor.y = 0.5;
-
-          const { direction, pathPosition, pathLength, link } =
-            obj as SimulatorLink;
+          sprite.alpha = link.opacity;
 
           if (link.backgroundColor) {
             sprite.tint = link.backgroundColor;
@@ -440,6 +442,8 @@ function getObjectsToRender(): (Sprite | TaggedText)[] {
           sprite.y = (j - boundaries.translateY) * BlockSize;
           sprite.width = BlockSize;
           sprite.height = BlockSize;
+          sprite.alpha = link.titleOpacity;
+
           sprite.tint =
             link.titleBackgroundColor ??
             defaultColors[state.theme].linkTitleBackground;
@@ -541,6 +545,7 @@ function getObjectsToRender(): (Sprite | TaggedText)[] {
           );
 
           title.zIndex = obj.zIndex;
+          title.alpha = system.opacity;
           title.x = (i - boundaries.translateX) * BlockSize;
           title.y =
             (j - boundaries.translateY) * BlockSize +
@@ -561,6 +566,7 @@ function getObjectsToRender(): (Sprite | TaggedText)[] {
           );
 
           title.zIndex = obj.zIndex;
+          title.alpha = link.titleOpacity;
           title.x = (i - boundaries.translateX) * BlockSize;
           title.y = (j - boundaries.translateY) * BlockSize;
 

@@ -26,6 +26,7 @@ import * as LineMiddleProperty from "../properties/lineMiddle.js";
 import * as LineEndProperty from "../properties/lineEnd.js";
 import * as TextAlignProperty from "../properties/textAlign.js";
 import * as TextFontProperty from "../properties/textFont.js";
+import * as OpacityProperty from "../properties/opacity.js";
 import * as ActionsProperty from "../properties/actions.js";
 import * as Paint from "../properties/actionPaint.js";
 import { BorderPattern } from "@gg/core";
@@ -273,6 +274,10 @@ function setNewLineProperties(): void {
     initial: LineEndProperty.value(),
   });
 
+  OpacityProperty.show({
+    initial: OpacityProperty.value(),
+  });
+
   ActionsProperty.show({
     actions: ["paint"],
     onChange: value => {
@@ -304,6 +309,7 @@ function resetSingleSelection(): void {
   LineEndProperty.hide();
   TextAlignProperty.hide();
   TextFontProperty.hide();
+  OpacityProperty.hide();
   ActionsProperty.hide();
 }
 
@@ -428,6 +434,31 @@ function onColorChanged(state: State, value: string | undefined) {
   }
 }
 
+function onOpacityChange(state: State, value: number): void {
+  if (linkTitleSelected) {
+    modifySpecification(() => {
+      linkTitleSelected!.specification.titleOpacity = value;
+    }).then(() => {
+      onModified(state);
+      tick();
+    });
+
+    return;
+  }
+
+  if (linkSelected) {
+    modifySpecification(() => {
+      linkSelected!.specification.opacity = value;
+      linkSelected!.specification.titleOpacity = value;
+    }).then(() => {
+      onModified(state);
+      tick();
+    });
+
+    return;
+  }
+}
+
 function onAction(state: State, value: ActionsProperty.SelectAction): void {
   if (linkTitleSelected) {
     if (value === "delete") {
@@ -491,6 +522,13 @@ function onSelected(state: State): void {
       },
     });
 
+    OpacityProperty.show({
+      initial: linkTitleSelected.titleOpacity,
+      onChange: value => {
+        onOpacityChange(state, value);
+      },
+    });
+
     ActionsProperty.show({
       actions: ["delete", "paint"],
       onChange: value => {
@@ -543,6 +581,13 @@ function onSelected(state: State): void {
             tick();
           });
         }
+      },
+    });
+
+    OpacityProperty.show({
+      initial: linkSelected.opacity,
+      onChange: value => {
+        onOpacityChange(state, value);
       },
     });
 
@@ -669,6 +714,8 @@ const operation: Operation = {
             middlePattern: LineMiddleProperty.value(),
             endPattern: LineEndProperty.value(),
             backgroundColor: Paint.value(),
+            opacity: OpacityProperty.value(),
+            titleOpacity: OpacityProperty.value(),
           });
         }).then(() => {
           onModified(state);

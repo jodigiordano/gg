@@ -8,6 +8,7 @@ import { tick } from "../renderer/pixi.js";
 import * as BorderProperty from "../properties/border.js";
 import * as TextAlignProperty from "../properties/textAlign.js";
 import * as TextFontProperty from "../properties/textFont.js";
+import * as OpacityProperty from "../properties/opacity.js";
 
 const placeholderVisual = new SystemSelector();
 const parentVisual = new SystemSelector();
@@ -50,15 +51,12 @@ const operation: Operation = {
     viewport.addChild(parentVisual);
   },
   onBegin: state => {
-    placeholderVisual.visible = true;
-    parentVisual.visible = false;
-
     BorderProperty.show({ initial: "light" });
     TextAlignProperty.show({ initial: "left" });
     TextFontProperty.show({ initial: "text" });
+    OpacityProperty.show({ initial: 1 });
 
-    viewport.pause = false;
-    onPointerMove(state);
+    onAdded(state);
   },
   onEnd: () => {
     placeholderVisual.visible = false;
@@ -67,6 +65,7 @@ const operation: Operation = {
     BorderProperty.hide();
     TextAlignProperty.hide();
     TextFontProperty.hide();
+    OpacityProperty.hide();
 
     viewport.pause = false;
   },
@@ -96,11 +95,20 @@ const operation: Operation = {
         borderPattern: BorderProperty.value(),
         titleAlign: TextAlignProperty.value(),
         titleFont: TextFontProperty.value(),
+        opacity: OpacityProperty.value(),
       });
 
-      addSubsystem(list, "box", 0, 0, "item 1");
-      addSubsystem(list, "box", 0, 10, "item 2");
-      addSubsystem(list, "box", 0, 20, "item 3");
+      addSubsystem(list, "box", 0, 0, "item 1", {
+        opacity: OpacityProperty.value(),
+      });
+
+      addSubsystem(list, "box", 0, 10, "item 2", {
+        opacity: OpacityProperty.value(),
+      });
+
+      addSubsystem(list, "box", 0, 20, "item 3", {
+        opacity: OpacityProperty.value(),
+      });
     }).then(() => {
       onAdded(state);
       tick();

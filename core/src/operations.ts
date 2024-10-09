@@ -32,6 +32,7 @@ export function addSubsystem(
     borderPattern?: BorderPattern;
     titleAlign?: TextAlign;
     titleFont?: TextFont;
+    opacity?: number;
   } = {},
 ): RuntimeSubsystem {
   const newSpecSystem: Subsystem = {
@@ -58,6 +59,10 @@ export function addSubsystem(
 
   if (options.titleFont) {
     newSpecSystem.titleFont = options.titleFont;
+  }
+
+  if (options.opacity) {
+    newSpecSystem.opacity = options.opacity;
   }
 
   parent.specification.systems ??= [];
@@ -188,10 +193,13 @@ export function addLink(
     titleBackgroundColor?: string;
     titleFont?: TextFont;
     titleAlign?: TextAlign;
+    titleBorderPattern?: BorderPattern;
+    titleOpacity?: number;
     backgroundColor?: string;
     startPattern?: PathEndingPattern;
     middlePattern?: PathPattern;
     endPattern?: PathEndingPattern;
+    opacity?: number;
     index?: number;
   } = {},
 ): Link {
@@ -232,6 +240,18 @@ export function addLink(
     newLink.endPattern = options.endPattern;
   }
 
+  if (options.titleBorderPattern) {
+    newLink.titleBorderPattern = options.titleBorderPattern;
+  }
+
+  if (options.titleOpacity) {
+    newLink.titleOpacity = options.titleOpacity;
+  }
+
+  if (options.opacity) {
+    newLink.opacity = options.opacity;
+  }
+
   system.specification.links ??= [];
 
   const index = Math.max(
@@ -265,9 +285,12 @@ export function moveLink(
     title: link.title,
     titleFont: link.titleFont,
     titleAlign: link.titleAlign,
+    titleBorderPattern: link.titleBorderPattern,
+    titleOpacity: link.titleOpacity,
     startPattern: link.startPattern,
     middlePattern: link.middlePattern,
     endPattern: link.endPattern,
+    opacity: link.opacity,
     index: link.index,
   };
 
@@ -919,6 +942,7 @@ function createPseudoSystem(systems: RuntimeSubsystem[]): RuntimeSubsystem {
     systems: [],
     links: [],
     borderPattern: "light",
+    opacity: 1,
   };
 }
 

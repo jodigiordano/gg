@@ -58,6 +58,18 @@
         }
       ]
     },
+    "titleOpacity": {
+      "description": "The opacity of the title",
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "opacity": {
+      "description": "The opacity of the link",
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
     "backgroundColor": {
       "type": "string",
       "description": "The background color of the link."

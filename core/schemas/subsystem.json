@@ -65,6 +65,12 @@
         }
       ]
     },
+    "opacity": {
+      "description": "The opacity of the system",
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
     "description": {
       "type": "string",
       "description": "The description of the sub-system, in markdown format."

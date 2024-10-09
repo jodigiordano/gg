@@ -110,10 +110,16 @@ function enhanceLinks(system: RuntimeSystem): void {
     // Set the title border.
     link.titleBorderPattern ??= "light";
 
+    // Set the title opacity.
+    link.titleOpacity ??= 1;
+
     // Set the patterns.
     link.startPattern ??= "none";
     link.middlePattern ??= "solid-line";
     link.endPattern ??= "solid-arrow";
+
+    // Set the opacity.
+    link.opacity ??= 1;
 
     // Set system A.
     link.systemA = getSubsystemById(system, link.a)!;

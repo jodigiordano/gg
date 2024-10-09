@@ -80,6 +80,18 @@ body {
     &.hidden {
       display: none;
     }
+
+    #property-opacity-33 {
+      svg {
+        opacity: 0.33;
+      }
+    }
+
+    #property-opacity-66 {
+      svg {
+        opacity: 0.66;
+      }
+    }
   }
 
   /*  Push the camera operations at the end of the container. */

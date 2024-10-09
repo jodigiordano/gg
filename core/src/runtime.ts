@@ -35,9 +35,12 @@ export interface RuntimeLink extends Link {
   titleSize: RuntimeSize;
   titleFont: TextFont;
   titleAlign: TextAlign;
+  titleBorderPattern: BorderPattern;
+  titleOpacity: number;
   startPattern: PathEndingPattern;
   endPattern: PathEndingPattern;
   middlePattern: PathPattern;
+  opacity: number;
   systemA: RuntimeSubsystem;
   systemB: RuntimeSubsystem;
 }
@@ -60,6 +63,7 @@ export interface RuntimeSubsystem extends Subsystem {
   borderPattern: BorderPattern;
   padding: RuntimeMargin;
   margin: RuntimeMargin;
+  opacity: number;
 }
 
 export interface RuntimeSystem extends System {
@@ -76,4 +80,5 @@ export interface RuntimeSystem extends System {
   depth: 0;
   padding: RuntimeMargin;
   margin: RuntimeMargin;
+  opacity: 1;
 }

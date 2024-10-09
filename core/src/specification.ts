@@ -72,6 +72,10 @@ export interface Subsystem {
    */
   borderPattern?: BorderPattern;
   /**
+   * The opacity of the system
+   */
+  opacity?: number;
+  /**
    * The description of the sub-system, in markdown format.
    */
   description?: string;
@@ -138,6 +142,14 @@ export interface Link {
    * The pattern of the border of the title
    */
   titleBorderPattern?: BorderPattern;
+  /**
+   * The opacity of the title
+   */
+  titleOpacity?: number;
+  /**
+   * The opacity of the link
+   */
+  opacity?: number;
   /**
    * The background color of the link.
    */
@@ -244,6 +256,18 @@ const schemas = [
             $ref: "definitions#/$defs/borderPattern",
           },
         ],
+      },
+      titleOpacity: {
+        description: "The opacity of the title",
+        type: "number",
+        minimum: 0,
+        maximum: 1,
+      },
+      opacity: {
+        description: "The opacity of the link",
+        type: "number",
+        minimum: 0,
+        maximum: 1,
       },
       backgroundColor: {
         type: "string",
@@ -364,6 +388,12 @@ const schemas = [
             $ref: "definitions#/$defs/borderPattern",
           },
         ],
+      },
+      opacity: {
+        description: "The opacity of the system",
+        type: "number",
+        minimum: 0,
+        maximum: 1,
       },
       description: {
         type: "string",
