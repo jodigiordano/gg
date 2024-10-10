@@ -15,8 +15,6 @@ import azureSpritesheetAtlas from "@gg/icons/dist/azure.json";
 import azureSpritesheetUrl from "@gg/icons/dist/azure.png";
 import k8sSpritesheetAtlas from "@gg/icons/dist/k8s.json";
 import k8sSpritesheetUrl from "@gg/icons/dist/k8s.png";
-import devSpritesheetAtlas from "@gg/icons/dist/dev.json";
-import devSpritesheetUrl from "@gg/icons/dist/dev.png";
 import networkSpritesheetAtlas from "@gg/icons/dist/network.json";
 import networkSpritesheetUrl from "@gg/icons/dist/network.png";
 
@@ -47,7 +45,6 @@ const toLoad: { name: string; url: string; data: Record<string, unknown> }[] = [
   { name: "icons-gcp", url: gcpSpritesheetUrl, data: {} },
   { name: "icons-azure", url: azureSpritesheetUrl, data: {} },
   { name: "icons-k8s", url: k8sSpritesheetUrl, data: {} },
-  { name: "icons-dev", url: devSpritesheetUrl, data: {} },
   { name: "icons-network", url: networkSpritesheetUrl, data: {} },
 ];
 
@@ -83,7 +80,6 @@ const packs: { name: string; atlas: Record<string, Icon> }[] = [
   { name: "icons-gcp", atlas: gcpSpritesheetAtlas },
   { name: "icons-azure", atlas: azureSpritesheetAtlas },
   { name: "icons-k8s", atlas: k8sSpritesheetAtlas },
-  { name: "icons-dev", atlas: devSpritesheetAtlas },
   { name: "icons-network", atlas: networkSpritesheetAtlas },
 ];
 
