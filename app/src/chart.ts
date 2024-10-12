@@ -7,7 +7,7 @@ const params = getUrlParams();
 document
   .getElementById("operation-goto-editor")
   ?.addEventListener("click", function () {
-    window.location.href = `/${window.location.hash}`;
+    window.location.href = `/editor.html${window.location.hash}`;
   });
 
 // Preview the chart.
@@ -52,7 +52,7 @@ fetch(`/api/charts/${params.id}`)
       previewImg.src = `/api/charts/${chart.id}.png`;
 
       previewImg.addEventListener("click", function () {
-        window.location.href = `/${window.location.hash}`;
+        window.location.href = `/editor.html${window.location.hash}`;
       });
 
       // Set the title.

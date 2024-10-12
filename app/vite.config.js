@@ -82,7 +82,8 @@ export default ({ mode }) => {
         ],
         changefreq: "weekly",
         priority: {
-          "/editor": 1.0,
+          "/index": 1.0,
+          "/editor": 0.95,
           "/plus": 0.9,
           "/sign-in": 0.8,
           "/terms": 0.7,
@@ -99,7 +100,8 @@ export default ({ mode }) => {
       assetsInlineLimit: 1024 * 25, // 25kb.
       rollupOptions: {
         input: {
-          editor: "./src/index.html",
+          index: "./src/index.html",
+          editor: "./src/editor.html",
           viewer: "./src/viewer.html",
           signIn: "./src/sign-in.html",
           plus: "./src/plus.html",

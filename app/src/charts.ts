@@ -66,7 +66,7 @@ fetch("/api/charts")
         const nameDiv = chartDiv.querySelector(".name") as HTMLDivElement;
 
         nameDiv.addEventListener("click", function () {
-          window.location.href = `/#id=${chart.id}`;
+          window.location.href = `/editor.html#id=${chart.id}`;
         });
 
         nameDiv.innerHTML = sanitizeHtml(chart.title ?? "New chart");
@@ -79,7 +79,7 @@ fetch("/api/charts")
         previewImg.src = `/api/charts/${chart.id}.png`;
 
         previewImg.addEventListener("click", function () {
-          window.location.href = `/#id=${chart.id}`;
+          window.location.href = `/editor.html#id=${chart.id}`;
         });
 
         // Set the "delete" operation.
@@ -138,7 +138,7 @@ function createChart(): void {
       if (response.ok) {
         const chart = await response.json();
 
-        window.location.href = `/#id=${chart.id}`;
+        window.location.href = `/editor.html#id=${chart.id}`;
       } else {
         showOperationFailed("Could not create a chart.");
       }

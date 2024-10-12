@@ -81,7 +81,7 @@ export async function onAuthenticationSuccessful(
 
   setAuthenticationCookie(user.id, res);
 
-  res.redirect(originUrl ?? "/");
+  res.redirect(originUrl ?? "/editor.html");
 }
 
 async function createStripeResources(user: User): Promise<void> {

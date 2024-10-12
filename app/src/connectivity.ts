@@ -98,7 +98,7 @@ export function setConnectivity(
             if (response.ok) {
               const chart = await response.json();
 
-              window.location.href = `/#id=${chart.id}`;
+              window.location.href = `/editor.html#id=${chart.id}`;
 
               connectivityStatus.close();
             } else {

@@ -93,7 +93,7 @@ document
 document
   .getElementById("operation-goto-editor")
   ?.addEventListener("click", function () {
-    window.location.href = `/${window.location.hash}`;
+    window.location.href = `/editor.html${window.location.hash}`;
   });
 
 //
