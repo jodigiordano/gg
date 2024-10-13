@@ -8,14 +8,14 @@
   font-family: JetBrains Mono;
   font-style: normal;
   font-weight: 400;
-  src: url("../public/jetbrains-regular.woff2") format("woff2");
+  src: url("./public/jetbrains-regular.woff2") format("woff2");
 }
 
 @font-face {
   font-family: Arimo Regular;
   font-style: normal;
   font-weight: 400;
-  src: url("../public/arimo-regular.woff2") format("woff2");
+  src: url("./public/arimo-regular.woff2") format("woff2");
 }
 
 /* Constants */
