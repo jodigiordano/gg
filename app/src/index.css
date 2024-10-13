@@ -266,7 +266,7 @@ mark-blue {
       .content-left {
         img {
           max-width: 100%;
-          box-shadow: -10px 20px 20px grey;
+          box-shadow: -5px 5px 25px gray;
         }
       }
 
