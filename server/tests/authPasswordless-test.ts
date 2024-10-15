@@ -84,7 +84,7 @@ describe("/api/sign-in/passwordless", function () {
       await request(server)
         .get(`/api/sign-in/passwordless/verify?token=${token}`)
         .expect(302)
-        .expect("Location", "/");
+        .expect("Location", "/editor.html");
     });
   });
 });

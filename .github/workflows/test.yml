@@ -21,6 +21,7 @@ jobs:
       - name: Compile
         run: |
           npm ci
+          cp app/.env.template app/.env.staging
           ENV=staging npm run compile
 
   test-core:
@@ -65,9 +66,17 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version-file: .nvmrc
+      - name: Prepare database
+        run: |
+          cd infra
+          npm run test:provision:db:init
+      - name: Compile core
+        run: |
+          cd core
+          npm ci
+          npm run compile
       - name: Test
         run: |
           cd server
           npm ci
-          npm run test:db:setup
           npm run ci:test

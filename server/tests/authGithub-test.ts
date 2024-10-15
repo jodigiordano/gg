@@ -55,7 +55,7 @@ describe("/api/sign-in/github", function () {
       await request(server)
         .get(`/api/sign-in/github/callback?state=${state}`)
         .expect(302)
-        .expect("Location", "/");
+        .expect("Location", "/editor.html");
     });
 
     it("302 - provider error", async function () {

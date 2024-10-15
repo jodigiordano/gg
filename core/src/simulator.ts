@@ -965,14 +965,8 @@ export class SystemSimulator {
   }
 
   private drawLinks(system: RuntimeSystem, finderGrid: PathFinderGrid): void {
-    // Links with titles are drawn first, as the titles are placed on the grid
-    // and other links must avoid going through them.
-    const sortedLinks = system.links
-      .slice(0)
-      .sort((a, b) => b.title.length - a.title.length);
-
-    for (let linkIndex = 0; linkIndex < sortedLinks.length; linkIndex++) {
-      const link = sortedLinks[linkIndex]!;
+    for (let linkIndex = 0; linkIndex < system.links.length; linkIndex++) {
+      const link = system.links[linkIndex]!;
 
       const subsystemA = this.gridSystems[link.a]!;
       const subsystemB = this.gridSystems[link.b]!;
