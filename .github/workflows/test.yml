@@ -65,9 +65,13 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version-file: .nvmrc
+      - name: Prepare database
+        run: |
+          cd infra
+          npm ci
+          npm run test:provision:db:init
       - name: Test
         run: |
           cd server
           npm ci
-          npm run test:db:setup
           npm run ci:test
