@@ -80,7 +80,7 @@ const operation: Operation = {
   onBegin: state => {
     BorderProperty.show({ initial: "light" });
     BorderEdgesProperty.show({ initial: "straight" });
-    TextAlignProperty.show({ initial: "left" });
+    TextAlignProperty.show({ initial: "center" });
     TextFontProperty.show({ initial: "text" });
     OpacityProperty.show({ initial: 1 });
 

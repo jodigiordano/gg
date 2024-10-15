@@ -36,7 +36,7 @@ export function initSystem(
   system.titleFont ??= "text";
 
   // Set the title alignment.
-  system.titleAlign ??= "left";
+  system.titleAlign ??= "center";
 
   // Set the depth.
   system.depth = depth;
