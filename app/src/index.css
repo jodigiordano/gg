@@ -73,7 +73,10 @@ body {
   background-size: 24px 24px;
 }
 
-a, a:visited, a:hover, a:active {
+a,
+a:visited,
+a:hover,
+a:active {
   color: inherit;
 }
 
@@ -101,7 +104,8 @@ button {
       background: #2358ad;
     }
 
-    &:active, &:pressed {
+    &:active,
+    &:pressed {
       background: #2358ad;
     }
   }
@@ -119,7 +123,8 @@ button {
       background: #3a86ff;
     }
 
-    &:active, &:pressed {
+    &:active,
+    &:pressed {
       background: #2358ad;
     }
   }
