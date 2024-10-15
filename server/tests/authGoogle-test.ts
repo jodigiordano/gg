@@ -48,7 +48,7 @@ describe("/api/sign-in/google", function () {
       await request(server)
         .get(`/api/sign-in/google/callback?state=${state}`)
         .expect(302)
-        .expect("Location", "/");
+        .expect("Location", "/editor.html");
     });
 
     it("302 - provider error", async function () {
