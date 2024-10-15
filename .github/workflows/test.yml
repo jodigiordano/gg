@@ -21,6 +21,7 @@ jobs:
       - name: Compile
         run: |
           npm ci
+          cp app/.env.template app/.env.staging
           ENV=staging npm run compile
 
   test-core:
