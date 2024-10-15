@@ -7,7 +7,7 @@ const router = express.Router();
 router.get(
   "/authorizationUrl",
   function (req: express.Request, res: express.Response) {
-    const originUrl = req.query["origin"] ?? "/";
+    const originUrl = req.query["origin"] ?? "/editor.html";
 
     const session = jwt.sign({}, process.env["SIGNING_PRIVATE_KEY"]!, {
       expiresIn: 30 * 60, // 30 minutes
