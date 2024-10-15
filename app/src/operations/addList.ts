@@ -54,7 +54,7 @@ const operation: Operation = {
   onBegin: state => {
     BorderProperty.show({ initial: "light" });
     BorderEdgesProperty.show({ initial: "straight" });
-    TextAlignProperty.show({ initial: "left" });
+    TextAlignProperty.show({ initial: "center" });
     TextFontProperty.show({ initial: "text" });
     OpacityProperty.show({ initial: 1 });
 
@@ -104,14 +104,17 @@ const operation: Operation = {
 
       addSubsystem(list, "box", 0, 0, "item 1", {
         opacity: OpacityProperty.value(),
+        titleAlign: "left",
       });
 
       addSubsystem(list, "box", 0, 10, "item 2", {
         opacity: OpacityProperty.value(),
+        titleAlign: "left",
       });
 
       addSubsystem(list, "box", 0, 20, "item 3", {
         opacity: OpacityProperty.value(),
+        titleAlign: "left",
       });
     }).then(() => {
       onAdded(state);

@@ -62,5 +62,5 @@ export function hide(): void {
 }
 
 export function value(): TextAlign {
-  return textAlign ?? "left";
+  return textAlign ?? "center";
 }

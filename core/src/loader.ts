@@ -98,7 +98,7 @@ function enhanceLinks(system: RuntimeSystem): void {
     link.titleFont ??= "text";
 
     // Set the title alignment.
-    link.titleAlign ??= "left";
+    link.titleAlign ??= "center";
 
     // Set the title position.
     // This property is set later on by the simulator.
