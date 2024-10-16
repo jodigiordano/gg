@@ -38,6 +38,8 @@ export function sanitizeTitle(rawTitle: string): string {
     .join("\\n");
 }
 
+// FIXME: this is legacy stuff. calculating the title length is
+// way more complex now.
 export function getTitleLength(title: string): RuntimeSize {
   const titleLengths =
     title === "" ? [] : title.split("\\n").map(line => line.length);
