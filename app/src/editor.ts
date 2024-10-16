@@ -975,17 +975,19 @@ fetch("/api/profile")
     let toHide = "authenticated";
 
     if (response.ok) {
-      toShow = "authenticated";
-      toHide = "unauthenticated";
-
       const profile = await response.json();
 
-      state.profile.authenticated = true;
-      state.profile.readOnly = profile.readOnly;
+      if (profile.id) {
+        toShow = "authenticated";
+        toHide = "unauthenticated";
 
-      setConnectivity(
-        profile.readOnly ? "read-only" : isLocalFile() ? "local-file" : "ok",
-      );
+        state.profile.authenticated = true;
+        state.profile.readOnly = profile.readOnly;
+
+        setConnectivity(
+          profile.readOnly ? "read-only" : isLocalFile() ? "local-file" : "ok",
+        );
+      }
     }
 
     for (const button of document.querySelectorAll(`#header .${toShow}`)) {

@@ -48,7 +48,7 @@ describe("/api/subscription", function () {
     });
 
     it("401", async function () {
-      request(server).get("/api/subscription").expect(401);
+      await request(server).get("/api/subscription").expect(401);
     });
 
     it("404 - no subscription in db", async function () {
@@ -123,7 +123,7 @@ describe("/api/subscription", function () {
     });
 
     it("401", async function () {
-      request(server).post("/api/subscription/reactivate").expect(401);
+      await request(server).post("/api/subscription/reactivate").expect(401);
     });
 
     it("422 - no current customer", async function () {

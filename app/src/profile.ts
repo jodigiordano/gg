@@ -23,21 +23,28 @@ const confirmIdentity = document.getElementById(
 // Load profile.
 //
 
+function setIdentity(email: string | null) {
+  if (email) {
+    identity.innerHTML = sanitizeHtml(email);
+    confirmIdentity.innerHTML = sanitizeHtml(email);
+  } else {
+    identity.innerHTML = "Anonymous (not authenticated)";
+    confirmIdentity.innerHTML = "Anonymous (not authenticated)";
+  }
+}
+
 fetch("/api/profile")
   .then(async response => {
     if (response.ok) {
       const profile = await response.json();
 
-      identity.innerHTML = sanitizeHtml(profile.email);
-      confirmIdentity.innerHTML = sanitizeHtml(profile.email);
+      setIdentity(profile.email);
     } else {
-      identity.innerHTML = "Anonymous (not authenticated)";
-      confirmIdentity.innerHTML = "Anonymous (not authenticated)";
+      setIdentity(null);
     }
   })
   .catch(() => {
-    identity.innerHTML = "Anonymous (not authenticated)";
-    confirmIdentity.innerHTML = "Anonymous (not authenticated)";
+    setIdentity(null);
   });
 
 //
