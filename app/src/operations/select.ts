@@ -98,6 +98,11 @@ const parentSystemSelectVisual = new SystemSelector();
 let systemToDuplicate: RuntimeSystem | null = null;
 
 //
+// Whether the pointer is in the canvas or not.
+//
+let inCanvas: boolean = true;
+
+//
 // Handlers.
 //
 
@@ -152,7 +157,14 @@ function onPointerMove(state: State) {
     const deltaY = state.y - multiPickedUpAt.y;
 
     for (const subsystem of multiSelectVisual.selected) {
-      multiMovingVisual.setSystemPosition(subsystem, { x: deltaX, y: deltaY });
+      if (inCanvas) {
+        multiMovingVisual.setSystemPosition(subsystem, {
+          x: deltaX,
+          y: deltaY,
+        });
+      } else {
+        multiMovingVisual.setSystemPosition(subsystem, { x: 1, y: 1 });
+      }
     }
 
     // Show hovering another system (container).
@@ -1847,8 +1859,12 @@ const operation: Operation = {
       tick();
     }
   },
-  onPointerEnter: () => {},
-  onPointerLeave: () => {},
+  onPointerEnter: () => {
+    inCanvas = true;
+  },
+  onPointerLeave: () => {
+    inCanvas = false;
+  },
 };
 
 export default operation;
