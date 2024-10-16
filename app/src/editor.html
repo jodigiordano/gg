@@ -18,39 +18,79 @@
       <div class="dropdown">
         <button>file</button>
         <ul class="content closed">
-          <li id="operation-file-new">new chart</li>
+          <li id="operation-file-new">
+            <inline-svg>icon-file-new</inline-svg>
+            new chart
+          </li>
           <a href="/charts.html" class="authenticated hidden">
-            <li>open from cloud</li>
+            <li>
+              <inline-svg>icon-file-load-cloud</inline-svg>
+              open from cloud
+            </li>
           </a>
           <li id="operation-file-save-to-cloud" class="authenticated hidden">
+            <inline-svg>icon-file-save-cloud</inline-svg>
             save to cloud
           </li>
           <li class="separator authenticated hidden"></li>
-          <li id="operation-file-open-from-disk">open from disk</li>
-          <li id="operation-file-save-to-disk">save to disk</li>
+          <li id="operation-file-open-from-disk">
+            <inline-svg>icon-file-load-disk</inline-svg>
+            open from disk
+          </li>
+          <li id="operation-file-save-to-disk">
+            <inline-svg>icon-file-save-disk</inline-svg>
+            save to disk
+          </li>
           <li class="separator"></li>
-          <li id="operation-export-png">export to PNG</li>
+          <li id="operation-export-png">
+            <inline-svg>icon-export-png</inline-svg>
+            export to PNG
+          </li>
         </ul>
       </div>
       <div class="dropdown">
         <button>view</button>
         <ul class="content closed">
-          <li id="operation-file-properties-open">chart properties</li>
-          <li id="operation-goto-viewer">presentation mode</li>
-          <li id="operation-json-editor-open">json editor</li>
-          <li id="operation-theme">switch theme</li>
+          <li id="operation-file-properties-open">
+            <inline-svg>icon-properties</inline-svg>
+            chart properties
+          </li>
+          <li id="operation-goto-viewer">
+            <inline-svg>icon-viewer</inline-svg>
+            presentation mode
+          </li>
+          <li id="operation-json-editor-open">
+            <inline-svg>icon-json-editor</inline-svg>
+            json editor
+          </li>
+          <li id="operation-theme">
+            <inline-svg>icon-theme</inline-svg>
+            switch theme
+          </li>
         </ul>
       </div>
       <div class="dropdown">
         <button>help</button>
         <ul class="content closed">
-          <li id="operation-help-guide">guide</li>
+          <li id="operation-help-guide">
+            <inline-svg>icon-documentation</inline-svg>
+            documentation
+          </li>
           <a href="/">
-            <li>about</li>
+            <li>
+              <inline-svg>icon-about</inline-svg>
+              about
+            </li>
           </a>
-          <li id="operation-help-privacy">privacy</li>
+          <li id="operation-help-privacy">
+            <inline-svg>icon-privacy</inline-svg>
+            privacy
+          </li>
           <a href="https://github.com/jodigiordano/gg" target="_blank">
-            <li>github</li>
+            <li>
+              <inline-svg>icon-github</inline-svg>
+              github
+            </li>
           </a>
         </ul>
       </div>
@@ -73,9 +113,15 @@
           <button>me</button>
           <ul class="content closed open-left">
             <a href="/profile.html">
-              <li>profile</li>
+              <li>
+                <inline-svg>icon-profile</inline-svg>
+                profile
+              </li>
             </a>
-            <li id="operation-sign-out">sign out</li>
+            <li id="operation-sign-out">
+              <inline-svg>icon-sign-out</inline-svg>
+              sign out
+            </li>
           </ul>
         </div>
       </div>
@@ -352,7 +398,7 @@
     </dialog>
     <dialog id="guide">
       <div class="content">
-        <h1>Guide</h1>
+        <h1>Documentation</h1>
         <p>
           In gg, you add
           <b>boxes</b> <inline-svg>icon-box</inline-svg> and <b>lists</b>
