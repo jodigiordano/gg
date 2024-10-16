@@ -38,6 +38,12 @@ rsync \
   --chown=www-data:www-data \
   $SSH_ENDPOINT:/var/www/gg/server/.env
 
+echo Upgrading puppeteer...
+
+ssh $SSH_ENDPOINT "cd /var/www/gg/server && sudo npx puppeteer browsers install"
+ssh $SSH_ENDPOINT "sudo chown -R www-data:www-data /var/www/gg/server/.cache"
+
+
 echo Restarting server...
 
 ssh $SSH_ENDPOINT "sudo service gg@3000 restart"
