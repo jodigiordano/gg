@@ -2,7 +2,15 @@ export function initializeDropdowns() {
   const dropdowns = document.querySelectorAll(".dropdown");
 
   for (const dropdown of dropdowns) {
-    dropdown.querySelector("button")!.addEventListener("click", function () {
+    const button = dropdown.querySelector("button")!;
+
+    button.addEventListener("click", function () {
+      if (button.classList.contains("pressed")) {
+        button.classList.remove("pressed");
+      } else {
+        button.classList.add("pressed");
+      }
+
       const content = dropdown.querySelector(".content")!;
 
       if (content.classList.contains("closed")) {
@@ -21,6 +29,8 @@ export function initializeDropdowns() {
       const button = dropdown.querySelector("button")!;
 
       if (event.target && !button.isSameNode(event.target as Node)) {
+        button.classList.remove("pressed");
+
         const content = dropdown.querySelector(".content")!;
 
         content.classList.add("closed");
