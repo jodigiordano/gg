@@ -48,6 +48,9 @@ fetch(`/api/charts/${params.id}`)
       // Parse the JSON response.
       chart = await response.json();
 
+      // Set the document title.
+      document.title = chart.title ?? "Chart properties";
+
       // Set the preview.
       previewImg.src = `/api/charts/${chart.id}.png`;
 

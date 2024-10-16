@@ -301,6 +301,7 @@ document
 
     operation.onEnd(state);
     pushChange(json);
+    setDocumentTitle(json);
 
     save(json)
       .then(() => setConnectivity(isLocalFile() ? "local-file" : "ok"))
@@ -503,6 +504,7 @@ async function newFile(): Promise<void> {
   resetState();
   switchOperation(selectOperation);
   setJsonEditorValue(json);
+  setDocumentTitle(json);
 
   await loadSimulation(json);
 
@@ -735,6 +737,7 @@ chartTitle.addEventListener("change", function () {
   const newSpecification = JSON.stringify(currentSpecification, null, 2);
 
   setJsonEditorValue(newSpecification);
+  setDocumentTitle(newSpecification);
 
   pushChange(newSpecification);
 
@@ -761,6 +764,7 @@ function undo(): void {
     const json = state.changes[state.changeIndex];
 
     setJsonEditorValue(json);
+    setDocumentTitle(json);
 
     loadSimulation(json)
       .then(() => {
@@ -788,6 +792,7 @@ function redo(): void {
     const json = state.changes[state.changeIndex];
 
     setJsonEditorValue(json);
+    setDocumentTitle(json);
 
     loadSimulation(json)
       .then(() => {
@@ -1031,6 +1036,7 @@ async function loadSaveData(options: {
   }
 
   setJsonEditorValue(json);
+  setDocumentTitle(json);
 
   try {
     await loadSimulation(json);
@@ -1088,4 +1094,8 @@ function updateStatePosition(x: number, y: number): void {
     coordinates.y >= 0
       ? Math.floor(coordinates.y / BlockSize)
       : -Math.ceil(Math.abs(coordinates.y / BlockSize));
+}
+
+function setDocumentTitle(specification: string): void {
+  document.title = specification.match(/"title": "(.+?)"/i)?.at(1) ?? "Editor";
 }

@@ -36,22 +36,27 @@ function loadPage(): void {
   );
 
   if (urlParams.pack === "aws") {
+    document.title = "Icons - AWS";
     title.innerHTML = "AWS icons pack";
 
     generatePage(awsSpritesheetAtlas, awsSpritesheetUrl);
   } else if (urlParams.pack === "gcp") {
+    document.title = "Icons - GCP";
     title.innerHTML = "GCP icons pack";
 
     generatePage(gcpSpritesheetAtlas, gcpSpritesheetUrl);
   } else if (urlParams.pack === "azure") {
+    document.title = "Icons - Azure";
     title.innerHTML = "Azure icons pack";
 
     generatePage(azureSpritesheetAtlas, azureSpritesheetUrl);
   } else if (urlParams.pack === "k8s") {
+    document.title = "Icons - Kubernetes";
     title.innerHTML = "Kubernetes icons pack";
 
     generatePage(k8sSpritesheetAtlas, k8sSpritesheetUrl);
   } else if (urlParams.pack === "network") {
+    document.title = "Icons - Network";
     title.innerHTML = "Network icons pack";
 
     generatePage(networkSpritesheetAtlas, networkSpritesheetUrl);
