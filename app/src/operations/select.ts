@@ -1021,12 +1021,18 @@ function onSelected(state: State): void {
       ? multiSelectVisual.selected[0].borderPattern
       : undefined;
 
-    BorderProperty.show({
-      initial: border,
-      onChange: value => {
-        onBorderPatternChange(state, value);
-      },
-    });
+    const inList = multiSelectVisual.selected.every(
+      ss => ss.parent?.type === "list",
+    );
+
+    if (!inList) {
+      BorderProperty.show({
+        initial: border,
+        onChange: value => {
+          onBorderPatternChange(state, value);
+        },
+      });
+    }
 
     const borderEdges = multiSelectVisual.selected.every(
       ss => ss.borderEdges === multiSelectVisual.selected[0].borderEdges,
@@ -1099,12 +1105,14 @@ function onSelected(state: State): void {
   }
 
   if (oneSystemSelected) {
-    BorderProperty.show({
-      initial: oneSystemSelected.borderPattern,
-      onChange: value => {
-        onBorderPatternChange(state, value);
-      },
-    });
+    if (oneSystemSelected.parent?.type !== "list") {
+      BorderProperty.show({
+        initial: oneSystemSelected.borderPattern,
+        onChange: value => {
+          onBorderPatternChange(state, value);
+        },
+      });
+    }
 
     BorderEdgesProperty.show({
       initial: oneSystemSelected.borderEdges,
