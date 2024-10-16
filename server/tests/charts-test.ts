@@ -51,7 +51,7 @@ describe("/api/charts", function () {
     });
 
     it("401", async function () {
-      request(server).get("/api/charts").expect(401);
+      await request(server).get("/api/charts").expect(401);
     });
   });
 
@@ -96,7 +96,7 @@ describe("/api/charts", function () {
     });
 
     it("401", async function () {
-      request(server).post("/api/charts").expect(401);
+      await request(server).post("/api/charts").expect(401);
     });
 
     it("422", async function () {
@@ -204,7 +204,7 @@ describe("/api/charts", function () {
     });
 
     it("401", async function () {
-      request(server).get(`/api/charts/${chart}`).expect(401);
+      await request(server).get(`/api/charts/${chart.id}`).expect(401);
     });
 
     it("403", async function () {
@@ -265,7 +265,7 @@ describe("/api/charts", function () {
     });
 
     it("401", async function () {
-      request(server).get(`/api/charts/${chart}.png`).expect(401);
+      await request(server).get(`/api/charts/${chart.id}.png`).expect(401);
     });
 
     it("403", async function () {
@@ -493,7 +493,7 @@ describe("/api/charts", function () {
     });
 
     it("401", async function () {
-      request(server).delete(`/api/charts/${chart}`).expect(401);
+      await request(server).delete(`/api/charts/${chart}`).expect(401);
     });
 
     it("402", async function () {

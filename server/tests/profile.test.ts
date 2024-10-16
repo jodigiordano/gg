@@ -16,17 +16,31 @@ describe("/api/profile", function () {
   });
 
   describe("GET /", function () {
-    it("200", async function () {
+    it("200 - authenticated", async function () {
       const user = await createUser();
 
-      await request(server)
+      await setUserStripeSubscription(user.id, "foo", "active");
+
+      const response = await request(server)
         .get("/api/profile")
         .set("Cookie", [generateAuthenticationCookie(user.id)])
         .expect(200);
+
+      assert.deepEqual(response.body, {
+        id: user.id,
+        email: user.email,
+        readOnly: false,
+      });
     });
 
-    it("401", async function () {
-      request(server).get("/api/profile").expect(401);
+    it("200 - anonymous", async function () {
+      const response = await request(server).get("/api/profile").expect(200);
+
+      assert.deepEqual(response.body, {
+        id: null,
+        email: null,
+        readOnly: false,
+      });
     });
   });
 
@@ -67,7 +81,7 @@ describe("/api/profile", function () {
     });
 
     it("401", async function () {
-      request(server).post("/api/profile").expect(401);
+      await request(server).post("/api/profile/close").expect(401);
     });
 
     it("422", async function () {

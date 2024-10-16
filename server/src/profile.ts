@@ -7,19 +7,38 @@ import {
   unsetAuthenticationCookie,
 } from "./authentication.js";
 import { cancelSubscription } from "./stripe.js";
-import { deleteUser } from "./db.js";
+import { deleteUser, User } from "./db.js";
 
 const router = express.Router();
 
 router.get("/", async function (req: express.Request, res: express.Response) {
-  const user = await authenticateUser(req);
+  let user: User | null = null;
 
-  setAuthenticationCookie(user.id, res);
+  try {
+    user = await authenticateUser(req);
 
+    setAuthenticationCookie(user.id, res);
+  } catch (error) {
+    if (!(error instanceof HttpError) || error.code !== 401) {
+      throw error;
+    }
+  }
+
+  if (user) {
+    res.status(200).json({
+      id: user.id,
+      email: user.email,
+      readOnly: isReadOnlyMode(user),
+    });
+
+    return;
+  }
+
+  // Anonymous user.
   res.status(200).json({
-    id: user.id,
-    email: user.email,
-    readOnly: isReadOnlyMode(user),
+    id: null,
+    email: null,
+    readOnly: false,
   });
 });
 
