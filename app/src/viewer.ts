@@ -161,6 +161,10 @@ try {
   // Start the simulation.
   await loadSimulation(json);
 
+  // Set the document title.
+  document.title = json.match(/"title": "(.+?)"/i)?.at(1) ?? "Presentation";
+
+  // Resize the canvas.
   resizeCanvas();
 
   // Remove the loading banner.
