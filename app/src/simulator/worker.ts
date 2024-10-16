@@ -12,6 +12,7 @@ onmessage = function (event) {
         operation: event.data.operation,
         success: false,
         errors: [(error as Error).message],
+        warnings: [],
       });
 
       return;
@@ -49,6 +50,8 @@ onmessage = function (event) {
       operation: event.data.operation,
       success: true,
       simulator,
+      errors: [],
+      warnings: [],
     });
   }
 };
