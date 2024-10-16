@@ -41,6 +41,7 @@ const toLoad: { name: string; url: string; data: Record<string, unknown> }[] = [
     url: "jetbrains-bold.woff2",
     data: { family: "code-bold" },
   },
+  { name: "emoji", url: "twemoji.ttf", data: { family: "emoji" } },
   { name: "icons-aws", url: awsSpritesheetDataUrl, data: {} },
   { name: "icons-gcp", url: gcpSpritesheetUrl, data: {} },
   { name: "icons-azure", url: azureSpritesheetUrl, data: {} },
