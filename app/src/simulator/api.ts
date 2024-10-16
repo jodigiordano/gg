@@ -736,7 +736,9 @@ const textBaseConfiguration: Record<string, Record<string, unknown>> = {
   default: {
     /* defined per font but key needed for regex */
   },
-  __EMOJI__: {},
+  __EMOJI__: {
+    fontFamily: "emoji",
+  },
   h1: {
     /* defined per font but key needed for regex */
   },

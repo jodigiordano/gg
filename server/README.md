@@ -14,14 +14,8 @@ cp .env.example .env
 npm ci
 ```
 
-4. Create the database
+4. Start the server
 
-```
-npm run db:setup
-```
-
-5. Start the server
-
-```
+```sh
 npm run dev
 ```
