@@ -780,14 +780,19 @@ const operation: Operation = {
 
       if (b && b.id !== createLinkSystemA.id) {
         modifySpecification(() => {
-          addLink(state.simulator.getSystem(), createLinkSystemA!.id, b!.id, {
-            startPattern: LineStartProperty.value(),
-            middlePattern: LineMiddleProperty.value(),
-            endPattern: LineEndProperty.value(),
-            backgroundColor: Paint.value(),
-            opacity: OpacityProperty.value(),
-            titleOpacity: OpacityProperty.value(),
-          });
+          linkSelected = addLink(
+            state.simulator.getSystem(),
+            createLinkSystemA!.id,
+            b!.id,
+            {
+              startPattern: LineStartProperty.value(),
+              middlePattern: LineMiddleProperty.value(),
+              endPattern: LineEndProperty.value(),
+              backgroundColor: Paint.value(),
+              opacity: OpacityProperty.value(),
+              titleOpacity: OpacityProperty.value(),
+            },
+          );
         }).then(() => {
           onModified(state);
           tick();

@@ -17,6 +17,7 @@ import {
   BorderEdge,
 } from "./specification.js";
 import { computeSystemSize, getRootSystem, initSystem } from "./system.js";
+import { initLink } from "./link.js";
 
 /*
  * Insert a subsystem in the given parent system.
@@ -209,7 +210,7 @@ export function addLink(
     opacity?: number;
     index?: number;
   } = {},
-): Link {
+): RuntimeLink {
   const newLink: Link = {
     a: aId,
     b: bId,
@@ -275,7 +276,13 @@ export function addLink(
 
   system.specification.links.splice(index, 0, structuredClone(newLink));
 
-  return newLink;
+  const newRuntimeLink = structuredClone(newLink) as RuntimeLink;
+
+  system.links.push(newRuntimeLink);
+
+  initLink(newRuntimeLink, newLink, system, index);
+
+  return newRuntimeLink;
 }
 
 /*
