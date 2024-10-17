@@ -861,6 +861,9 @@ function onTitleChanged(
         size.height,
       );
     }).then(() => {
+      oneLinkTitleSelected = oneLinkSelected;
+      oneLinkSelected = null;
+
       onModified(state);
       tick();
     });
@@ -1967,8 +1970,19 @@ const operation: Operation = {
   onPointerLeave: () => {
     inCanvas = false;
   },
-  onDoubleTap: state => {
+  onPointerDoublePress: state => {
     onAction(state, "set-title");
+  },
+  onEvent: (state, event) => {
+    if (event.type === "system-added") {
+      oneSystemSelected = getSubsystemById(
+        state.simulator.getSystem(),
+        event.detail,
+      );
+
+      onSelected(state);
+      onPointerMove(state);
+    }
   },
 };
 

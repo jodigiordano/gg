@@ -2,7 +2,7 @@ import { RuntimeSystem, RuntimeSubsystem, RuntimeLink } from "./runtime.js";
 import { System } from "./specification.js";
 import { validate, ValidationError, ValidationWarning } from "./validations.js";
 import { computeSystemSize, initSystem } from "./system.js";
-import { getTitleLength, sanitizeTitle, getSubsystemById } from "./helpers.js";
+import { initLink } from "./link.js";
 
 export function load(system: System): {
   system: RuntimeSystem;
@@ -82,53 +82,7 @@ function enhanceSubsystems(
 
 function enhanceLinks(system: RuntimeSystem): void {
   for (const [index, link] of system.links.entries()) {
-    // Set the specification.
-    link.specification = system.specification.links!.at(index)!;
-
-    // Set array position in the system.
-    link.index = index;
-
-    // Set the title.
-    link.title = sanitizeTitle(link.title ?? "");
-
-    // Set the title size.
-    link.titleSize ??= getTitleLength(link.title);
-
-    // Set the title font.
-    link.titleFont ??= "text";
-
-    // Set the title alignment.
-    link.titleAlign ??= "center";
-
-    // Set the title position.
-    // This property is set later on by the simulator.
-    link.titlePosition = {
-      x: 0,
-      y: 0,
-    };
-
-    // Set the title border.
-    link.titleBorderPattern ??= "light";
-
-    // Set the title border edges.
-    link.titleBorderEdges ??= "straight";
-
-    // Set the title opacity.
-    link.titleOpacity ??= 1;
-
-    // Set the patterns.
-    link.startPattern ??= "none";
-    link.middlePattern ??= "solid-line";
-    link.endPattern ??= "solid-arrow";
-
-    // Set the opacity.
-    link.opacity ??= 1;
-
-    // Set system A.
-    link.systemA = getSubsystemById(system, link.a)!;
-
-    // Set system B.
-    link.systemB = getSubsystemById(system, link.b)!;
+    initLink(link, system.specification.links!.at(index)!, system, index);
   }
 }
 
