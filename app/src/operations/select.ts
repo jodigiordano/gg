@@ -1403,6 +1403,7 @@ const operation: Operation = {
   },
   onPointerDown: state => {
     viewport.pause = true;
+    inCanvas = true;
 
     //
     // Duplicate one or many systems - Stage 2.
