@@ -9,9 +9,7 @@ import {
   TextStyleFill,
   Rectangle as PixiRectangle,
 } from "pixi.js";
-import TaggedText from "./TaggedText.js";
 import { complement, flatEvery } from "./functionalUtils.js";
-import { logWarning } from "./errorMessaging.js";
 
 ///// GENERAL PURPOSE
 
@@ -50,15 +48,6 @@ export type FontMap = Record<string, FontProperty>;
 
 export type SplitStyle = "words" | "characters";
 
-export type ErrorMessageType = "warning" | "error";
-export interface ErrorMessage {
-  type: ErrorMessageType;
-  code: string;
-  message: string;
-  target?: TaggedText;
-}
-export type ErrorHandler = (e: ErrorMessage) => void;
-
 export interface IFontMetrics {
   ascent: number;
   descent: number;
@@ -75,8 +64,6 @@ export interface TaggedTextOptions {
   skipUpdates?: boolean;
   skipDraw?: boolean;
   drawWhitespace?: boolean;
-  errorHandler?: ErrorHandler;
-  supressConsole?: boolean;
   overdrawDecorations?: number;
 }
 
@@ -89,7 +76,6 @@ export const DEFAULT_KEY = "default";
 
 export enum MeasurementUnit {
   default = "px",
-  // eslint-disable-next-line @typescript-eslint/no-duplicate-enum-values
   px = "px",
   em = "em",
   rem = "rem",
@@ -394,14 +380,6 @@ export const measurementValueToComponents = (
       return { value: parseFloat(input), unit: DEFAULT_MEASUREMENT_UNIT };
     }
   }
-
-  // TOOD: hook into errorHandler
-  logWarning()(
-    "invalid-units",
-    `${input} is not a valid measurement value. Please use one of the following units: ${Object.keys(
-      MeasurementUnit,
-    ).join(", ")}`,
-  );
 
   return { value: NaN, unit: MeasurementUnit.unknown };
 };

@@ -38,7 +38,6 @@ import {
 import { calculateTokens, getBoundsNested } from "./layout.js";
 import { capitalize } from "./stringUtil.js";
 import { fontSizeStringToNumber } from "./pixiUtils.js";
-import { logWarning as _logWarning } from "./errorMessaging.js";
 
 import DEFAULT_STYLE from "./defaultStyle.js";
 import { MIPMAP_MODES, SCALE_MODES } from "pixi.js";
@@ -71,8 +70,6 @@ const DEFAULT_OPTIONS: TaggedTextOptions = {
   skipUpdates: false,
   skipDraw: false,
   drawWhitespace: false,
-  errorHandler: undefined,
-  supressConsole: false,
   overdrawDecorations: 0,
 };
 
@@ -218,7 +215,7 @@ export default class TaggedText extends Sprite {
     // Override some settings on default styles.
     if (tag === DEFAULT_KEY && this.defaultStyle[IMG_REFERENCE_PROPERTY]) {
       // prevents accidentally setting all text to images.
-      this.logWarning(
+      console.warn(
         `${IMG_REFERENCE_PROPERTY}-on-default`,
         `Style "${IMG_REFERENCE_PROPERTY}" can not be set on the "${DEFAULT_KEY}" style because it will add images to EVERY tag!`,
       );
@@ -312,13 +309,6 @@ export default class TaggedText extends Sprite {
   public get debugContainer(): Container {
     return this._debugContainer;
   }
-
-  private logWarning = (code: string, message: string): void =>
-    _logWarning(
-      this.options.errorHandler,
-      this.options.supressConsole,
-      this,
-    )(code, message);
 
   constructor(
     text = "",
@@ -463,7 +453,7 @@ export default class TaggedText extends Sprite {
 
     // Pre-process text.
     // Parse tags in the text.
-    const tagTokensNew = parseTagsNew(this.text, this.logWarning);
+    const tagTokensNew = parseTagsNew(this.text);
     // Assign styles to each segment.
     const styledTokens = mapTagsToStyles(
       tagTokensNew,
@@ -583,7 +573,7 @@ export default class TaggedText extends Sprite {
         color = "0x" + color.substring(1);
         color = parseInt(color, 16) as number;
       } else {
-        this.logWarning(
+        console.warn(
           "invalid-color",
           "Sorry, at this point, only hex colors are supported for textDecorations like underlines. Please use either a hex number like 0x66FF33 or a string like '#66FF33'",
         );

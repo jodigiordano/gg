@@ -1,4 +1,3 @@
-import { logWarning } from "./errorMessaging.js";
 import {
   TagMatchData,
   AttributesList,
@@ -9,8 +8,6 @@ import {
   isEmptyObject,
 } from "./types.js";
 import emojiRegex from "./emojiRegex.js";
-
-const defaultLogWarning = logWarning();
 
 // Regex to match defined tags.
 let fullTagRegex = new RegExp("", "g");
@@ -176,7 +173,6 @@ export const tagMatchToTagToken = (tag: TagMatchData): TagToken => {
 export const createTokensNew = (
   segments: string[],
   tags: TagMatchData[],
-  logWarningFunction = defaultLogWarning,
 ): (TagToken | TextToken)[] => {
   const rootTokens: CompositeToken<TagToken | TextToken> = { children: [] };
   if (segments[0] !== "") {
@@ -208,7 +204,7 @@ export const createTokensNew = (
     }
   }
   if (tokenStack.length > 1) {
-    logWarningFunction(
+    console.warn(
       "unclosed-tags",
       `Found ${tokenStack.length - 1} unclosed tags in\n${tokenStack
         .map(token => token.tag)
@@ -226,7 +222,6 @@ export const containsEmoji = (input: string): boolean => emojiRegex.test(input);
  */
 export const parseTagsNew = (
   input: string,
-  logWarningFunction = defaultLogWarning,
 ): CompositeToken<TagToken | TextToken> => {
   if (containsEmoji(input)) {
     input = wrapEmoji(input);
@@ -245,7 +240,7 @@ export const parseTagsNew = (
 
   const segments = extractSegments(input, tagMatches);
 
-  const tokens = createTokensNew(segments, tagMatches, logWarningFunction);
+  const tokens = createTokensNew(segments, tagMatches);
 
   return { children: tokens };
 };
