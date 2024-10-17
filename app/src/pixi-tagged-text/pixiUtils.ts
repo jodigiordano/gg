@@ -1,4 +1,4 @@
-import { Sprite, TextMetrics, Text, DisplayObject, Container } from "pixi.js";
+import { Sprite, TextMetrics, Text } from "pixi.js";
 import { IFontMetrics } from "./types.js";
 
 const PX_PER_EM = 16;
@@ -37,11 +37,6 @@ export const getFontPropertiesOfText = (
     return measureFont(textField.context);
   }
 };
-
-export const addChildrenToContainer = (
-  children: DisplayObject[],
-  container: Container,
-): void => children.forEach(child => container.addChild(child));
 
 export const cloneSprite = (sprite: Sprite): Sprite => {
   const clone = new Sprite(sprite.texture);
