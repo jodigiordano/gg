@@ -1,4 +1,4 @@
-import { addSubsystem, RuntimeSize } from "@gg/core";
+import { addSubsystem, RuntimeSize, RuntimeSubsystem } from "@gg/core";
 import SystemSelector from "../renderer/systemSelector.js";
 import { State } from "../state.js";
 import { modifySpecification } from "../simulator/api.js";
@@ -93,8 +93,10 @@ const operation: Operation = {
     x -= Math.floor(SystemMinSize.width / 2);
     y -= Math.floor(SystemMinSize.height / 2);
 
+    let newSystem: RuntimeSubsystem;
+
     modifySpecification(() => {
-      const list = addSubsystem(parent, "list", x, y, "List", {
+      newSystem = addSubsystem(parent, "list", x, y, "List", {
         borderPattern: BorderProperty.value(),
         borderEdges: BorderEdgesProperty.value(),
         titleAlign: TextAlignProperty.value(),
@@ -102,22 +104,29 @@ const operation: Operation = {
         opacity: OpacityProperty.value(),
       });
 
-      addSubsystem(list, "box", 0, 0, "item 1", {
+      addSubsystem(newSystem, "box", 0, 0, "item 1", {
         opacity: OpacityProperty.value(),
         titleAlign: "left",
       });
 
-      addSubsystem(list, "box", 0, 10, "item 2", {
+      addSubsystem(newSystem, "box", 0, 10, "item 2", {
         opacity: OpacityProperty.value(),
         titleAlign: "left",
       });
 
-      addSubsystem(list, "box", 0, 20, "item 3", {
+      addSubsystem(newSystem, "box", 0, 20, "item 3", {
         opacity: OpacityProperty.value(),
         titleAlign: "left",
       });
-    }).then(() => {
-      onAdded(state);
+    }).then(success => {
+      if (success && newSystem) {
+        const event = new CustomEvent("system-added", { detail: newSystem.id });
+
+        window.dispatchEvent(event);
+      } else {
+        onAdded(state);
+      }
+
       tick();
     });
   },
@@ -137,7 +146,8 @@ const operation: Operation = {
     placeholderVisual.visible = false;
     parentVisual.visible = false;
   },
-  onDoubleTap: () => {},
+  onPointerDoublePress: () => {},
+  onEvent: () => {},
 };
 
 export default operation;

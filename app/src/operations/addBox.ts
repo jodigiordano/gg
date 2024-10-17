@@ -128,16 +128,25 @@ const operation: Operation = {
     x -= Math.floor(SystemMinSize.width / 2);
     y -= Math.floor(SystemMinSize.height / 2);
 
+    let newSystem: RuntimeSubsystem;
+
     modifySpecification(() => {
-      addSubsystem(parent, "box", x, y, "", {
+      newSystem = addSubsystem(parent, "box", x, y, "", {
         borderPattern: BorderProperty.value(),
         borderEdges: BorderEdgesProperty.value(),
         titleAlign: TextAlignProperty.value(),
         titleFont: TextFontProperty.value(),
         opacity: OpacityProperty.value(),
       });
-    }).then(() => {
-      onAdded(state);
+    }).then(success => {
+      if (success && newSystem) {
+        const event = new CustomEvent("system-added", { detail: newSystem.id });
+
+        window.dispatchEvent(event);
+      } else {
+        onAdded(state);
+      }
+
       tick();
     });
   },
@@ -157,7 +166,8 @@ const operation: Operation = {
     placeholderVisual.visible = false;
     parentVisual.visible = false;
   },
-  onDoubleTap: () => {},
+  onPointerDoublePress: () => {},
+  onEvent: () => {},
 };
 
 export default operation;

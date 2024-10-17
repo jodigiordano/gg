@@ -954,7 +954,11 @@ export function calculateTextSizeForSubsystem(
 }
 
 // Modifies the specification transactionally.
-export async function modifySpecification(modifier: () => void): Promise<void> {
+export async function modifySpecification(
+  modifier: () => void,
+): Promise<boolean> {
+  let success = true;
+
   const system = state.simulator.getSystem();
 
   // Make a copy of the specification.
@@ -976,9 +980,13 @@ export async function modifySpecification(modifier: () => void): Promise<void> {
       .then(() => setConnectivity(getUrlParams().file ? "local-file" : "ok"))
       .catch(() => setConnectivity("save-failed"));
   } catch {
+    success = false;
+
     // Rollback if the new configuration is invalid.
     await loadSimulation(currentSpecification);
   }
+
+  return success;
 }
 
 // Fit the simulation in the viewport.

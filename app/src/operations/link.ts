@@ -845,9 +845,10 @@ const operation: Operation = {
   onKeyDown: () => {},
   onPointerEnter: () => {},
   onPointerLeave: () => {},
-  onDoubleTap: state => {
+  onPointerDoublePress: state => {
     onAction(state, "set-title");
   },
+  onEvent: () => {},
 };
 
 export default operation;

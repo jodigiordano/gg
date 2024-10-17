@@ -81,7 +81,7 @@ canvasContainer.addEventListener("pointermove", event => {
 });
 
 canvasContainer.addEventListener("dblclick", () => {
-  operation.onDoubleTap(state);
+  operation.onPointerDoublePress(state);
 });
 
 // The user press the pointer in the canvas.
@@ -175,6 +175,13 @@ canvasContainer.addEventListener("pointerleave", event => {
 
   operation.onPointerLeave(state);
   tick();
+});
+
+// The user adds a box, list, etc.
+window.addEventListener("system-added", event => {
+  switchOperation(selectOperation);
+
+  selectOperation.onEvent(state, event as CustomEvent);
 });
 
 // Resize the container when the window is resized.
