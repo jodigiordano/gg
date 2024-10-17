@@ -11,6 +11,7 @@ const operation: Operation = {
   onKeyDown: () => {},
   onPointerEnter: () => {},
   onPointerLeave: () => {},
+  onDoubleTap: () => {},
 };
 
 export default operation;

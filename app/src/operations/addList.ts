@@ -137,6 +137,7 @@ const operation: Operation = {
     placeholderVisual.visible = false;
     parentVisual.visible = false;
   },
+  onDoubleTap: () => {},
 };
 
 export default operation;

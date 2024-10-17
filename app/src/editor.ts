@@ -12,7 +12,6 @@ import { redrawGrid, setGridTheme, setGridVisible } from "./renderer/grid.js";
 import Operation from "./operation.js";
 import addBoxOperation from "./operations/addBox.js";
 import addListOperation from "./operations/addList.js";
-import setTitleOperation from "./operations/setTitle.js";
 import selectOperation from "./operations/select.js";
 import panOperation from "./operations/pan.js";
 import linkOperation from "./operations/link.js";
@@ -81,10 +80,9 @@ canvasContainer.addEventListener("pointermove", event => {
   tick();
 });
 
-// https://github.com/pixijs/pixijs/issues/5910
-//canvasContainer.addEventListener("click", event => {
-//console.log(event.detail);
-//});
+canvasContainer.addEventListener("dblclick", () => {
+  operation.onDoubleTap(state);
+});
 
 // The user press the pointer in the canvas.
 canvasContainer.addEventListener("pointerdown", event => {
@@ -223,16 +221,14 @@ window.addEventListener("keydown", event => {
       switchOperation(selectOperation);
     } else if (event.key === "2") {
       switchOperation(eraseOperation);
-    } else if (event.key === "q") {
+    } else if (event.key === "3") {
       switchOperation(addBoxOperation);
-    } else if (event.key === "a") {
-      switchOperation(setTitleOperation);
-    } else if (event.key === "w") {
+    } else if (event.key === "4") {
       switchOperation(linkOperation);
-    } else if (event.key === "s") {
-      switchOperation(paintOperation);
-    } else if (event.key === "z") {
+    } else if (event.key === "5") {
       switchOperation(addListOperation);
+    } else if (event.key === "6") {
+      switchOperation(paintOperation);
     } else if (event.key === "[") {
       undo();
     } else if (event.key === "]") {
@@ -874,7 +870,6 @@ document
 // Initialize operations.
 addBoxOperation.setup(state);
 addListOperation.setup(state);
-setTitleOperation.setup(state);
 selectOperation.setup(state);
 panOperation.setup(state);
 linkOperation.setup(state);
@@ -911,8 +906,6 @@ for (const button of singleChoiceButtons) {
       operation = eraseOperation;
     } else if (button.id === "operation-debug") {
       operation = debugOperation;
-    } else if (button.id === "operation-set-title") {
-      operation = setTitleOperation;
     } else if (button.id === "operation-set-color") {
       operation = paintOperation;
     } else {

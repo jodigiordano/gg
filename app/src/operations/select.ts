@@ -43,6 +43,7 @@ import * as TextFontProperty from "../properties/textFont.js";
 import * as OpacityProperty from "../properties/opacity.js";
 import * as ActionsProperty from "../properties/actions.js";
 import * as Paint from "../properties/actionPaint.js";
+import * as SetTitle from "../properties/actionSetTitle.js";
 
 //
 // Select & move multiple systems.
@@ -801,6 +802,73 @@ function onColorChanged(state: State, value: string | undefined) {
   }
 }
 
+function onTitleChanged(
+  state: State,
+  value: string,
+  font: TextFont,
+  align: TextAlign,
+) {
+  if (oneSystemSelected) {
+    modifySpecification(() => {
+      const size = calculateTextSizeForSubsystem(value, font, align);
+
+      setSubsystemTitle(
+        oneSystemSelected!,
+        value.replace(/\n/g, "\\n"),
+        font,
+        align,
+        size.width,
+        size.height,
+      );
+    }).then(() => {
+      onModified(state);
+      tick();
+    });
+
+    return;
+  }
+
+  if (oneLinkTitleSelected) {
+    modifySpecification(() => {
+      const size = calculateTextSizeForLinkTitle(value, font, align);
+
+      setLinkTitle(
+        oneLinkTitleSelected!,
+        value.replace(/\n/g, "\\n"),
+        font,
+        align,
+        size.width,
+        size.height,
+      );
+    }).then(() => {
+      onModified(state);
+      tick();
+    });
+
+    return;
+  }
+
+  if (oneLinkSelected) {
+    modifySpecification(() => {
+      const size = calculateTextSizeForLinkTitle(value, font, align);
+
+      setLinkTitle(
+        oneLinkSelected!,
+        value.replace(/\n/g, "\\n"),
+        font,
+        align,
+        size.width,
+        size.height,
+      );
+    }).then(() => {
+      onModified(state);
+      tick();
+    });
+
+    return;
+  }
+}
+
 function onOpacityChange(state: State, value: number): void {
   if (multiSelectVisual.selected.length) {
     modifySpecification(() => {
@@ -967,6 +1035,15 @@ function onAction(state: State, value: ActionsProperty.SelectAction): void {
           onColorChanged(state, value);
         },
       });
+    } else if (value === "set-title") {
+      SetTitle.open({
+        value: oneSystemSelected.title,
+        font: oneSystemSelected.titleFont,
+        align: oneSystemSelected.titleAlign,
+        onChange: (value, font, align) => {
+          onTitleChanged(state, value, font, align);
+        },
+      });
     }
 
     return;
@@ -986,6 +1063,15 @@ function onAction(state: State, value: ActionsProperty.SelectAction): void {
           onColorChanged(state, value);
         },
       });
+    } else if (value === "set-title") {
+      SetTitle.open({
+        value: oneLinkTitleSelected.title,
+        font: oneLinkTitleSelected.titleFont,
+        align: oneLinkTitleSelected.titleAlign,
+        onChange: (value, font, align) => {
+          onTitleChanged(state, value, font, align);
+        },
+      });
     }
 
     return;
@@ -1003,6 +1089,15 @@ function onAction(state: State, value: ActionsProperty.SelectAction): void {
       Paint.choose({
         onChange: value => {
           onColorChanged(state, value);
+        },
+      });
+    } else if (value === "set-title") {
+      SetTitle.open({
+        value: oneLinkSelected.title,
+        font: oneLinkSelected.titleFont,
+        align: oneLinkSelected.titleAlign,
+        onChange: (value, font, align) => {
+          onTitleChanged(state, value, font, align);
         },
       });
     }
@@ -1188,7 +1283,7 @@ function onSelected(state: State): void {
     });
 
     ActionsProperty.show({
-      actions: ["delete", "paint"],
+      actions: ["delete", "paint", "set-title"],
       onChange: value => {
         onAction(state, value);
       },
@@ -1250,7 +1345,7 @@ function onSelected(state: State): void {
     });
 
     ActionsProperty.show({
-      actions: ["delete", "paint"],
+      actions: ["delete", "paint", "set-title"],
       onChange: value => {
         onAction(state, value);
       },
@@ -1870,6 +1965,9 @@ const operation: Operation = {
   },
   onPointerLeave: () => {
     inCanvas = false;
+  },
+  onDoubleTap: state => {
+    onAction(state, "set-title");
   },
 };
 
