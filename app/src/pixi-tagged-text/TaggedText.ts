@@ -28,7 +28,7 @@ import {
   DEFAULT_KEY,
 } from "./types.js";
 
-import { parseTagsNew, removeTags, EMOJI_TAG } from "./tags.js";
+import { parseTagsNew, removeTags } from "./tags.js";
 import {
   combineAllStyles,
   convertUnsupportedAlignment,
@@ -71,7 +71,6 @@ const DEFAULT_OPTIONS: TaggedTextOptions = {
   skipUpdates: false,
   skipDraw: false,
   drawWhitespace: false,
-  wrapEmoji: true,
   errorHandler: undefined,
   supressConsole: false,
   overdrawDecorations: 0,
@@ -342,14 +341,6 @@ export default class TaggedText extends Sprite {
 
     tagStyles = { default: {}, ...tagStyles };
 
-    if (this.options.wrapEmoji) {
-      const userStyles = tagStyles[EMOJI_TAG];
-      tagStyles[EMOJI_TAG] = {
-        fontFamily: "sans-serif",
-        ...userStyles,
-      };
-    }
-
     const mergedDefaultStyles = { ...DEFAULT_STYLE, ...tagStyles.default };
 
     tagStyles.default = mergedDefaultStyles;
@@ -472,11 +463,7 @@ export default class TaggedText extends Sprite {
 
     // Pre-process text.
     // Parse tags in the text.
-    const tagTokensNew = parseTagsNew(
-      this.text,
-      this.options.wrapEmoji,
-      this.logWarning,
-    );
+    const tagTokensNew = parseTagsNew(this.text, this.logWarning);
     // Assign styles to each segment.
     const styledTokens = mapTagsToStyles(
       tagTokensNew,

@@ -45,7 +45,7 @@ export function setFullTagRegex(tagNamesToMatch: string[]): void {
   fullTagRegex = new RegExp(pattern, "g");
 }
 
-export const EMOJI_TAG = "__EMOJI__";
+const EMOJI_TAG = "__EMOJI__";
 
 /**
  * Takes a string of attributes and returns an object with key value pairs for each attribute.
@@ -228,10 +228,9 @@ export const containsEmoji = (input: string): boolean => emojiRegex.test(input);
  */
 export const parseTagsNew = (
   input: string,
-  shouldWrapEmoji = false,
   logWarningFunction = defaultLogWarning,
 ): CompositeToken<TagToken | TextToken> => {
-  if (shouldWrapEmoji && containsEmoji(input)) {
+  if (containsEmoji(input)) {
     input = wrapEmoji(input);
   }
 

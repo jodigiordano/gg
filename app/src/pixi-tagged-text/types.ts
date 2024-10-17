@@ -75,7 +75,6 @@ export interface TaggedTextOptions {
   skipUpdates?: boolean;
   skipDraw?: boolean;
   drawWhitespace?: boolean;
-  wrapEmoji?: boolean;
   errorHandler?: ErrorHandler;
   supressConsole?: boolean;
   overdrawDecorations?: number;
