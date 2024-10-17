@@ -42,7 +42,6 @@ import { fontSizeStringToNumber } from "./pixiUtils.js";
 import DEFAULT_STYLE from "./defaultStyle.js";
 import { MIPMAP_MODES, SCALE_MODES } from "pixi.js";
 
-// TODO: make customizable
 const DEBUG = {
   WORD_STROKE_COLOR: 0xffcccc,
   WORD_FILL_COLOR: 0xeeeeee,
@@ -63,7 +62,6 @@ const DEBUG = {
 
 const DEFAULT_OPTIONS: TaggedTextOptions = {
   debug: false,
-  debugConsole: false,
   splitStyle: "words",
   imgMap: {},
   scaleIcons: true,
@@ -177,7 +175,7 @@ export default class TaggedText extends Sprite {
     Object.entries(styles).forEach(([tag, style]) =>
       this.setStyleForTag(tag, style, true),
     );
-    // TODO: add a way to test for identical styles to prevent unnecessary updates.
+
     this._needsUpdate = true;
     this.updateIfShould(skipUpdate);
   }
@@ -221,7 +219,7 @@ export default class TaggedText extends Sprite {
       );
       this.defaultStyle[IMG_REFERENCE_PROPERTY] = undefined;
     }
-    // TODO: add a way to test for identical styles to prevent unnecessary updates.
+
     this._needsUpdate = true;
     this.updateIfShould(skipUpdate);
 
@@ -473,17 +471,7 @@ export default class TaggedText extends Sprite {
     this._tokens = newFinalTokens;
     this._needsDraw = true;
 
-    // Wait one frame to draw so that this doesn't happen multiple times in one frame.
-    // if (this.animationRequest) {
-    //   window.cancelAnimationFrame(this.animationRequest);
-    // }
-    // this.animationRequest = window.requestAnimationFrame(
-
     this.drawIfShould(skipDraw);
-
-    if (this.options.debugConsole) {
-      console.log(this.toDebugString());
-    }
 
     this._needsUpdate = false;
 
@@ -660,66 +648,11 @@ export default class TaggedText extends Sprite {
     return textField;
   }
 
-  /**
-   * Converts the text properties from this.tokens into a human readable string.
-   * This is automatically logged to the console on update when debug option is set to true.
-   */
-  public toDebugString(): string {
-    const lines = this.tokens;
-    let s = this.untaggedText + "\n=====\n";
-    const nl = "\n    ";
-    if (lines !== undefined) {
-      s += lines.map((line, lineNumber) =>
-        line.map((word, wordNumber) =>
-          word
-            .map((token, tokenNumber) => {
-              let text = "";
-              if (isTextToken(token)) {
-                if (isNewlineToken(token)) {
-                  text = `\\n`;
-                } else {
-                  text = `"${token.content}"`;
-                }
-              } else if (isSpriteToken(token)) {
-                text = `[Image]`;
-              }
-              let s = `\n${text}: (${lineNumber}/${wordNumber}/${tokenNumber})`;
-              s += `${nl}tags: ${
-                token.tags.length === 0
-                  ? "<none>"
-                  : token.tags
-                      .split(",")
-                      .map(tag => `<${tag}>`)
-                      .join(", ")
-              }`;
-              s += `${nl}style: ${Object.entries(token.style)
-                .map(e => e.join(":"))
-                .join("; ")}`;
-              s += `${nl}size: x:${token.bounds.x} y:${token.bounds.y} width:${
-                token.bounds.width
-              } height:${token.bounds.height} bottom:${
-                token.bounds.height + token.bounds.y
-              } right:${token.bounds.x + token.bounds.width}`;
-              s += `${nl}font: fontSize:${token.fontProperties.fontSize} ascent:${token.fontProperties.ascent} descent:${token.fontProperties.descent}`;
-              return s;
-            })
-            .join("\n"),
-        ),
-      );
-    }
-    return s;
-  }
-
   public drawDebug(): void {
     const paragraph = this.tokens;
     this._debugGraphics = new Graphics();
-    if (this.debugContainer === null) {
-      throw new Error(
-        "Somehow the debug container is null. This shouldn't be possible. Perhaps you've destroyed this object?",
-      );
-    }
-    const debugContainer = this.debugContainer;
-    debugContainer.addChild(this._debugGraphics);
+
+    this.debugContainer.addChild(this._debugGraphics);
 
     const g = this._debugGraphics;
     g.clear();
@@ -731,7 +664,6 @@ export default class TaggedText extends Sprite {
       return info;
     }
 
-    // for (const line of tokens) {
     for (let lineNumber = 0; lineNumber < paragraph.length; lineNumber++) {
       const line = paragraph[lineNumber];
       const lineBounds = getBoundsNested(line);
@@ -791,18 +723,15 @@ export default class TaggedText extends Sprite {
           }
 
           let info;
-          // info = `${token.bounds.width}⨉${token.bounds.height}`;
+
           if (isTextToken(segmentToken)) {
-            // info += ` ${token.tags}`;
             info = `${segmentToken.tags}`;
             this.debugContainer.addChild(
               createInfoText(info, { x, y }) as DisplayObject,
             );
           }
-          // this.debugContainer.addChild(createInfoText(info, { x, y }));
         }
       }
     }
-    // }
   }
 }

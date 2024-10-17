@@ -56,7 +56,6 @@ export interface IFontMetrics {
 
 export interface TaggedTextOptions {
   debug?: boolean;
-  debugConsole?: boolean;
   splitStyle?: SplitStyle;
   adjustFontBaseline?: FontMap;
   imgMap?: Record<string, Sprite>;
