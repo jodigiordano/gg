@@ -1718,6 +1718,7 @@ export class SystemSimulator {
                 bottom: 0,
               },
               title: {
+                renderX: x1,
                 x: x1,
                 y: y1,
                 width: link.titleSize.width,
