@@ -861,6 +861,9 @@ function onTitleChanged(
         size.height,
       );
     }).then(() => {
+      oneLinkTitleSelected = oneLinkSelected;
+      oneLinkSelected = null;
+
       onModified(state);
       tick();
     });
