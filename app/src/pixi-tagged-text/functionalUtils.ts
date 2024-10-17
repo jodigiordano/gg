@@ -5,32 +5,6 @@ import { Nested } from "./types.js";
  */
 type Predicate<T> = (t: T) => boolean;
 
-export const combineRecords = <
-  A extends Record<string, unknown>,
-  B extends Record<string, unknown> = A,
->(
-  a: A,
-  b: B,
-): A & B => ({
-  ...a,
-  ...b,
-});
-
-/**
- * Returns the first item in a list. AKA head
- * List a -> a
- */
-export const first = <T>(a: T[]): T => a[0];
-
-/**
- * Return the last item in a list. Aka tail
- * List f => f a -> a
- */
-export const last = <T>(a: T[]): T => a[a.length - 1];
-
-export const isDefined: Predicate<unknown | undefined> = (a): boolean =>
-  a !== undefined;
-
 /**
  * Predicate p => p -> p
  */
@@ -78,21 +52,5 @@ type FlatReduceRetrun<T, U> = (nested: Nested<T>) => U;
 
 export const flatEvery = <T>(p: Predicate<T>): FlatReduceRetrun<T, boolean> =>
   flatReduce<T, boolean>((acc: boolean, t: T) => acc && p(t), true);
-
-export const nestedMap =
-  <T, U>(f: (t: T) => U) =>
-  (nested: Nested<T>): Nested<U> =>
-    nested instanceof Array ? nested.map(nestedMap(f)) : f(nested);
-
-/**
- * Takes a list and a predicate and returns a number that represents the number of
- * true statements when applied to the elements in the list.
- * In other words, the number of elements that pass the test.
- * (a -> boolean) -> a[] -> number
- */
-export const countIf =
-  <T>(p: Predicate<T>) =>
-  (a: Array<T>): number =>
-    a.reduce((count, item) => (p(item) ? count + 1 : count), 0);
 
 export type Unary<Param, Return> = (p: Param) => Return;

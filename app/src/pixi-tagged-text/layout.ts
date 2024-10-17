@@ -1,13 +1,6 @@
 import { convertUnsupportedAlignment, extractDecorations } from "./style.js";
 import { capitalize, isOnlyWhitespace } from "./stringUtil.js";
-import {
-  last,
-  first,
-  assoc,
-  mapProp,
-  flatReduce,
-  Unary,
-} from "./functionalUtils.js";
+import { assoc, mapProp, flatReduce, Unary } from "./functionalUtils.js";
 import { getFontPropertiesOfText } from "./pixiUtils.js";
 import {
   Sprite,
@@ -106,8 +99,8 @@ export const translateTokenLine =
     line.map(translateWordPosition(offset));
 
 export const lineWidth = (wordsInLine: Bounds[]): number => {
-  const firstWord = first(wordsInLine);
-  const lastWord = last(wordsInLine);
+  const firstWord = wordsInLine[0];
+  const lastWord = wordsInLine[wordsInLine.length - 1];
 
   if (firstWord === undefined) {
     return 0;

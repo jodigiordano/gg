@@ -1,5 +1,5 @@
 import { stringIsNumber } from "./stringUtil.js";
-import { combineRecords, isDefined, pluck } from "./functionalUtils.js";
+import { pluck } from "./functionalUtils.js";
 import {
   AttributesList,
   TagWithAttributes,
@@ -32,10 +32,10 @@ import DEFAULT_STYLE from "./defaultStyle.js";
 /**
  * Combine 2 styles into one.
  */
-export const combineStyles: (
-  a: TextStyleExtended,
-  b: TextStyleExtended,
-) => TextStyleExtended = combineRecords;
+const combineStyles = (a: TextStyleExtended, b: TextStyleExtended) => ({
+  ...a,
+  ...b,
+});
 
 /**
  * Combines multiple styles into one.
@@ -44,7 +44,10 @@ export const combineStyles: (
 export const combineAllStyles = (
   styles: (TextStyleExtended | undefined)[],
 ): TextStyleExtended =>
-  (styles.filter(isDefined) as TextStyleExtended[]).reduce(combineStyles, {});
+  (styles.filter(style => style !== undefined) as TextStyleExtended[]).reduce(
+    combineStyles,
+    {},
+  );
 
 export const convertAttributeValues = (
   attributes: AttributesList,
@@ -74,8 +77,11 @@ export const injectAttributes = (
   attributes: AttributesList = {},
   style: TextStyleExtended = {},
 ): TextStyleExtended | undefined => {
-  if (isEmptyObject(style) && isEmptyObject(attributes)) return undefined;
-  return combineRecords(style, convertAttributeValues(attributes));
+  if (isEmptyObject(style) && isEmptyObject(attributes)) {
+    return undefined;
+  }
+
+  return { ...style, ...convertAttributeValues(attributes) };
 };
 
 /**

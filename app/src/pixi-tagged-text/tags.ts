@@ -1,6 +1,4 @@
 import { logWarning } from "./errorMessaging.js";
-
-import { last } from "./functionalUtils.js";
 import {
   TagMatchData,
   AttributesList,
@@ -195,7 +193,7 @@ export const createTokensNew = (
       if (segment !== "") {
         token.children.push(segment);
       }
-      last(tokenStack).children.push(token);
+      tokenStack[tokenStack.length - 1].children.push(token);
       tokenStack.push(token as CompositeToken<TagToken | TextToken>);
     } else {
       const poppedToken = tokenStack.pop();
@@ -205,7 +203,7 @@ export const createTokensNew = (
         );
       }
       if (segment !== "") {
-        last(tokenStack).children.push(segment);
+        tokenStack[tokenStack.length - 1].children.push(segment);
       }
     }
   }
