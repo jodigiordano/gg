@@ -1,6 +1,6 @@
 {
   "name": "@gg/app",
-  "version": "0.9.6",
+  "version": "0.9.7",
   "type": "module",
   "license": "See ../LICENSE.md",
   "types": "./dist/index.d.ts",
