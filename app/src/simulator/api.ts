@@ -942,7 +942,28 @@ export function calculateTextSizeForLinkTitle(
   font: TextFont,
   align: TextAlign,
 ): RuntimeSize {
-  return calculateTextSize(text, font, align, 0, 0.1);
+  const size = calculateTextSize(text, font, align, 0, 0.1);
+
+  // The width of a link title is an odd number so the container can be
+  // perfectly centered vertically on a link.
+  //
+  // +----------+
+  // |          |
+  // +----------+
+  //      |
+  //   +-----+
+  //   |     | <- Needs to have width of 1, 3, 5, ...
+  //   +-----+
+  //      |
+  // +----------+
+  // |          |
+  // +----------+
+  //
+  if (size.width % 2 === 0) {
+    size.width += 1;
+  }
+
+  return size;
 }
 
 export function calculateTextSizeForSubsystem(
