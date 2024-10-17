@@ -684,12 +684,22 @@ function getObjectsToRender(): (Sprite | TaggedText)[] {
             x -= (system.titleMargin.left + system.padding.left) * BlockSize;
           }
 
+          let y = (j - boundaries.translateY) * BlockSize;
+
+          if (!blackbox) {
+            y += BlockSize / 2;
+
+            if (system.titleFont === "sketch") {
+              y += 1;
+            } else if (system.titleFont === "code") {
+              y += 3;
+            }
+          }
+
           title.zIndex = obj.zIndex;
           title.alpha = system.opacity;
           title.x = x;
-          title.y =
-            (j - boundaries.translateY) * BlockSize +
-            (blackbox ? 0 : BlockSize / 2);
+          title.y = y;
 
           toDraw.push(title);
         } else if (obj.type === SimulatorObjectType.LinkTitle) {
