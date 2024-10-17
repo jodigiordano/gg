@@ -1,4 +1,4 @@
-export type SelectAction = "delete" | "duplicate" | "paint";
+export type SelectAction = "delete" | "duplicate" | "paint" | "set-title";
 
 let onChangeCallback: ((action: SelectAction) => void) | null = null;
 

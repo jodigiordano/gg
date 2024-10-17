@@ -6,6 +6,7 @@ export default interface Operation {
   onPointerMove: (state: State) => void;
   onPointerDown: (state: State) => void;
   onPointerUp: (state: State) => void;
+  onDoubleTap: (state: State) => void;
   onBegin: (state: State) => void;
   onEnd: (state: State) => void;
   onPointerLeave: (state: State) => void;

@@ -287,6 +287,7 @@ const operation: Operation = {
   },
   onPointerEnter: () => {},
   onPointerLeave: () => {},
+  onDoubleTap: () => {},
 };
 
 export default operation;

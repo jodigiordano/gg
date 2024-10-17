@@ -31,6 +31,7 @@ import * as TextFontProperty from "../properties/textFont.js";
 import * as OpacityProperty from "../properties/opacity.js";
 import * as ActionsProperty from "../properties/actions.js";
 import * as Paint from "../properties/actionPaint.js";
+import * as SetTitle from "../properties/actionSetTitle.js";
 import { BorderPattern } from "@gg/core";
 
 //
@@ -450,6 +451,35 @@ function onColorChanged(state: State, value: string | undefined) {
   }
 }
 
+function onTitleChanged(
+  state: State,
+  value: string,
+  font: TextFont,
+  align: TextAlign,
+) {
+  const selected = linkTitleSelected ?? linkSelected;
+
+  if (selected) {
+    modifySpecification(() => {
+      const size = calculateTextSizeForLinkTitle(value, font, align);
+
+      setLinkTitle(
+        selected!,
+        value.replace(/\n/g, "\\n"),
+        font,
+        align,
+        size.width,
+        size.height,
+      );
+    }).then(() => {
+      onModified(state);
+      tick();
+    });
+
+    return;
+  }
+}
+
 function onOpacityChange(state: State, value: number): void {
   if (linkTitleSelected) {
     modifySpecification(() => {
@@ -490,6 +520,15 @@ function onAction(state: State, value: ActionsProperty.SelectAction): void {
           onColorChanged(state, value);
         },
       });
+    } else if (value === "set-title") {
+      SetTitle.open({
+        value: linkTitleSelected.title,
+        font: linkTitleSelected.titleFont,
+        align: linkTitleSelected.titleAlign,
+        onChange: (value, font, align) => {
+          onTitleChanged(state, value, font, align);
+        },
+      });
     }
 
     return;
@@ -507,6 +546,15 @@ function onAction(state: State, value: ActionsProperty.SelectAction): void {
       Paint.choose({
         onChange: value => {
           onColorChanged(state, value);
+        },
+      });
+    } else if (value === "set-title") {
+      SetTitle.open({
+        value: linkSelected.title,
+        font: linkSelected.titleFont,
+        align: linkSelected.titleAlign,
+        onChange: (value, font, align) => {
+          onTitleChanged(state, value, font, align);
         },
       });
     }
@@ -553,7 +601,7 @@ function onSelected(state: State): void {
     });
 
     ActionsProperty.show({
-      actions: ["delete", "paint"],
+      actions: ["delete", "paint", "set-title"],
       onChange: value => {
         onAction(state, value);
       },
@@ -615,7 +663,7 @@ function onSelected(state: State): void {
     });
 
     ActionsProperty.show({
-      actions: ["delete", "paint"],
+      actions: ["delete", "paint", "set-title"],
       onChange: value => {
         onAction(state, value);
       },
@@ -792,6 +840,9 @@ const operation: Operation = {
   onKeyDown: () => {},
   onPointerEnter: () => {},
   onPointerLeave: () => {},
+  onDoubleTap: state => {
+    onAction(state, "set-title");
+  },
 };
 
 export default operation;
