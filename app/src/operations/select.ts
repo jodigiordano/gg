@@ -682,7 +682,6 @@ function onTextFontChange(state: State, value: TextFont): void {
     modifySpecification(() => {
       for (const subsystem of multiSelectVisual.selected) {
         const size = calculateTextSizeForSubsystem(
-          subsystem,
           subsystem.title.replaceAll("\\n", "\n"),
           value,
           subsystem.titleAlign,
@@ -708,7 +707,6 @@ function onTextFontChange(state: State, value: TextFont): void {
   if (oneSystemSelected) {
     modifySpecification(() => {
       const size = calculateTextSizeForSubsystem(
-        oneSystemSelected!,
         oneSystemSelected!.title.replaceAll("\\n", "\n"),
         value,
         oneSystemSelected!.titleAlign,

@@ -158,7 +158,6 @@ document
       modifySpecification(() => {
         if (subsystem) {
           const size = calculateTextSizeForSubsystem(
-            subsystem,
             editor.value,
             getFont(),
             getAlign(),

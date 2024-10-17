@@ -14,7 +14,6 @@ import {
   SimulatorDebugInformation,
   PathfindingWeights,
   RuntimeSize,
-  RuntimeSubsystem,
 } from "@gg/core";
 import { Sprite, Container, Texture } from "pixi.js";
 import TaggedText from "../pixi-tagged-text/TaggedText.js";
@@ -657,21 +656,37 @@ function getObjectsToRender(): (Sprite | TaggedText)[] {
                 ? defaultColors[state.theme].boxTitleBlackbox
                 : defaultColors[state.theme].boxTitleWhitebox;
 
+          // The position of a text on the X axis is computed by the simulator,
+          // which work with a grid of blocks. The computed position works well
+          // with a left-aligned text or a right-aligned text but is not
+          // precise enough for a center-aligned text, which requires sub-block
+          // precision (i.e. pixel).
+          const systemWidth =
+            system.titleAlign === "center"
+              ? system.size.width
+              : system.size.width -
+                system.titleMargin.left -
+                system.titleMargin.right -
+                system.padding.left -
+                system.padding.right;
+
           const title = initializeText(
             (obj as SimulatorSystemTitleText).chars.replaceAll("\\n", "\n"),
             color,
             system.titleFont,
             system.titleAlign,
-            system.size.width -
-              system.titleMargin.left -
-              system.titleMargin.right -
-              system.padding.left -
-              system.padding.right,
+            systemWidth,
           );
+
+          let x = (i - boundaries.translateX) * BlockSize;
+
+          if (system.titleAlign === "center") {
+            x -= (system.titleMargin.left + system.padding.left) * BlockSize;
+          }
 
           title.zIndex = obj.zIndex;
           title.alpha = system.opacity;
-          title.x = (i - boundaries.translateX) * BlockSize;
+          title.x = x;
           title.y =
             (j - boundaries.translateY) * BlockSize +
             (blackbox ? 0 : BlockSize / 2);
@@ -687,7 +702,7 @@ function getObjectsToRender(): (Sprite | TaggedText)[] {
               : defaultColors[state.theme].linkTitle,
             link.titleFont,
             link.titleAlign,
-            1,
+            Math.max(1, link.titleSize.width - 1),
           );
 
           title.zIndex = obj.zIndex;
@@ -901,6 +916,11 @@ function calculateTextSize(
       ? Math.ceil(height)
       : Math.floor(height);
 
+  if (text !== "") {
+    width = Math.max(1, width);
+    height = Math.max(1, height);
+  }
+
   return {
     width,
     height,
@@ -912,26 +932,15 @@ export function calculateTextSizeForLinkTitle(
   font: TextFont,
   align: TextAlign,
 ): RuntimeSize {
-  return calculateTextSize(text, font, align, 1, 0.25);
+  return calculateTextSize(text, font, align, 0, 0.1);
 }
 
 export function calculateTextSizeForSubsystem(
-  subsystem: RuntimeSubsystem,
   text: string,
   font: TextFont,
   align: TextAlign,
 ): RuntimeSize {
-  return calculateTextSize(
-    text,
-    font,
-    align,
-    subsystem.size.width -
-      subsystem.titleMargin.left -
-      subsystem.titleMargin.right -
-      subsystem.padding.left -
-      subsystem.padding.right,
-    0.5,
-  );
+  return calculateTextSize(text, font, align, 0, 0.5);
 }
 
 // Modifies the specification transactionally.

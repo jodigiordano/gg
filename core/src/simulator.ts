@@ -154,6 +154,11 @@ interface GridSystem {
   type: SubsystemType | "linkTitle";
 
   title: {
+    // The simulator align text on a grid, for routing & collisions purposes.
+    // This alignment is not pixel-perfect like the renderer is capable to do.
+    // Therefore, the following property is introduced for the renderer to
+    // perform its own text alignement.
+    renderX: number;
     x: number;
     y: number;
     width: number;
@@ -459,6 +464,7 @@ export class SystemSimulator {
       height: -1,
       margin: structuredClone(system.margin),
       title: {
+        renderX: -1,
         x: -1,
         y: -1,
         width: -1,
@@ -533,8 +539,21 @@ export class SystemSimulator {
 
     const gridSystem = this.gridSystems[system.id]!;
 
+    let x: number;
+
+    if (system.titleAlign === "center") {
+      x = Math.floor(
+        gridSystem.x1 + gridSystem.width / 2 - system.titleSize.width / 2,
+      );
+    } else if (system.titleAlign === "right") {
+      x = gridSystem.x2 - system.titleSize.width;
+    } else {
+      x = gridSystem.x1 + system.padding.left + system.titleMargin.left;
+    }
+
     gridSystem.title = {
-      x: gridSystem.x1 + system.padding.left + system.titleMargin.left,
+      renderX: gridSystem.x1 + system.padding.left + system.titleMargin.left,
+      x,
       y: gridSystem.y1 + system.padding.top + system.titleMargin.top,
       width: system.titleSize.width,
       height: system.titleSize.height,
@@ -955,7 +974,7 @@ export class SystemSimulator {
         zIndex: SimulatorObjectZIndex.SystemTitle + ss.depth,
       };
 
-      this.grid[gridSS.title.x]![gridSS.title.y]!.push(
+      this.grid[gridSS.title.renderX]![gridSS.title.y]!.push(
         simulatorSystemTitleText,
       );
 
@@ -1699,6 +1718,7 @@ export class SystemSimulator {
                 bottom: 0,
               },
               title: {
+                renderX: x1,
                 x: x1,
                 y: y1,
                 width: link.titleSize.width,
