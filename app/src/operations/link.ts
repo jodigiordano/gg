@@ -821,7 +821,12 @@ const operation: Operation = {
     // Move one link, or not.
     //
     if (linkSelected) {
-      if (moveLinkSystemBefore && moveLinkSystemAfter) {
+      if (
+        moveLinkSystemBefore &&
+        moveLinkSystemAfter &&
+        // The user must move the linker at least one block.
+        linkLinkerVisual.length >= 1
+      ) {
         modifySpecification(() => {
           moveLink(
             linkSelected!,
