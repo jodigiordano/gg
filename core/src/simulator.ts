@@ -1578,11 +1578,6 @@ export class SystemSimulator {
             // the collisions detection system, and then route the link
             // from A to Z, then Z to B but... the results were horrendous.
             //
-            let pathSegment: number[] | undefined;
-            let x1: number = 0;
-            let y1: number = 0;
-            let x2: number = 0;
-            let y2: number = 0;
 
             // Determine the initial position of the title.
             let initialPosition: number;
@@ -1690,15 +1685,71 @@ export class SystemSimulator {
                 offsetY = Math.ceil(link.titleSize.height / 2);
 
                 initialPosition = Math.floor(path.length / 2);
+
+                // We place the link title in the middle of the path.
+                // We then spend a small amount of CPU cycles to detect
+                // collisions with subsystems. When we find a collision,
+                // we move the link title a little bit alongside the link path.
+                let iterations = 0;
+                let offset = 0;
+                let colliding = false;
+                let segment: number[] | undefined;
+                let x1: number = 0;
+                let y1: number = 0;
+                let x2: number = 0;
+                let y2: number = 0;
+
+                do {
+                  segment = path.at(initialPosition + offset);
+
+                  if (segment) {
+                    x1 = segment[0]! - offsetX;
+                    y1 = segment[1]! - offsetY;
+                    x2 = x1 + link.titleSize.width + 1;
+                    y2 = y1 + link.titleSize.height + 1;
+
+                    colliding = false;
+
+                    for (let x = x1; x <= x2; x++) {
+                      if (colliding) {
+                        break;
+                      }
+
+                      for (let y = y1; y <= y2; y++) {
+                        if (
+                          this.grid[x]![y]!.some(
+                            obj =>
+                              obj.type === SimulatorObjectType.SystemTitle ||
+                              obj.type ===
+                                SimulatorObjectType.LinkTitleContainer ||
+                              (obj.type === SimulatorObjectType.System &&
+                                (obj as SimulatorSubsystem).blackbox),
+                          )
+                        ) {
+                          colliding = true;
+                          break;
+                        }
+                      }
+                    }
+                  }
+
+                  // 0, 1, -1, 2, -2, 3, -3, ...
+                  if (colliding) {
+                    offset = offset > 0 ? -offset : Math.abs(offset) + 1;
+                    iterations += 1;
+                  }
+                } while (segment && colliding && iterations < 20);
+
+                initialPosition += offset;
               }
             }
 
-            pathSegment = path.at(initialPosition)!;
+            const pathSegment = path.at(initialPosition)!;
 
-            x1 = pathSegment[0]! - offsetX;
-            y1 = pathSegment[1]! - offsetY;
-            x2 = x1 + link.titleSize.width + 1;
-            y2 = y1 + link.titleSize.height + 1;
+            const x1 = pathSegment[0]! - offsetX;
+            const y1 = pathSegment[1]! - offsetY;
+            const x2 = x1 + link.titleSize.width + 1;
+            const y2 = y1 + link.titleSize.height + 1;
 
             this.gridSystems[this.getGridLinkId(link)] = {
               id: this.getGridLinkId(link),
