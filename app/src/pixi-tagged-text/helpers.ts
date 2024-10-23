@@ -1,4 +1,8 @@
-import { TextStyleExtended, IMG_DISPLAY_PROPERTY, IFontMetrics } from "./types.js";
+import {
+  TextStyleExtended,
+  IMG_DISPLAY_PROPERTY,
+  IFontMetrics,
+} from "./types.js";
 import { Sprite, TextMetrics, Text } from "pixi.js";
 
 export const measureFont = (context: { font: string }): IFontMetrics =>

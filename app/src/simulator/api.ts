@@ -701,6 +701,8 @@ function getObjectsToRender(): (Sprite | TaggedText)[] {
           title.x = x;
           title.y = y;
 
+          title.draw();
+
           toDraw.push(title);
         } else if (obj.type === SimulatorObjectType.LinkTitle) {
           const { link, chars } = obj as SimulatorLinkTitle;
@@ -719,6 +721,8 @@ function getObjectsToRender(): (Sprite | TaggedText)[] {
           title.alpha = link.titleOpacity;
           title.x = (i - boundaries.translateX) * BlockSize;
           title.y = (j - boundaries.translateY) * BlockSize;
+
+          title.draw();
 
           toDraw.push(title);
         } else if (obj.type === SimulatorObjectType.DebugInformation) {
@@ -855,6 +859,8 @@ export function initializeText(
   if (align === "center" || align === "right") {
     const unalignedText = new TaggedText(text, configuration, options);
 
+    unalignedText.update();
+
     width = 0;
 
     for (const token of unalignedText.tokensFlat) {
@@ -874,7 +880,11 @@ export function initializeText(
   configuration.default.wordWrapWidth = wordWrap ? width : undefined;
   configuration.default.align = wordWrap ? align : undefined;
 
-  return new TaggedText(text, configuration, options);
+  const taggedText = new TaggedText(text, configuration, options);
+
+  taggedText.update();
+
+  return taggedText;
 }
 
 function calculateTextSize(

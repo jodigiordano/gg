@@ -12,9 +12,6 @@ import emojiRegex from "./emojiRegex.js";
 // Regex to match defined tags.
 let fullTagRegex = new RegExp("", "g");
 
-// Regex to match any tag.
-const bareboneTagRegex = /<(\w+)((?:\s+[^>]*)*)+\s*>|<\/(\w+)\s*>/g;
-
 // Regex to find self-closing tags (ex: <foo />).
 const selfClosingTagSearchRegex = /<([A-Za-z_-][A-Za-z0-9_-]*)([^\/>]*)\/>/g;
 
@@ -153,12 +150,6 @@ export const replaceSelfClosingTags = (input: string): string =>
     output = output.replace(/\s>/g, ">");
     return output;
   });
-
-/**
- * Returns the string with the tags removed.
- */
-export const removeTags = (input: string): string =>
-  input.replace(bareboneTagRegex, "");
 
 export const tagMatchToTagToken = (tag: TagMatchData): TagToken => {
   return {
