@@ -35,7 +35,6 @@ import {
   mapTagsToStyles,
 } from "./style.js";
 import { calculateTokens, getBoundsNested } from "./layout.js";
-import { capitalize } from "./stringUtil.js";
 import { fontSizeStringToNumber } from "./pixiUtils.js";
 
 import DEFAULT_STYLE from "./defaultStyle.js";
@@ -591,21 +590,7 @@ export default class TaggedText extends Sprite {
   }
 
   protected createTextFieldForToken(token: TextSegmentToken): Text {
-    const { textTransform = "" } = token.style;
-
     let text = token.content;
-    switch (textTransform.toLowerCase()) {
-      case "lowercase":
-        text = text.toLowerCase();
-        break;
-      case "uppercase":
-        text = text.toUpperCase();
-        break;
-      case "capitalize":
-        text = capitalize(text);
-        break;
-      default:
-    }
 
     const alignClassic = convertUnsupportedAlignment(token.style.align);
     const sanitizedStyle = {

@@ -1,5 +1,5 @@
 import { convertUnsupportedAlignment, extractDecorations } from "./style.js";
-import { capitalize, isOnlyWhitespace } from "./stringUtil.js";
+import { isOnlyWhitespace } from "./stringUtil.js";
 import { assoc, mapProp, flatReduce, Unary } from "./functionalUtils.js";
 import { getFontPropertiesOfText } from "./pixiUtils.js";
 import {
@@ -654,19 +654,7 @@ export const calculateTokens = (
         const textSegments = splitText(token, splitStyle);
 
         const textTokens = textSegments.map((str): SegmentToken => {
-          switch (style.textTransform) {
-            case "uppercase":
-              sizer.text = str.toUpperCase();
-              break;
-            case "lowercase":
-              sizer.text = str.toLowerCase();
-              break;
-            case "capitalize":
-              sizer.text = capitalize(str);
-              break;
-            default:
-              sizer.text = str;
-          }
+          sizer.text = str;
 
           fontProperties = { ...getFontPropertiesOfText(sizer, true) };
 
