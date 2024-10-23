@@ -61,7 +61,6 @@ const DEBUG = {
 const DEFAULT_OPTIONS: TaggedTextOptions = {
   debug: false,
   imgMap: {},
-  scaleIcons: true,
   skipUpdates: false,
   skipDraw: false,
   drawWhitespace: false,
@@ -443,7 +442,6 @@ export default class TaggedText extends Sprite {
   public update(skipDraw?: boolean): ParagraphToken {
     // Determine default style properties
     const tagStyles = this.tagStyles;
-    const { scaleIcons } = this.options;
     const spriteTemplates = this.options.imgMap && this.spriteTemplates;
 
     // Pre-process text.
@@ -460,7 +458,6 @@ export default class TaggedText extends Sprite {
     // Create the text segments, position and add them. (draw)
     const newFinalTokens = calculateTokens(
       styledTokens,
-      scaleIcons,
       this.options.adjustFontBaseline,
     );
 

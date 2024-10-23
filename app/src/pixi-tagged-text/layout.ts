@@ -605,7 +605,6 @@ export const splitText = (s: string): string[] => {
 
 export const calculateTokens = (
   styledTokens: StyledTokens,
-  scaleIcons = true,
   adjustFontBaseline?: FontMap,
 ): ParagraphToken => {
   // Create a text field to use for measurements.
@@ -723,14 +722,13 @@ export const calculateTokens = (
             sprite.scale.set(ratio);
           }
 
-          if (scaleIcons) {
-            const {
-              fontScaleWidth: scaleX = 1.0,
-              fontScaleHeight: scaleY = 1.0,
-            } = style;
-            sprite.scale.x *= scaleX;
-            sprite.scale.y *= scaleY;
-          }
+          const {
+            fontScaleWidth: scaleX = 1.0,
+            fontScaleHeight: scaleY = 1.0,
+          } = style;
+
+          sprite.scale.x *= scaleX;
+          sprite.scale.y *= scaleY;
         }
 
         // handle images
