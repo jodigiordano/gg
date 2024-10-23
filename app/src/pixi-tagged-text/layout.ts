@@ -1,7 +1,6 @@
 import { convertUnsupportedAlignment, extractDecorations } from "./style.js";
-import { isOnlyWhitespace } from "./stringUtil.js";
 import { assoc, mapProp, flatReduce, Unary } from "./functionalUtils.js";
-import { getFontPropertiesOfText } from "./pixiUtils.js";
+import { getFontPropertiesOfText } from "./helpers.js";
 import {
   Sprite,
   Text,
@@ -36,6 +35,9 @@ import {
 const ICON_SCALE_BASE = 0.8;
 
 const sizer = new Text("");
+
+// Returns true if the string is only whitespace and nothing else.
+const isOnlyWhitespace = (s: string): boolean => s.search(/^\s+$/) === 0;
 
 /**
  * Translates the current location point to the beginning of the next line.

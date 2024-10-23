@@ -36,7 +36,7 @@ import {
 } from "./style.js";
 import { calculateTokens, getBoundsNested } from "./layout.js";
 
-import DEFAULT_STYLE from "./defaultStyle.js";
+import { DEFAULT_STYLE } from "./helpers.js";
 import { MIPMAP_MODES, SCALE_MODES } from "pixi.js";
 
 const DEBUG = {

@@ -1,4 +1,3 @@
-import { stringIsNumber } from "./stringUtil.js";
 import { pluck } from "./functionalUtils.js";
 import {
   AttributesList,
@@ -25,9 +24,12 @@ import {
   Align,
   AlignClassic,
 } from "./types.js";
-import { cloneSprite } from "./pixiUtils.js";
 import { Sprite } from "pixi.js";
-import DEFAULT_STYLE from "./defaultStyle.js";
+import { DEFAULT_STYLE, cloneSprite } from "./helpers.js";
+
+// Returns true if the string is a number string otherwise false.
+const stringIsNumber = (s: string): boolean =>
+  s.trim().search(/^-?[0-9]*\.?[0-9]+$/) === 0;
 
 /**
  * Combine 2 styles into one.
