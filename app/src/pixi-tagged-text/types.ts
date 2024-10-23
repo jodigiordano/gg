@@ -1,8 +1,4 @@
 import {
-  Text,
-  Texture,
-  BaseTexture,
-  BitmapText,
   Sprite,
   IBitmapTextStyle,
   ITextStyle,
@@ -26,22 +22,7 @@ export type Bounds = Rectangle;
 
 export type Nested<T> = T | Array<Nested<T>>;
 
-export type PixiTextTypes = Text | BitmapText;
-
 ///// OPTIONS
-
-export type SpriteSource =
-  | string
-  | Texture
-  | HTMLCanvasElement
-  | HTMLVideoElement;
-
-export type TextureSource =
-  | string
-  | HTMLImageElement
-  | HTMLCanvasElement
-  | HTMLVideoElement
-  | BaseTexture;
 
 export type FontProperty = string | number;
 export type FontMap = Record<string, FontProperty>;
@@ -56,7 +37,6 @@ export interface TaggedTextOptions {
   debug?: boolean;
   adjustFontBaseline?: FontMap;
   imgMap?: Record<string, Sprite>;
-  scaleIcons?: boolean;
   skipUpdates?: boolean;
   skipDraw?: boolean;
   drawWhitespace?: boolean;
@@ -111,7 +91,6 @@ export type ImageDisplayMode = "icon" | "block" | "inline";
 export type ImageReference = string;
 export type ImageDimensionPercentage = string;
 export type ImageDimension = number | string | ImageDimensionPercentage;
-export type TextTransform = "normal" | "capitalize" | "uppercase" | "lowercase";
 export type FontStyle = "normal" | "italic" | "oblique";
 export type TextDecorationValue = "underline" | "overline" | "line-through";
 export type TextDecoration =
@@ -167,9 +146,6 @@ export interface FontScaleStyles {
   fontScaleWidth?: number;
   fontScaleHeight?: number;
 }
-export interface TextTransformStyles {
-  textTransform?: TextTransform;
-}
 
 export interface LineBreakStyles {
   breakLines?: boolean;
@@ -184,7 +160,6 @@ export interface TextStyleExtended
     VerticalAlignStyles,
     VerticalSpacingStyles,
     FontScaleStyles,
-    TextTransformStyles,
     LineBreakStyles {
   // Overridden properties
   align?: Align;
@@ -331,19 +306,6 @@ export const isNewlineToken = (t?: Nested<SegmentToken>): boolean =>
 
 export const isEmptyObject = <T>(a: T): boolean =>
   a instanceof Object && Object.keys(a).length === 0;
-
-export const isPixel = (s: string): boolean => s.trim().endsWith("px");
-
-export const isEm = (s: string): boolean => s.trim().endsWith("em");
-
-export const isPercent = (s: string): boolean => s.trim().endsWith("%");
-
-export const pixelToNumber = (s: string): number =>
-  Number(s.trim().slice(0, -2));
-export const emToNumber = pixelToNumber;
-
-export const percentStringToNumber = (s: string): number =>
-  isPercent(s) ? Number(s.trim().slice(0, -1)) / 100 : NaN;
 
 export const measurementValueToComponents = (
   input: MeasurementValue,
