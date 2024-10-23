@@ -46,8 +46,6 @@ export type TextureSource =
 export type FontProperty = string | number;
 export type FontMap = Record<string, FontProperty>;
 
-export type SplitStyle = "words" | "characters";
-
 export interface IFontMetrics {
   ascent: number;
   descent: number;
@@ -56,7 +54,6 @@ export interface IFontMetrics {
 
 export interface TaggedTextOptions {
   debug?: boolean;
-  splitStyle?: SplitStyle;
   adjustFontBaseline?: FontMap;
   imgMap?: Record<string, Sprite>;
   scaleIcons?: boolean;
@@ -270,7 +267,6 @@ export type StyledTokens = StyledToken;
 //   Most WordTokens contain only one Segment, however, each time styles change
 //   in the text, a new segment is crated, therefore, some words will have multiple
 //   segments if they contain tags within like "Abso<i>lutely</i>".
-// - When splitStyle is "characters", each character gets its own SegmentToken.
 
 export type SegmentContent = TextToken | SpriteToken;
 export interface SegmentToken {

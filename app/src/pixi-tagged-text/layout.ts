@@ -18,7 +18,6 @@ import {
   StyledToken,
   TextToken,
   SpriteToken,
-  SplitStyle,
   TextStyleExtended,
   IFontMetrics,
   isNewlineToken,
@@ -452,7 +451,6 @@ const layout = (
   maxWidth: number,
   lineSpacing: number,
   align: Align,
-  _splitStyle: SplitStyle,
 ): ParagraphToken => {
   const cursor = { x: 0, y: 0 };
   let wordWidth = 0;
@@ -601,27 +599,12 @@ export const splitAroundWhitespace = (s: string): string[] =>
     .split(SPLIT_MARKER)
     .filter(s => s !== "");
 
-export const splitText = (s: string, splitStyle: SplitStyle): string[] => {
-  if (splitStyle === "words") {
-    return [s].flatMap(splitAroundWhitespace).filter(notEmptyString);
-  } else if (splitStyle === "characters") {
-    return s.split("");
-  } else {
-    // unsupported splitStyle.
-    let suggestion = ` Supported styles are "words" and "characters"`;
-    const badStyle = (splitStyle as string).toLowerCase();
-    if (badStyle.indexOf("char") === 0) {
-      suggestion = `Did you mean "characters"?`;
-    } else if (badStyle.indexOf("wor") === 0) {
-      suggestion = `Did you mean "words"?`;
-    }
-    throw new Error(`Unsupported split style "${splitStyle}". ${suggestion}`);
-  }
+export const splitText = (s: string): string[] => {
+  return [s].flatMap(splitAroundWhitespace).filter(notEmptyString);
 };
 
 export const calculateTokens = (
   styledTokens: StyledTokens,
-  splitStyle: SplitStyle = "words",
   scaleIcons = true,
   adjustFontBaseline?: FontMap,
 ): ParagraphToken => {
@@ -651,7 +634,7 @@ export const calculateTokens = (
       if (typeof token === "string") {
         // split into pieces and convert into tokens.
 
-        const textSegments = splitText(token, splitStyle);
+        const textSegments = splitText(token);
 
         const textTokens = textSegments.map((str): SegmentToken => {
           sizer.text = str;
@@ -803,7 +786,7 @@ export const calculateTokens = (
   const lineSpacing = defaultStyle.lineSpacing ?? 0;
   const align = defaultStyle.align ?? "left";
 
-  const lines = layout(finalTokens, maxWidth, lineSpacing, align, splitStyle);
+  const lines = layout(finalTokens, maxWidth, lineSpacing, align);
 
   return lines;
 };
