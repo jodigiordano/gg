@@ -35,7 +35,6 @@ import {
   mapTagsToStyles,
 } from "./style.js";
 import { calculateTokens, getBoundsNested } from "./layout.js";
-import { fontSizeStringToNumber } from "./pixiUtils.js";
 
 import DEFAULT_STYLE from "./defaultStyle.js";
 import { MIPMAP_MODES, SCALE_MODES } from "pixi.js";
@@ -596,9 +595,7 @@ export default class TaggedText extends Sprite {
       }
 
       const fs = textField.style.fontSize ?? 0;
-      const fontSizePx =
-        (typeof fs === "string" ? fontSizeStringToNumber(fs) : fs) *
-        largerScale;
+      const fontSizePx = Number(fs) * largerScale;
 
       textField.style.fontSize = fontSizePx;
     }

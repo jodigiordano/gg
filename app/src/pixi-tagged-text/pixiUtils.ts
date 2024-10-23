@@ -1,10 +1,6 @@
 import { Sprite, TextMetrics, Text } from "pixi.js";
 import { IFontMetrics } from "./types.js";
 
-const PX_PER_EM = 16;
-const PX_PER_PERCENT = 16 / 100;
-const PX_PER_PT = 1.3281472327365;
-
 export const measureFont = (context: { font: string }): IFontMetrics =>
   TextMetrics.measureFont(context.font);
 
@@ -45,27 +41,4 @@ export const cloneSprite = (sprite: Sprite): Sprite => {
   clone.height = sprite.height;
 
   return clone;
-};
-
-export const fontSizeStringToNumber = (size: string): number => {
-  const [valueString, unit] = size.split(/(%|pt|px|r?em)/);
-  const value = parseFloat(valueString);
-
-  if (isNaN(value)) {
-    NaN;
-  }
-
-  switch (unit) {
-    case "%":
-      return value * PX_PER_PERCENT;
-    case "em":
-    case "rem":
-      return value * PX_PER_EM;
-    case "pt":
-      return value * PX_PER_PT;
-    case "px":
-    default:
-      // keep as is.
-      return value;
-  }
 };
