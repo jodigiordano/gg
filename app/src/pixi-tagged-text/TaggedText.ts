@@ -19,7 +19,6 @@ import {
   isSpriteToken,
   TextSegmentToken,
   isTextToken,
-  isNotWhitespaceToken,
   isNewlineToken,
   isWhitespaceToken,
   Point,
@@ -512,7 +511,7 @@ export default class TaggedText extends Sprite {
     const tokens = drawWhitespace
       ? this.tokensFlat
       : // remove any tokens that are purely whitespace unless drawWhitespace is specified
-        this.tokensFlat.filter(isNotWhitespaceToken);
+        this.tokensFlat.filter(segment => !isWhitespaceToken(segment));
 
     let displayObject: Container;
 

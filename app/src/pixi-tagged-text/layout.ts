@@ -29,7 +29,6 @@ import {
   LineToken,
   WordToken,
   Nested,
-  isNotWhitespaceToken,
   VAlign,
   createEmptySegmentToken,
   FontMap,
@@ -432,7 +431,7 @@ export const collapseWhitespacesOnEndOfLines = (
     while (i >= 0) {
       i -= 1;
       const word = line[i];
-      if (isNotWhitespaceToken(word)) {
+      if (!isWhitespaceToken(word)) {
         break;
       } else {
         for (const token of word) {

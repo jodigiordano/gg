@@ -9,7 +9,7 @@ import {
   TextStyleFill,
   Rectangle as PixiRectangle,
 } from "pixi.js";
-import { complement, flatEvery } from "./functionalUtils.js";
+import { flatEvery } from "./functionalUtils.js";
 
 ///// GENERAL PURPOSE
 
@@ -332,8 +332,6 @@ export const _isNewlineToken = (t: SegmentToken): t is NewlineSegmentToken =>
   t !== undefined && _isTextToken(t) && isNewline(t.content);
 export const isNewlineToken = (t?: Nested<SegmentToken>): boolean =>
   t === undefined ? false : flatEvery(_isNewlineToken)(t);
-
-export const isNotWhitespaceToken = complement(isWhitespaceToken);
 
 export const isEmptyObject = <T>(a: T): boolean =>
   a instanceof Object && Object.keys(a).length === 0;

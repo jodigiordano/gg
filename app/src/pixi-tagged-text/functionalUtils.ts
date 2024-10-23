@@ -6,14 +6,6 @@ import { Nested } from "./types.js";
 type Predicate<T> = (t: T) => boolean;
 
 /**
- * Predicate p => p -> p
- */
-export const complement =
-  <T>(predicate: Predicate<T>) =>
-  (input: T): boolean =>
-    !predicate(input);
-
-/**
  * List f => string -> f {string: a} -> f a
  */
 export const pluck =
