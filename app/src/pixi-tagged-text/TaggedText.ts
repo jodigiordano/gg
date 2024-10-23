@@ -221,25 +221,6 @@ export default class TaggedText extends Sprite {
 
     return true;
   }
-  /**
-   * Removes a style associated with a tag. Note, inline attributes are not affected.
-   * @param tag Name of the tag to delete the style of.
-   * @param skipUpdate *For advanced users* overrides default for upating / redrawing after changing the styles.
-   * When true, removeStylesForTag() never updates even if default is false, and vice versa.
-   * Options are true, false, or undefined. Undefined is the default and means it uses whatever setting
-   * is provided in this.options.
-   */
-  public removeStylesForTag(tag: string, skipUpdate?: boolean): boolean {
-    if (tag in this.tagStyles) {
-      delete this.tagStyles[tag];
-
-      this._needsUpdate = true;
-      this.updateIfShould(skipUpdate);
-
-      return true;
-    }
-    return false;
-  }
 
   public get defaultStyle(): TextStyleExtended {
     return this.tagStyles?.default;
