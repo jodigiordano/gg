@@ -55,8 +55,8 @@ let operation: Operation = selectOperation;
 // Events
 //
 
-// The user moves the cursor in the canvas.
-canvasContainer.addEventListener("pointermove", event => {
+// The user moves the cursor in the window.
+window.addEventListener("pointermove", event => {
   if (isModalOpen() || isInitialLoad()) {
     return;
   }
@@ -74,7 +74,11 @@ canvasContainer.addEventListener("pointermove", event => {
   if (viewport.moving || viewport.mobileMoving) {
     redrawGrid();
   } else {
-    operation.onPointerMove(state);
+    operation.onWindowPointerMove(state);
+
+    if (event.target && canvasContainer.contains(event.target as Node)) {
+      operation.onPointerMove(state);
+    }
   }
 
   tick();
@@ -107,8 +111,8 @@ canvasContainer.addEventListener("pointerdown", event => {
   tick();
 });
 
-// The user release the pointer in the canvas.
-canvasContainer.addEventListener("pointerup", event => {
+// The user release the pointer in the window.
+window.addEventListener("pointerup", event => {
   if (isModalOpen() || isInitialLoad()) {
     return;
   }
@@ -130,7 +134,13 @@ canvasContainer.addEventListener("pointerup", event => {
   }
 
   updateStatePosition(event.x, event.y);
-  operation.onPointerUp(state);
+
+  operation.onWindowPointerUp(state);
+
+  if (event.target && canvasContainer.contains(event.target as Node)) {
+    operation.onPointerUp(state);
+  }
+
   tick();
 });
 

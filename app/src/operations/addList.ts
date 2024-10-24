@@ -148,6 +148,8 @@ const operation: Operation = {
   },
   onPointerDoublePress: () => {},
   onEvent: () => {},
+  onWindowPointerMove: () => {},
+  onWindowPointerUp: () => {},
 };
 
 export default operation;

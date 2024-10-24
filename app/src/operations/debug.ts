@@ -61,6 +61,8 @@ const operation: Operation = {
   onPointerLeave: () => {},
   onPointerDoublePress: () => {},
   onEvent: () => {},
+  onWindowPointerMove: () => {},
+  onWindowPointerUp: () => {},
 };
 
 export default operation;

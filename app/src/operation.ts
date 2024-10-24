@@ -13,4 +13,6 @@ export default interface Operation {
   onPointerEnter: (state: State) => void;
   onKeyDown: (state: State, event: KeyboardEvent) => void;
   onEvent: (state: State, event: CustomEvent) => void;
+  onWindowPointerMove: (state: State) => void;
+  onWindowPointerUp: (state: State) => void;
 }
