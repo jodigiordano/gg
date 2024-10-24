@@ -1183,6 +1183,7 @@ function onSelected(state: State): void {
     });
 
     ActionsProperty.show({
+      actions: ["delete", "paint", "duplicate"],
       onChange: value => {
         onAction(state, value);
       },
