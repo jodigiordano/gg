@@ -89,8 +89,6 @@ export type Align =
   | "justify-all";
 export type ImageDisplayMode = "icon" | "block" | "inline";
 export type ImageReference = string;
-export type ImageDimensionPercentage = string;
-export type ImageDimension = number | string | ImageDimensionPercentage;
 export type FontStyle = "normal" | "italic" | "oblique";
 export type TextDecorationValue = "underline" | "overline" | "line-through";
 export type TextDecoration =
@@ -102,11 +100,6 @@ export type TextDecoration =
 export interface ImageStyles {
   [IMG_REFERENCE_PROPERTY]?: ImageReference;
   [IMG_DISPLAY_PROPERTY]?: ImageDisplayMode;
-  imgScale?: ImageDimensionPercentage;
-  imgScaleX?: ImageDimensionPercentage;
-  imgScaleY?: ImageDimensionPercentage;
-  imgWidth?: ImageDimension;
-  imgHeight?: ImageDimension;
   iconScale?: number;
 }
 
