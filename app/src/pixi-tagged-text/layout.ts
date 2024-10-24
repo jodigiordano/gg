@@ -1,4 +1,4 @@
-import { convertUnsupportedAlignment, extractDecorations } from "./style.js";
+import { extractDecorations } from "./style.js";
 import { assoc, mapProp, flatReduce, Unary } from "./functionalUtils.js";
 import { getFontPropertiesOfText } from "./helpers.js";
 import {
@@ -7,6 +7,7 @@ import {
   Point as PixiPoint,
   Container,
   Rectangle,
+  ITextStyle,
 } from "pixi.js";
 import {
   Align,
@@ -261,27 +262,10 @@ export const alignLines = (
       alignFunction = alignCenter(maxWidth);
       lastAlignFunction = alignFunction;
       break;
-    case "justify":
-    case "justify-left":
-      alignFunction = alignJustify(maxWidth);
-      lastAlignFunction = alignLeft;
-      break;
-    case "justify-right":
-      alignFunction = alignJustify(maxWidth);
-      lastAlignFunction = alignRight(maxWidth);
-      break;
-    case "justify-center":
-      alignFunction = alignJustify(maxWidth);
-      lastAlignFunction = alignCenter(maxWidth);
-      break;
-    case "justify-all":
-      alignFunction = alignJustify(maxWidth);
+    default:
+      alignFunction = alignLeft;
       lastAlignFunction = alignFunction;
       break;
-    default:
-      throw new Error(
-        `Unsupported alignment type ${align}! Use one of : "left", "right", "center", "justify", "justify-left", "justify-right", justify-center", "justify-all"`,
-      );
   }
 
   for (const line of lines) {
@@ -597,13 +581,9 @@ const notEmptyString = (s: string) => s !== "";
 const SPLIT_MARKER = `_🔪_`;
 export const splitAroundWhitespace = (s: string): string[] =>
   s
-    .replace(/\s/g, `${SPLIT_MARKER}$&${SPLIT_MARKER}`)
+    .replace(/\n/g, `${SPLIT_MARKER}$&${SPLIT_MARKER}`)
     .split(SPLIT_MARKER)
     .filter(s => s !== "");
-
-export const splitText = (s: string): string[] => {
-  return [s].flatMap(splitAroundWhitespace).filter(notEmptyString);
-};
 
 export const calculateTokens = (
   styledTokens: StyledTokens,
@@ -614,16 +594,13 @@ export const calculateTokens = (
 
   let fontProperties: IFontMetrics;
 
-  const generateTokensFormStyledToken =
+  const generateTokensFromStyledToken =
     (style: TextStyleExtended, tags: string) =>
     (token: StyledToken | TextToken | SpriteToken): SegmentToken[] => {
       let output: SegmentToken[] = [];
 
-      const alignClassic = convertUnsupportedAlignment(style.align);
-
-      sizer.style = {
+      sizer.style = <ITextStyle>{
         ...style,
-        align: alignClassic,
         // Override some styles for the purposes of sizing text.
         wordWrap: false,
         dropShadowBlur: 0,
@@ -634,13 +611,15 @@ export const calculateTokens = (
 
       if (typeof token === "string") {
         // split into pieces and convert into tokens.
-
-        const textSegments = splitText(token);
+        const textSegments = [token]
+          .flatMap(splitAroundWhitespace)
+          .filter(notEmptyString);
 
         const textTokens = textSegments.map((str): SegmentToken => {
           sizer.text = str;
+          sizer.updateText(false);
 
-          fontProperties = { ...getFontPropertiesOfText(sizer, true) };
+          fontProperties = { ...getFontPropertiesOfText(sizer) };
 
           // Incorporate the size of the stroke into the size of the text.
           if (isOnlyWhitespace(token) === false) {
@@ -653,20 +632,7 @@ export const calculateTokens = (
             }
           }
 
-          const sw = style.fontScaleWidth ?? 1.0;
-          const sh = style.fontScaleHeight ?? 1.0;
-          // clamp negative or NaN fontScales to 0
-          const scaleWidth = isNaN(sw) || sw < 0 ? 0.0 : sw;
-          const scaleHeight = isNaN(sh) || sh < 0 ? 0.0 : sh;
-
-          sizer.scale.set(scaleWidth, scaleHeight);
-
-          fontProperties.ascent *= scaleHeight;
-          fontProperties.descent *= scaleHeight;
-          fontProperties.fontSize *= scaleHeight;
-
           const bounds = rectFromContainer(sizer);
-          // bounds.height = fontProperties.fontSize;
 
           const textDecorations = extractDecorations(
             style,
@@ -679,11 +645,11 @@ export const calculateTokens = (
             adjustFontBaseline,
             fontProperties.ascent,
           );
+
           fontProperties.ascent += baselineAdjustment;
 
-          const { letterSpacing } = style;
-          if (letterSpacing) {
-            bounds.width += letterSpacing;
+          if (style.letterSpacing) {
+            bounds.width += style.letterSpacing;
           }
 
           const convertedToken = {
@@ -700,6 +666,7 @@ export const calculateTokens = (
           if (isOnlyWhitespace(str)) {
             bounds.width -= style.strokeThickness ?? 0;
           }
+
           return convertedToken;
         });
 
@@ -709,7 +676,7 @@ export const calculateTokens = (
         const imgDisplay = style[IMG_DISPLAY_PROPERTY];
         // const isBlockImage = imgDisplay === "block";
         const isIcon = imgDisplay === "icon";
-        fontProperties = { ...getFontPropertiesOfText(sizer, true) };
+        fontProperties = { ...getFontPropertiesOfText(sizer) };
 
         if (isIcon) {
           // Set to minimum of 1 to avoid devide by zero.
@@ -723,14 +690,6 @@ export const calculateTokens = (
               (fontProperties.ascent / h) * ICON_SCALE_BASE * iconScale;
             sprite.scale.set(ratio);
           }
-
-          const {
-            fontScaleWidth: scaleX = 1.0,
-            fontScaleHeight: scaleY = 1.0,
-          } = style;
-
-          sprite.scale.x *= scaleX;
-          sprite.scale.y *= scaleY;
         }
 
         // handle images
@@ -764,7 +723,7 @@ export const calculateTokens = (
         }
 
         output = output.concat(
-          children.flatMap(generateTokensFormStyledToken(newStyle, newTags)),
+          children.flatMap(generateTokensFromStyledToken(newStyle, newTags)),
         );
       }
       return output;
@@ -775,7 +734,7 @@ export const calculateTokens = (
   const style: TextStyleExtended = defaultStyle;
 
   const finalTokens = styledTokens.children.flatMap(
-    generateTokensFormStyledToken(style, tags),
+    generateTokensFromStyledToken(style, tags),
   );
 
   const { wordWrap: ww, wordWrapWidth: www } = defaultStyle;

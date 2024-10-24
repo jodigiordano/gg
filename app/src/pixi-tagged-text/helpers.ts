@@ -5,37 +5,16 @@ import {
 } from "./types.js";
 import { Sprite, TextMetrics, Text } from "pixi.js";
 
-export const measureFont = (context: { font: string }): IFontMetrics =>
-  TextMetrics.measureFont(context.font);
+const metrics: Record<string, IFontMetrics> = {};
 
-export const INITIAL_FONT_PROPS: IFontMetrics = {
-  ascent: 10,
-  descent: 3,
-  fontSize: 13,
-};
-
-// TODO: Memoize
-export const getFontPropertiesOfText = (
-  textField: Text,
-  forceUpdate = false,
-): IFontMetrics => {
-  if (forceUpdate) {
-    textField.updateText(false);
-    return measureFont(textField.context);
-  } else {
-    const props = measureFont(textField.context);
-    const fs = Number(textField.style.fontSize) ?? NaN;
-    if (
-      props.ascent === INITIAL_FONT_PROPS.ascent &&
-      props.descent === INITIAL_FONT_PROPS.descent &&
-      (isNaN(fs) || fs > INITIAL_FONT_PROPS.fontSize)
-    ) {
-      throw new Error(
-        "getFontPropertiesOfText() returned metrics associated with a Text field that has not been updated yet. Please try using the forceUpdate parameter when you call this function.",
-      );
-    }
-    return measureFont(textField.context);
+export const getFontPropertiesOfText = (textField: Text): IFontMetrics => {
+  if (!metrics[textField.context.font]) {
+    metrics[textField.context.font] = TextMetrics.measureFont(
+      textField.context.font,
+    );
   }
+
+  return metrics[textField.context.font];
 };
 
 export const cloneSprite = (sprite: Sprite): Sprite => {

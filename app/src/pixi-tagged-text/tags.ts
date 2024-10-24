@@ -211,7 +211,7 @@ export const containsEmoji = (input: string): boolean => emojiRegex.test(input);
 /**
  * Converts a string into a list of tokens that match segments of text with styles.
  */
-export const parseTagsNew = (
+export const parseTags = (
   input: string,
 ): CompositeToken<TagToken | TextToken> => {
   if (containsEmoji(input)) {

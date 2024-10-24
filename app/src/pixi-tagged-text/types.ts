@@ -48,7 +48,6 @@ export interface TaggedTextOptions {
 // PROPERTY NAMES
 export const IMG_REFERENCE_PROPERTY = "imgSrc";
 export const IMG_DISPLAY_PROPERTY = "imgDisplay";
-export const DEFAULT_KEY = "default";
 
 export enum MeasurementUnit {
   default = "px",
@@ -79,14 +78,7 @@ export type Color = string | number;
 export type FontSize = MeasurementValue;
 export type Fill = Color | string[] | number[] | CanvasGradient | CanvasPattern;
 export type VAlign = "top" | "middle" | "bottom" | "baseline" | number;
-export type AlignClassic = "left" | "right" | "center" | "justify";
-export type Align =
-  | AlignClassic
-  | "justify"
-  | "justify-left"
-  | "justify-right"
-  | "justify-center"
-  | "justify-all";
+export type Align = "left" | "right" | "center";
 export type ImageDisplayMode = "icon" | "block" | "inline";
 export type ImageReference = string;
 export type FontStyle = "normal" | "italic" | "oblique";
@@ -135,10 +127,6 @@ export interface VerticalSpacingStyles {
   paragraphSpacing?: number;
   adjustBaseline?: number;
 }
-export interface FontScaleStyles {
-  fontScaleWidth?: number;
-  fontScaleHeight?: number;
-}
 
 export interface LineBreakStyles {
   breakLines?: boolean;
@@ -152,7 +140,6 @@ export interface TextStyleExtended
     TextDecorationStyles,
     VerticalAlignStyles,
     VerticalSpacingStyles,
-    FontScaleStyles,
     LineBreakStyles {
   // Overridden properties
   align?: Align;
