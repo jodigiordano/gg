@@ -73,6 +73,11 @@ const createLinkToVisual = new SystemSelector();
 let createLinkSystemA: RuntimeSubsystem | null = null;
 
 //
+// Whether the pointer is in the canvas or not.
+//
+let inCanvas: boolean = true;
+
+//
 // Handlers.
 //
 
@@ -680,6 +685,84 @@ function onSelected(state: State): void {
   setNewLineProperties();
 }
 
+function onPointerUp(state: State): void {
+  viewport.pause = false;
+
+  //
+  // Create a new line.
+  //
+  if (createLinkSystemA) {
+    const b = state.simulator.getSubsystemAt(state.x, state.y);
+
+    if (b && b.id !== createLinkSystemA.id) {
+      modifySpecification(() => {
+        linkSelected = addLink(
+          state.simulator.getSystem(),
+          createLinkSystemA!.id,
+          b!.id,
+          {
+            startPattern: LineStartProperty.value(),
+            middlePattern: LineMiddleProperty.value(),
+            endPattern: LineEndProperty.value(),
+            backgroundColor: Paint.value(),
+            opacity: OpacityProperty.value(),
+            titleOpacity: OpacityProperty.value(),
+          },
+        );
+      }).then(() => {
+        onModified(state);
+        tick();
+      });
+    } else {
+      onBegin(state);
+      tick();
+    }
+
+    return;
+  }
+
+  //
+  // Select one link title.
+  //
+  if (linkTitleSelected) {
+    onModified(state);
+
+    return;
+  }
+
+  //
+  // Move one link, or not.
+  //
+  if (linkSelected) {
+    if (
+      moveLinkSystemBefore &&
+      moveLinkSystemAfter &&
+      // The user must move the linker at least one block.
+      linkLinkerVisual.length >= 1
+    ) {
+      modifySpecification(() => {
+        moveLink(
+          linkSelected!,
+          moveLinkSystemBefore!.id,
+          moveLinkSystemAfter!.id,
+        );
+      }).then(() => {
+        onModified(state);
+        tick();
+      });
+    } else {
+      onModified(state);
+    }
+
+    return;
+  }
+
+  //
+  // Operation incomplete.
+  //
+  onBegin(state);
+}
+
 const operation: Operation = {
   id: "operation-link",
   setup: () => {
@@ -772,91 +855,29 @@ const operation: Operation = {
     //
     onBegin(state);
   },
-  onPointerUp: state => {
-    viewport.pause = false;
-
-    //
-    // Create a new line.
-    //
-    if (createLinkSystemA) {
-      const b = state.simulator.getSubsystemAt(state.x, state.y);
-
-      if (b && b.id !== createLinkSystemA.id) {
-        modifySpecification(() => {
-          linkSelected = addLink(
-            state.simulator.getSystem(),
-            createLinkSystemA!.id,
-            b!.id,
-            {
-              startPattern: LineStartProperty.value(),
-              middlePattern: LineMiddleProperty.value(),
-              endPattern: LineEndProperty.value(),
-              backgroundColor: Paint.value(),
-              opacity: OpacityProperty.value(),
-              titleOpacity: OpacityProperty.value(),
-            },
-          );
-        }).then(() => {
-          onModified(state);
-          tick();
-        });
-      } else {
-        onBegin(state);
-        tick();
-      }
-
-      return;
-    }
-
-    //
-    // Select one link title.
-    //
-    if (linkTitleSelected) {
-      onModified(state);
-
-      return;
-    }
-
-    //
-    // Move one link, or not.
-    //
-    if (linkSelected) {
-      if (
-        moveLinkSystemBefore &&
-        moveLinkSystemAfter &&
-        // The user must move the linker at least one block.
-        linkLinkerVisual.length >= 1
-      ) {
-        modifySpecification(() => {
-          moveLink(
-            linkSelected!,
-            moveLinkSystemBefore!.id,
-            moveLinkSystemAfter!.id,
-          );
-        }).then(() => {
-          onModified(state);
-          tick();
-        });
-      } else {
-        onModified(state);
-      }
-
-      return;
-    }
-
-    //
-    // Operation incomplete.
-    //
-    onBegin(state);
-  },
+  onPointerUp,
   onPointerMove,
   onKeyDown: () => {},
-  onPointerEnter: () => {},
-  onPointerLeave: () => {},
+  onPointerEnter: () => {
+    inCanvas = true;
+  },
+  onPointerLeave: () => {
+    inCanvas = false;
+  },
   onPointerDoublePress: state => {
     onAction(state, "set-title");
   },
   onEvent: () => {},
+  onWindowPointerMove: state => {
+    if (!inCanvas && viewport.pause) {
+      onPointerMove(state);
+    }
+  },
+  onWindowPointerUp: state => {
+    if (!inCanvas && viewport.pause) {
+      onPointerUp(state);
+    }
+  },
 };
 
 export default operation;

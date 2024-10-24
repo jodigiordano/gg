@@ -42,6 +42,11 @@ selectLinkVisual1.tint = "#e6194b";
 selectLinkVisual2.tint = "#e6194b";
 
 //
+// Whether the pointer is in the canvas or not.
+//
+let inCanvas: boolean = true;
+
+//
 // Handlers.
 //
 
@@ -154,6 +159,69 @@ function onBegin(state: State): void {
   onPointerMove(state);
 }
 
+function onPointerUp(state: State): void {
+  //
+  // Erase multiple systems.
+  //
+  if (multiSelectStartAt && multiSelectEndAt) {
+    // Systems are selected in onPointerMove.
+    if (multiSelectVisual.selected.length) {
+      modifySpecification(() => {
+        removeSubsystems(multiSelectVisual.selected);
+      }).then(() => {
+        onBegin(state);
+        tick();
+      });
+    } else {
+      onBegin(state);
+    }
+
+    return;
+  }
+
+  //
+  // Erase one link.
+  //
+  const link = state.simulator.getLinkAt(state.x, state.y);
+
+  if (link) {
+    modifySpecification(() => {
+      removeLink(state.simulator.getSystem(), link);
+    }).then(() => {
+      onBegin(state);
+      tick();
+    });
+
+    return;
+  }
+
+  //
+  // Erase one system.
+  //
+  const subsystem = state.simulator.getSubsystemAt(state.x, state.y);
+
+  if (
+    /* Whitebox */
+    (subsystem &&
+      subsystem.systems.length &&
+      isSystemPadding(subsystem, state.x, state.y)) ||
+    /* Blackbox */
+    (subsystem && !subsystem.systems.length)
+  ) {
+    modifySpecification(() => {
+      removeSubsystems([subsystem]);
+    }).then(() => {
+      onBegin(state);
+      tick();
+    });
+  }
+
+  //
+  // Operation incomplete.
+  //
+  onBegin(state);
+}
+
 const operation: Operation = {
   id: "operation-erase",
   setup: () => {
@@ -207,68 +275,7 @@ const operation: Operation = {
 
     onPointerMove(state);
   },
-  onPointerUp: state => {
-    //
-    // Erase multiple systems.
-    //
-    if (multiSelectStartAt && multiSelectEndAt) {
-      // Systems are selected in onPointerMove.
-      if (multiSelectVisual.selected.length) {
-        modifySpecification(() => {
-          removeSubsystems(multiSelectVisual.selected);
-        }).then(() => {
-          onBegin(state);
-          tick();
-        });
-      } else {
-        onBegin(state);
-      }
-
-      return;
-    }
-
-    //
-    // Erase one link.
-    //
-    const link = state.simulator.getLinkAt(state.x, state.y);
-
-    if (link) {
-      modifySpecification(() => {
-        removeLink(state.simulator.getSystem(), link);
-      }).then(() => {
-        onBegin(state);
-        tick();
-      });
-
-      return;
-    }
-
-    //
-    // Erase one system.
-    //
-    const subsystem = state.simulator.getSubsystemAt(state.x, state.y);
-
-    if (
-      /* Whitebox */
-      (subsystem &&
-        subsystem.systems.length &&
-        isSystemPadding(subsystem, state.x, state.y)) ||
-      /* Blackbox */
-      (subsystem && !subsystem.systems.length)
-    ) {
-      modifySpecification(() => {
-        removeSubsystems([subsystem]);
-      }).then(() => {
-        onBegin(state);
-        tick();
-      });
-    }
-
-    //
-    // Operation incomplete.
-    //
-    onBegin(state);
-  },
+  onPointerUp,
   onPointerMove,
   onKeyDown: (state, event) => {
     //
@@ -285,10 +292,24 @@ const operation: Operation = {
       return;
     }
   },
-  onPointerEnter: () => {},
-  onPointerLeave: () => {},
+  onPointerEnter: () => {
+    inCanvas = true;
+  },
+  onPointerLeave: () => {
+    inCanvas = false;
+  },
   onPointerDoublePress: () => {},
   onEvent: () => {},
+  onWindowPointerMove: state => {
+    if (!inCanvas && viewport.pause) {
+      onPointerMove(state);
+    }
+  },
+  onWindowPointerUp: state => {
+    if (!inCanvas && viewport.pause) {
+      onPointerUp(state);
+    }
+  },
 };
 
 export default operation;
