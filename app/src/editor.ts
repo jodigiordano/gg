@@ -61,21 +61,26 @@ window.addEventListener("pointermove", event => {
     return;
   }
 
+  // Move the viewport.
   if (viewport.moving || viewport.mobileMoving) {
     viewport.move(event.pointerId, event.x, event.y);
   }
-
-  updateStatePosition(event.x, event.y);
 
   if (viewport.mobileMoving) {
     operation.onEnd(state);
   }
 
+  // Update the cursor position in the state.
+  updateStatePosition(event.x, event.y);
+
+  // When moving the viewport, redraw the grid.
   if (viewport.moving || viewport.mobileMoving) {
     redrawGrid();
   } else {
+    // The user moves the pointer on the window.
     operation.onWindowPointerMove(state);
 
+    // The user moves the pointer on the canvas.
     if (event.target && canvasContainer.contains(event.target as Node)) {
       operation.onPointerMove(state);
     }
@@ -111,12 +116,13 @@ canvasContainer.addEventListener("pointerdown", event => {
   tick();
 });
 
-// The user release the pointer in the window.
+// The user releases the pointer in the window.
 window.addEventListener("pointerup", event => {
   if (isModalOpen() || isInitialLoad()) {
     return;
   }
 
+  // Continue or stop moving the viewport.
   viewport.stopMoving(event.pointerId);
 
   if (viewport.moving) {
@@ -133,10 +139,13 @@ window.addEventListener("pointerup", event => {
     return;
   }
 
+  // Update the cursor position in the state.
   updateStatePosition(event.x, event.y);
 
+  // The user releases the pointer on the window.
   operation.onWindowPointerUp(state);
 
+  // The user releases the pointer on the canvas.
   if (event.target && canvasContainer.contains(event.target as Node)) {
     operation.onPointerUp(state);
   }
