@@ -1429,8 +1429,9 @@ function onPointerUp(state: State): void {
     }
 
     if (
-      // User moves the ss over itself.
-      multiSelectVisual.selected.some(ss => ss.id === parent.id) ||
+      // User moves the ss over itself (+ not duplicating).
+      (!systemToDuplicate &&
+        multiSelectVisual.selected.some(ss => ss.id === parent.id)) ||
       // User moves the ss inside the same parent.
       multiSelectVisual.selected.some(ss => ss.parent!.id === parent.id) ||
       // User moves the ss inside a child ss.
@@ -1479,6 +1480,7 @@ function onPointerUp(state: State): void {
 
         modifySpecification(() => {
           if (systemToDuplicate) {
+            console.log("HERE");
             // Local position inside the container.
             const x = state.x - parent.position.x - containerOffset.x;
             const y = state.y - parent.position.y - containerOffset.y;
