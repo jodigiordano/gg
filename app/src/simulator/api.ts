@@ -102,7 +102,7 @@ export function drawSimulation(): void {
 
   tick();
 
-  console.debug("loadSimulation", performance.now() - startTime, "ms");
+  console.debug("drawSimulation", performance.now() - startTime, "ms");
 }
 
 // Container to display simulation objects.
@@ -1000,6 +1000,8 @@ export function calculateTextSizeForSubsystem(
 export async function modifySpecification(
   modifier: () => void,
 ): Promise<boolean> {
+  const startTime = performance.now();
+
   let success = true;
 
   const system = state.simulator.getSystem();
@@ -1028,6 +1030,12 @@ export async function modifySpecification(
     // Rollback if the new configuration is invalid.
     await loadSimulation(currentSpecification);
   }
+
+  console.debug(
+    "modifySpecification",
+    performance.now() - startTime,
+    "ms",
+  );
 
   return success;
 }
