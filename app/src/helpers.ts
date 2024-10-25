@@ -48,3 +48,9 @@ export function getForegroundColor(backgroundColor: string) {
 
   return luminance < 140 ? "#ffffff" : "#000000";
 }
+
+export function extractUrls(html: string): HTMLLinkElement[] {
+  return domParser
+    .parseFromString(html, "text/html")
+    .getElementsByTagName("a") as unknown as HTMLLinkElement[];
+}

@@ -44,6 +44,7 @@ import * as OpacityProperty from "../properties/opacity.js";
 import * as ActionsProperty from "../properties/actions.js";
 import * as Paint from "../properties/actionPaint.js";
 import * as SetTitle from "../properties/actionSetTitle.js";
+import { extractUrls } from "../helpers.js";
 
 //
 // Select & move multiple systems.
@@ -1043,6 +1044,12 @@ function onAction(state: State, value: ActionsProperty.SelectAction): void {
           onTitleChanged(state, value, font, align);
         },
       });
+    } else if (value === "open-link") {
+      const urls = extractUrls(oneSystemSelected.title);
+
+      if (urls.length) {
+        window.open(urls[0].href, "_blank");
+      }
     }
 
     return;
@@ -1071,6 +1078,12 @@ function onAction(state: State, value: ActionsProperty.SelectAction): void {
           onTitleChanged(state, value, font, align);
         },
       });
+    } else if (value === "open-link") {
+      const urls = extractUrls(oneLinkTitleSelected.title);
+
+      if (urls.length) {
+        window.open(urls[0].href, "_blank");
+      }
     }
 
     return;
@@ -1099,6 +1112,12 @@ function onAction(state: State, value: ActionsProperty.SelectAction): void {
           onTitleChanged(state, value, font, align);
         },
       });
+    } else if (value === "open-link") {
+      const urls = extractUrls(oneLinkSelected.title);
+
+      if (urls.length) {
+        window.open(urls[0].href, "_blank");
+      }
     }
 
     return;
@@ -1235,7 +1254,19 @@ function onSelected(state: State): void {
       },
     });
 
+    const actions: ActionsProperty.SelectAction[] = [
+      "delete",
+      "duplicate",
+      "paint",
+      "set-title",
+    ];
+
+    if (extractUrls(oneSystemSelected.title).length) {
+      actions.push("open-link");
+    }
+
     ActionsProperty.show({
+      actions,
       onChange: value => {
         onAction(state, value);
       },
@@ -1282,8 +1313,18 @@ function onSelected(state: State): void {
       },
     });
 
+    const actions: ActionsProperty.SelectAction[] = [
+      "delete",
+      "paint",
+      "set-title",
+    ];
+
+    if (extractUrls(oneLinkTitleSelected.title).length) {
+      actions.push("open-link");
+    }
+
     ActionsProperty.show({
-      actions: ["delete", "paint", "set-title"],
+      actions,
       onChange: value => {
         onAction(state, value);
       },
@@ -1344,8 +1385,18 @@ function onSelected(state: State): void {
       },
     });
 
+    const actions: ActionsProperty.SelectAction[] = [
+      "delete",
+      "paint",
+      "set-title",
+    ];
+
+    if (extractUrls(oneLinkSelected.title).length) {
+      actions.push("open-link");
+    }
+
     ActionsProperty.show({
-      actions: ["delete", "paint", "set-title"],
+      actions,
       onChange: value => {
         onAction(state, value);
       },

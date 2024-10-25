@@ -33,6 +33,7 @@ import * as ActionsProperty from "../properties/actions.js";
 import * as Paint from "../properties/actionPaint.js";
 import * as SetTitle from "../properties/actionSetTitle.js";
 import { BorderPattern } from "@gg/core";
+import { extractUrls } from "../helpers.js";
 
 //
 // Hover a link.
@@ -537,6 +538,12 @@ function onAction(state: State, value: ActionsProperty.SelectAction): void {
           onTitleChanged(state, value, font, align);
         },
       });
+    } else if (value === "open-link") {
+      const urls = extractUrls(linkTitleSelected.title);
+
+      if (urls.length) {
+        window.open(urls[0].href, "_blank");
+      }
     }
 
     return;
@@ -565,6 +572,12 @@ function onAction(state: State, value: ActionsProperty.SelectAction): void {
           onTitleChanged(state, value, font, align);
         },
       });
+    } else if (value === "open-link") {
+      const urls = extractUrls(linkSelected.title);
+
+      if (urls.length) {
+        window.open(urls[0].href, "_blank");
+      }
     }
 
     return;
@@ -608,8 +621,18 @@ function onSelected(state: State): void {
       },
     });
 
+    const actions: ActionsProperty.SelectAction[] = [
+      "delete",
+      "paint",
+      "set-title",
+    ];
+
+    if (extractUrls(linkTitleSelected.title).length) {
+      actions.push("open-link");
+    }
+
     ActionsProperty.show({
-      actions: ["delete", "paint", "set-title"],
+      actions,
       onChange: value => {
         onAction(state, value);
       },
@@ -670,8 +693,18 @@ function onSelected(state: State): void {
       },
     });
 
+    const actions: ActionsProperty.SelectAction[] = [
+      "delete",
+      "paint",
+      "set-title",
+    ];
+
+    if (extractUrls(linkSelected.title).length) {
+      actions.push("open-link");
+    }
+
     ActionsProperty.show({
-      actions: ["delete", "paint", "set-title"],
+      actions,
       onChange: value => {
         onAction(state, value);
       },
