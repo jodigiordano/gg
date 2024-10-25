@@ -194,6 +194,7 @@ export const createTokensNew = (
       }
     }
   }
+
   if (tokenStack.length > 1) {
     console.warn(
       "unclosed-tags",

@@ -34,21 +34,21 @@ const DEFAULT_OPTIONS: TaggedTextOptions = {
 };
 
 export default class TaggedText extends Sprite {
-  private _options: TaggedTextOptions;
-  private _tokens: ParagraphToken = [];
-  private _text = "";
-  private _tagStyles: TextStyleSet = {};
+  private options: TaggedTextOptions;
+  private tokens: ParagraphToken = [];
+  private text = "";
+  private tagStyles: TextStyleSet = {};
 
-  private _textFields: Text[] = [];
-  private _sprites: Sprite[] = [];
-  private _decorations: Graphics[] = [];
-  private _spriteTemplates: Record<string, Sprite> = {};
-  private _debugGraphics: Graphics;
+  private textFields: Text[] = [];
+  private sprites: Sprite[] = [];
+  private spriteTemplates: Record<string, Sprite> = {};
+  private debugGraphics: Graphics;
 
-  private _textContainer: Container;
-  private _decorationContainer: Container;
-  private _spriteContainer: Container;
-  private _debugContainer: Container;
+  private textContainer: Container;
+  private spriteContainer: Container;
+  private debugContainer: Container;
+
+  public tokensFlat: SegmentToken[] = [];
 
   constructor(
     text = "",
@@ -58,19 +58,17 @@ export default class TaggedText extends Sprite {
   ) {
     super(texture);
 
-    this._textContainer = new Container();
-    this._spriteContainer = new Container();
-    this._decorationContainer = new Container();
-    this._debugContainer = new Container();
-    this._debugGraphics = new Graphics();
+    this.textContainer = new Container();
+    this.spriteContainer = new Container();
+    this.debugContainer = new Container();
+    this.debugGraphics = new Graphics();
 
-    this.addChild(this._textContainer);
-    this.addChild(this._spriteContainer);
-    this.addChild(this._decorationContainer);
-    this.addChild(this._debugContainer);
+    this.addChild(this.textContainer);
+    this.addChild(this.spriteContainer);
+    this.addChild(this.debugContainer);
 
     const mergedOptions = { ...DEFAULT_OPTIONS, ...options };
-    this._options = mergedOptions;
+    this.options = mergedOptions;
 
     tagStyles = { default: {}, ...tagStyles };
 
@@ -78,28 +76,24 @@ export default class TaggedText extends Sprite {
 
     tagStyles.default = mergedDefaultStyles;
 
-    this._tagStyles = tagStyles;
+    this.tagStyles = tagStyles;
 
-    if (this._options.imgMap) {
-      this._spriteTemplates = this._options.imgMap;
+    if (this.options.imgMap) {
+      this.spriteTemplates = this.options.imgMap;
     }
 
-    this._text = text;
-  }
-
-  public get tokensFlat(): SegmentToken[] {
-    return this._tokens.flat(3);
+    this.text = text;
   }
 
   public update(): ParagraphToken {
     // Parse tags in the text.
-    const tagTokens = parseTags(this._text);
+    const tagTokens = parseTags(this.text);
 
     // Assign styles to each segment.
     const styledTokens = mapTagsToStyles(
       tagTokens,
-      this._tagStyles,
-      this._options.imgMap && this._spriteTemplates,
+      this.tagStyles,
+      this.options.imgMap && this.spriteTemplates,
     );
 
     // Measure font for each style
@@ -107,10 +101,11 @@ export default class TaggedText extends Sprite {
     // Create the text segments, position and add them. (draw)
     const finalTokens = calculateTokens(
       styledTokens,
-      this._options.adjustFontBaseline,
+      this.options.adjustFontBaseline,
     );
 
-    this._tokens = finalTokens;
+    this.tokens = finalTokens;
+    this.tokensFlat = this.tokens.flat(3);
 
     return finalTokens;
   }
@@ -119,7 +114,7 @@ export default class TaggedText extends Sprite {
    * Create and position the display objects based on the tokens.
    */
   public draw(): void {
-    const { drawWhitespace } = this._options;
+    const { drawWhitespace } = this.options;
 
     const tokens = drawWhitespace
       ? this.tokensFlat
@@ -130,14 +125,13 @@ export default class TaggedText extends Sprite {
     tokens.forEach(t => {
       if (isTextToken(t)) {
         displayObject = this.createTextFieldForToken(t as TextSegmentToken);
-        this._textContainer.addChild(displayObject as DisplayObject);
-        this._textFields.push(displayObject as Text);
+        this.textContainer.addChild(displayObject as DisplayObject);
+        this.textFields.push(displayObject as Text);
 
         if (t.textDecorations && t.textDecorations.length > 0) {
           for (const d of t.textDecorations) {
             const drawing = this.createDrawingForTextDecoration(d);
             displayObject.addChild(drawing as DisplayObject);
-            this._decorations.push(drawing);
           }
         }
       }
@@ -145,8 +139,8 @@ export default class TaggedText extends Sprite {
       if (isSpriteToken(t)) {
         displayObject = t.content as Sprite;
 
-        this._sprites.push(displayObject as Sprite);
-        this._spriteContainer.addChild(displayObject as DisplayObject);
+        this.sprites.push(displayObject as Sprite);
+        this.spriteContainer.addChild(displayObject as DisplayObject);
       }
 
       const { bounds } = t;
@@ -155,7 +149,7 @@ export default class TaggedText extends Sprite {
       displayObject.y = bounds.y;
     });
 
-    if (this._options.debug) {
+    if (this.options.debug) {
       this.drawDebug();
     }
   }
@@ -163,7 +157,7 @@ export default class TaggedText extends Sprite {
   protected createDrawingForTextDecoration(
     textDecoration: TextDecorationMetrics,
   ): Graphics {
-    const { overdrawDecorations: overdraw = 0 } = this._options;
+    const { overdrawDecorations: overdraw = 0 } = this.options;
     const { bounds } = textDecoration;
     let { color } = textDecoration;
     const drawing = new Graphics();
@@ -212,11 +206,11 @@ export default class TaggedText extends Sprite {
       },
     };
 
-    const paragraph = this._tokens;
-    this._debugGraphics = new Graphics();
-    this._debugContainer.addChild(this._debugGraphics);
+    const paragraph = this.tokens;
+    this.debugGraphics = new Graphics();
+    this.debugContainer.addChild(this.debugGraphics);
 
-    const g = this._debugGraphics;
+    const g = this.debugGraphics;
     g.clear();
 
     function createInfoText(text: string, position: Point): Text {
@@ -230,8 +224,8 @@ export default class TaggedText extends Sprite {
       const line = paragraph[lineNumber];
       const lineBounds = getBoundsNested(line);
 
-      if (this._tagStyles?.default?.wordWrap) {
-        const w = this._tagStyles?.default?.wordWrapWidth ?? this.width;
+      if (this.tagStyles?.default?.wordWrap) {
+        const w = this.tagStyles?.default?.wordWrapWidth ?? this.width;
         g.endFill()
           .lineStyle(0.5, DEBUG.LINE_COLOR, 0.2)
           .drawRect(0, lineBounds.y, w, lineBounds.height)
@@ -256,7 +250,7 @@ export default class TaggedText extends Sprite {
 
           if (
             isWhitespaceToken(segmentToken) &&
-            this._options.drawWhitespace === false
+            this.options.drawWhitespace === false
           ) {
             g.lineStyle(1, DEBUG.WHITESPACE_STROKE_COLOR, 1).beginFill(
               DEBUG.WHITESPACE_COLOR,
@@ -270,7 +264,7 @@ export default class TaggedText extends Sprite {
           }
 
           if (isNewlineToken(segmentToken)) {
-            this._debugContainer.addChild(
+            this.debugContainer.addChild(
               createInfoText("↩︎", { x, y: y + 10 }) as DisplayObject,
             );
           } else {
@@ -288,7 +282,7 @@ export default class TaggedText extends Sprite {
 
           if (isTextToken(segmentToken)) {
             info = `${segmentToken.tags}`;
-            this._debugContainer.addChild(
+            this.debugContainer.addChild(
               createInfoText(info, { x, y }) as DisplayObject,
             );
           }

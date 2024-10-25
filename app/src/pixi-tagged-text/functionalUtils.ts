@@ -5,14 +5,6 @@ import { Nested } from "./types.js";
  */
 type Predicate<T> = (t: T) => boolean;
 
-/**
- * List f => string -> f {string: a} -> f a
- */
-export const pluck =
-  <T, U>(key: keyof U) =>
-  (objects: U[]): T[] =>
-    (objects as (U & Record<string, T>)[]).map<T>(o => o[key]);
-
 export const assoc =
   <T extends Record<string, U>, U>(key: keyof T) =>
   (value: U) =>

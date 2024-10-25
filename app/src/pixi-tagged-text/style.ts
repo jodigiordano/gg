@@ -1,4 +1,3 @@
-import { pluck } from "./functionalUtils.js";
 import {
   AttributesList,
   TagWithAttributes,
@@ -167,6 +166,7 @@ export const mapTagsToStyles = (
     }
 
     const { tag, attributes = {} } = token;
+
     let style: TextStyleExtended = defaultStyle;
     let tags = "";
 
@@ -176,8 +176,10 @@ export const mapTagsToStyles = (
     if (tag) {
       // Put the current tag on the stack.
       tagStack.push({ tagName: tag, attributes });
-      // Get tag names as comma separates string
-      tags = pluck("tagName")(tagStack).join(",");
+
+      // Reduce tags.
+      tags = tagStack.map(t => t.tagName).join(",");
+
       // Merge all tags into a style object.
       style = getStyleForTags(tagStack, styles, styleCache);
       style = convertDecorationToLineProps(style);

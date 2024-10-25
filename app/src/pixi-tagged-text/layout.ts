@@ -726,6 +726,7 @@ export const calculateTokens = (
           children.flatMap(generateTokensFromStyledToken(newStyle, newTags)),
         );
       }
+
       return output;
     };
 
