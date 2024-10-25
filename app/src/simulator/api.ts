@@ -58,7 +58,11 @@ export async function loadSimulation(
             // Set the new simulation in the state.
             state.simulator = new SystemSimulator(data.simulator as any);
 
-            console.debug("loadSimulation", performance.now() - startTime, "ms");
+            console.debug(
+              "loadSimulation",
+              performance.now() - startTime,
+              "ms",
+            );
 
             drawSimulation();
 
