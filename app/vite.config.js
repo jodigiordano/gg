@@ -92,6 +92,11 @@ export default ({ mode }) => {
         generateRobotsTxt: true,
       }),
     ],
+    define: {
+      "import.meta.env.VITE_APP_VERSION": JSON.stringify(
+        process.env.npm_package_version,
+      ),
+    },
     build: {
       outDir: "../dist",
       emptyOutDir: true,
