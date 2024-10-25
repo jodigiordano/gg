@@ -11,8 +11,8 @@ const canvasContainer = document.getElementById("canvas") as HTMLDivElement;
 // Events
 //
 
-// The user moves the cursor in the canvas.
-canvasContainer.addEventListener("pointermove", event => {
+// The user moves the cursor in the window.
+window.addEventListener("pointermove", event => {
   if (viewport.moving) {
     viewport.move(event.pointerId, event.x, event.y);
     tick();
@@ -24,8 +24,8 @@ canvasContainer.addEventListener("pointerdown", event => {
   viewport.startMoving(event.pointerId, event.x, event.y);
 });
 
-// The user release the pointer in the canvas.
-canvasContainer.addEventListener("pointerup", event => {
+// The user releases the pointer in the window.
+window.addEventListener("pointerup", event => {
   viewport.stopMoving(event.pointerId);
 });
 
