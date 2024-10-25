@@ -1031,11 +1031,7 @@ export async function modifySpecification(
     await loadSimulation(currentSpecification);
   }
 
-  console.debug(
-    "modifySpecification",
-    performance.now() - startTime,
-    "ms",
-  );
+  console.debug("modifySpecification", performance.now() - startTime, "ms");
 
   return success;
 }
