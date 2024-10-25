@@ -1,4 +1,9 @@
-export type SelectAction = "delete" | "duplicate" | "paint" | "set-title";
+export type SelectAction =
+  | "delete"
+  | "duplicate"
+  | "paint"
+  | "set-title"
+  | "open-link";
 
 let onChangeCallback: ((action: SelectAction) => void) | null = null;
 
@@ -22,9 +27,9 @@ for (const button of buttons) {
 
 export function show(
   options: {
-    actions?: SelectAction[];
+    actions: SelectAction[];
     onChange?: (action: SelectAction) => void;
-  } = {},
+  } = { actions: [] },
 ): void {
   propertyTitle.classList.remove("hidden");
   property.classList.remove("hidden");
@@ -32,10 +37,7 @@ export function show(
   onChangeCallback = options.onChange ?? null;
 
   for (const button of buttons) {
-    if (
-      !options.actions ||
-      options.actions.includes(button.dataset.value as SelectAction)
-    ) {
+    if (options.actions.includes(button.dataset.value as SelectAction)) {
       button.classList.remove("hidden");
     } else {
       button.classList.add("hidden");
