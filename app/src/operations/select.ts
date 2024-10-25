@@ -1453,7 +1453,14 @@ function onPointerUp(state: State): void {
               systemToDuplicate.links,
             );
 
-            multiSelectVisual.setSelectedFromSubsystems(newSystems);
+            if (newSystems.length > 1) {
+              // Multiple sub-systems were duplicated. Select them.
+              multiSelectVisual.setSelectedFromSubsystems(newSystems);
+            } else {
+              // A single sub-system was duplicated. Select it.
+              onBegin(state);
+              oneSystemSelected = newSystems[0];
+            }
           } else {
             moveSystems(multiSelectVisual.selected, deltaX, deltaY);
           }
@@ -1621,7 +1628,7 @@ function onPointerUp(state: State): void {
   }
 
   //
-  // Move or duplicate one system into a container, or not.
+  // Move one system into a container, or not.
   //
   if (oneSystemSelected && oneSystemPickedUpAt) {
     let parent =
