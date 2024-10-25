@@ -44,6 +44,8 @@ export async function loadSimulation(
   options: { linkIndexToDebug?: number } = {},
 ): Promise<void> {
   return new Promise((resolve, reject) => {
+    const startTime = performance.now();
+
     worker.onCodeLoaded(() => {
       worker
         .sendOperation({
@@ -55,6 +57,8 @@ export async function loadSimulation(
           if (data.success) {
             // Set the new simulation in the state.
             state.simulator = new SystemSimulator(data.simulator as any);
+
+            console.debug("loadSimulation", performance.now() - startTime, "ms");
 
             drawSimulation();
 
@@ -82,6 +86,8 @@ export async function loadSimulation(
 //
 
 export function drawSimulation(): void {
+  const startTime = performance.now();
+
   // Draw the new simulaton.
   container.removeChildren();
 
@@ -91,6 +97,8 @@ export function drawSimulation(): void {
   }
 
   tick();
+
+  console.debug("loadSimulation", performance.now() - startTime, "ms");
 }
 
 // Container to display simulation objects.
