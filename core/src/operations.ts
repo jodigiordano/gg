@@ -512,12 +512,11 @@ export function moveSubsystemsToParent(
   // Find the root system.
   const rootSystem = getRootSystem(subsystems[0]!);
 
-  // Move links of the subsystem.
+  // Remove self-referenced links.
+  // Happens when there is a link between the new parent and the subsystem.
   const speclinks = rootSystem.specification.links ?? [];
   const links = rootSystem.links ?? [];
 
-  // Remove self-referenced links.
-  // Happens when there is a link between the new parent and the subsystem.
   for (let i = links.length - 1; i >= 0; i--) {
     const link = links[i]!;
 
@@ -531,6 +530,7 @@ export function moveSubsystemsToParent(
     }
   }
 
+  // Initialize subsystems with new parent.
   for (const subsystem of subsystems) {
     initSystem(
       subsystem,
@@ -539,9 +539,13 @@ export function moveSubsystemsToParent(
       parent.systems.length - 1,
       parent.depth + 1,
     );
+
+    // When moving a subsystem to a new parent,
+    // that subsystem may need to be resized.
+    computeSystemSize(subsystem, rootSystem.links);
   }
 
-  // By removing systems from a parent,
+  // By removing subsystems from a parent,
   // the siblings of that parent may need to be moved & resized.
   if (previousParent.systems.length) {
     moveSystems([...previousParent.systems], 0, 0);
