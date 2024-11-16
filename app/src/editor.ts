@@ -478,7 +478,7 @@ document
 // File operations
 //
 
-async function newFile(): Promise<void> {
+async function newFile(options: { forceLocal?: boolean } = {}): Promise<void> {
   resetUrlParams();
 
   // Local file.
@@ -491,8 +491,10 @@ async function newFile(): Promise<void> {
     2,
   );
 
+  setConnectivity("local-file");
+
   // Cloud file.
-  if (state.profile.authenticated) {
+  if (!options.forceLocal && state.profile.authenticated) {
     if (state.profile.readOnly) {
       // When in read-only, a local file is created.
       setConnectivity("read-only");
@@ -552,7 +554,7 @@ function isLocalFile(): boolean {
 }
 
 document
-  .getElementById("operation-file-new")
+  .getElementById("operation-file-new-cloud")
   ?.addEventListener("click", function () {
     // When the user creates a new file, we save the current file in the browser
     // history. That way, we don't need a confirmation dialog that asks
@@ -561,6 +563,20 @@ document
     window.history.pushState({}, "");
 
     newFile().then(() => {
+      saveDataIsLoading.classList.add("hidden");
+    });
+  });
+
+document
+  .getElementById("operation-file-new-local")
+  ?.addEventListener("click", function () {
+    // When the user creates a new file, we save the current file in the browser
+    // history. That way, we don't need a confirmation dialog that asks
+    // "are you sure you want to abandon the current work?" as the current work
+    // is not lost.
+    window.history.pushState({}, "");
+
+    newFile({ forceLocal: true }).then(() => {
       saveDataIsLoading.classList.add("hidden");
     });
   });
