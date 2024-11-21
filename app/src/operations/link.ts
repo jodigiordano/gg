@@ -365,6 +365,7 @@ function onBegin(state: State): void {
   setNewLineProperties();
 
   viewport.pause = false;
+  inCanvas = true;
   onPointerMove(state);
 }
 
@@ -810,6 +811,7 @@ const operation: Operation = {
   onEnd: () => {
     resetSingleSelection();
     viewport.pause = false;
+    inCanvas = true;
   },
   onPointerDown: state => {
     viewport.pause = true;

@@ -561,6 +561,7 @@ function onBegin(state: State): void {
   systemToDuplicate = null;
 
   viewport.pause = false;
+  inCanvas = true;
   onPointerMove(state);
 }
 
@@ -1745,6 +1746,7 @@ const operation: Operation = {
     // Shared.
     //
     viewport.pause = false;
+    inCanvas = true;
   },
   onPointerDown: state => {
     viewport.pause = true;

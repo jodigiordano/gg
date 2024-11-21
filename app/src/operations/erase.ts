@@ -156,6 +156,7 @@ function onBegin(state: State): void {
   // Shared.
   //
   viewport.pause = false;
+  inCanvas = true;
   onPointerMove(state);
 }
 
@@ -238,6 +239,7 @@ const operation: Operation = {
     selectLinkVisual2.visible = false;
 
     viewport.pause = false;
+    inCanvas = true;
   },
   onPointerDown: state => {
     viewport.pause = true;
