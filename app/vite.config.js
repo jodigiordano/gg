@@ -1,6 +1,5 @@
 import { defineConfig, loadEnv } from "vite";
 import checker from "vite-plugin-checker";
-import sitemap from "vite-plugin-sitemap";
 import browserslistToEsbuild from "browserslist-to-esbuild";
 import fs from "node:fs";
 
@@ -52,16 +51,6 @@ export default ({ mode }) => {
     root: "src",
     envDir: "../",
     cacheDir: "tmp",
-    server: {
-      host: "0.0.0.0",
-      proxy: {
-        "/api": {
-          target: "http://localhost:3000",
-          changeOrigin: true,
-          secure: false,
-        },
-      },
-    },
     plugins: [
       checker({
         typescript: true,
@@ -69,28 +58,6 @@ export default ({ mode }) => {
       base64Loader(),
       inlineSvgLoader(),
       partialHtmlLoader(),
-      sitemap({
-        hostname: process.env["VITE_PUBLIC_URL"],
-        exclude: [
-          "/viewer",
-          "/profile",
-          "/charts",
-          "/chart",
-          "/export",
-          "/404",
-          "/icons",
-        ],
-        changefreq: "weekly",
-        priority: {
-          "/index": 1.0,
-          "/editor": 0.95,
-          "/plus": 0.9,
-          "/sign-in": 0.8,
-          "/terms": 0.7,
-          "/privacy": 0.7,
-        },
-        generateRobotsTxt: true,
-      }),
     ],
     define: {
       "import.meta.env.VITE_APP_VERSION": JSON.stringify(
@@ -106,16 +73,7 @@ export default ({ mode }) => {
       rollupOptions: {
         input: {
           index: "./src/index.html",
-          editor: "./src/editor.html",
           viewer: "./src/viewer.html",
-          signIn: "./src/sign-in.html",
-          plus: "./src/plus.html",
-          profile: "./src/profile.html",
-          terms: "./src/terms.html",
-          privacy: "./src/privacy.html",
-          charts: "./src/charts.html",
-          chart: "./src/chart.html",
-          export: "./src/export.html",
           404: "./src/404.html",
           icons: "./src/icons.html",
         },

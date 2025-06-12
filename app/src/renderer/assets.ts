@@ -7,15 +7,15 @@ import {
   WRAP_MODES,
 } from "pixi.js";
 import spritesheetData from "../assets/spritesheet.png?base64";
-import awsSpritesheetAtlas from "@gg/icons/dist/aws.json";
+import awsSpritesheetAtlas from "@gg/icons/dist/aws.json" with { type: "json" };
 import awsSpritesheetDataUrl from "@gg/icons/dist/aws.png";
-import gcpSpritesheetAtlas from "@gg/icons/dist/gcp.json";
+import gcpSpritesheetAtlas from "@gg/icons/dist/gcp.json" with { type: "json" };
 import gcpSpritesheetUrl from "@gg/icons/dist/gcp.png";
-import azureSpritesheetAtlas from "@gg/icons/dist/azure.json";
+import azureSpritesheetAtlas from "@gg/icons/dist/azure.json" with { type: "json" };
 import azureSpritesheetUrl from "@gg/icons/dist/azure.png";
-import k8sSpritesheetAtlas from "@gg/icons/dist/k8s.json";
+import k8sSpritesheetAtlas from "@gg/icons/dist/k8s.json" with { type: "json" };
 import k8sSpritesheetUrl from "@gg/icons/dist/k8s.png";
-import networkSpritesheetAtlas from "@gg/icons/dist/network.json";
+import networkSpritesheetAtlas from "@gg/icons/dist/network.json" with { type: "json" };
 import networkSpritesheetUrl from "@gg/icons/dist/network.png";
 
 //

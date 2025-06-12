@@ -1,8 +1,5 @@
 # `gg`
 
-> [!IMPORTANT]
-> This editor is in beta and you should expect breaking changes from time to time, until we reach [v1](https://github.com/jodigiordano/gg/milestone/1).
-
 `gg` is a **diagramming editor** for flowcharts, organizational diagrams, mind maps, process diagrams, network diagrams, database diagrams and more! It helps you produce complex diagrams easily, with its simple UI and its innovative approach to layout.
 
 <p align="center">
@@ -11,10 +8,6 @@
 
 <p align="center">
   <img src="./readme/product.png" />
-</p>
-
-<p align="center">
-  (<a href="https://gg-charts.com/editor.html#id=bebd9fad-7846-4769-bbd5-7d0fcadd2c7b">edit me</a>)
 </p>
 
 ## Features
@@ -76,15 +69,6 @@
     </td>
   </tr>
 </table>
-
-## Examples
-
-- [Boxes and containers](https://gg-charts.com/editor.html#id=be6f8310-4023-43bf-b755-41a4fae250a7)
-- [Lists](https://gg-charts.com/editor.html#id=b9728c85-de27-4a19-a715-fab3e53a59db)
-- [Colors](https://gg-charts.com/editor.html#id=bf442e5c-2689-4953-b228-593e4648ccb7)
-- [Labels on lines](https://gg-charts.com/editor.html#id=5aba2725-ec43-4107-899f-4cbd05666735)
-- [Various line styles and directions](https://gg-charts.com/editor.html#id=cea38700-8656-4b21-872b-af4d4ed7c050)
-- [Fonts, Alignment, Emojis, Unicode, etc.](https://gg-charts.com/editor.html#id=8125ea14-b289-4186-b3b4-b842216db5e2)
 
 ## Usage
 

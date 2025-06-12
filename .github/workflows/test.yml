@@ -21,8 +21,7 @@ jobs:
       - name: Compile
         run: |
           npm ci
-          cp app/.env.template app/.env.staging
-          ENV=staging npm run compile
+          npm run compile
 
   test-core:
     name: Test gg core
@@ -40,43 +39,3 @@ jobs:
           cd core
           npm ci
           npm run test
-
-  test-server:
-    name: Test gg server
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    services:
-      postgres:
-        image: postgres
-        env:
-          POSTGRES_USER: gg
-          POSTGRES_PASSWORD: gg
-          POSTGRES_DB: gg_test
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 5432:5432
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Install Node
-        uses: actions/setup-node@v4
-        with:
-          node-version-file: .nvmrc
-      - name: Prepare database
-        run: |
-          cd infra
-          npm run test:provision:db:init
-      - name: Compile core
-        run: |
-          cd core
-          npm ci
-          npm run compile
-      - name: Test
-        run: |
-          cd server
-          npm ci
-          npm run ci:test
