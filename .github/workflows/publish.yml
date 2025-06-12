@@ -31,6 +31,9 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     needs: compile
+    permissions:
+      id-token: write
+      pages: write
     steps:
       - name: Deploy
         id: deployment
