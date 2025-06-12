@@ -12,7 +12,7 @@
     "prepublishOnly": "npm run lint && npm run compile",
     "lint": "prettier . --write",
     "dev": "vite",
-    "compile": "rm -rf dist && tsc && vite build --mode $ENV",
+    "compile": "rm -rf dist && tsc && vite build",
     "preview": "vite preview"
   },
   "devDependencies": {
@@ -21,8 +21,7 @@
     "prettier": "3.x",
     "typescript": "5.x",
     "vite": "5.x",
-    "vite-plugin-checker": "0.8.x",
-    "vite-plugin-sitemap": "0.7.x"
+    "vite-plugin-checker": "0.8.x"
   },
   "dependencies": {
     "@gg/core": "0.x",

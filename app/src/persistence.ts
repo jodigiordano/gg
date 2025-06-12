@@ -6,17 +6,7 @@ export async function load(): Promise<string> {
 
   let value: string | null = null;
 
-  if (urlParams.id) {
-    const response = await fetch(`/api/charts/${urlParams.id}`);
-
-    if (!response.ok) {
-      throw new Error(`GET /api/charts/${urlParams.id} failed`);
-    }
-
-    const chart = await response.json();
-
-    return JSON.stringify(chart.data, null, 2);
-  } else if (urlParams.file) {
+  if (urlParams.file) {
     value = new TextDecoder().decode(
       pako.inflate(
         Uint8Array.from(window.atob(urlParams.file), c => c.codePointAt(0)!),
@@ -43,36 +33,6 @@ export async function load(): Promise<string> {
 export async function save(value: string): Promise<void> {
   const urlParams = getUrlParams();
 
-  // Cloud save.
-  if (urlParams.id) {
-    try {
-      const response = await fetch(`/api/charts/${urlParams.id}`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          data: value,
-        }),
-      });
-
-      // When we can't save the chart in the cloud,
-      // we fallback to save it locally.
-      if (response.status !== 204) {
-        window.localStorage.setItem(urlParams.id, value);
-
-        throw new Error(`PATCH /api/charts/${urlParams.id} failed`);
-      }
-    } catch {
-      window.localStorage.setItem(urlParams.id, value);
-
-      throw new Error(`PATCH /api/charts/${urlParams.id} failed`);
-    }
-
-    return;
-  }
-
-  // Local save.
   window.localStorage.setItem("file", value);
 
   const encodedValue = window.btoa(

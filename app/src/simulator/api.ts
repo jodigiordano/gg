@@ -22,10 +22,9 @@ import { BlockSize, getForegroundColor } from "../helpers.js";
 import { tick } from "../renderer/pixi.js";
 import viewport from "../renderer/viewport.js";
 import { state, pushChange } from "../state.js";
-import { getUrlParams, save } from "../persistence.js";
+import { save } from "../persistence.js";
 import { setJsonEditorValue } from "../jsonEditor.js";
 import WebWorker from "../worker.js";
-import { setConnectivity } from "../connectivity.js";
 import { setFullTagRegex } from "../pixi-tagged-text/tags.js";
 
 //
@@ -1021,9 +1020,7 @@ export async function modifySpecification(
     pushChange(newSpecification);
     setJsonEditorValue(newSpecification);
 
-    save(newSpecification)
-      .then(() => setConnectivity(getUrlParams().file ? "local-file" : "ok"))
-      .catch(() => setConnectivity("save-failed"));
+    save(newSpecification);
   } catch {
     success = false;
 

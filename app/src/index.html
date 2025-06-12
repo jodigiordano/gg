@@ -2,168 +2,600 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=0.75" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=0.60, minimum-scale=0.60, maximum-scale=0.60"
+    />
     <partial>description</partial>
     <partial>favicon</partial>
     <link rel="stylesheet" href="index.css" />
-    <title>gg charts</title>
+    <title>Editor</title>
+    <partial>theme</partial>
   </head>
   <body>
     <div id="header">
-      <div id="header-content">
-        <a id="header-logo" href="/">
-          <inline-svg>logo</inline-svg>
-        </a>
-        <div id="header-right">
-          <a href="/editor.html">
-            <button class="primary" title="Go to editor">Start now</button>
+      <div id="header-title">gg</div>
+      <div class="dropdown">
+        <button>file</button>
+        <ul class="content closed">
+          <li class="separator authenticated hidden"></li>
+          <li id="operation-file-new-local">
+            <inline-svg>icon-file-new</inline-svg>
+            new chart
+          </li>
+          <li id="operation-file-open-from-disk">
+            <inline-svg>icon-file-load-disk</inline-svg>
+            open from disk
+          </li>
+          <li id="operation-file-save-to-disk">
+            <inline-svg>icon-file-save-disk</inline-svg>
+            save to disk
+          </li>
+          <li class="separator"></li>
+          <li id="operation-export-png">
+            <inline-svg>icon-export-png</inline-svg>
+            export to PNG
+          </li>
+        </ul>
+      </div>
+      <div class="dropdown">
+        <button>view</button>
+        <ul class="content closed">
+          <li id="operation-file-properties-open">
+            <inline-svg>icon-properties</inline-svg>
+            chart properties
+          </li>
+          <li id="operation-goto-viewer">
+            <inline-svg>icon-viewer</inline-svg>
+            presentation mode
+          </li>
+          <li id="operation-json-editor-open">
+            <inline-svg>icon-json-editor</inline-svg>
+            json editor
+          </li>
+          <li id="operation-theme">
+            <inline-svg>icon-theme</inline-svg>
+            switch theme
+          </li>
+        </ul>
+      </div>
+      <div class="dropdown">
+        <button>help</button>
+        <ul class="content closed">
+          <li id="operation-help-guide">
+            <inline-svg>icon-documentation</inline-svg>
+            documentation
+          </li>
+          <li id="operation-help-privacy">
+            <inline-svg>icon-privacy</inline-svg>
+            privacy
+          </li>
+          <a href="https://github.com/jodigiordano/gg" target="_blank">
+            <li>
+              <inline-svg>icon-github</inline-svg>
+              github
+            </li>
           </a>
+          <li class="separator"></li>
+          <li>version: %VITE_APP_VERSION%</li>
+        </ul>
+      </div>
+    </div>
+    <div id="content">
+      <div id="toolbox">
+        <div class="operations">
+          <button id="operation-undo" title="Undo">
+            <inline-svg>icon-undo</inline-svg>
+            <div class="keyboard">[</div>
+          </button>
+          <button id="operation-redo" title="Redo">
+            <inline-svg>icon-redo</inline-svg>
+            <div class="keyboard">]</div>
+          </button>
+        </div>
+        <div class="separator"></div>
+        <div class="operations">
+          <button
+            id="operation-select"
+            title="Move"
+            class="selected single-choice"
+          >
+            <inline-svg>icon-move</inline-svg>
+            <div class="keyboard">1</div>
+          </button>
+          <button id="operation-erase" title="Eraser" class="single-choice">
+            <inline-svg>icon-eraser</inline-svg>
+            <div class="keyboard">2</div>
+          </button>
+          <button id="operation-add-box" title="Add box" class="single-choice">
+            <inline-svg>icon-box</inline-svg>
+            <div class="keyboard">3</div>
+          </button>
+          <button
+            id="operation-link"
+            title="Add or modify a line"
+            class="single-choice"
+          >
+            <inline-svg>icon-link</inline-svg>
+            <div class="keyboard">4</div>
+          </button>
+          <button
+            id="operation-add-list"
+            title="Add list"
+            class="single-choice"
+          >
+            <inline-svg>icon-list</inline-svg>
+            <div class="keyboard">5</div>
+          </button>
+          <button
+            id="operation-set-color"
+            title="Color boxes & lines"
+            class="single-choice"
+          >
+            <inline-svg>icon-paint</inline-svg>
+            <div class="keyboard">6</div>
+          </button>
+          <button
+            id="operation-debug"
+            title="Debug"
+            class="hidden single-choice"
+          >
+            <inline-svg>icon-debug</inline-svg>
+          </button>
+        </div>
+        <div id="property-border-title" class="separator-with-title hidden">
+          border
+        </div>
+        <div id="property-border" class="operations properties hidden">
+          <button title="Dotted border" data-value="dotted">
+            <inline-svg>icon-border-dotted</inline-svg>
+          </button>
+          <button title="Solid border" data-value="solid">
+            <inline-svg>icon-border-solid</inline-svg>
+          </button>
+          <button title="Light border" data-value="light">
+            <inline-svg>icon-border-light</inline-svg>
+          </button>
+        </div>
+        <div
+          id="property-border-edges-title"
+          class="separator-with-title hidden"
+        >
+          edges
+        </div>
+        <div id="property-border-edges" class="operations properties hidden">
+          <button title="Straight edges" data-value="straight">
+            <inline-svg>icon-border-edges-straight</inline-svg>
+          </button>
+          <button title="Round edges" data-value="round">
+            <inline-svg>icon-border-edges-round</inline-svg>
+          </button>
+        </div>
+        <div id="property-line-start-title" class="separator-with-title hidden">
+          start
+        </div>
+        <div id="property-line-start" class="operations properties hidden">
+          <button title="None" data-value="none">
+            <inline-svg>icon-link-start-none</inline-svg>
+          </button>
+          <button title="Triangle" data-value="solid-arrow">
+            <inline-svg>icon-link-start-solid-arrow</inline-svg>
+          </button>
+        </div>
+        <div
+          id="property-line-middle-title"
+          class="separator-with-title hidden"
+        >
+          middle
+        </div>
+        <div id="property-line-middle" class="operations properties hidden">
+          <button title="Dotted line" data-value="dotted-line">
+            <inline-svg>icon-link-middle-dotted</inline-svg>
+          </button>
+          <button title="Solid line" data-value="solid-line">
+            <inline-svg>icon-link-middle-solid</inline-svg>
+          </button>
+          <button title="Pipe line" data-value="pipe">
+            <inline-svg>icon-link-middle-pipe</inline-svg>
+          </button>
+        </div>
+        <div id="property-line-end-title" class="separator-with-title hidden">
+          end
+        </div>
+        <div id="property-line-end" class="operations properties hidden">
+          <button title="None" data-value="none">
+            <inline-svg>icon-link-end-none</inline-svg>
+          </button>
+          <button title="Triangle" data-value="solid-arrow">
+            <inline-svg>icon-link-end-solid-arrow</inline-svg>
+          </button>
+        </div>
+        <div id="property-text-font-title" class="separator-with-title hidden">
+          font
+        </div>
+        <div id="property-text-font" class="operations properties hidden">
+          <button title="Text" data-value="text">
+            <inline-svg>icon-text-font-text</inline-svg>
+          </button>
+          <button title="Sketch" data-value="sketch">
+            <inline-svg>icon-text-font-sketch</inline-svg>
+          </button>
+          <button title="Code" data-value="code">
+            <inline-svg>icon-text-font-code</inline-svg>
+          </button>
+        </div>
+        <div id="property-text-align-title" class="separator-with-title hidden">
+          align
+        </div>
+        <div id="property-text-align" class="operations properties hidden">
+          <button title="Left" data-value="left">
+            <inline-svg>icon-text-align-left</inline-svg>
+          </button>
+          <button title="Center" data-value="center">
+            <inline-svg>icon-text-align-center</inline-svg>
+          </button>
+          <button title="Right" data-value="right">
+            <inline-svg>icon-text-align-right</inline-svg>
+          </button>
+        </div>
+        <div id="property-opacity-title" class="separator-with-title hidden">
+          opacity
+        </div>
+        <div id="property-opacity" class="operations properties hidden">
+          <button id="property-opacity-33" title="Light" data-value="0.33">
+            <inline-svg>icon-opacity</inline-svg>
+          </button>
+          <button id="property-opacity-66" title="Medium" data-value="0.66">
+            <inline-svg>icon-opacity</inline-svg>
+          </button>
+          <button id="property-opacity-100" title="Full" data-value="1.0">
+            <inline-svg>icon-opacity</inline-svg>
+          </button>
+        </div>
+        <div id="property-actions-title" class="separator-with-title hidden">
+          actions
+        </div>
+        <div id="property-actions" class="operations properties hidden">
+          <button title="Delete" data-value="delete">
+            <inline-svg>icon-trash</inline-svg>
+          </button>
+          <button id="property-actions-paint" title="Paint" data-value="paint">
+            <inline-svg>icon-paint</inline-svg>
+          </button>
+          <button title="Duplicate" data-value="duplicate">
+            <inline-svg>icon-duplicate</inline-svg>
+          </button>
+          <button title="Set title" data-value="set-title">
+            <inline-svg>icon-text</inline-svg>
+          </button>
+          <button title="Open link" data-value="open-link">
+            <inline-svg>icon-open-link</inline-svg>
+          </button>
+        </div>
+        <div class="separator-camera"></div>
+        <div class="operations">
+          <button id="operation-camera-fit" title="Fit to screen">
+            <inline-svg>icon-zoom-fit</inline-svg>
+            <div class="keyboard">=</div>
+          </button>
+          <button id="operation-pan" title="Pan" class="single-choice">
+            <inline-svg>icon-pan</inline-svg>
+          </button>
+          <button id="operation-camera-zoom-out" title="Zoom out">
+            <inline-svg>icon-zoom-out</inline-svg>
+            <div class="keyboard">-</div>
+          </button>
+          <button id="operation-camera-zoom-in" title="Zoom in">
+            <inline-svg>icon-zoom-in</inline-svg>
+            <div class="keyboard">+</div>
+          </button>
         </div>
       </div>
+      <div id="canvas"></div>
+      <div id="save-data-is-loading">Loading...</div>
     </div>
-    <div id="intro">
-      <div id="intro-text">
-        <h1>Your smart<br />diagramming editor.</h1>
-        <h2>Local first. Privacy friendly.<br />Assisted layout.</h2>
-        <div id="intro-actions">
-          <a href="/editor.html">
-            <button class="primary" title="Go to editor">Start</button>
-          </a>
-          <!--<button class="secondary" title="Download">Download</button>-->
+    <dialog id="json-editor">
+      <div class="content">
+        <h1>JSON Editor</h1>
+        <textarea autocomplete="off"></textarea>
+        <form method="dialog">
+          <button id="operation-json-editor-apply-changes">
+            apply changes
+          </button>
+          <button>cancel</button>
+        </form>
+      </div>
+    </dialog>
+    <dialog id="guide">
+      <div class="content">
+        <h1>Documentation</h1>
+        <p>
+          In gg, you add
+          <b>boxes</b> <inline-svg>icon-box</inline-svg> and <b>lists</b>
+          <inline-svg>icon-list</inline-svg>
+          to the canvas and then you create links between them with
+          <b>lines</b> <inline-svg>icon-link</inline-svg>.
+        </p>
+        <table>
+          <caption>
+            General operations
+          </caption>
+          <tbody>
+            <tr>
+              <td><inline-svg>icon-undo</inline-svg></td>
+              <td>Undo an operation.</td>
+            </tr>
+            <tr>
+              <td><inline-svg>icon-redo</inline-svg></td>
+              <td>Redo an operation.</td>
+            </tr>
+            <tr>
+              <td><inline-svg>icon-move</inline-svg></td>
+              <td>
+                <p>Select one or many boxes, lines, etc. in the canvas.</p>
+                <p>Move one or many boxes, lines, etc. in the canvas.</p>
+                <p>Move one or many boxes inside other boxes.</p>
+                <p>Move a line between boxes.</p>
+              </td>
+            </tr>
+            <tr>
+              <td><inline-svg>icon-eraser</inline-svg></td>
+              <td>Remove one or many boxes, lines, etc. from the canvas.</td>
+            </tr>
+            <tr>
+              <td><inline-svg>icon-paint</inline-svg></td>
+              <td>Paint a box, a list, a line, etc.</td>
+            </tr>
+            <tr>
+              <td><inline-svg>icon-trash</inline-svg></td>
+              <td>Remove one or many selected boxes, lists, etc.</td>
+            </tr>
+            <tr>
+              <td><inline-svg>icon-duplicate</inline-svg></td>
+              <td>Duplicate one or many selected boxes, lists, etc.</td>
+            </tr>
+          </tbody>
+        </table>
+        <table>
+          <caption>
+            Operations on boxes & lists
+          </caption>
+          <tbody>
+            <tr>
+              <td><inline-svg>icon-box</inline-svg></td>
+              <td>Add a box to the canvas.</td>
+            </tr>
+            <tr>
+              <td><inline-svg>icon-list</inline-svg></td>
+              <td>Add a list to the canvas.</td>
+            </tr>
+          </tbody>
+        </table>
+        <table>
+          <caption>
+            Operations on lines
+          </caption>
+          <tbody>
+            <tr>
+              <td><inline-svg>icon-link</inline-svg></td>
+              <td>
+                <p>Select an existing line to change its properties.</p>
+                <p>Add a new line between two boxes, lists, etc.</p>
+                <p>
+                  Hold your pointer on the first box then drag your pointer to
+                  the second box to create the line.
+                </p>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <table>
+          <caption>
+            Operations on canvas
+          </caption>
+          <tbody>
+            <tr>
+              <td><inline-svg>icon-zoom-fit</inline-svg></td>
+              <td>Fit the camera to show all the content of the canvas.</td>
+            </tr>
+            <tr>
+              <td><inline-svg>icon-zoom-in</inline-svg></td>
+              <td>Zoom in the canvas.</td>
+            </tr>
+            <tr>
+              <td><inline-svg>icon-zoom-out</inline-svg></td>
+              <td>Zoom out of the canvas.</td>
+            </tr>
+            <tr>
+              <td><inline-svg>icon-pan</inline-svg></td>
+              <td>Pan the camera in the canvas.</td>
+            </tr>
+          </tbody>
+        </table>
+        <form method="dialog">
+          <button>close</button>
+        </form>
+      </div>
+    </dialog>
+    <dialog id="privacy">
+      <div class="content">
+        <h1>Privacy</h1>
+        <p>gg value your time and your privacy:</p>
+        <div class="section">
+          <ul>
+            <li>- There are no ads.</li>
+            <li>- There are no analytics.</li>
+            <li>- There are no cookies.</li>
+            <li>- There are no PII collected.</li>
+          </ul>
+          <p>
+            100% of your data is kept in your browser and is never collected.
+          </p>
         </div>
-        <h5>
-          Free,
-          <a href="https://github.com/jodigiordano/gg" target="_blank"
-            >open source</a
-          >, no registration required.
-        </h5>
+        <form method="dialog">
+          <button>close</button>
+        </form>
       </div>
-      <div id="intro-image">
-        <img src="assets/product.png" />
-      </div>
-    </div>
-    <div id="features">
-      <div class="outer-container">
-        <div class="title">Create complex diagrams faster.</div>
-
-        <div class="inner-container">
-          <div class="content-left">
-            <img src="assets/product-screenshot.png" />
+    </dialog>
+    <dialog id="input-set-title-dialog">
+      <div class="content">
+        <h1></h1>
+        <div class="editor-container">
+          <div class="styling">
+            <p>font</p>
+            <ul class="styling-fonts">
+              <li><button class="styling-font-text">text</button></li>
+              <li><button class="styling-font-sketch">sketch</button></li>
+              <li><button class="styling-font-code">code</button></li>
+            </ul>
+            <p>align</p>
+            <ul class="styling-aligns">
+              <li><button class="styling-align-left">left</button></li>
+              <li><button class="styling-align-center">center</button></li>
+              <li><button class="styling-align-right">right</button></li>
+            </ul>
+            <p>decoration</p>
+            <ul class="styling-decoration">
+              <li>&lt;b&gt;bold&lt;/b&gt;</li>
+              <li>&lt;i&gt;italic&lt;/i&gt;</li>
+              <li>&lt;u&gt;underline&lt;/u&gt;</li>
+              <li>&lt;s&gt;strike&lt;/s&gt;</li>
+              <li>&lt;h1&gt;title&lt;/h1&gt;</li>
+              <li>&lt;h2&gt;subtitle&lt;/h2&gt;</li>
+            </ul>
+            <p>icons</p>
+            <ul class="styling-icons">
+              <li>
+                <a href="/icons.html#pack=aws" target="_blank">
+                  <button class="styling-icons-aws">aws</button>
+                </a>
+              </li>
+              <li>
+                <a href="/icons.html#pack=gcp" target="_blank">
+                  <button class="styling-icons-gcp">gcp</button>
+                </a>
+              </li>
+              <li>
+                <a href="/icons.html#pack=azure" target="_blank">
+                  <button class="styling-icons-azure">azure</button>
+                </a>
+              </li>
+              <li>
+                <a href="/icons.html#pack=k8s" target="_blank">
+                  <button class="styling-icons-k8s">k8s</button>
+                </a>
+              </li>
+              <li>
+                <a href="/icons.html#pack=network" target="_blank">
+                  <button class="styling-icons-network">network</button>
+                </a>
+              </li>
+            </ul>
           </div>
-          <div class="content-right">
-            <div class="content">
-              <div class="content-title">
-                <mark-yellow>Assisted layout tools.</mark-yellow>
-              </div>
-              <div class="content-text">
-                You focus on creating the meaningful connections between your
-                data.
-                <span class="gg">gg</span> takes care of layering things out
-                beautifully for you.
-              </div>
-            </div>
-            <div class="content">
-              <div class="content-title">
-                <mark-green>Your diagrams. Your data.</mark-green>
-              </div>
-              <div class="content-text">
-                You store your diagrams wherever it makes sense to you, in
-                simple text format. <span class="gg">gg</span> don't have access
-                to your data.
-              </div>
-            </div>
-            <div class="content">
-              <div class="content-title">
-                <mark-blue>Built to last.</mark-blue>
-              </div>
-              <div class="content-text">
-                <span class="gg">gg</span> is yours forever.
-                <a href="https://github.com/jodigiordano/gg/issues/34"
-                  >Download it and use it offline</a
-                >. No tracking, no ads, no editor features behind a paywall.
-              </div>
-            </div>
+          <div class="editor-wrapper">
+            <textarea class="editor"></textarea>
           </div>
         </div>
+        <form method="dialog">
+          <button id="operation-set-title-apply">apply</button>
+          <button id="operation-set-title-cancel">cancel</button>
+        </form>
       </div>
-    </div>
-    <div id="more-features">
-      <div class="outer-container">
-        <div class="title">An editor tailored to your needs.</div>
-        <div class="inner-container">
-          <div class="content">
-            <div class="content-title">Presentation mode</div>
-            <div class="content-text">
-              Present your diagrams in a view free of distractions. Embed your
-              diagrams in any tool.
-            </div>
-          </div>
-          <div class="content">
-            <div class="content-title">Open source</div>
-            <div class="content-text">
-              The entire code source is hosted on
-              <a href="https://github.com/jodigiordano/gg" target="_blank"
-                >Github</a
-              >, ready to be audited by your security team.
-            </div>
-          </div>
-          <div class="content">
-            <div class="content-title">Touchscreen friendly</div>
-            <div class="content-text">
-              Work on your diagrams with your phone & tablet.
-            </div>
-          </div>
-          <div class="content">
-            <div class="content-title">Fast UI and rendering</div>
-            <div class="content-text">
-              Work at the speed of thought, even on less powerful machines. We
-              thrive to make <span class="gg">gg</span> as fast as possible.
-            </div>
-          </div>
-          <div class="content">
-            <div class="content-title">Dark mode</div>
-            <div class="content-text">
-              Enjoy a color palette which is easier on your eyes and saves the
-              battery life of your device.
-            </div>
-          </div>
-          <div class="content">
-            <div class="content-title">Cloud companion</div>
-            <div class="content-text">
-              Host & share your diagrams with
-              <a href="/plus.html">our cloud offering</a>.
-            </div>
-          </div>
-          <div class="content">
-            <div class="content-title">... and more!</div>
-            <div class="content-text">
-              See
-              <a href="https://github.com/jodigiordano/gg/issues"
-                >our Roadmap</a
-              >
-              for upcoming features.
-            </div>
-          </div>
+    </dialog>
+    <dialog id="theme">
+      <div class="content">
+        <h1>Theme</h1>
+        <div class="themes">
+          <button
+            style="background: #fff; color: #000"
+            id="operation-theme-light"
+          >
+            light
+          </button>
+          <button
+            style="background: #000; color: #fff"
+            id="operation-theme-dark"
+          >
+            dark
+          </button>
+          <button
+            style="background: #888; color: #000"
+            id="operation-theme-system"
+          >
+            system
+          </button>
         </div>
+        <form method="dialog">
+          <button>cancel</button>
+        </form>
       </div>
-    </div>
-    <div id="start">
-      <div class="outer-container">
-        <a href="/editor.html">
-          <button class="primary" title="Go to editor">Go to editor</button>
-        </a>
-        <!--<button class="secondary" title="See examples">Examples</button>-->
+    </dialog>
+    <dialog id="input-set-color-dialog">
+      <div class="content">
+        <h1>Pick a color to paint</h1>
+        <div class="colors">
+          <button data-color="">clear color</button>
+          <button style="background: #e6194b" data-color="#e6194b"></button>
+          <button style="background: #3cb44b" data-color="#3cb44b"></button>
+          <button style="background: #ffe119" data-color="#ffe119"></button>
+          <button style="background: #4363d8" data-color="#4363d8"></button>
+          <button style="background: #f58231" data-color="#f58231"></button>
+          <button style="background: #911eb4" data-color="#911eb4"></button>
+          <button style="background: #46f0f0" data-color="#46f0f0"></button>
+          <button style="background: #f032e6" data-color="#f032e6"></button>
+          <button style="background: #bcf60c" data-color="#bcf60c"></button>
+          <button style="background: #fabebe" data-color="#fabebe"></button>
+          <button style="background: #008080" data-color="#008080"></button>
+          <button style="background: #e6beff" data-color="#e6beff"></button>
+          <button style="background: #9a6324" data-color="#9a6324"></button>
+          <button style="background: #fffac8" data-color="#fffac8"></button>
+          <button style="background: #800000" data-color="#800000"></button>
+          <button style="background: #aaffc3" data-color="#aaffc3"></button>
+          <button style="background: #808000" data-color="#808000"></button>
+          <button style="background: #ffd8b1" data-color="#ffd8b1"></button>
+          <button style="background: #000075" data-color="#000075"></button>
+          <button style="background: #808080" data-color="#808080"></button>
+          <button style="background: #ffffff" data-color="#ffffff"></button>
+          <button style="background: #eeeeee" data-color="#eeeeee"></button>
+          <button style="background: #dddddd" data-color="#dddddd"></button>
+          <button style="background: #cccccc" data-color="#cccccc"></button>
+          <button style="background: #bbbbbb" data-color="#bbbbbb"></button>
+          <button style="background: #888888" data-color="#888888"></button>
+          <button style="background: #666666" data-color="#666666"></button>
+          <button style="background: #444444" data-color="#444444"></button>
+          <button style="background: #222222" data-color="#222222"></button>
+          <button style="background: #000000" data-color="#000000"></button>
+        </div>
+        <form method="dialog">
+          <button>cancel</button>
+        </form>
       </div>
-    </div>
-    <div id="footer">
-      <a href="/plus.html" target="_blank">gg+</a> |
-      <a href="/terms.html" target="_blank">Terms of Use</a> |
-      <a href="/privacy.html" target="_blank">Privacy Policy</a> |
-      <a href="https://github.com/jodigiordano/gg" target="_blank">Github</a> |
-      <a href="https://github.com/jodigiordano/gg/issues" target="_blank"
-        >Roadmap</a
-      >
-    </div>
+    </dialog>
+    <dialog id="file-properties">
+      <div class="content">
+        <h1>Properties</h1>
+        <h2>General</h2>
+        <p>
+          <label for="option-chart-title" title="The title of this chart">
+            Title</label
+          >
+          <input id="option-chart-title" />
+        </p>
+        <form method="dialog">
+          <button>close</button>
+        </form>
+      </div>
+    </dialog>
+    <dialog id="load-file-failed-dialog">
+      <div class="content">
+        <h1>Operation failed</h1>
+        <p>Loading the chart failed.</p>
+        <form method="dialog">
+          <button>ok</button>
+        </form>
+      </div>
+    </dialog>
+    <input id="file-from-disk" type="file" accept="application/json" />
     <script type="module" src="./index.ts"></script>
   </body>
 </html>
